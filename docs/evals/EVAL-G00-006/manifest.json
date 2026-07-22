@@ -3,8 +3,8 @@
   "eval_id": "EVAL-G00-006",
   "gate": "G00",
   "iteration": "I-0006",
-  "evaluated_revision": "pending-i0006-candidate",
-  "status": "local_pass_pending_cross_platform",
+  "evaluated_revision": "42b97088743d7741c7be4c7e0364794e31bbc59c",
+  "status": "pass",
   "environments": ["windows-local", "windows-github-hosted", "ubuntu-github-hosted"],
   "commands": ["make verify-fast", "make eval-changed", "make eval-g00"],
   "artifacts": [
@@ -14,12 +14,17 @@
     ".audit/sbom.cdx.json",
     ".audit/audit-summary.json"
   ],
-  "evidence_urls": [],
+  "evidence_urls": [
+    "https://github.com/kevinhimself711/FaultWitness/actions/runs/29931164225",
+    "https://github.com/kevinhimself711/FaultWitness/actions/runs/29931164225/artifacts/8534115105",
+    "https://github.com/kevinhimself711/FaultWitness/actions/runs/29931318776",
+    "https://github.com/kevinhimself711/FaultWitness/pull/9"
+  ],
   "integrations": {
     "langsmith": {
       "status": "not_applicable",
       "reason": "G00 has no Agent runtime and therefore cannot produce a runtime trace."
     }
   },
-  "open_evidence": ["fixed candidate SHA", "cross-platform CI", "protected-main confirmation"]
+  "open_evidence": []
 }

@@ -37,10 +37,9 @@ claims:
     limitations: []
   - id: CLAIM-GOV-003
     statement: "The G00 candidate is audited for cross-platform governance dependency publication and diagram integrity with fourteen contract-bound walkthroughs."
-    status: partially_verified
+    status: verified
     requirements: [REQ-EVAL-001, REQ-EVAL-002, REQ-EVAL-003, REQ-SEC-003, REQ-DEV-001, REQ-DEV-002]
     evidence:
       - EVAL-G00-006
     limitations:
-      - "Cross-platform candidate and protected-main evidence is pending."
       - "This claim covers design and repository governance, not product runtime behavior."
