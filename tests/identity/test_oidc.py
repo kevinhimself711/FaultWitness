@@ -22,7 +22,8 @@ async def _exercise_oidc() -> None:
 
     async def handler(request: httpx.Request) -> httpx.Response:
         assert request.url.path == "/jwks"
-        return httpx.Response(200, json={"keys": [public_jwk]})
+        encryption_jwk = dict(public_jwk) | {"kid": "enc-key", "alg": "RSA-OAEP", "use": "enc"}
+        return httpx.Response(200, json={"keys": [encryption_jwk, public_jwk]})
 
     client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
     settings = OIDCSettings("https://issuer.test", "faultwitness-api", "https://issuer.test/jwks")

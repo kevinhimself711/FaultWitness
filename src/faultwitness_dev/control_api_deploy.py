@@ -186,10 +186,22 @@ def diagnose_control_api() -> str:
     script = """set -eu
 /usr/local/bin/k3s kubectl -n fw-system get secret fw-keycloak-env \
   -o go-template='{{range $key,$value := .data}}{{$key}}{{"\\n"}}{{end}}' | sort
+/usr/local/bin/k3s kubectl -n fw-system get secret fw-synthetic-users \
+  -o go-template='{{range $key,$value := .data}}synthetic_key={{$key}}{{"\\n"}}{{end}}' | sort
+/usr/local/bin/k3s kubectl -n fw-system get service keycloak -o jsonpath='service={.spec.clusterIP}:{.spec.ports[0].port}{"\\n"}' || true
+/usr/local/bin/k3s kubectl -n fw-system get endpoints keycloak -o jsonpath='endpoint={.subsets[0].addresses[0].ip}:{.subsets[0].ports[0].port}{"\\n"}' || true
 /usr/local/bin/k3s kubectl -n fw-control get pods -l app.kubernetes.io/name=control-api \
   -o json | python3 -c 'import json,sys; d=json.load(sys.stdin); print(json.dumps([{"phase":p.get("status",{}).get("phase"),"reason":p.get("status",{}).get("reason"),"waiting":[{"reason":s.get("state",{}).get("waiting",{}).get("reason"),"message":s.get("state",{}).get("waiting",{}).get("message")} for s in p.get("status",{}).get("containerStatuses",[])]} for p in d.get("items",[])]))'
 /usr/local/bin/k3s kubectl -n fw-control logs deployment/control-api --tail=30 2>&1 | \
   sed -E 's#(postgresql://)[^@ ]+@#\\1[REDACTED]@#g'
+/usr/local/bin/k3s kubectl -n fw-control exec deployment/control-api -- python -c 'import httpx; print("keycloak_status=" + str(httpx.get("http://keycloak.fw-system.svc.cluster.local:8080/realms/faultwitness/.well-known/openid-configuration", timeout=5).status_code))' || true
+/usr/local/bin/k3s kubectl -n fw-system logs deployment/keycloak --tail=100 2>&1 | \
+  sed -E 's/(password|secret|token)=[^ ,]+/\\1=[REDACTED]/gi'
+/usr/local/bin/k3s kubectl -n fw-system exec deployment/keycloak -- /opt/keycloak/bin/kcadm.sh set-password --help 2>&1 | head -25
+/usr/local/bin/k3s kubectl -n fw-control get pods -l app.kubernetes.io/name=control-api-smoke \
+  -o json | python3 -c 'import json,sys; d=json.load(sys.stdin); print(json.dumps([{"phase":p.get("status",{}).get("phase"),"reason":p.get("status",{}).get("reason"),"containers":p.get("status",{}).get("containerStatuses",[])} for p in d.get("items",[])]))'
+/usr/local/bin/k3s kubectl -n fw-control logs job/control-api-smoke --tail=50 2>&1 | \
+  sed -E 's/(Bearer )[A-Za-z0-9._-]+/\\1[REDACTED]/g'
 """
     return run_remote_script(script, privileged=True)
 
@@ -207,14 +219,19 @@ def provision_keycloak_realm(root: Path, candidate_sha: str) -> dict[str, Any]:
     policy = _keycloak_ingress_policy()
     policy_encoded = base64.b64encode(policy.encode()).decode()
     script = f"""set -eu
+step=bootstrap
+trap 'status=$?; if test "$status" -ne 0; then printf "FW_KEYCLOAK_PROVISION_FAILED step=%s status=%s\\n" "$step" "$status" >&2; fi' EXIT
 pod=$(/usr/local/bin/k3s kubectl -n fw-system get pod -l app.kubernetes.io/name=keycloak -o jsonpath='{{.items[0].metadata.name}}')
+step=admin-login
 /usr/local/bin/k3s kubectl -n fw-system exec "$pod" -- sh -ec '
   /opt/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080 --realm master --user "$KC_BOOTSTRAP_ADMIN_USERNAME" --password "$KC_BOOTSTRAP_ADMIN_PASSWORD" >/dev/null
 '
 if ! /usr/local/bin/k3s kubectl -n fw-system exec "$pod" -- /opt/keycloak/bin/kcadm.sh get realms/faultwitness >/dev/null 2>&1; then
+  step=realm-create
   printf %s {encoded} | base64 -d | /usr/local/bin/k3s kubectl -n fw-system exec -i "$pod" -- sh -ec 'cat >/tmp/faultwitness-realm.json; /opt/keycloak/bin/kcadm.sh create realms -f /tmp/faultwitness-realm.json >/dev/null; rm -f /tmp/faultwitness-realm.json'
 fi
 if ! /usr/local/bin/k3s kubectl -n fw-system get secret fw-synthetic-users >/dev/null 2>&1; then
+  step=credential-secret
   credentials=$(mktemp /tmp/faultwitness-users.XXXXXX)
   chmod 0600 "$credentials"
   for tenant in tenant-a tenant-b; do
@@ -229,19 +246,31 @@ if ! /usr/local/bin/k3s kubectl -n fw-system get secret fw-synthetic-users >/dev
 fi
 for tenant in tenant-a tenant-b; do
   for role in viewer operator approver admin; do
+    step="user-$tenant-$role"
     user="$tenant-$role"
     key=$(printf '%s_%s' "$tenant" "$role" | tr - _)
-    password=$(/usr/local/bin/k3s kubectl -n fw-system get secret fw-synthetic-users -o go-template="{{{{index .data \"$key\"}}}}" | base64 -d)
-    printf '{{"username":"%s","enabled":true,"attributes":{{"tenant_id":["%s"]}},"credentials":[{{"type":"password","value":"%s","temporary":false}}]}}' "$user" "$tenant" "$password" | \
+    password=$(/usr/local/bin/k3s kubectl -n fw-system get secret fw-synthetic-users -o "jsonpath={{.data.$key}}" | base64 -d)
+    printf '{{"username":"%s","enabled":true,"firstName":"Synthetic","lastName":"%s","email":"%s@faultwitness.invalid","emailVerified":true,"requiredActions":[],"attributes":{{"tenant_id":["%s"]}}}}' "$user" "$role" "$user" "$tenant" | \
       /usr/local/bin/k3s kubectl -n fw-system exec -i "$pod" -- sh -ec '
         cat >/tmp/faultwitness-user.json
         user="$1"; role="$2"
         if ! /opt/keycloak/bin/kcadm.sh get users -r faultwitness -q exact=true -q username="$user" | grep -q "\\\"username\\\" : \\\"$user\\\""; then
           /opt/keycloak/bin/kcadm.sh create users -r faultwitness -f /tmp/faultwitness-user.json >/dev/null
         fi
-        /opt/keycloak/bin/kcadm.sh add-roles -r faultwitness --uusername "$user" --rolename "$role" >/dev/null
+        user_id=$(/opt/keycloak/bin/kcadm.sh get users -r faultwitness -q exact=true -q username="$user" --fields id | sed -n "s/.*\\\"id\\\" : \\\"\\([^\\\"]*\\)\\\".*/\\1/p")
+        test -n "$user_id"
+        /opt/keycloak/bin/kcadm.sh update "users/$user_id" -r faultwitness -f /tmp/faultwitness-user.json >/dev/null
+        /opt/keycloak/bin/kcadm.sh add-roles -r faultwitness --uusername "$user" --rolename "$role" >/dev/null 2>&1 || true
         rm -f /tmp/faultwitness-user.json
       ' sh "$user" "$role"
+    if ! password_error=$(printf '%s\n' "$password" | /usr/local/bin/k3s kubectl -n fw-system exec -i "$pod" -- sh -ec '
+      IFS= read -r password
+      /opt/keycloak/bin/kcadm.sh set-password -r faultwitness --username "$1" --new-password "$password" >/dev/null
+    ' sh "$user" 2>&1); then
+      safe_error=$(printf '%s' "$password_error" | sed -E 's/[0-9a-f]{{32,}}/[REDACTED]/g' | tr '\n' ' ' | cut -c1-240)
+      printf 'FW_KEYCLOAK_PASSWORD_FAILED user=%s detail=%s\n' "$user" "$safe_error" >&2
+      exit 1
+    fi
   done
 done
 printf %s {policy_encoded} | base64 -d | /usr/local/bin/k3s kubectl apply -f - >/dev/null
@@ -425,6 +454,7 @@ data:
     import datetime
     import json
     import os
+    import time
     import uuid
     import httpx
 
@@ -432,9 +462,15 @@ data:
     api = "http://control-api.fw-control.svc.cluster.local:8000"
 
     def token(username, password):
-        response = httpx.post(identity, data={{"grant_type": "password", "client_id": "faultwitness-api", "username": username, "password": password}}, timeout=10)
-        response.raise_for_status()
-        return response.json()["access_token"]
+        for attempt in range(20):
+            try:
+                response = httpx.post(identity, data={{"grant_type": "password", "client_id": "faultwitness-api", "username": username, "password": password}}, timeout=5)
+                response.raise_for_status()
+                return response.json()["access_token"]
+            except httpx.ConnectError:
+                if attempt == 19:
+                    raise
+                time.sleep(0.5)
 
     operator = token("tenant-a-operator", os.environ["TENANT_A_OPERATOR"])
     tenant_b = token("tenant-b-viewer", os.environ["TENANT_B_VIEWER"])

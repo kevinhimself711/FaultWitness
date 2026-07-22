@@ -95,7 +95,13 @@ class OIDCAuthenticator:
                         raise AuthenticationError("OIDC JWKS is malformed")
                     loaded: dict[str, Any] = {}
                     for item in keys:
-                        if isinstance(item, dict) and isinstance(item.get("kid"), str):
+                        if (
+                            isinstance(item, dict)
+                            and isinstance(item.get("kid"), str)
+                            and item.get("use") in {None, "sig"}
+                            and item.get("alg") in {None, "RS256"}
+                            and item.get("kty") == "RSA"
+                        ):
                             loaded[item["kid"]] = PyJWK.from_dict(item).key
                     if not loaded:
                         raise AuthenticationError("OIDC JWKS contains no usable keys")
