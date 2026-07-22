@@ -676,7 +676,7 @@ def run_capability_probe(
         "python3 -",
     ]
     reports: list[dict[str, Any]] = []
-    for _ in range(2):
+    for attempt in range(1, 3):
         result = subprocess.run(
             arguments,
             input=script,
@@ -686,7 +686,26 @@ def run_capability_probe(
             encoding="utf-8",
         )
         if result.returncode:
-            raise GovernanceError("allowlisted read-only host capability probe failed")
+            category = remote_probe_failure_category(result.stderr)
+            paths.private_evidence_dir.mkdir(parents=True, exist_ok=True)
+            _atomic_write(
+                paths.private_evidence_dir / "capability-probe-failure.json",
+                json.dumps(
+                    {
+                        "schema_version": "1.0.0",
+                        "candidate_sha": candidate_sha,
+                        "attempt": attempt,
+                        "category": category,
+                        "recorded_at": datetime.now(UTC).isoformat(),
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+                + "\n",
+            )
+            raise GovernanceError(
+                "allowlisted read-only host capability probe failed (" + category + ")"
+            )
         try:
             raw = json.loads(result.stdout)
         except json.JSONDecodeError as error:
@@ -806,3 +825,28 @@ def assert_no_sensitive_capability_fields(document: dict[str, Any]) -> None:
                 walk(child, (*path, str(index)))
 
     walk(document)
+
+
+def remote_probe_failure_category(stderr: str) -> str:
+    lowered = stderr.casefold()
+    structured = re.search(
+        r"FW_PROBE_ERROR:([a-z_]+):([A-Za-z_][A-Za-z0-9_]*)", stderr
+    )
+    if structured:
+        return "remote_probe_" + structured.group(1) + "_" + structured.group(2)
+    if "python3" in lowered and ("not found" in lowered or "not recognized" in lowered):
+        return "python3_unavailable"
+    if "permission denied" in lowered:
+        return "remote_permission_denied"
+    if "traceback (most recent call last)" in lowered:
+        exception_names = re.findall(
+            r"(?m)^([A-Za-z_][A-Za-z0-9_.]*(?:Error|Exception)):", stderr
+        )
+        return (
+            "remote_probe_exception_" + exception_names[-1]
+            if exception_names
+            else "remote_probe_exception"
+        )
+    if "connection timed out" in lowered:
+        return "connection_timeout"
+    return "remote_probe_transport_failed"

@@ -18,6 +18,7 @@ from faultwitness_dev.bootstrap import (
     host_key_fingerprint,
     migrate_handoff,
     parse_handoff,
+    remote_probe_failure_category,
     ssh_failure_category,
 )
 from faultwitness_dev.errors import GovernanceError
@@ -294,3 +295,24 @@ def test_ssh_failure_category_never_echoes_raw_diagnostics(
     category = ssh_failure_category(stderr)
     assert category == expected
     assert stderr not in category
+
+
+@pytest.mark.parametrize(
+    ("stderr", "expected"),
+    [
+        ("sh: python3: not found", "python3_unavailable"),
+        (
+            "Traceback (most recent call last):\n  <redacted>\nValueError: bad",
+            "remote_probe_exception_ValueError",
+        ),
+        (
+            "FW_PROBE_ERROR:gpu_state:TypeError",
+            "remote_probe_gpu_state_TypeError",
+        ),
+        ("opaque transport failure", "remote_probe_transport_failed"),
+    ],
+)
+def test_remote_probe_failure_category_is_allowlisted(stderr: str, expected: str) -> None:
+    category = remote_probe_failure_category(stderr)
+    assert category == expected
+    assert "redacted" not in category
