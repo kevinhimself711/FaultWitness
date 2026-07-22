@@ -307,7 +307,10 @@ def evaluate_i0010(root: Path, candidate_sha: str) -> dict[str, Any]:
                 fencing_token="fence-current",
                 current_action_digest="a" * 64,
                 action_digest="a" * 64,
-                facts={name: True for name in transition["preconditions"]},
+                facts={
+                    **{name: True for name in transition["preconditions"]},
+                    f"guard:{transition['id']}": True,
+                },
             )
             decision = kernel.service(machine_id).decide(request)
             if decision != kernel.service(machine_id).decide(request):
@@ -324,6 +327,16 @@ def evaluate_i0010(root: Path, candidate_sha: str) -> dict[str, Any]:
                     replace(
                         request,
                         facts={**dict(request.facts or {}), transition["preconditions"][0]: False},
+                    ),
+                    GuardRejectedError,
+                ),
+                (
+                    replace(
+                        request,
+                        facts={
+                            **dict(request.facts or {}),
+                            f"guard:{transition['id']}": False,
+                        },
                     ),
                     GuardRejectedError,
                 ),
