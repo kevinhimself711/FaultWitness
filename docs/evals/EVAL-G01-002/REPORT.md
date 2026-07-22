@@ -2,9 +2,9 @@
 
 ## Result
 
-Result: pending.
+Result: pending (implementation checkpoint landed; full Eval not run).
 
-I-0008 is active. No K3s package, route, firewall rule, RuntimeClass, or GPU workload has yet been installed or executed. The passing EVAL-G01-001 baseline is the pre-bootstrap authority.
+I-0008 is active. The private server currently reports an active pinned K3s service together with Helm, gVisor, NVIDIA container runtime, and a compatible Kata runtime. Repository-owned deployment manifests, command tooling, smoke definitions, coexistence checks, and unit tests have been implemented. These observations are operational progress only and do not constitute a passing EVAL-G01-002 result.
 
 ## Required evidence
 
@@ -14,4 +14,4 @@ I-0008 is active. No K3s package, route, firewall rule, RuntimeClass, or GPU wor
 
 ## Open evidence
 
-All EVAL-G01-002 evidence remains open until I-0008 runs on the private server.
+The full candidate-bound Eval remains open. In particular, the NetworkPolicy matrix, embedded-etcd snapshot/restore, project-only rollback, clean idempotent rerun, and final candidate rerun have not been accepted. No threshold or Gate requirement was lowered by landing this checkpoint.

@@ -15,5 +15,5 @@
       "reason": "LangSmith is required by the complete G01 candidate although this Eval measures infrastructure capability."
     }
   },
-  "open_evidence": ["Docker coexistence comparison", "network and listener matrix", "runc gVisor Kata GPU and restore results"]
+  "open_evidence": ["candidate-bound full rerun", "complete network-policy matrix", "embedded-etcd snapshot and restore", "project-only rollback", "clean idempotent reinstall"]
 }

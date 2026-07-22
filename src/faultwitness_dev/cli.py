@@ -26,6 +26,25 @@ from faultwitness_dev.bootstrap import (
 from faultwitness_dev.checks import eval_changed, run, verify_fast
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.evals import evaluate_iteration
+from faultwitness_dev.infra import (
+    audit_runtime_coexistence,
+    capture_preinstall_baseline,
+    diagnose_k3s_failure,
+    diagnose_network_matrix,
+    diagnose_nvidia_failure,
+    diagnose_runtime_smokes,
+    harden_runtime_listeners,
+    inspect_infra_prerequisites,
+    install_gvisor_runtime,
+    install_k3s_core,
+    install_kata_runtime,
+    install_nvidia_runtime,
+    prepare_offline_base_images,
+    recover_cluster_dns,
+    resolve_public_image_digest,
+    run_network_matrix,
+    run_runtime_smokes,
+)
 from faultwitness_dev.schemas import validate_repository_schemas
 
 
@@ -99,6 +118,36 @@ def parser() -> argparse.ArgumentParser:
     eval_iteration = subparsers.add_parser("eval-iteration")
     eval_iteration.add_argument("iteration")
     eval_iteration.add_argument("--candidate-sha", required=True)
+    infra_baseline = subparsers.add_parser("capture-infra-baseline")
+    infra_baseline.add_argument("--candidate-sha", required=True)
+    install_core = subparsers.add_parser("install-k3s-core")
+    install_core.add_argument("--candidate-sha", required=True)
+    install_gvisor = subparsers.add_parser("install-gvisor-runtime")
+    install_gvisor.add_argument("--candidate-sha", required=True)
+    install_nvidia = subparsers.add_parser("install-nvidia-runtime")
+    install_nvidia.add_argument("--candidate-sha", required=True)
+    install_kata = subparsers.add_parser("install-kata-runtime")
+    install_kata.add_argument("--candidate-sha", required=True)
+    prepare_images = subparsers.add_parser("prepare-offline-images")
+    prepare_images.add_argument("--candidate-sha", required=True)
+    runtime_smokes = subparsers.add_parser("runtime-smokes")
+    runtime_smokes.add_argument("--candidate-sha", required=True)
+    network_matrix = subparsers.add_parser("network-matrix")
+    network_matrix.add_argument("--candidate-sha", required=True)
+    coexistence = subparsers.add_parser("audit-runtime-coexistence")
+    coexistence.add_argument("--candidate-sha", required=True)
+    harden_listeners = subparsers.add_parser("harden-runtime-listeners")
+    harden_listeners.add_argument("--candidate-sha", required=True)
+    recover_dns = subparsers.add_parser("recover-cluster-dns")
+    recover_dns.add_argument("--candidate-sha", required=True)
+    inspect_infra = subparsers.add_parser("inspect-infra")
+    inspect_infra.add_argument("--unprivileged", action="store_true")
+    resolve_image = subparsers.add_parser("resolve-public-image")
+    resolve_image.add_argument("--image", required=True)
+    subparsers.add_parser("diagnose-k3s")
+    subparsers.add_parser("diagnose-nvidia")
+    subparsers.add_parser("diagnose-runtime-smokes")
+    subparsers.add_parser("diagnose-network-matrix")
     return command_parser
 
 
@@ -177,9 +226,7 @@ def main() -> int:
                 if args.config_root
                 else BootstrapPaths.defaults()
             )
-            fingerprint = capture_host_key_candidate(
-                paths, args.sops or default_sops_executable()
-            )
+            fingerprint = capture_host_key_candidate(paths, args.sops or default_sops_executable())
             message = (
                 "captured an untrusted host-key candidate; verify this fingerprint through an "
                 f"independent channel before acceptance: {fingerprint}"
@@ -237,6 +284,108 @@ def main() -> int:
             message = (
                 f"{summary['eval_id']} passed on {summary['candidate_sha']} with "
                 f"{len(summary['checks'])} blocking checks"
+            )
+        elif args.command == "capture-infra-baseline":
+            summary = capture_preinstall_baseline(root, args.candidate_sha)
+            message = (
+                "captured private preinstall baseline for "
+                f"{summary['container_count']} Docker containers with digest "
+                f"{summary['baseline_sha256']}"
+            )
+        elif args.command == "install-k3s-core":
+            summary = install_k3s_core(root, args.candidate_sha)
+            message = (
+                "installed pinned K3s core while preserving "
+                f"{summary['container_count']} Docker containers with zero regression"
+            )
+        elif args.command == "install-gvisor-runtime":
+            summary = install_gvisor_runtime(root, args.candidate_sha)
+            message = f"installed gVisor {summary['gvisor_version']} and registered " + ", ".join(
+                summary["runtime_classes"]
+            )
+        elif args.command == "install-nvidia-runtime":
+            summary = install_nvidia_runtime(root, args.candidate_sha)
+            message = (
+                f"installed NVIDIA device plugin {summary['device_plugin_version']} "
+                "with at least one allocatable GPU"
+            )
+        elif args.command == "install-kata-runtime":
+            summary = install_kata_runtime(root, args.candidate_sha)
+            message = (
+                f"installed Kata {summary['kata_version']} and registered "
+                f"RuntimeClass {summary['runtime_class']}"
+            )
+        elif args.command == "prepare-offline-images":
+            summary = prepare_offline_base_images(root, args.candidate_sha)
+            message = "imported pinned offline images: " + ", ".join(summary["images"])
+        elif args.command == "runtime-smokes":
+            summary = run_runtime_smokes(root, args.candidate_sha)
+            message = "passed real workload smokes for " + ", ".join(summary["runtimes"])
+        elif args.command == "network-matrix":
+            summary = run_network_matrix(root, args.candidate_sha)
+            message = f"passed all {len(summary['passed_cases'])} NetworkPolicy cases"
+        elif args.command == "audit-runtime-coexistence":
+            summary = audit_runtime_coexistence(root, args.candidate_sha)
+            message = (
+                "preserved Docker baseline with zero regression and "
+                f"{summary['new_nonpublic_listener_count']} non-public listeners"
+            )
+        elif args.command == "harden-runtime-listeners":
+            summary = harden_runtime_listeners(args.candidate_sha)
+            message = (
+                f"selected single-node Flannel {summary['flannel_backend']} and removed "
+                "the wildcard VXLAN listener"
+            )
+        elif args.command == "recover-cluster-dns":
+            summary = recover_cluster_dns(args.candidate_sha)
+            message = (
+                "recovered CoreDNS with "
+                f"{summary['ready_replicas_minimum']} ready replica and an endpoint"
+            )
+        elif args.command == "inspect-infra":
+            values = inspect_infra_prerequisites(privileged=not args.unprivileged)
+            message = (
+                "privileged remote prerequisites passed; current state is "
+                f"k3s={values['k3s']}, helm={values['helm']}, config={values['config']}, "
+                f"service={values['k3s_service']}, runsc={values['runsc']}, "
+                f"containerd={values['containerd_config']}, "
+                f"runsc_config={values['runsc_config']}, "
+                f"nvidia={values['nvidia_runtime']}, "
+                f"nvidia_config={values['nvidia_config']}, zstd={values['zstd']}, "
+                f"zstd_candidate={values['zstd_candidate']}, pause={values['pause_image']}"
+                f", kata_stage_bytes={values['kata_stage_bytes']}, "
+                f"gcc={values['gcc']}, make={values['make']}, "
+                f"image_stage={values['image_stage_dir']}/"
+                f"{values['image_stage_writable']}, pause_refs={values['pause_refs']}, "
+                f"kata_runtime_rs={values['kata_runtime_rs']}, "
+                f"coredns={values['coredns_ready']}/{values['dns_endpoint']}"
+            )
+        elif args.command == "resolve-public-image":
+            digest = resolve_public_image_digest(args.image)
+            message = f"resolved linux/amd64 digest {digest} for {args.image}"
+        elif args.command == "diagnose-k3s":
+            diagnosis = diagnose_k3s_failure()
+            message = (
+                "stored private K3s journal with digest "
+                f"{diagnosis['sha256']}; categories=" + ",".join(diagnosis["categories"])
+            )
+        elif args.command == "diagnose-nvidia":
+            diagnosis = diagnose_nvidia_failure()
+            message = (
+                "stored private NVIDIA diagnostics with digest "
+                f"{diagnosis['sha256']}; categories=" + ",".join(diagnosis["categories"])
+            )
+        elif args.command == "diagnose-runtime-smokes":
+            diagnosis = diagnose_runtime_smokes()
+            message = (
+                "stored private runtime-smoke diagnostics with digest "
+                f"{diagnosis['sha256']}; categories=" + ",".join(diagnosis["categories"])
+            )
+        elif args.command == "diagnose-network-matrix":
+            diagnosis = diagnose_network_matrix()
+            message = (
+                "stored private network-matrix diagnostics with digest "
+                f"{diagnosis['sha256']}; categories=" + ",".join(diagnosis["categories"])
             )
         else:
             report = check_external_links(root)
