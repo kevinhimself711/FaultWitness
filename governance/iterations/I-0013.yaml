@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0013
 gate: G01
 title: Sanitized LangSmith and OTel Trace Foundation
-status: planned
+status: in_progress
 scope:
   - Implement TraceEnvelope stage taxonomy correlation causation and allowlist sanitization.
   - Export Agent and model traces to LangSmith and operational telemetry to OTel Tempo Loki and Prometheus.

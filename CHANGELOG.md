@@ -9,6 +9,7 @@
 
 ### Tooling
 
+- Complete the I-0012 implementation checkpoint on candidate `5a1b607`: deploy the private candidate-bound Control API and Keycloak realm, pass live OIDC create/read/SSE and tenant/role/approval denial smoke, retain the full EVAL-G01-006 conformance/load matrix as Gate debt, and activate I-0013.
 - Implement the I-0012 authenticated Control API foundation: eight frozen FastAPI paths, fail-closed RS256 OIDC tenant derivation, role and cross-tenant denial, PostgreSQL Incident/idempotency/event projection, exact replay cursors, typed retention/backpressure SSE controls, and truthful empty capability/approval behavior.
 - Add a candidate-bound, non-root, private-ClusterIP Control API image and K3s deployment path with locked dependencies and explicit network policy.
 - Add candidate-bound Keycloak realm provisioning for two synthetic tenants, four roles, a mapped API audience/tenant claim, and eight out-of-band credentialed users.

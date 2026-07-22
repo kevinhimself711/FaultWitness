@@ -69,6 +69,7 @@ claims:
       - "Candidate 0c8b66c deployed the eleven I-0009 platform workloads and observed point-in-time readiness, but EVAL-G01-003 remains pending until stability, recovery, restore, isolation, telemetry, and supply-chain evidence all pass."
       - "Candidate f81c7f0 passed local executable-contract conformance for all 82 transitions and 492 rejected mutations; cross-platform generation and public compatibility evidence remain open in EVAL-G01-004."
       - "Candidate 4844961 deployed the additive I-0011 migration and observed 17 owner-isolated runtime tables; full transition, duplicate, crash, fencing, queue-drain, and LangSmith evidence remains open in EVAL-G01-005."
+      - "Candidate 5a1b607 deployed the authenticated Control API and synthetic Keycloak realm and passed live create/read/SSE plus cross-tenant, role-injection, and false-approval denial smoke; the complete conformance, 10,000-event, 100-reconnect, backpressure, and LangSmith evidence remains open in EVAL-G01-006."
       - "The planned topology is single-node and does not claim high availability or G06 horizontal scaling and sandbox security."
   - id: CLAIM-TRACE-001
     statement: "G01 will produce complete correlated sanitized and replayable LangSmith and OTel evidence for every platform and model stage that actually executes."

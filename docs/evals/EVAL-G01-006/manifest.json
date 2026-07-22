@@ -3,7 +3,7 @@
   "eval_id": "EVAL-G01-006",
   "gate": "G01",
   "iteration": "I-0012",
-  "evaluated_revision": "pending",
+  "evaluated_revision": "5a1b607ff34e47b1f40d7dcb7e4042d0a384621d",
   "status": "pending",
   "environments": ["windows-github-hosted", "ubuntu-github-hosted", "ubuntu-private-server"],
   "commands": ["uv run python -m faultwitness_dev eval-iteration I-0012 --candidate-sha <full-sha>"],
@@ -15,5 +15,5 @@
       "reason": "G01 requires sanitized correlated traces for authenticated API state and SSE flows before closure."
     }
   },
-  "open_evidence": ["eight-path API conformance", "identity and tenant denial matrix", "SSE ordering reconnect retention and backpressure"]
+  "open_evidence": ["full eight-path API and identity denial matrix", "10,000-event ordering and 100-reconnect recovery", "retention and sustained backpressure matrix", "correlated LangSmith API and SSE traces"]
 }
