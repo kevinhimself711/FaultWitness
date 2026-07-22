@@ -2,7 +2,7 @@
 
 ## Result
 
-Result: local pass; protected-main cross-platform evidence pending.
+Result: pass.
 
 ## Evidence
 
@@ -16,8 +16,10 @@ Result: local pass; protected-main cross-platform evidence pending.
 | Walkthrough bindings | pass | All 10 W-ARCH scenarios resolve to registered transitions, Commands, failures, and REST operations |
 | Generated Mermaid | pass | Committed diagrams match the deterministic YAML renderer byte-for-byte |
 | Publication boundary review | pass | Candidate scan found no local absolute path, credential, private key, or common secret token |
-| Windows baseline | pending | Pull-request CI not yet recorded |
-| Ubuntu baseline | pending | Pull-request CI not yet recorded |
+| Windows baseline | pass | GitHub Actions job 88917224227 |
+| Ubuntu baseline | pass | GitHub Actions job 88917224281 |
+
+Cross-platform run: <https://github.com/kevinhimself711/FaultWitness/actions/runs/29918293502>
 
 ## Deviations
 

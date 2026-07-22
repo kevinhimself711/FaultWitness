@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0005
 gate: G00
 title: State Interface and Failure Contracts
-status: in_progress
+status: completed
 scope:
   - Define four machine-readable state transition tables and generated Mermaid views.
   - Freeze OpenAPI 3.1 REST and SSE and AsyncAPI 3.0 Command/Event designs.
@@ -20,7 +20,7 @@ tests:
   - uv run pytest tests/contracts tests/governance -q
   - EVAL-G00-005 contract and safety negative cases
 eval_id: EVAL-G00-005
-commit: null
+commit: 44c4443361d7723c42f848a7cd6328a73e9ffbd8
 changed_paths:
   - docs/contracts
   - schemas/contracts
