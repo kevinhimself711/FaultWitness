@@ -52,6 +52,7 @@ from faultwitness_dev.infra import (
     run_runtime_smokes,
 )
 from faultwitness_dev.platform import deploy_platform, inspect_platform_readiness
+from faultwitness_dev.runtime_deploy import deploy_runtime_schema, inspect_runtime_schema
 from faultwitness_dev.schemas import validate_repository_schemas
 
 
@@ -158,6 +159,10 @@ def parser() -> argparse.ArgumentParser:
     inspect_services = subparsers.add_parser("inspect-platform")
     inspect_services.add_argument("--candidate-sha", required=True)
     inspect_services.add_argument("--stability-seconds", type=int, default=0)
+    deploy_runtime = subparsers.add_parser("deploy-runtime-schema")
+    deploy_runtime.add_argument("--candidate-sha", required=True)
+    inspect_runtime = subparsers.add_parser("inspect-runtime-schema")
+    inspect_runtime.add_argument("--candidate-sha", required=True)
     subparsers.add_parser("compile-contracts")
     subparsers.add_parser("check-contracts")
     subparsers.add_parser("diagnose-k3s")
@@ -403,6 +408,18 @@ def main() -> int:
             message = (
                 f"observed {summary['workload_count']} sanitized Ready workloads for "
                 f"{summary['stability_seconds']} seconds on {summary['candidate_sha']}"
+            )
+        elif args.command == "deploy-runtime-schema":
+            summary = deploy_runtime_schema(root, args.candidate_sha)
+            message = (
+                f"deployed runtime schema from {summary['candidate_sha']} with migration digest "
+                f"{summary['migration_sha256']}"
+            )
+        elif args.command == "inspect-runtime-schema":
+            summary = inspect_runtime_schema(args.candidate_sha)
+            message = (
+                f"observed runtime migration {summary['migration']} with "
+                f"{summary['table_count']} owner-isolated tables"
             )
         elif args.command == "compile-contracts":
             target = write_generated_resource(root)

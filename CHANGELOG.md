@@ -1,5 +1,7 @@
 # Changelog
 
+- I-0011: added owner-isolated PostgreSQL state/idempotency/outbox/inbox/DLQ, Redis Streams recovery, fenced AES-GCM checkpoints, and immutable private-server migration deployment.
+
 ## Unreleased
 
 ### Gate closure

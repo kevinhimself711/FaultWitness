@@ -33,6 +33,8 @@ TEXT_SUFFIXES = {
 OWNED_SOURCE_ROOTS = {
     "src/faultwitness_dev": "repository-governance",
     "src/faultwitness/contracts": "CMP-CONTROL-API",
+    "src/faultwitness/persistence": "four-state-owner-services",
+    "src/faultwitness/runtime": "CMP-AGENT-WORKER",
     "src/faultwitness/state": "four-state-owner-services",
 }
 ALLOWED_LICENSES = {
@@ -44,6 +46,7 @@ ALLOWED_LICENSES = {
     "EPL-2.0",
     "ISC",
     "MIT",
+    "MIT-0",
     "MPL-2.0",
     "OFL-1.1",
     "PSF-2.0",
