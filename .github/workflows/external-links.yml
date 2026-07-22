@@ -32,3 +32,4 @@ jobs:
           path: .audit/external-links.json
           if-no-files-found: warn
           retention-days: 14
+          include-hidden-files: true
