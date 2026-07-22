@@ -3,11 +3,14 @@
   "eval_id": "EVAL-G00-002",
   "gate": "G00",
   "iteration": "I-0002",
-  "evaluated_revision": "I-0002 scoped commit",
-  "status": "running",
+  "evaluated_revision": "3e4fc7b0595ffddfc19b95ba15f7ce9fcc47ac4f",
+  "status": "pass",
   "environments": ["windows-local", "windows-github-hosted", "ubuntu-github-hosted"],
   "commands": ["make verify-fast", "make eval-changed", "uv run pytest tests/governance -q"],
   "artifacts": ["docs/evals/EVAL-G00-002/PLAN.md", "docs/evals/EVAL-G00-002/REPORT.md"],
-  "evidence_urls": [],
-  "open_evidence": ["cross-platform-ci", "main-ruleset"]
+  "evidence_urls": [
+    "https://github.com/kevinhimself711/FaultWitness/actions/runs/29912935245",
+    "https://github.com/kevinhimself711/FaultWitness/rules"
+  ],
+  "open_evidence": []
 }

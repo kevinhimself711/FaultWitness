@@ -18,3 +18,5 @@ pass_criteria:
   - Architecture, state, interface, and failure contracts are complete and consistent.
   - All fourteen frozen walkthroughs pass the candidate Gate evaluation.
 waivers: []
+amendments:
+  - docs/gates/G00/AMENDMENTS/AMD-0001.md
