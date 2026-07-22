@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Gate closure
+
+- Close G00 without waivers on immutable candidate `1f36a799c27dfe0709a529448e6935d0ea3103eb`.
+- Hand off to G01 in `not_started` state; no G01 implementation is authorized before its Master Plan is frozen.
+
 ### Tooling
 
 - Pin the Python, Node.js, uv, and pnpm repository toolchains.

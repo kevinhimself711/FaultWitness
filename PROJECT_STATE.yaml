@@ -8,15 +8,15 @@ requirements_version: "1.0.0"
 contracts_version: "1.0.0"
 governance_schema_version: "1.0.0"
 
-active_gate: G00
-active_gate_status: in_progress
+active_gate: G01
+active_gate_status: not_started
 active_iteration: null
 next_iteration: null
-last_closed_gate: null
+last_closed_gate: G00
 latest_eval_run: EVAL-G00-006
 
 authoritative_plan: docs/blueprint/FINAL_PLAN.md
-active_gate_plan: docs/gates/G00/PLAN.md
-active_gate_report: docs/gates/G00/REPORT.md
+active_gate_plan: docs/gates/G01/PLAN.md
+active_gate_report: docs/gates/G01/REPORT.md
 
 updated_on: "2026-07-22"

@@ -1,7 +1,7 @@
 schema_version: "1.0.0"
 id: G00
 title: Architecture and Governance Baseline
-status: in_progress
+status: passed
 plan: docs/gates/G00/PLAN.md
 report: docs/gates/G00/REPORT.md
 iterations:

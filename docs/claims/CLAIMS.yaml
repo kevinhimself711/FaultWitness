@@ -43,3 +43,13 @@ claims:
       - EVAL-G00-006
     limitations:
       - "This claim covers design and repository governance, not product runtime behavior."
+  - id: CLAIM-GATE-001
+    statement: "G00 is closed on an immutable candidate with all six Iterations all six Evals and every frozen architecture governance and evidence criterion passing without waivers."
+    status: verified
+    requirements: []
+    evidence:
+      - docs/gates/G00/REPORT.md
+      - EVAL-G00-006
+      - https://github.com/kevinhimself711/FaultWitness/actions/runs/29934431213
+    limitations:
+      - "G00 proves the planning architecture contract and governance baseline only; no product runtime is claimed."
