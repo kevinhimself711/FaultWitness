@@ -9,6 +9,7 @@
 
 ### Tooling
 
+- Compile the nine frozen G00 contract sources into a byte-stable 1.1.0 package resource; add 21 strict core models, 12 G01 support models, and a deterministic four-owner kernel that executes all 82 transitions with explicit predicates and fail-closed version, fencing, digest, idempotency, terminal-state, and private-reasoning boundaries.
 - Deploy all eleven I-0009 data, identity, policy, storage, and observability workloads from candidate `0c8b66c`, with private out-of-band Secrets, linux/amd64 digest pins, deterministic bundle binding, and sanitized Ready inventory; retain the full EVAL-G01-003 matrix as candidate debt and activate I-0010.
 - Document the I-0009 platform-services deployment, isolation, restore, observability, supply-chain, failure, and public/private evidence contract while keeping implementation, private deployment, and EVAL-G01-003 explicitly pending.
 - Hand off the landed I-0008 infrastructure implementation to I-0009 while retaining EVAL-G01-002 as explicit blocking candidate debt; activate only the frozen platform-service and operational-observability scope.

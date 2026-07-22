@@ -4,6 +4,12 @@ import argparse
 import subprocess
 from pathlib import Path
 
+from faultwitness.contracts.compiler import (
+    ContractCompilationError,
+    assert_generated_resource_current,
+    load_generated_resource,
+    write_generated_resource,
+)
 from faultwitness_dev.audit import (
     audit_repository,
     check_external_links,
@@ -152,6 +158,8 @@ def parser() -> argparse.ArgumentParser:
     inspect_services = subparsers.add_parser("inspect-platform")
     inspect_services.add_argument("--candidate-sha", required=True)
     inspect_services.add_argument("--stability-seconds", type=int, default=0)
+    subparsers.add_parser("compile-contracts")
+    subparsers.add_parser("check-contracts")
     subparsers.add_parser("diagnose-k3s")
     subparsers.add_parser("diagnose-nvidia")
     subparsers.add_parser("diagnose-runtime-smokes")
@@ -289,9 +297,12 @@ def main() -> int:
             message = "accepted the three existing long-lived credentials without changing values"
         elif args.command == "eval-iteration":
             summary = evaluate_iteration(root, args.iteration, args.candidate_sha)
+            evidence_count = len(summary.get("checks", {})) or summary.get(
+                "legal_transition_count", 0
+            )
             message = (
                 f"{summary['eval_id']} passed on {summary['candidate_sha']} with "
-                f"{len(summary['checks'])} blocking checks"
+                f"{evidence_count} primary checks"
             )
         elif args.command == "capture-infra-baseline":
             summary = capture_preinstall_baseline(root, args.candidate_sha)
@@ -393,6 +404,20 @@ def main() -> int:
                 f"observed {summary['workload_count']} sanitized Ready workloads for "
                 f"{summary['stability_seconds']} seconds on {summary['candidate_sha']}"
             )
+        elif args.command == "compile-contracts":
+            target = write_generated_resource(root)
+            bundle = load_generated_resource(root)
+            message = (
+                f"wrote {target.relative_to(root).as_posix()} for contract version "
+                f"{bundle['contracts_version']} with digest {bundle['artifact_sha256']}"
+            )
+        elif args.command == "check-contracts":
+            assert_generated_resource_current(root)
+            bundle = load_generated_resource(root)
+            message = (
+                f"generated contract version {bundle['contracts_version']} is current with "
+                f"digest {bundle['artifact_sha256']}"
+            )
         elif args.command == "diagnose-k3s":
             diagnosis = diagnose_k3s_failure()
             message = (
@@ -422,6 +447,6 @@ def main() -> int:
             message = f"recorded {report['checked']} external link results (non-blocking)"
         print(f"PASS {args.command}: {message}")
         return 0
-    except (GovernanceError, subprocess.CalledProcessError) as error:
+    except (ContractCompilationError, GovernanceError, subprocess.CalledProcessError) as error:
         print(f"FAIL {args.command}: {error}")
         return 1

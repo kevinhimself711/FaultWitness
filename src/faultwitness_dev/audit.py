@@ -29,6 +29,12 @@ TEXT_SUFFIXES = {
     ".yaml",
     ".yml",
 }
+
+OWNED_SOURCE_ROOTS = {
+    "src/faultwitness_dev": "repository-governance",
+    "src/faultwitness/contracts": "CMP-CONTROL-API",
+    "src/faultwitness/state": "four-state-owner-services",
+}
 ALLOWED_LICENSES = {
     "0BSD",
     "Apache-2.0",
@@ -97,6 +103,7 @@ def _license_is_allowed(expression: str) -> bool:
 def _normalize_license(expression: str) -> str:
     aliases = {
         "BSD License": "BSD-3-Clause",
+        "MIT License": "MIT",
     }
     return aliases.get(expression.strip(), expression.strip())
 
@@ -198,12 +205,18 @@ def validate_action_pins(root: Path) -> None:
 
 
 def validate_source_ownership(root: Path) -> None:
+    def owned(relative: str) -> bool:
+        return any(
+            relative == source_root or relative.startswith(source_root + "/")
+            for source_root in OWNED_SOURCE_ROOTS
+        )
+
     unowned = sorted(
         path.relative_to(root).as_posix()
         for path in (root / "src").rglob("*")
         if path.is_file()
         and "__pycache__" not in path.parts
-        and "faultwitness_dev" not in path.parts
+        and not owned(path.relative_to(root).as_posix())
     )
     if unowned:
         raise GovernanceError("unowned source files: " + ", ".join(unowned))

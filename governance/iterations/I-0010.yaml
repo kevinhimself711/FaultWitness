@@ -18,15 +18,23 @@ tests:
 eval_id: EVAL-G01-004
 commit: null
 changed_paths:
+  - pyproject.toml
+  - uv.lock
   - src/faultwitness/contracts
   - src/faultwitness/state
+  - src/faultwitness_dev/cli.py
+  - src/faultwitness_dev/evals.py
+  - src/faultwitness_dev/audit.py
   - docs/contracts
+  - docs/runbooks
   - docs/evals/EVAL-G01-004
   - tests/contracts
   - tests/state
+  - tests/audit
 behavior_change: true
 docs_updated:
   - docs/roadmap/iterations/I-0010.md
+  - docs/runbooks/EXECUTABLE_CONTRACTS.md
   - docs/evals/EVAL-G01-004/PLAN.md
   - docs/evals/EVAL-G01-004/REPORT.md
   - CHANGELOG.md

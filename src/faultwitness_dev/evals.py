@@ -4,9 +4,31 @@ import hashlib
 import json
 import os
 import subprocess
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
+from pydantic import ValidationError
+
+from faultwitness.contracts.compiler import (
+    assert_generated_resource_current,
+    load_generated_resource,
+)
+from faultwitness.contracts.models import (
+    CORE_MODEL_TYPES,
+    SUPPORT_MODEL_TYPES,
+    CommandEnvelope,
+)
+from faultwitness.state.kernel import (
+    ActorMismatchError,
+    GuardRejectedError,
+    IdempotencyError,
+    OwnerMismatchError,
+    PredicateRegistry,
+    TransitionKernel,
+    TransitionRequest,
+    VersionConflictError,
+)
 from faultwitness_dev.audit import scan_publication_boundary
 from faultwitness_dev.bootstrap import (
     BootstrapPaths,
@@ -211,11 +233,149 @@ def evaluate_i0007(root: Path, candidate_sha: str) -> dict[str, Any]:
     }
 
 
+def evaluate_i0010(root: Path, candidate_sha: str) -> dict[str, Any]:
+    """Run the deterministic local EVAL-G01-004 contract and mutation suite."""
+    if _head_sha(root) != candidate_sha:
+        raise GovernanceError("EVAL-G01-004 candidate SHA must equal the checked-out HEAD")
+    loaded = validate_repository_schemas(root)
+    state = loaded["PROJECT_STATE.yaml"]
+    record = loaded["governance/iterations/I-0010.yaml"]
+    if state.get("active_gate") != "G01" or state.get("active_iteration") != "I-0010":
+        raise GovernanceError("EVAL-G01-004 requires I-0010 as the sole active Iteration")
+    if state.get("active_gate_status") != "in_progress" or record.get("status") != "in_progress":
+        raise GovernanceError("EVAL-G01-004 requires G01 and I-0010 in progress")
+
+    assert_generated_resource_current(root)
+    resource = load_generated_resource(root)
+    documents = resource["documents"]
+    machines = {
+        machine_id: documents[f"state_machine.{machine_id}"]
+        for machine_id in ("incident", "runtime_task", "agent_graph", "action_transaction")
+    }
+    counts = {
+        "core_types": len(documents["types"]["types"]),
+        "states": sum(len(machine["states"]) for machine in machines.values()),
+        "transitions": sum(len(machine["transitions"]) for machine in machines.values()),
+        "commands": len(documents["commands_events"]["commands"]),
+        "events": len(documents["commands_events"]["events"]),
+        "errors": len(documents["failures"]["errors"]),
+    }
+    expected_counts = {
+        "core_types": 21,
+        "states": 52,
+        "transitions": 82,
+        "commands": 34,
+        "events": 43,
+        "errors": 10,
+    }
+    if counts != expected_counts:
+        raise GovernanceError(f"frozen executable contract counts drifted: {counts}")
+    if len(CORE_MODEL_TYPES) != 21 or len(SUPPORT_MODEL_TYPES) != 12:
+        raise GovernanceError("executable model registry count drifted")
+    if any(
+        model.model_config.get("strict") is not True
+        or model.model_config.get("frozen") is not True
+        or model.model_config.get("extra") != "forbid"
+        for model in CORE_MODEL_TYPES + SUPPORT_MODEL_TYPES
+    ):
+        raise GovernanceError("an executable model weakened the strict boundary policy")
+
+    commands = {
+        command["id"]: command for command in documents["commands_events"]["commands"]
+    }
+    predicate_names = TransitionKernel.required_predicates(resource)
+    kernel = TransitionKernel(resource, PredicateRegistry.fact_registry(predicate_names))
+    legal_count = 0
+    mutation_count = 0
+    decision_digests: set[str] = set()
+    for machine_id, machine in machines.items():
+        for transition in machine["transitions"]:
+            command = commands[transition["command"]]
+            required_key = command["idempotency"] == "required"
+            request = TransitionRequest(
+                machine_id=machine_id,
+                transition_id=transition["id"],
+                owner_component=machine["owner_component"],
+                actor=transition["actor"],
+                aggregate_id=f"eval-{machine_id}",
+                state=transition["from"],
+                state_version=7,
+                command=transition["command"],
+                expected_state_version=7,
+                idempotency_key=f"eval-{transition['id']}" if required_key else None,
+                current_fencing_token="fence-current",
+                fencing_token="fence-current",
+                current_action_digest="a" * 64,
+                action_digest="a" * 64,
+                facts={name: True for name in transition["preconditions"]},
+            )
+            decision = kernel.service(machine_id).decide(request)
+            if decision != kernel.service(machine_id).decide(request):
+                raise GovernanceError(f"non-deterministic transition: {transition['id']}")
+            if decision.next_state != transition["to"] or decision.event != transition["event"]:
+                raise GovernanceError(f"transition output drift: {transition['id']}")
+            legal_count += 1
+            decision_digests.add(decision.decision_digest)
+
+            mutations: list[tuple[TransitionRequest, type[Exception]]] = [
+                (replace(request, owner_component="CMP-INVALID"), OwnerMismatchError),
+                (replace(request, actor="CMP-INVALID"), ActorMismatchError),
+                (
+                    replace(
+                        request,
+                        facts={**dict(request.facts or {}), transition["preconditions"][0]: False},
+                    ),
+                    GuardRejectedError,
+                ),
+            ]
+            if command["version_check"] in {"state_version", "digest_and_state_version"}:
+                mutations.append((replace(request, expected_state_version=8), VersionConflictError))
+            elif command["version_check"] == "fencing_token":
+                mutations.append(
+                    (replace(request, fencing_token="fence-stale"), VersionConflictError)
+                )
+            if command["idempotency"] == "required":
+                mutations.append((replace(request, idempotency_key=None), IdempotencyError))
+            elif command["idempotency"] == "derived":
+                mutations.append((replace(request, idempotency_key="caller-key"), IdempotencyError))
+            for mutated, expected_error in mutations:
+                try:
+                    kernel.decide(mutated)
+                except expected_error:
+                    mutation_count += 1
+                else:
+                    raise GovernanceError(
+                        "illegal mutation accepted for "
+                        f"{transition['id']}: {expected_error.__name__}"
+                    )
+
+    try:
+        CommandEnvelope.model_validate({"schema_version": "1.1.0"})
+    except ValidationError:
+        schema_negative = "pass"
+    else:
+        raise GovernanceError("incomplete CommandEnvelope was accepted")
+    return {
+        "eval_id": "EVAL-G01-004",
+        "candidate_sha": candidate_sha,
+        "status": "pass",
+        "artifact_sha256": resource["artifact_sha256"],
+        "counts": counts,
+        "support_type_count": len(SUPPORT_MODEL_TYPES),
+        "legal_transition_count": legal_count,
+        "unique_decision_digest_count": len(decision_digests),
+        "rejected_mutation_count": mutation_count,
+        "schema_negative": schema_negative,
+    }
+
+
 def evaluate_iteration(root: Path, iteration: str, candidate_sha: str) -> dict[str, Any]:
-    if iteration != "I-0007":
-        raise GovernanceError(f"no private Eval implementation is registered for {iteration}")
-    if os.name != "nt":
-        raise GovernanceError(
-            "EVAL-G01-001 private bootstrap Eval must run on its Windows owner host"
-        )
-    return evaluate_i0007(root, candidate_sha)
+    if iteration == "I-0007":
+        if os.name != "nt":
+            raise GovernanceError(
+                "EVAL-G01-001 private bootstrap Eval must run on its Windows owner host"
+            )
+        return evaluate_i0007(root, candidate_sha)
+    if iteration == "I-0010":
+        return evaluate_i0010(root, candidate_sha)
+    raise GovernanceError(f"no private Eval implementation is registered for {iteration}")

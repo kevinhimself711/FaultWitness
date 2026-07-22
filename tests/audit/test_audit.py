@@ -14,6 +14,7 @@ from faultwitness_dev.audit import (
     validate_g00_closure_documents,
     validate_licenses,
     validate_sbom,
+    validate_source_ownership,
 )
 from faultwitness_dev.errors import GovernanceError
 
@@ -56,6 +57,10 @@ def test_incompatible_license_is_rejected() -> None:
         validate_licenses([Component("npm", "unsafe", "1.0.0", "GPL-3.0")])
 
 
+def test_mit_license_metadata_alias_is_accepted() -> None:
+    validate_licenses([Component("pypi", "annotated-types", "0.7.0", "MIT")])
+
+
 def test_sbom_requires_unique_components() -> None:
     component = Component("pypi", "example", "1.0.0", "MIT")
     with pytest.raises(GovernanceError, match="duplicate SBOM"):
@@ -76,6 +81,21 @@ def test_repository_audit_generates_valid_cyclonedx(tmp_path: Path) -> None:
     assert summary["component_count"] > 0
     assert (tmp_path / "sbom.cdx.json").is_file()
     assert (tmp_path / "audit-summary.json").is_file()
+
+
+def test_source_ownership_accepts_registered_roots_and_rejects_unknown_package(
+    tmp_path: Path,
+) -> None:
+    owned = tmp_path / "src" / "faultwitness" / "contracts" / "model.py"
+    owned.parent.mkdir(parents=True)
+    owned.write_text("", encoding="utf-8")
+    validate_source_ownership(tmp_path)
+
+    unknown = tmp_path / "src" / "surprise" / "runtime.py"
+    unknown.parent.mkdir(parents=True)
+    unknown.write_text("", encoding="utf-8")
+    with pytest.raises(GovernanceError, match="unowned source files"):
+        validate_source_ownership(tmp_path)
 
 
 def _closure_documents() -> tuple[dict, dict, list[dict], list[dict]]:
