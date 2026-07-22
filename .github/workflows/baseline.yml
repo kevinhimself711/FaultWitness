@@ -78,9 +78,9 @@ jobs:
       - name: Run G00 audit
         run: make audit-g00
       - name: Upload immutable audit artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
-          name: g00-audit-${{ github.sha }}
+          name: g00-audit-${{ env.FW_CANDIDATE_SHA }}
           path: .audit/
           if-no-files-found: error
           retention-days: 30
