@@ -2,7 +2,7 @@
 
 ## Result
 
-Result: local pass; protected-main cross-platform evidence pending.
+Result: pass.
 
 ## Evidence
 
@@ -15,8 +15,10 @@ Result: local pass; protected-main cross-platform evidence pending.
 | Architecture walkthroughs | pass | W-ARCH-001 through W-ARCH-010 resolve to known components and fixed outcomes |
 | Architecture documents | pass | Five Mermaid views exist and mutually cross-link; initial Threat Model and six accepted ADRs resolve |
 | Publication boundary review | pass | Candidate scan found no local absolute path, credential, private key, or common secret token |
-| Windows baseline | pending | Pull-request CI not yet recorded |
-| Ubuntu baseline | pending | Pull-request CI not yet recorded |
+| Windows baseline | pass | GitHub Actions job 88911330239 |
+| Ubuntu baseline | pass | GitHub Actions job 88911330145 |
+
+Cross-platform run: <https://github.com/kevinhimself711/FaultWitness/actions/runs/29916449844>
 
 ## Deviations
 

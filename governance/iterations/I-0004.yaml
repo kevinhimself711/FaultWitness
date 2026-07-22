@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0004
 gate: G00
 title: Architecture Trust Boundaries and Decisions
-status: in_progress
+status: completed
 scope:
   - Freeze five architecture views and a machine-readable architecture source.
   - Define engineering and logical planes component responsibilities and data truth.
@@ -21,7 +21,7 @@ tests:
   - uv run pytest tests/governance -q
   - EVAL-G00-004 architecture invariant and walkthrough cases
 eval_id: EVAL-G00-004
-commit: null
+commit: 72ed0962a4c81af855bd37188e2e0f4c57d0c4e3
 changed_paths:
   - docs/architecture
   - docs/security/THREAT_MODEL.md

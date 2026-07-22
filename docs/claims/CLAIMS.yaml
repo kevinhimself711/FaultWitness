@@ -23,9 +23,8 @@ claims:
     limitations: []
   - id: CLAIM-ARCH-001
     statement: "The project has a machine-checked architecture baseline with explicit state ownership, trust boundaries, data truth, and prohibited bypass paths."
-    status: partially_verified
+    status: verified
     requirements: [REQ-AGT-001, REQ-AGT-003, REQ-TOOL-002, REQ-TOOL-003, REQ-MEM-001, REQ-EVAL-003, REQ-REL-002, REQ-SEC-001, REQ-SEC-002, REQ-SEC-003, REQ-SEC-004, REQ-DEV-002, REQ-INFRA-001]
     evidence:
       - EVAL-G00-004
-    limitations:
-      - "Local candidate verification and protected-main cross-platform evidence are pending."
+    limitations: []
