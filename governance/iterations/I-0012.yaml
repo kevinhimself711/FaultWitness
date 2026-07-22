@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0012
 gate: G01
 title: Authenticated Control API and Recoverable SSE
-status: planned
+status: in_progress
 scope:
   - Implement all eight frozen FastAPI REST and SSE paths with OIDC-derived TenantContext.
   - Implement Incident event projection Last-Event-ID replay retention-gap and slow-consumer semantics.

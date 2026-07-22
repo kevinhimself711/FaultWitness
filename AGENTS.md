@@ -4,7 +4,7 @@
 
 FaultWitness is a multi-tenant Agent Runtime for investigating microservice incidents, proposing bounded remediations, executing approved actions, and producing auditable evaluation and training assets.
 
-G00 is closed and G01 is in progress. I-0007 and EVAL-G01-001 are complete. I-0008/I-0009 implementation is landed with EVAL-G01-002/003 candidate debt retained. I-0010 passed its Windows deterministic conformance/mutation run on `f81c7f0`; cross-platform digest evidence remains due before Gate closure. I-0011 is the sole active Iteration and authorizes only owner-isolated PostgreSQL state, migrations, idempotency, Outbox/Inbox/DLQ, Redis Streams delivery, fenced encrypted checkpoints, and crash recovery. It does not authorize APIs, Agent graph behavior, external actions, or exactly-once claims.
+G00 is closed and G01 is in progress. I-0007 and EVAL-G01-001 are complete. I-0008/I-0009 implementation is landed with EVAL-G01-002/003 candidate debt retained. I-0010 passed its Windows deterministic conformance/mutation run on `f81c7f0`; cross-platform digest evidence remains due before Gate closure. I-0011 runtime persistence is landed and its schema is deployed from `4844961`; the full duplicate/crash/fencing matrix remains Gate debt. I-0012 is the sole active Iteration and authorizes only the frozen authenticated Control API, OIDC-derived tenant context, durable Incident projection, and recoverable SSE behavior. It does not authorize Agent investigation logic, real Tool/Skill capability, external actions, or public ingress.
 
 ## Source-of-truth order
 

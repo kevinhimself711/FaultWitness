@@ -3,7 +3,7 @@
   "eval_id": "EVAL-G01-005",
   "gate": "G01",
   "iteration": "I-0011",
-  "evaluated_revision": "pending",
+  "evaluated_revision": "48449618f1aafdadfde0d4593cb9bb10b96583f6",
   "status": "pending",
   "environments": ["ubuntu-private-server"],
   "commands": ["uv run python -m faultwitness_dev eval-iteration I-0011 --candidate-sha <full-sha>"],
@@ -15,5 +15,5 @@
       "reason": "G01 closure requires correlated LangSmith traces for the durable runtime paths established by this Eval."
     }
   },
-  "open_evidence": ["real database transition conformance", "duplicate and crash matrix", "fencing checkpoint and queue reconciliation"]
+  "open_evidence": ["all-transition database conformance", "duplicate and crash matrix", "fencing race and queue reconciliation", "correlated LangSmith runtime traces"]
 }
