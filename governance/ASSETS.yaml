@@ -10,6 +10,20 @@ assets:
     schema: schemas/governance/evidence-matrix.schema.json
   - path: docs/architecture/ARCHITECTURE.yaml
     schema: schemas/governance/architecture.schema.json
+  - path: docs/contracts/state-machines/*.yaml
+    schema: schemas/contracts/state-machine.schema.json
+  - path: docs/contracts/COMMAND_EVENT_CATALOG.yaml
+    schema: schemas/contracts/command-event-catalog.schema.json
+  - path: docs/contracts/TYPE_CATALOG.yaml
+    schema: schemas/contracts/type-catalog.schema.json
+  - path: docs/contracts/FAILURE_SEMANTICS.yaml
+    schema: schemas/contracts/failure-semantics.schema.json
+  - path: docs/contracts/WALKTHROUGH_BINDINGS.yaml
+    schema: schemas/contracts/walkthrough-bindings.schema.json
+  - path: docs/contracts/openapi.yaml
+    schema: schemas/contracts/openapi-design.schema.json
+  - path: docs/contracts/asyncapi.yaml
+    schema: schemas/contracts/asyncapi-design.schema.json
   - path: docs/claims/CLAIMS.yaml
     schema: schemas/governance/claim-registry.schema.json
   - path: governance/iterations/I-*.yaml

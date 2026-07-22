@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faultwitness.local/schemas/contracts/walkthrough-bindings.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "bindings"],
+  "properties": {
+    "schema_version": {"pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "bindings": {
+      "type": "array", "minItems": 10,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "transition_ids", "command_ids", "failure_ids", "operations", "assertion"],
+        "properties": {
+          "id": {"pattern": "^W-ARCH-[0-9]{3}$"},
+          "transition_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"pattern": "^TR-[A-Z0-9-]+$"}},
+          "command_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"pattern": "^CMD-[A-Z0-9-]+$"}},
+          "failure_ids": {"type": "array", "uniqueItems": true, "items": {"pattern": "^FAIL-[A-Z0-9-]+$"}},
+          "operations": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 3}},
+          "assertion": {"type": "string", "minLength": 20}
+        }
+      }
+    }
+  }
+}

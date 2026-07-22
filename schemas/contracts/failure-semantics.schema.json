@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faultwitness.local/schemas/contracts/failure-semantics.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "errors", "failures"],
+  "properties": {
+    "schema_version": {"pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "errors": {
+      "type": "array", "minItems": 10,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "http_status", "retryable", "meaning"],
+        "properties": {
+          "id": {"pattern": "^ERR-[A-Z0-9-]+$"},
+          "http_status": {"enum": [400, 401, 403, 404, 409, 429, 503]},
+          "retryable": {"type": "boolean"},
+          "meaning": {"type": "string", "minLength": 10}
+        }
+      }
+    },
+    "failures": {
+      "type": "array", "minItems": 17,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "fault", "detection", "behavior", "state_effect", "retry_policy", "client_error", "gates"],
+        "properties": {
+          "id": {"pattern": "^FAIL-[A-Z0-9-]+$"},
+          "fault": {"type": "string", "minLength": 4},
+          "detection": {"type": "string", "minLength": 5},
+          "behavior": {"type": "string", "minLength": 10},
+          "state_effect": {"type": "string", "minLength": 5},
+          "retry_policy": {"enum": ["none", "bounded", "publish_until_ack", "reconcile_only", "manual_only"]},
+          "client_error": {"pattern": "^ERR-[A-Z0-9-]+$"},
+          "gates": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"pattern": "^G(?:0[0-9]|10)$"}}
+        }
+      }
+    }
+  }
+}

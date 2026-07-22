@@ -1,0 +1,62 @@
+schema_version: "1.0.0"
+bindings:
+  - id: W-ARCH-001
+    transition_ids: [TR-INCIDENT-CREATE, TR-INCIDENT-START, TR-GRAPH-DIAGNOSIS, TR-GRAPH-REPORT, TR-INCIDENT-DIAGNOSIS-ONLY, TR-TASK-SUCCEED]
+    command_ids: [CMD-CREATE-INCIDENT, CMD-ADVANCE-AGENT-GRAPH, CMD-RECORD-DIAGNOSIS, CMD-COMPLETE-TASK]
+    failure_ids: [FAIL-MODEL-TOOL-TRANSIENT, FAIL-STRUCTURED-OUTPUT]
+    operations: [createIncident, getIncident, streamIncidentEvents]
+    assertion: "Diagnosis-only reaches RESOLVED with Final Report and EvidenceRef coverage and creates no ActionTransaction."
+  - id: W-ARCH-002
+    transition_ids: [TR-INCIDENT-R2-PROPOSAL, TR-GRAPH-R2-WAIT, TR-ACTION-R2-WAIT, TR-ACTION-APPROVE, TR-GRAPH-APPROVED, TR-ACTION-DISPATCH, TR-ACTION-VERIFY-PASS, TR-INCIDENT-VERIFY-PASS]
+    command_ids: [CMD-RECORD-ACTION-PROPOSAL, CMD-ACTION-APPROVAL-DECISION, CMD-RESUME-AGENT-AFTER-APPROVAL, CMD-DISPATCH-ACTION, CMD-VERIFY-ACTION]
+    failure_ids: [FAIL-OPA-UNAVAILABLE]
+    operations: [decideApproval, getIncident, streamIncidentEvents]
+    assertion: "R2 dispatch occurs once only after matching tenant digest resource version expiry policy and single-use approval checks."
+  - id: W-ARCH-003
+    transition_ids: [TR-INCIDENT-APPROVAL-REJECT, TR-INCIDENT-APPROVAL-EXPIRE, TR-ACTION-APPROVAL-REJECT, TR-ACTION-APPROVAL-EXPIRE, TR-GRAPH-APPROVAL-END]
+    command_ids: [CMD-RECORD-APPROVAL-DECISION, CMD-ACTION-APPROVAL-DECISION, CMD-ESCALATE-AGENT-GRAPH]
+    failure_ids: []
+    operations: [decideApproval, getIncident, streamIncidentEvents]
+    assertion: "Reject and expiry produce no external write and permanently invalidate the affected immutable approval digest."
+  - id: W-ARCH-004
+    transition_ids: [TR-TASK-LEASE-EXPIRE, TR-TASK-RETRY, TR-TASK-REQUEUE, TR-TASK-START, TR-TASK-SUCCEED]
+    command_ids: [CMD-RETRY-TASK, CMD-START-TASK-ATTEMPT, CMD-COMPLETE-TASK]
+    failure_ids: [FAIL-WORKER-LEASE-LOSS]
+    operations: [getIncident, streamIncidentEvents]
+    assertion: "Lease loss fences the old Worker and only a new attempt with a current token can resume and commit."
+  - id: W-ARCH-005
+    transition_ids: [TR-ACTION-DISPATCH, TR-ACTION-EFFECT-UNCERTAIN, TR-ACTION-RECONCILE, TR-ACTION-RECONCILE-MANUAL, TR-GRAPH-ACTION-UNCERTAIN]
+    command_ids: [CMD-DISPATCH-ACTION, CMD-RECORD-ACTION-RECEIPT, CMD-RECONCILE-ACTION, CMD-ESCALATE-AGENT-GRAPH]
+    failure_ids: [FAIL-ACTION-RESPONSE-LOST]
+    operations: [getIncident, streamIncidentEvents]
+    assertion: "A lost response enters UNCERTAIN and uses read-only reconciliation or MANUAL without redispatching the action."
+  - id: W-ARCH-006
+    transition_ids: [TR-ACTION-VERIFY-COMPENSATE, TR-ACTION-COMPENSATE-PASS, TR-INCIDENT-VERIFY-COMPENSATE, TR-INCIDENT-ROLLBACK-PASS, TR-GRAPH-OUTCOME-COMPENSATE]
+    command_ids: [CMD-VERIFY-ACTION, CMD-COMPENSATE-ACTION, CMD-RECORD-COMPENSATION, CMD-REQUEST-COMPENSATION]
+    failure_ids: [FAIL-POSTCONDITION]
+    operations: [getIncident, streamIncidentEvents]
+    assertion: "Failed postconditions trigger typed compensation and ROLLED_BACK requires verified compensation evidence."
+  - id: W-ARCH-007
+    transition_ids: [TR-ACTION-COMPENSATE-UNCERTAIN, TR-ACTION-RECONCILE-MANUAL, TR-INCIDENT-ROLLBACK-UNCERTAIN, TR-GRAPH-ACTION-UNCERTAIN]
+    command_ids: [CMD-COMPENSATE-ACTION, CMD-RECONCILE-ACTION, CMD-ESCALATE-INCIDENT, CMD-ESCALATE-AGENT-GRAPH]
+    failure_ids: [FAIL-COMPENSATION-UNKNOWN]
+    operations: [getIncident, streamIncidentEvents]
+    assertion: "Unknown compensation remains explicit and terminates in MANUAL and Incident escalation without blind retry."
+  - id: W-ARCH-008
+    transition_ids: [TR-INCIDENT-CANCEL-QUEUED, TR-INCIDENT-CANCEL-INVESTIGATING, TR-INCIDENT-CANCEL-REQUESTED, TR-TASK-CANCEL-RUNNING, TR-TASK-CANCEL-COMPLETE, TR-ACTION-CANCEL-PENDING, TR-ACTION-CANCEL-APPROVED]
+    command_ids: [CMD-CANCEL-INCIDENT, CMD-CANCEL-TASK, CMD-CANCEL-ACTION]
+    failure_ids: [FAIL-CANCEL]
+    operations: [cancelIncident, getIncident, streamIncidentEvents]
+    assertion: "Cancel before action is terminal while cancel during work waits for a safe checkpoint and reconciles possible effects."
+  - id: W-ARCH-009
+    transition_ids: [TR-GRAPH-R3-ESCALATE, TR-ACTION-R3-REJECT, TR-INCIDENT-INVESTIGATION-ESCALATE]
+    command_ids: [CMD-REQUEST-POLICY-DECISION, CMD-AUTHORIZE-ACTION, CMD-ESCALATE-INCIDENT]
+    failure_ids: [FAIL-LANGSMITH-UNAVAILABLE, FAIL-OPA-UNAVAILABLE, FAIL-KEYCLOAK-UNAVAILABLE]
+    operations: [createIncident, decideApproval, getIncident]
+    assertion: "Identity policy and mandatory trace outages deny new high-risk work while only qualified read-only degradation is allowed."
+  - id: W-ARCH-010
+    transition_ids: [TR-INCIDENT-CREATE, TR-GRAPH-RETRIEVE, TR-ACTION-DISPATCH]
+    command_ids: [CMD-CREATE-INCIDENT, CMD-ADVANCE-AGENT-GRAPH, CMD-DISPATCH-ACTION]
+    failure_ids: [FAIL-OIDC-TENANT-INVALID, FAIL-GROUND-TRUTH-ACCESS]
+    operations: [createIncident, getIncident, listTools, listSkills]
+    assertion: "Cross-tenant or Ground Truth access is denied before disclosure or dispatch and caller supplied tenant fields are ignored."

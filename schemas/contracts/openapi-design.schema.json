@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faultwitness.local/schemas/contracts/openapi-design.schema.json",
+  "type": "object",
+  "required": ["openapi", "info", "paths", "components", "security"],
+  "properties": {
+    "openapi": {"const": "3.1.0"},
+    "info": {"type": "object", "required": ["title", "version"]},
+    "paths": {"type": "object", "minProperties": 8},
+    "components": {"type": "object", "required": ["schemas", "securitySchemes"]},
+    "security": {"type": "array", "minItems": 1}
+  }
+}

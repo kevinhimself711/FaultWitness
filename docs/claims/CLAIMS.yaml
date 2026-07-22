@@ -28,3 +28,11 @@ claims:
     evidence:
       - EVAL-G00-004
     limitations: []
+  - id: CLAIM-CONTRACT-001
+    statement: "Four state machines and their REST SSE Command Event type error and failure contracts are machine-checked for convergence and high-risk bypasses."
+    status: partially_verified
+    requirements: [REQ-AGT-001, REQ-AGT-002, REQ-AGT-003, REQ-TOOL-001, REQ-TOOL-002, REQ-TOOL-003, REQ-RAG-006, REQ-MEM-001, REQ-REL-001, REQ-REL-002, REQ-REL-003, REQ-REL-004, REQ-SEC-001, REQ-SEC-002, REQ-SEC-004, REQ-OBS-001, REQ-OBS-002, REQ-DEV-002, REQ-INFRA-001]
+    evidence:
+      - EVAL-G00-005
+    limitations:
+      - "Local candidate verification and protected-main cross-platform evidence are pending."

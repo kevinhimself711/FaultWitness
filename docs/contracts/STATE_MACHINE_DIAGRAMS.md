@@ -1,0 +1,166 @@
+# Generated State Machine Diagrams
+
+<!-- GENERATED from docs/contracts/state-machines/*.yaml; do not edit by hand. -->
+
+The YAML transition tables are the single source of truth. `faultwitness_dev validate` compares this document byte-for-byte with the renderer.
+
+## Incident Lifecycle
+
+Owner: `CMP-CONTROL-API`; store: `STORE-INCIDENT-POSTGRES`.
+
+```mermaid
+stateDiagram-v2
+    [*] --> NEW
+    NEW --> QUEUED: TR-INCIDENT-CREATE
+    QUEUED --> INVESTIGATING: TR-INCIDENT-START
+    INVESTIGATING --> RESOLVED: TR-INCIDENT-DIAGNOSIS-ONLY
+    INVESTIGATING --> EXECUTING: TR-INCIDENT-R1-ACTION
+    INVESTIGATING --> WAITING_APPROVAL: TR-INCIDENT-R2-PROPOSAL
+    INVESTIGATING --> ESCALATED: TR-INCIDENT-INVESTIGATION-ESCALATE
+    WAITING_APPROVAL --> EXECUTING: TR-INCIDENT-APPROVE
+    WAITING_APPROVAL --> ESCALATED: TR-INCIDENT-APPROVAL-REJECT
+    WAITING_APPROVAL --> ESCALATED: TR-INCIDENT-APPROVAL-EXPIRE
+    EXECUTING --> VERIFYING: TR-INCIDENT-ACTION-KNOWN
+    EXECUTING --> ESCALATED: TR-INCIDENT-ACTION-UNCERTAIN
+    VERIFYING --> RESOLVED: TR-INCIDENT-VERIFY-PASS
+    VERIFYING --> ROLLING_BACK: TR-INCIDENT-VERIFY-COMPENSATE
+    VERIFYING --> ESCALATED: TR-INCIDENT-VERIFY-ESCALATE
+    ROLLING_BACK --> RESOLVED: TR-INCIDENT-ROLLBACK-PASS
+    ROLLING_BACK --> ESCALATED: TR-INCIDENT-ROLLBACK-UNCERTAIN
+    NEW --> CANCELLED: TR-INCIDENT-CANCEL-NEW
+    QUEUED --> CANCELLED: TR-INCIDENT-CANCEL-QUEUED
+    INVESTIGATING --> CANCELLED: TR-INCIDENT-CANCEL-INVESTIGATING
+    WAITING_APPROVAL --> CANCELLED: TR-INCIDENT-CANCEL-WAITING
+    EXECUTING --> EXECUTING: TR-INCIDENT-CANCEL-REQUESTED
+    RESOLVED --> [*]
+    ESCALATED --> [*]
+    CANCELLED --> [*]
+```
+
+Invariants:
+
+- R2 execution requires an unexpired approval that matches tenant environment action digest and resource version.
+- RESOLVED always has a Final Report and attributable postcondition or diagnosis-only evidence.
+- UNCERTAIN or MANUAL ActionTransaction forces Incident escalation.
+- Terminal Incident states never transition in place; later feedback appends events.
+
+## Runtime Task
+
+Owner: `CMP-SCHEDULER`; store: `STORE-TASK-POSTGRES`.
+
+```mermaid
+stateDiagram-v2
+    [*] --> PENDING
+    PENDING --> LEASED: TR-TASK-LEASE
+    LEASED --> RUNNING: TR-TASK-START
+    LEASED --> RETRY_WAIT: TR-TASK-LEASE-EXPIRE
+    RUNNING --> SUCCEEDED: TR-TASK-SUCCEED
+    RUNNING --> PAUSED: TR-TASK-PAUSE
+    PAUSED --> PENDING: TR-TASK-RESUME
+    RUNNING --> RETRY_WAIT: TR-TASK-RETRY
+    RETRY_WAIT --> PENDING: TR-TASK-REQUEUE
+    RETRY_WAIT --> DEAD_LETTER: TR-TASK-DEAD-LETTER
+    RUNNING --> FAILED: TR-TASK-FAIL
+    PENDING --> CANCEL_REQUESTED: TR-TASK-CANCEL-PENDING
+    LEASED --> CANCEL_REQUESTED: TR-TASK-CANCEL-LEASED
+    RUNNING --> CANCEL_REQUESTED: TR-TASK-CANCEL-RUNNING
+    PAUSED --> CANCEL_REQUESTED: TR-TASK-CANCEL-PAUSED
+    RETRY_WAIT --> CANCEL_REQUESTED: TR-TASK-CANCEL-RETRY
+    CANCEL_REQUESTED --> CANCELLED: TR-TASK-CANCEL-COMPLETE
+    SUCCEEDED --> [*]
+    FAILED --> [*]
+    DEAD_LETTER --> [*]
+    CANCELLED --> [*]
+```
+
+Invariants:
+
+- Delivery is at least once and every retry uses a new attempt_id under the stable task_id.
+- Only the current fencing token can checkpoint complete fail pause or dispatch downstream work.
+- PAUSED tasks do not retain a worker lease.
+- No distributed exactly-once behavior is claimed.
+
+## Agent Graph
+
+Owner: `CMP-AGENT-WORKER`; store: `STORE-CHECKPOINT-POSTGRES`.
+
+```mermaid
+stateDiagram-v2
+    [*] --> INTAKE
+    INTAKE --> SCOPE_AND_RISK: TR-GRAPH-INTAKE
+    SCOPE_AND_RISK --> BUILD_INITIAL_PLAN: TR-GRAPH-SCOPE
+    BUILD_INITIAL_PLAN --> RETRIEVE_CONTEXT: TR-GRAPH-PLAN
+    RETRIEVE_CONTEXT --> COLLECT_EVIDENCE: TR-GRAPH-RETRIEVE
+    COLLECT_EVIDENCE --> NORMALIZE_EVIDENCE: TR-GRAPH-COLLECT
+    NORMALIZE_EVIDENCE --> GENERATE_HYPOTHESES: TR-GRAPH-NORMALIZE
+    GENERATE_HYPOTHESES --> VERIFY_HYPOTHESES: TR-GRAPH-HYPOTHESES
+    VERIFY_HYPOTHESES --> PLAN_PROBES: TR-GRAPH-PROBE
+    PLAN_PROBES --> COLLECT_EVIDENCE: TR-GRAPH-PROBE-COLLECT
+    VERIFY_HYPOTHESES --> COMPOSE_REPORT: TR-GRAPH-DIAGNOSIS
+    VERIFY_HYPOTHESES --> PROPOSE_ACTION: TR-GRAPH-ACTIONABLE
+    VERIFY_HYPOTHESES --> ESCALATE: TR-GRAPH-VERIFY-ESCALATE
+    COMPOSE_REPORT --> FINALIZE: TR-GRAPH-REPORT
+    PROPOSE_ACTION --> POLICY_CHECK: TR-GRAPH-POLICY-CHECK
+    POLICY_CHECK --> DISPATCH_ACTION: TR-GRAPH-R01-DISPATCH
+    POLICY_CHECK --> AWAIT_APPROVAL: TR-GRAPH-R2-WAIT
+    POLICY_CHECK --> ESCALATE: TR-GRAPH-R3-ESCALATE
+    AWAIT_APPROVAL --> DISPATCH_ACTION: TR-GRAPH-APPROVED
+    AWAIT_APPROVAL --> ESCALATE: TR-GRAPH-APPROVAL-END
+    DISPATCH_ACTION --> AWAIT_ACTION_RESULT: TR-GRAPH-DISPATCH
+    AWAIT_ACTION_RESULT --> VERIFY_OUTCOME: TR-GRAPH-ACTION-KNOWN
+    AWAIT_ACTION_RESULT --> ESCALATE: TR-GRAPH-ACTION-UNCERTAIN
+    VERIFY_OUTCOME --> FINALIZE: TR-GRAPH-OUTCOME-PASS
+    VERIFY_OUTCOME --> REQUEST_COMPENSATION: TR-GRAPH-OUTCOME-COMPENSATE
+    VERIFY_OUTCOME --> ESCALATE: TR-GRAPH-OUTCOME-ESCALATE
+    REQUEST_COMPENSATION --> AWAIT_ACTION_RESULT: TR-GRAPH-COMPENSATION-WAIT
+    FINALIZE --> [*]
+    ESCALATE --> [*]
+```
+
+Invariants:
+
+- The graph emits ToolCall and ActionProposal only and has no shell Kubernetes or direct SUT write capability.
+- LLM decision nodes are separated from deterministic policy execution reducers and state commits.
+- Every important transition checkpoints step tool token cost deadline and no-progress budgets.
+- Private chain-of-thought is never persisted; public rationale is structured and evidence linked.
+
+## ActionTransaction
+
+Owner: `CMP-ACTION-EXECUTOR`; store: `STORE-ACTION-POSTGRES`.
+
+```mermaid
+stateDiagram-v2
+    [*] --> PREPARED
+    PREPARED --> APPROVED: TR-ACTION-R1-AUTHORIZE
+    PREPARED --> APPROVAL_PENDING: TR-ACTION-R2-WAIT
+    PREPARED --> REJECTED: TR-ACTION-R3-REJECT
+    APPROVAL_PENDING --> APPROVED: TR-ACTION-APPROVE
+    APPROVAL_PENDING --> REJECTED: TR-ACTION-APPROVAL-REJECT
+    APPROVAL_PENDING --> EXPIRED: TR-ACTION-APPROVAL-EXPIRE
+    APPROVAL_PENDING --> CANCELLED: TR-ACTION-CANCEL-PENDING
+    APPROVED --> EXECUTING: TR-ACTION-DISPATCH
+    APPROVED --> CANCELLED: TR-ACTION-CANCEL-APPROVED
+    EXECUTING --> VERIFYING: TR-ACTION-RECEIPT
+    EXECUTING --> UNCERTAIN: TR-ACTION-EFFECT-UNCERTAIN
+    VERIFYING --> COMMITTED: TR-ACTION-VERIFY-PASS
+    VERIFYING --> COMPENSATING: TR-ACTION-VERIFY-COMPENSATE
+    VERIFYING --> MANUAL: TR-ACTION-VERIFY-MANUAL
+    COMPENSATING --> ROLLED_BACK: TR-ACTION-COMPENSATE-PASS
+    COMPENSATING --> UNCERTAIN: TR-ACTION-COMPENSATE-UNCERTAIN
+    COMPENSATING --> MANUAL: TR-ACTION-COMPENSATE-MANUAL
+    UNCERTAIN --> VERIFYING: TR-ACTION-RECONCILE
+    UNCERTAIN --> MANUAL: TR-ACTION-RECONCILE-MANUAL
+    COMMITTED --> [*]
+    REJECTED --> [*]
+    EXPIRED --> [*]
+    ROLLED_BACK --> [*]
+    MANUAL --> [*]
+    CANCELLED --> [*]
+```
+
+Invariants:
+
+- Action Digest binds tenant environment action parameters resource version preconditions postconditions compensation risk approver expiry and single-use token.
+- Action Executor is the sole component with SUT write credentials and arbitrary shell or Kubernetes writes are prohibited.
+- COMMITTED requires successful postcondition evidence and R2 dispatch requires a matching immutable approval.
+- UNCERTAIN has no automatic outgoing transition and permits reconciliation or manual handling only.

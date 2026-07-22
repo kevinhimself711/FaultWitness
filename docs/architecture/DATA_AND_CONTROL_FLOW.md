@@ -85,7 +85,7 @@ sequenceDiagram
 
 ## Walkthrough 覆盖
 
-EVAL-G00-004 逐项检查 `ARCHITECTURE.yaml` 的 `W-ARCH-001` 至 `W-ARCH-010`：只读成功、R2 成功、拒绝/过期、lease 丢失、action 响应丢失、验证失败并补偿、补偿不确定、cancel、LangSmith/OPA/Keycloak 故障、跨租户访问。I-0005 会把这些路径绑定到具体状态转换、Command/Event 和接口错误。
+EVAL-G00-004 逐项检查 `ARCHITECTURE.yaml` 的 `W-ARCH-001` 至 `W-ARCH-010`：只读成功、R2 成功、拒绝/过期、lease 丢失、action 响应丢失、验证失败并补偿、补偿不确定、cancel、LangSmith/OPA/Keycloak 故障、跨租户访问。I-0005 已把这些路径绑定到具体状态转换、Command/Event 和接口错误；规范资产位于 `docs/contracts/`。
 
 ## 关联视图
 

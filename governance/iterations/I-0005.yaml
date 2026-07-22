@@ -2,16 +2,41 @@ schema_version: "1.0.0"
 id: I-0005
 gate: G00
 title: State Interface and Failure Contracts
-status: planned
+status: in_progress
 scope:
-  - Define state machines APIs events and failure semantics.
+  - Define four machine-readable state transition tables and generated Mermaid views.
+  - Freeze OpenAPI 3.1 REST and SSE and AsyncAPI 3.0 Command/Event designs.
+  - Define 21 core types and complete Command Event error and failure catalogs.
+  - Enforce reachability convergence ownership concurrency and safety path invariants.
 non_goals:
   - Product implementation.
-dependencies: [I-0004]
-tests: [EVAL-G00-005]
+  - Generated server client Pydantic or message transport code.
+  - Concrete retry lease model prompt or deployment parameters.
+dependencies:
+  - I-0004
+tests:
+  - make verify-fast
+  - make eval-changed
+  - uv run pytest tests/contracts tests/governance -q
+  - EVAL-G00-005 contract and safety negative cases
 eval_id: EVAL-G00-005
 commit: null
-changed_paths: [contracts]
-behavior_change: false
-docs_updated: []
+changed_paths:
+  - docs/contracts
+  - schemas/contracts
+  - src/faultwitness_dev/contracts.py
+  - tests/contracts
+  - docs/architecture/STATE_MACHINES.md
+  - docs/architecture/DATA_AND_CONTROL_FLOW.md
+  - docs/evals/EVAL-G00-005
+behavior_change: true
+docs_updated:
+  - docs/contracts/README.md
+  - docs/contracts/STATE_MACHINE_DIAGRAMS.md
+  - docs/architecture/STATE_MACHINES.md
+  - docs/architecture/DATA_AND_CONTROL_FLOW.md
+  - docs/roadmap/iterations/I-0005.md
+  - docs/evals/EVAL-G00-005/PLAN.md
+  - docs/evals/EVAL-G00-005/REPORT.md
+  - CHANGELOG.md
 threshold_changes: []

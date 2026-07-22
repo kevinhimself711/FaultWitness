@@ -64,6 +64,9 @@ def validate_repository_schemas(root: Path) -> dict[str, Any]:
     _check_ruleset_invariants(loaded[".github/rulesets/main.json"])
     _check_adr_invariants(root, loaded["docs/adr/INDEX.yaml"])
     _check_architecture_documents(root)
+    from faultwitness_dev.contracts import validate_contracts
+
+    validate_contracts(root, loaded)
     return loaded
 
 
