@@ -1,0 +1,3 @@
+creation_rules:
+  - path_regex: '(^|[\\/])faultwitness\.secrets\.ya?ml$'
+    age: 'age1aglhn9nse7wxvkdv9j7z3hhyw4jdjgv0wppex9zsm2emqtshtfpq939xm2'

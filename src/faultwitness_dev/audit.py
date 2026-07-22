@@ -21,7 +21,9 @@ TEXT_SUFFIXES = {
     ".json",
     ".md",
     ".mjs",
+    ".ps1",
     ".py",
+    ".sh",
     ".toml",
     ".txt",
     ".yaml",
@@ -215,6 +217,7 @@ def _secret_patterns() -> list[tuple[str, re.Pattern[str]]]:
         ),
         ("github-token", re.compile("gh" + r"[pousr]_[A-Za-z0-9]{30,}")),
         ("openai-key", re.compile("sk" + r"-(?:proj-)?[A-Za-z0-9_-]{20,}")),
+        ("langsmith-key", re.compile("lsv2_" + r"pt_[A-Za-z0-9_-]{20,}")),
         ("aws-access-key", re.compile("AKIA" + r"[A-Z0-9]{16}")),
         (
             "credential-assignment",

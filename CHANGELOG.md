@@ -9,6 +9,9 @@
 
 ### Tooling
 
+- Add I-0007 SOPS/Age encrypted handoff migration, project identity bootstrap, fail-closed host pinning, credential rotation, read-only host probing, and private Eval commands.
+- Pin and checksum SOPS 3.13.2 and Age 1.3.1, validate their public configuration with JSON Schema, and keep all private stores outside the repository.
+- Extend publication scanning to PowerShell/shell assets and LangSmith token shapes with negative tests.
 - Pin the Python, Node.js, uv, and pnpm repository toolchains.
 - Add locked Python and Node workspaces and cross-platform verification entry points.
 - Record the I-0001 iteration and EVAL-G00-001 evidence assets.

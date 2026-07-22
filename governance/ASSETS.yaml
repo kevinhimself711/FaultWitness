@@ -36,5 +36,9 @@ assets:
     schema: schemas/governance/gate-walkthroughs.schema.json
   - path: docs/adr/INDEX.yaml
     schema: schemas/governance/adr-registry.schema.json
+  - path: config/secrets/schema.yaml
+    schema: schemas/bootstrap/secret-config.schema.json
+  - path: config/secrets/toolchain.lock.yaml
+    schema: schemas/bootstrap/toolchain-lock.schema.json
   - path: .github/rulesets/main.json
     schema: schemas/governance/github-ruleset.schema.json

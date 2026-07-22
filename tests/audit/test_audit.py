@@ -27,6 +27,13 @@ def test_private_key_is_rejected(tmp_path: Path) -> None:
         scan_publication_boundary(tmp_path, [fixture])
 
 
+def test_langsmith_key_is_rejected_without_embedding_a_fixture_secret(tmp_path: Path) -> None:
+    fixture = tmp_path / "secret.ps1"
+    fixture.write_text("lsv2_" + "pt_" + "A" * 32 + "\n", encoding="utf-8")
+    with pytest.raises(GovernanceError, match="langsmith-key"):
+        scan_publication_boundary(tmp_path, [fixture])
+
+
 def test_absolute_local_source_path_is_rejected(tmp_path: Path) -> None:
     fixture = tmp_path / "source.md"
     fixture.write_text("source: C:\\Users\\candidate\\interviews\n", encoding="utf-8")
