@@ -9,6 +9,7 @@ from faultwitness_dev.changes import infer_iteration_id, validate_change_record
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.schemas import (
     _check_cross_references,
+    _check_evidence_invariants,
     _check_ruleset_invariants,
     _check_unique_ids,
     load_data,
@@ -81,5 +82,56 @@ def test_ruleset_cannot_drop_a_required_platform() -> None:
 
 
 def test_iteration_inference_ignores_planned_bootstrap_records() -> None:
-    paths = [f"governance/iterations/I-{number:04d}.yaml" for number in range(1, 7)]
+    paths = [
+        "governance/iterations/I-0001.yaml",
+        "governance/iterations/I-0002.yaml",
+        *[f"governance/iterations/I-{number:04d}.yaml" for number in range(4, 7)],
+    ]
     assert infer_iteration_id(ROOT, paths) == "I-0002"
+
+
+def test_iteration_inference_selects_current_in_progress_record() -> None:
+    paths = [f"governance/iterations/I-{number:04d}.yaml" for number in range(1, 7)]
+    assert infer_iteration_id(ROOT, paths) == "I-0003"
+
+
+def _load_evidence_assets() -> tuple[list[dict], dict, dict]:
+    requirements = load_data(ROOT / "docs" / "requirements" / "REQUIREMENTS.yaml")
+    sources = load_data(ROOT / "docs" / "requirements" / "SOURCE_CATALOG.yaml")
+    matrix = load_data(ROOT / "docs" / "requirements" / "EVIDENCE_MATRIX.yaml")
+    return requirements["requirements"], sources, matrix
+
+
+def test_mandatory_requirement_cannot_rely_only_on_tier_c() -> None:
+    requirements, sources, matrix = _load_evidence_assets()
+    mutated = copy.deepcopy(requirements)
+    mutated[0]["source_ids"] = ["SRC-UPSTREAM-001"]
+    with pytest.raises(GovernanceError, match="supported only by Tier C"):
+        _check_evidence_invariants(mutated, sources, matrix)
+
+
+def test_source_count_drift_is_rejected() -> None:
+    requirements, sources, matrix = _load_evidence_assets()
+    mutated = copy.deepcopy(sources)
+    source = next(item for item in mutated["sources"] if item["kind"] == "interview")
+    source["included"] = False
+    source["indexed"] = False
+    source["exclusion_reason"] = "synthetic drift fixture"
+    with pytest.raises(GovernanceError, match="source catalog count drift"):
+        _check_evidence_invariants(requirements, mutated, matrix)
+
+
+def test_unknown_requirement_source_is_rejected() -> None:
+    requirements, sources, matrix = _load_evidence_assets()
+    mutated = copy.deepcopy(requirements)
+    mutated[0]["source_ids"].append("SRC-JD-999")
+    with pytest.raises(GovernanceError, match="unknown sources"):
+        _check_evidence_invariants(mutated, sources, matrix)
+
+
+def test_duplicate_evidence_matrix_coverage_is_rejected() -> None:
+    requirements, sources, matrix = _load_evidence_assets()
+    mutated = copy.deepcopy(matrix)
+    mutated["entries"][1]["requirement_ids"].append("REQ-BUS-001")
+    with pytest.raises(GovernanceError, match="duplicates requirement coverage"):
+        _check_evidence_invariants(requirements, sources, mutated)

@@ -34,7 +34,7 @@ def validate_document(document: Any, schema: dict[str, Any], label: str) -> None
 def _check_unique_ids(document: Any, label: str) -> None:
     if not isinstance(document, dict):
         return
-    for key in ("requirements", "claims", "adrs"):
+    for key in ("requirements", "claims", "adrs", "sources"):
         records = document.get(key)
         if not isinstance(records, list):
             continue
@@ -99,6 +99,9 @@ def _check_cross_references(loaded: dict[str, Any]) -> None:
     }
     requirements = loaded["docs/requirements/REQUIREMENTS.yaml"]["requirements"]
     requirement_ids = {record["id"] for record in requirements}
+    source_catalog = loaded["docs/requirements/SOURCE_CATALOG.yaml"]
+    evidence_matrix = loaded["docs/requirements/EVIDENCE_MATRIX.yaml"]
+    _check_evidence_invariants(requirements, source_catalog, evidence_matrix)
     if state["active_gate"] not in gates:
         raise GovernanceError(f"unknown active_gate: {state['active_gate']}")
     for field in ("active_iteration", "next_iteration"):
@@ -117,3 +120,97 @@ def _check_cross_references(loaded: dict[str, Any]) -> None:
         unknown = sorted(set(claim["requirements"]) - requirement_ids)
         if unknown:
             raise GovernanceError(f"claim {claim['id']} has unknown requirements: {unknown}")
+
+
+def _check_evidence_invariants(
+    requirements: list[dict[str, Any]],
+    source_catalog: dict[str, Any],
+    evidence_matrix: dict[str, Any],
+) -> None:
+    sources = source_catalog["sources"]
+    source_by_id = {source["id"]: source for source in sources}
+
+    actual_counts = {
+        "job_descriptions": sum(
+            source["included"] and source["kind"] == "job_description" for source in sources
+        ),
+        "included_interviews": sum(
+            source["included"] and source["kind"] in {"interview", "interview_collection"}
+            for source in sources
+        ),
+        "excluded_empty_interviews": sum(
+            not source["included"]
+            and source["kind"] in {"interview", "interview_collection"}
+            for source in sources
+        ),
+        "technical_references": sum(
+            source["included"] and source["kind"] == "technical_reference"
+            for source in sources
+        ),
+        "upstream_reports": sum(
+            source["included"] and source["kind"] == "upstream_report" for source in sources
+        ),
+    }
+    if actual_counts != source_catalog["expected_counts"]:
+        raise GovernanceError(
+            f"source catalog count drift: expected {source_catalog['expected_counts']}, "
+            f"got {actual_counts}"
+        )
+
+    for source in sources:
+        if source["included"]:
+            if not source["indexed"] or source["exclusion_reason"] is not None:
+                raise GovernanceError(f"included source is not indexed cleanly: {source['id']}")
+        elif source["indexed"] or not source["exclusion_reason"]:
+            raise GovernanceError(f"excluded source lacks an exclusion record: {source['id']}")
+
+    requirement_ids = {requirement["id"] for requirement in requirements}
+    for requirement in requirements:
+        unknown_sources = sorted(set(requirement["source_ids"]) - set(source_by_id))
+        if unknown_sources:
+            raise GovernanceError(
+                f"requirement {requirement['id']} has unknown sources: {unknown_sources}"
+            )
+        excluded_sources = sorted(
+            source_id
+            for source_id in requirement["source_ids"]
+            if not source_by_id[source_id]["included"]
+        )
+        if excluded_sources:
+            raise GovernanceError(
+                f"requirement {requirement['id']} cites excluded sources: {excluded_sources}"
+            )
+        if requirement["mandatory"] and not any(
+            source_by_id[source_id]["tier"] in {"A", "B"}
+            for source_id in requirement["source_ids"]
+        ):
+            raise GovernanceError(
+                f"mandatory requirement {requirement['id']} is supported only by Tier C evidence"
+            )
+
+    covered: list[str] = []
+    for entry in evidence_matrix["entries"]:
+        covered.extend(entry["requirement_ids"])
+        unknown_requirements = sorted(set(entry["requirement_ids"]) - requirement_ids)
+        if unknown_requirements:
+            raise GovernanceError(
+                f"evidence matrix has unknown requirements: {unknown_requirements}"
+            )
+        unknown_sources = sorted(set(entry["source_ids"]) - set(source_by_id))
+        if unknown_sources:
+            raise GovernanceError(f"evidence matrix has unknown sources: {unknown_sources}")
+        if any(not source_by_id[source_id]["included"] for source_id in entry["source_ids"]):
+            raise GovernanceError("evidence matrix cites an excluded source")
+
+    duplicate_coverage = sorted(
+        requirement_id
+        for requirement_id, count in Counter(covered).items()
+        if count > 1
+    )
+    if duplicate_coverage:
+        raise GovernanceError(
+            f"evidence matrix duplicates requirement coverage: {duplicate_coverage}"
+        )
+    missing_coverage = sorted(requirement_ids - set(covered))
+    if missing_coverage:
+        raise GovernanceError(f"evidence matrix misses requirements: {missing_coverage}")

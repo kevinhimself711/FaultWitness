@@ -4,6 +4,10 @@ assets:
     schema: schemas/governance/project-state.schema.json
   - path: docs/requirements/REQUIREMENTS.yaml
     schema: schemas/governance/requirement-registry.schema.json
+  - path: docs/requirements/SOURCE_CATALOG.yaml
+    schema: schemas/governance/source-catalog.schema.json
+  - path: docs/requirements/EVIDENCE_MATRIX.yaml
+    schema: schemas/governance/evidence-matrix.schema.json
   - path: docs/claims/CLAIMS.yaml
     schema: schemas/governance/claim-registry.schema.json
   - path: governance/iterations/I-*.yaml

@@ -11,7 +11,7 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "statement", "mandatory", "priority", "source_ids", "roles", "gates", "status"],
+        "required": ["id", "statement", "mandatory", "priority", "source_ids", "roles", "architecture_targets", "gates", "verification", "status"],
         "properties": {
           "id": {"pattern": "^REQ-[A-Z]+-[0-9]{3}$"},
           "statement": {"type": "string", "minLength": 10},
@@ -19,7 +19,9 @@
           "priority": {"enum": ["P0", "P1", "P2"]},
           "source_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
           "roles": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "architecture_targets": {"type": "array", "items": {"enum": ["experience_plane", "control_plane", "data_plane", "execution_plane", "evaluation_plane"]}, "minItems": 1, "uniqueItems": true},
           "gates": {"type": "array", "items": {"pattern": "^G[0-9]{2}$"}, "uniqueItems": true},
+          "verification": {"type": "string", "minLength": 10},
           "status": {"enum": ["proposed", "accepted", "deferred", "rejected"]}
         },
         "allOf": [

@@ -4,5 +4,7 @@ mandatory: true
 priority: P0
 source_ids: [SRC-JD-001]
 roles: [agent_engineer]
+architecture_targets: [control_plane]
 gates: [G00]
+verification: A deterministic check proves the requirement against a versioned fixture.
 status: proposed

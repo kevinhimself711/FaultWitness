@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faultwitness.local/schemas/governance/evidence-matrix.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "entries"],
+  "properties": {
+    "schema_version": {"pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["requirement_ids", "source_ids", "evidence_strength", "rationale", "role_targets", "architecture_targets", "gates"],
+        "properties": {
+          "requirement_ids": {"type": "array", "items": {"pattern": "^REQ-[A-Z]+-[0-9]{3}$"}, "minItems": 1, "uniqueItems": true},
+          "source_ids": {"type": "array", "items": {"pattern": "^SRC-[A-Z]+(?:-[A-Z]+)?-[0-9]{3}$"}, "minItems": 1, "uniqueItems": true},
+          "evidence_strength": {"enum": ["direct", "corroborated", "derived"]},
+          "rationale": {"type": "string", "minLength": 20},
+          "role_targets": {"type": "array", "items": {"enum": ["application", "algorithm", "infra", "product_client"]}, "minItems": 1, "uniqueItems": true},
+          "architecture_targets": {"type": "array", "items": {"enum": ["experience_plane", "control_plane", "data_plane", "execution_plane", "evaluation_plane"]}, "minItems": 1, "uniqueItems": true},
+          "gates": {"type": "array", "items": {"pattern": "^G(?:0[0-9]|10)$"}, "minItems": 1, "uniqueItems": true}
+        }
+      }
+    }
+  }
+}

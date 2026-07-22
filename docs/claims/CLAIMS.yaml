@@ -14,3 +14,10 @@ claims:
     evidence:
       - EVAL-G00-002
     limitations: []
+  - id: CLAIM-REQ-001
+    statement: "The requirements registry covers the complete in-scope JD and interview corpus with machine-checked evidence quality and traceability."
+    status: verified
+    requirements: []
+    evidence:
+      - EVAL-G00-003
+    limitations: []
