@@ -216,6 +216,37 @@ def provision_keycloak_realm(root: Path, candidate_sha: str) -> dict[str, Any]:
     if realm.get("realm") != "faultwitness" or len(realm.get("roles", {}).get("realm", [])) != 4:
         raise GovernanceError("Keycloak realm asset does not define the frozen realm and roles")
     encoded = base64.b64encode(realm_path.read_bytes()).decode()
+    tenant_mapper = base64.b64encode(
+        json.dumps(
+            {
+                "name": "tenant-id",
+                "protocol": "openid-connect",
+                "protocolMapper": "oidc-usermodel-attribute-mapper",
+                "config": {
+                    "user.attribute": "tenant_id",
+                    "claim.name": "tenant_id",
+                    "jsonType.label": "String",
+                    "access.token.claim": "true",
+                    "id.token.claim": "true",
+                },
+            },
+            separators=(",", ":"),
+        ).encode()
+    ).decode()
+    audience_mapper = base64.b64encode(
+        json.dumps(
+            {
+                "name": "faultwitness-audience",
+                "protocol": "openid-connect",
+                "protocolMapper": "oidc-audience-mapper",
+                "config": {
+                    "included.client.audience": "faultwitness-api",
+                    "access.token.claim": "true",
+                },
+            },
+            separators=(",", ":"),
+        ).encode()
+    ).decode()
     policy = _keycloak_ingress_policy()
     policy_encoded = base64.b64encode(policy.encode()).decode()
     script = f"""set -eu
@@ -230,6 +261,28 @@ if ! /usr/local/bin/k3s kubectl -n fw-system exec "$pod" -- /opt/keycloak/bin/kc
   step=realm-create
   printf %s {encoded} | base64 -d | /usr/local/bin/k3s kubectl -n fw-system exec -i "$pod" -- sh -ec 'cat >/tmp/faultwitness-realm.json; /opt/keycloak/bin/kcadm.sh create realms -f /tmp/faultwitness-realm.json >/dev/null; rm -f /tmp/faultwitness-realm.json'
 fi
+step=client-mappers
+if ! mapper_error=$(/usr/local/bin/k3s kubectl -n fw-system exec "$pod" -- sh -ec '
+  client=$(/opt/keycloak/bin/kcadm.sh get clients -r faultwitness -q clientId=faultwitness-api --fields id | sed -n "s/.*\\\"id\\\" : \\\"\\([^\\\"]*\\)\\\".*/\\1/p")
+  test -n "$client"
+  for name in tenant-id faultwitness-audience; do
+    ids=$(/opt/keycloak/bin/kcadm.sh get "clients/$client/protocol-mappers/models" -r faultwitness --fields id,name --format csv --noquotes | grep ",$name$" | cut -d, -f1 || true)
+    for mapper_id in $ids; do
+      /opt/keycloak/bin/kcadm.sh delete "clients/$client/protocol-mappers/models/$mapper_id" -r faultwitness >/dev/null
+    done
+  done
+  printf %s {tenant_mapper} | base64 -d >/tmp/faultwitness-tenant-mapper.json
+  printf %s {audience_mapper} | base64 -d >/tmp/faultwitness-audience-mapper.json
+  /opt/keycloak/bin/kcadm.sh create "clients/$client/protocol-mappers/models" -r faultwitness -f /tmp/faultwitness-tenant-mapper.json >/dev/null
+  /opt/keycloak/bin/kcadm.sh create "clients/$client/protocol-mappers/models" -r faultwitness -f /tmp/faultwitness-audience-mapper.json >/dev/null
+  rm -f /tmp/faultwitness-tenant-mapper.json /tmp/faultwitness-audience-mapper.json
+' 2>&1); then
+  safe_error=$(printf '%s' "$mapper_error" | sed -E 's/[0-9a-f]{{32,}}/[REDACTED]/g' | tr '\n' ' ' | cut -c1-1200)
+  printf 'FW_KEYCLOAK_MAPPER_FAILED detail=%s\n' "$safe_error" >&2
+  exit 1
+fi
+step=user-profile
+/usr/local/bin/k3s kubectl -n fw-system exec "$pod" -- /opt/keycloak/bin/kcadm.sh update users/profile -r faultwitness -s unmanagedAttributePolicy=ENABLED >/dev/null
 if ! /usr/local/bin/k3s kubectl -n fw-system get secret fw-synthetic-users >/dev/null 2>&1; then
   step=credential-secret
   credentials=$(mktemp /tmp/faultwitness-users.XXXXXX)
@@ -260,9 +313,10 @@ for tenant in tenant-a tenant-b; do
         user_id=$(/opt/keycloak/bin/kcadm.sh get users -r faultwitness -q exact=true -q username="$user" --fields id | sed -n "s/.*\\\"id\\\" : \\\"\\([^\\\"]*\\)\\\".*/\\1/p")
         test -n "$user_id"
         /opt/keycloak/bin/kcadm.sh update "users/$user_id" -r faultwitness -f /tmp/faultwitness-user.json >/dev/null
+        /opt/keycloak/bin/kcadm.sh update "users/$user_id" -r faultwitness -s "attributes.tenant_id=[\\\"$3\\\"]" >/dev/null
         /opt/keycloak/bin/kcadm.sh add-roles -r faultwitness --uusername "$user" --rolename "$role" >/dev/null 2>&1 || true
         rm -f /tmp/faultwitness-user.json
-      ' sh "$user" "$role"
+      ' sh "$user" "$role" "$tenant"
     if ! password_error=$(printf '%s\n' "$password" | /usr/local/bin/k3s kubectl -n fw-system exec -i "$pod" -- sh -ec '
       IFS= read -r password
       /opt/keycloak/bin/kcadm.sh set-password -r faultwitness --username "$1" --new-password "$password" >/dev/null
@@ -311,7 +365,14 @@ def run_control_api_smoke(candidate_sha: str) -> dict[str, Any]:
 /usr/local/bin/k3s kubectl -n fw-system get secret fw-synthetic-users -o json | python3 -c 'import json,sys; d=json.load(sys.stdin); d["metadata"]={{"name":"fw-control-smoke-users","namespace":"fw-control"}}; d.pop("type",None); print(json.dumps(d))' | /usr/local/bin/k3s kubectl apply -f - >/dev/null
 /usr/local/bin/k3s kubectl -n fw-control delete job control-api-smoke --ignore-not-found --wait=true >/dev/null
 printf %s {encoded} | base64 -d | /usr/local/bin/k3s kubectl apply -f - >/dev/null
-/usr/local/bin/k3s kubectl -n fw-control wait --for=condition=complete job/control-api-smoke --timeout=120s >/dev/null
+for attempt in $(seq 1 60); do
+  succeeded=$(/usr/local/bin/k3s kubectl -n fw-control get job control-api-smoke -o jsonpath='{{.status.succeeded}}')
+  failed=$(/usr/local/bin/k3s kubectl -n fw-control get job control-api-smoke -o jsonpath='{{.status.failed}}')
+  test "$succeeded" = 1 && break
+  test "$failed" = 1 && exit 1
+  sleep 2
+done
+test "$succeeded" = 1
 /usr/local/bin/k3s kubectl -n fw-control logs job/control-api-smoke
 """
     output = run_remote_script(script, privileged=True, timeout=180).strip()
@@ -457,6 +518,7 @@ data:
     import time
     import uuid
     import httpx
+    import jwt
 
     identity = "http://keycloak.fw-system.svc.cluster.local:8080/realms/faultwitness/protocol/openid-connect/token"
     api = "http://control-api.fw-control.svc.cluster.local:8000"
@@ -479,6 +541,10 @@ data:
     body = {{"source":"g01-smoke","environment_id":"env_smoke","service_scope":["svc_smoke"],"time_window":{{"start":(now-datetime.timedelta(minutes=5)).isoformat(),"end":now.isoformat()}},"symptom_summary":"synthetic smoke","mode":"diagnosis_only","budget":{{"deadline":(now+datetime.timedelta(minutes=5)).isoformat(),"max_steps":2,"max_model_calls":0,"max_tokens":0,"max_cost_usd":0}}}}
     auth = {{"Authorization": "Bearer " + operator, "Idempotency-Key": "smoke-" + uuid.uuid4().hex}}
     created = httpx.post(api + "/v1/incidents", headers=auth, json=body, timeout=10)
+    if created.status_code != 201:
+        claims = jwt.decode(operator, options={{"verify_signature":False,"verify_aud":False}})
+        print(json.dumps({{"stage":"create","status":created.status_code,"body":created.json(),"tenant_claim":claims.get("tenant_id"),"roles":(claims.get("realm_access") or {{}}).get("roles",[])}}, sort_keys=True))
+        raise SystemExit(1)
     incident = created.json()["incident_id"]
     read = httpx.get(api + "/v1/incidents/" + incident, headers={{"Authorization":"Bearer " + operator}}, timeout=10)
     cross = httpx.get(api + "/v1/incidents/" + incident, headers={{"Authorization":"Bearer " + tenant_b}}, timeout=10)
