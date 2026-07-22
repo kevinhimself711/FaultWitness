@@ -22,3 +22,4 @@ Ruleset evidence: <https://github.com/kevinhimself711/FaultWitness/rules>
 ## Deviations
 
 - The initial private repository could not activate Rulesets on GitHub Free. The project owner explicitly approved public visibility. [AMD-0001](../../gates/G00/AMENDMENTS/AMD-0001.md) records the narrowly scoped Gate amendment and pre-publication safeguards; it is not a waiver for the full I-0006 audit.
+- The first post-finalization CI run (<https://github.com/kevinhimself711/FaultWitness/actions/runs/29913529681>) failed closed because the bootstrap PR introduced both completed and planned Iteration records while `PROJECT_STATE.active_iteration` had already been cleared. The validator was corrected to select the highest changed non-planned Iteration with documentation assets; a regression test fixes this bootstrap inference rule. The failed run remains part of the evidence trail.
