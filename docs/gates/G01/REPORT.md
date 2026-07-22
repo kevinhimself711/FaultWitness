@@ -8,7 +8,7 @@ closed_on: null
 
 # G01 Gate Report
 
-G01 Master Plan 已于 2026-07-22 冻结。I-0007 与 EVAL-G01-001 已在候选 `7a9237c4c5b9fc0c736435e836534e72712c4169` 上完成且无 open evidence/waiver；当前无 active Iteration，下一项为 I-0008。尚未部署 K3s、修改既有 workload、调用模型或写入 LangSmith Trace。本文件不代表整个 G01 已通过。
+G01 Master Plan 已于 2026-07-22 冻结。I-0007 与 EVAL-G01-001 已在候选 `7a9237c4c5b9fc0c736435e836534e72712c4169` 上完成且无 open evidence/waiver；I-0008 是当前唯一 active Iteration。尚未部署 K3s、修改既有 workload、调用模型或写入 LangSmith Trace。本文件不代表整个 G01 已通过。
 
 ## Decision
 

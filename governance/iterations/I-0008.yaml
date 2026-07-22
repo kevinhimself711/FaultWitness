@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0008
 gate: G01
 title: K3s GPU and Isolated Runtime Foundation
-status: planned
+status: in_progress
 scope:
   - Install pinned single-node K3s and Helm with embedded-etcd snapshots and Kubernetes secret encryption.
   - Establish namespaces quotas default-deny network policy and private management access while preserving existing Docker workloads.

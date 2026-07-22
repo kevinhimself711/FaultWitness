@@ -4,7 +4,7 @@
 
 FaultWitness is a multi-tenant Agent Runtime for investigating microservice incidents, proposing bounded remediations, executing approved actions, and producing auditable evaluation and training assets.
 
-G00 is closed and G01 is in progress. I-0007 and EVAL-G01-001 are complete on their immutable implementation candidate. No Iteration is active; I-0008 is next. Before activating it, read PROJECT_STATE.yaml, the authoritative final plan, the active Gate plan/report, I-0007's immutable Eval assets, and the planned I-0008 assets. Do not perform I-0008 server mutation until its activation commit is created.
+G00 is closed and G01 is in progress. I-0007 and EVAL-G01-001 are complete. I-0008 is the sole active Iteration; it authorizes only the frozen K3s, Helm, namespace/network-policy, embedded-etcd snapshot/encryption, gVisor, Kata, runc, NVIDIA smoke, coexistence, and project-only rollback scope. It does not authorize platform services, product code, public ingress, multi-node HA, model/LangSmith calls, or mutation of existing Docker resources.
 
 ## Source-of-truth order
 

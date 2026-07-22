@@ -4,7 +4,7 @@
 
 Result: pending.
 
-No K3s package, route, firewall rule, RuntimeClass, or GPU workload has been installed or executed by the planning commit.
+I-0008 is active. No K3s package, route, firewall rule, RuntimeClass, or GPU workload has yet been installed or executed. The passing EVAL-G01-001 baseline is the pre-bootstrap authority.
 
 ## Required evidence
 
