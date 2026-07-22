@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0006
 gate: G00
 title: Gate Hardening and Candidate Audit
-status: in_progress
+status: completed
 scope:
   - Harden public CI with a required Ubuntu governance audit beside Windows and Ubuntu verification.
   - Enforce secret publication license source ownership Action pin lockfile and SBOM checks.
@@ -23,7 +23,7 @@ tests:
   - uv run pytest tests/audit tests/contracts tests/governance -q
   - EVAL-G00-006 publication dependency CI and fourteen-walkthrough cases
 eval_id: EVAL-G00-006
-commit: null
+commit: b1bc31681056bbcf6998ba6ea0a509bc9ae1ade9
 changed_paths:
   - .github
   - src/faultwitness_dev/audit.py
