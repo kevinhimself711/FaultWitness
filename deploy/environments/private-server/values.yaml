@@ -1,0 +1,9 @@
+global:
+  storageClass: local-path
+  imagePullPolicy: IfNotPresent
+
+# Names are stable contracts. Create these encrypted/out-of-band Secrets before install:
+# fw-postgres-env, fw-redis-env, fw-qdrant-env, fw-minio-env,
+# fw-keycloak-env, and fw-grafana-env.
+# No Service is exposed through NodePort, LoadBalancer, or Ingress.
+

@@ -82,6 +82,9 @@ def test_core_installer_resolves_only_locked_artifacts() -> None:
     assert "v1.34.9+k3s1" in script
     assert "v4.2.3" in script
     assert "curl | sh" not in script
+    assert "bind-address: 127.0.0.1" not in script
+    assert "bind-address: $node_ip" in script
+    assert "FW_INSTALL_FAILED step=private-node-ip" in script
 
 
 def test_docker_baseline_comparison_detects_restart_drift() -> None:

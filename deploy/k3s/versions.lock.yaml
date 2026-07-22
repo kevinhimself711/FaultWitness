@@ -51,7 +51,7 @@ cluster:
   disable:
     - traefik
     - servicelb
-  api_bind_address: 127.0.0.1
+  api_bind_scope: private-node
   secrets_encryption: true
   datastore: embedded-etcd
   snapshot_retention: 5

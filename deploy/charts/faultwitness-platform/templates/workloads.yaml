@@ -1,0 +1,106 @@
+{{- range $name, $service := .Values.services }}
+{{- $namespace := index $.Values.namespaces $service.namespace }}
+{{- if not (regexMatch "^.+@sha256:[0-9a-f]{64}$" $service.image) }}
+{{- fail (printf "services.%s.image must be pinned by sha256 digest" $name) }}
+{{- end }}
+{{- if $service.config }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $name }}-config
+  namespace: {{ $namespace }}
+data:
+  {{ $service.configFile }}: |
+{{ $service.config | indent 4 }}
+{{- end }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $name }}
+  namespace: {{ $namespace }}
+  labels: {app.kubernetes.io/name: {{ $name }}, app.kubernetes.io/part-of: faultwitness-platform}
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}
+  namespace: {{ $namespace }}
+  labels: {app.kubernetes.io/name: {{ $name }}, app.kubernetes.io/part-of: faultwitness-platform}
+spec:
+  type: ClusterIP
+  selector: {app.kubernetes.io/name: {{ $name }}}
+  ports:
+    - {name: http, port: {{ $service.port }}, targetPort: main}
+    {{- range $service.extraPorts }}
+    - {name: {{ .name }}, port: {{ .port }}, targetPort: {{ .name }}}
+    {{- end }}
+---
+apiVersion: apps/v1
+kind: {{ if $service.persistence }}StatefulSet{{ else }}Deployment{{ end }}
+metadata:
+  name: {{ $name }}
+  namespace: {{ $namespace }}
+  labels: {app.kubernetes.io/name: {{ $name }}, app.kubernetes.io/part-of: faultwitness-platform}
+spec:
+  replicas: 1
+  {{- if $service.persistence }}
+  serviceName: {{ $name }}
+  {{- end }}
+  selector: {matchLabels: {app.kubernetes.io/name: {{ $name }}}}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ $name }}
+        app.kubernetes.io/part-of: faultwitness-platform
+    spec:
+      serviceAccountName: {{ $name }}
+      automountServiceAccountToken: false
+      securityContext: {seccompProfile: {type: RuntimeDefault}}
+      containers:
+        - name: {{ $name }}
+          image: {{ $service.image | quote }}
+          imagePullPolicy: {{ $.Values.global.imagePullPolicy }}
+          {{- with $service.args }}
+          args: {{ toJson . }}
+          {{- end }}
+          {{- with $service.secretRef }}
+          envFrom: [{secretRef: {name: {{ . }}}}]
+          {{- end }}
+          ports:
+            - {name: main, containerPort: {{ $service.port }}}
+            {{- range $service.extraPorts }}
+            - {name: {{ .name }}, containerPort: {{ .port }}}
+            {{- end }}
+          startupProbe: {tcpSocket: {port: main}, periodSeconds: 5, failureThreshold: 60}
+          readinessProbe: {tcpSocket: {port: main}, periodSeconds: 10, timeoutSeconds: 3, failureThreshold: 6}
+          livenessProbe: {tcpSocket: {port: main}, periodSeconds: 20, timeoutSeconds: 3, failureThreshold: 3}
+          resources: {{ toYaml $service.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+          {{- if or $service.config $service.persistence }}
+          volumeMounts:
+            {{- if $service.config }}
+            - {name: config, mountPath: {{ $service.configMountPath }}, subPath: {{ $service.configFile }}, readOnly: true}
+            {{- end }}
+            {{- if $service.persistence }}
+            - {name: data, mountPath: {{ $service.persistence.mountPath }}}
+            {{- end }}
+          {{- end }}
+      {{- if $service.config }}
+      volumes:
+        - name: config
+          configMap: {name: {{ $name }}-config}
+      {{- end }}
+  {{- if $service.persistence }}
+  volumeClaimTemplates:
+    - metadata: {name: data}
+      spec:
+        accessModes: [ReadWriteOnce]
+        storageClassName: {{ $.Values.global.storageClass }}
+        resources: {requests: {storage: {{ $service.persistence.size }}}}
+  {{- end }}
+{{- end }}

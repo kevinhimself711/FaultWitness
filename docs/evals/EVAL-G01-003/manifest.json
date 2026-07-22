@@ -6,7 +6,11 @@
   "evaluated_revision": "pending",
   "status": "pending",
   "environments": ["ubuntu-private-server"],
-  "commands": ["uv run python -m faultwitness_dev eval-iteration I-0009 --candidate-sha <full-sha>"],
+  "commands": [
+    "uv run python -m faultwitness_dev deploy-platform --candidate-sha <full-sha>",
+    "uv run python -m faultwitness_dev inspect-platform --candidate-sha <full-sha> --stability-seconds 900",
+    "uv run python -m faultwitness_dev eval-iteration I-0009 --candidate-sha <full-sha>"
+  ],
   "artifacts": ["docs/evals/EVAL-G01-003/PLAN.md", "docs/evals/EVAL-G01-003/REPORT.md"],
   "evidence_urls": [],
   "integrations": {
@@ -15,5 +19,13 @@
       "reason": "The complete G01 trace path requires LangSmith after the operational observability services are established."
     }
   },
-  "open_evidence": ["platform readiness and recovery", "identity and storage isolation", "backup restore and supply-chain audit"]
+  "open_evidence": [
+    "immutable candidate-bound implementation and private deployment",
+    "15-minute platform and observability readiness plus controlled recovery",
+    "paired authorized controls and network secret schema object-prefix observability denials",
+    "fresh-target PostgreSQL restore with exact canonical digest equality",
+    "persistent restart and correlated synthetic telemetry evidence",
+    "resource retention image-digest SBOM license and provenance audit",
+    "sanitized public evidence and publication scan"
+  ]
 }

@@ -45,6 +45,7 @@ from faultwitness_dev.infra import (
     run_network_matrix,
     run_runtime_smokes,
 )
+from faultwitness_dev.platform import deploy_platform, inspect_platform_readiness
 from faultwitness_dev.schemas import validate_repository_schemas
 
 
@@ -144,6 +145,13 @@ def parser() -> argparse.ArgumentParser:
     inspect_infra.add_argument("--unprivileged", action="store_true")
     resolve_image = subparsers.add_parser("resolve-public-image")
     resolve_image.add_argument("--image", required=True)
+    deploy_services = subparsers.add_parser("deploy-platform")
+    deploy_services.add_argument("--candidate-sha", required=True)
+    deploy_services.add_argument("--chart", type=Path)
+    deploy_services.add_argument("--values", type=Path)
+    inspect_services = subparsers.add_parser("inspect-platform")
+    inspect_services.add_argument("--candidate-sha", required=True)
+    inspect_services.add_argument("--stability-seconds", type=int, default=0)
     subparsers.add_parser("diagnose-k3s")
     subparsers.add_parser("diagnose-nvidia")
     subparsers.add_parser("diagnose-runtime-smokes")
@@ -363,6 +371,28 @@ def main() -> int:
         elif args.command == "resolve-public-image":
             digest = resolve_public_image_digest(args.image)
             message = f"resolved linux/amd64 digest {digest} for {args.image}"
+        elif args.command == "deploy-platform":
+            summary = deploy_platform(
+                root,
+                args.candidate_sha,
+                chart=args.chart,
+                values=args.values,
+            )
+            message = (
+                f"deployed {summary['release']} in {summary['namespace']} from candidate "
+                f"{summary['candidate_sha']} with bundle digest "
+                f"{summary['deployment_bundle_sha256']}"
+            )
+        elif args.command == "inspect-platform":
+            summary = inspect_platform_readiness(
+                root,
+                args.candidate_sha,
+                stability_seconds=args.stability_seconds,
+            )
+            message = (
+                f"observed {summary['workload_count']} sanitized Ready workloads for "
+                f"{summary['stability_seconds']} seconds on {summary['candidate_sha']}"
+            )
         elif args.command == "diagnose-k3s":
             diagnosis = diagnose_k3s_failure()
             message = (

@@ -1,0 +1,141 @@
+global:
+  storageClass: local-path
+  imagePullPolicy: IfNotPresent
+
+namespaces:
+  system: fw-system
+  data: fw-data
+  observability: fw-observability
+
+quotas:
+  system: {requests.cpu: "1", requests.memory: 2Gi, limits.cpu: "3", limits.memory: 4Gi, pods: "12"}
+  data: {requests.cpu: "2", requests.memory: 4Gi, limits.cpu: "6", limits.memory: 8Gi, requests.storage: 48Gi, persistentvolumeclaims: "8", pods: "16"}
+  observability: {requests.cpu: "2", requests.memory: 4Gi, limits.cpu: "6", limits.memory: 8Gi, requests.storage: 24Gi, persistentvolumeclaims: "8", pods: "16"}
+
+# Secret objects are provisioned out-of-band. The chart only consumes references.
+services:
+  postgres:
+    namespace: data
+    image: postgres@sha256:301bcb60b8a3ee4ab7e147932723e3abd1cef53516ce5210b39fd9fe5e3602ae
+    port: 5432
+    secretRef: fw-postgres-env
+    persistence: {enabled: true, size: 12Gi, mountPath: /var/lib/postgresql/data}
+    resources: {requests: {cpu: 100m, memory: 256Mi}, limits: {cpu: 750m, memory: 1Gi}}
+  redis:
+    namespace: data
+    image: redis@sha256:02419de7eddf55aa5bcf49efb74e88fa8d931b4d77c07eff8a6b2144472b6952
+    port: 6379
+    secretRef: fw-redis-env
+    args: ["redis-server", "--appendonly", "yes", "--requirepass", "$(REDIS_PASSWORD)"]
+    persistence: {enabled: true, size: 4Gi, mountPath: /data}
+    resources: {requests: {cpu: 50m, memory: 128Mi}, limits: {cpu: 500m, memory: 512Mi}}
+  qdrant:
+    namespace: data
+    image: qdrant/qdrant@sha256:318c11b72aaab96b36e9662ad244de3cabd0653a1b942d4e8191f18296c81af0
+    port: 6333
+    secretRef: fw-qdrant-env
+    persistence: {enabled: true, size: 8Gi, mountPath: /qdrant/storage}
+    resources: {requests: {cpu: 100m, memory: 256Mi}, limits: {cpu: "1", memory: 1Gi}}
+  minio:
+    namespace: data
+    image: minio/minio@sha256:a929054ae025fa7997857cd0e2a2e3029238e31ad89877326dc032f4c1a14259
+    port: 9000
+    secretRef: fw-minio-env
+    args: ["server", "/data", "--console-address", ":9001"]
+    persistence: {enabled: true, size: 16Gi, mountPath: /data}
+    resources: {requests: {cpu: 100m, memory: 256Mi}, limits: {cpu: "1", memory: 1Gi}}
+  keycloak:
+    namespace: system
+    image: quay.io/keycloak/keycloak@sha256:4ee8200b0fd00de0e3743b48220f4feadbdb52deb29730ed804f9364bc2be23f
+    port: 8080
+    secretRef: fw-keycloak-env
+    args: ["start", "--http-enabled=true", "--hostname-strict=false", "--health-enabled=true", "--metrics-enabled=true"]
+    resources: {requests: {cpu: 100m, memory: 384Mi}, limits: {cpu: "1", memory: 1Gi}}
+  opa:
+    namespace: system
+    image: openpolicyagent/opa@sha256:2636af0937bf7c5ab7f79271399c53c45d4b4d2af8a2b9cc43f65c6598b49064
+    port: 8181
+    args: ["run", "--server", "--addr=0.0.0.0:8181", "/config/policy.rego"]
+    configFile: policy.rego
+    configMountPath: /config/policy.rego
+    config: |
+      package faultwitness
+      default allow := false
+    resources: {requests: {cpu: 25m, memory: 32Mi}, limits: {cpu: 250m, memory: 128Mi}}
+  otel-collector:
+    namespace: observability
+    image: otel/opentelemetry-collector-contrib@sha256:789689988e379c58ac12b07718dbcf4b23c2214bd804173c1c77af346d381c15
+    port: 4317
+    extraPorts: [{name: otlp-http, port: 4318}, {name: metrics, port: 8889}]
+    args: ["--config=/config/config.yaml"]
+    configFile: config.yaml
+    configMountPath: /config/config.yaml
+    config: |
+      receivers:
+        otlp:
+          protocols: {grpc: {}, http: {}}
+      processors:
+        memory_limiter: {limit_mib: 192, check_interval: 1s}
+        batch: {}
+      exporters:
+        otlp/tempo: {endpoint: tempo:4317, tls: {insecure: true}}
+        prometheus: {endpoint: 0.0.0.0:8889}
+      service:
+        pipelines:
+          traces: {receivers: [otlp], processors: [memory_limiter, batch], exporters: [otlp/tempo]}
+          metrics: {receivers: [otlp], processors: [memory_limiter, batch], exporters: [prometheus]}
+    resources: {requests: {cpu: 50m, memory: 128Mi}, limits: {cpu: 500m, memory: 256Mi}}
+  prometheus:
+    namespace: observability
+    image: prom/prometheus@sha256:6927e0919a144aa7616fd0137d4816816d42f6b816de3af269ab065250859a62
+    port: 9090
+    args: ["--config.file=/config/prometheus.yaml", "--storage.tsdb.path=/data", "--storage.tsdb.retention.time=7d", "--storage.tsdb.retention.size=3GB"]
+    configFile: prometheus.yaml
+    configMountPath: /config/prometheus.yaml
+    config: |
+      global: {scrape_interval: 30s}
+      scrape_configs:
+        - job_name: otel-collector
+          static_configs: [{targets: ["otel-collector:8889"]}]
+    persistence: {enabled: true, size: 4Gi, mountPath: /data}
+    resources: {requests: {cpu: 100m, memory: 256Mi}, limits: {cpu: 750m, memory: 768Mi}}
+  loki:
+    namespace: observability
+    image: grafana/loki@sha256:58a6c186ce78ba04d58bfe2a927eff296ba733a430df09645d56cdc158f3ba08
+    port: 3100
+    args: ["-config.file=/config/loki.yaml"]
+    configFile: loki.yaml
+    configMountPath: /config/loki.yaml
+    config: |
+      auth_enabled: false
+      server: {http_listen_port: 3100}
+      common: {path_prefix: /data, replication_factor: 1, ring: {kvstore: {store: inmemory}}}
+      schema_config: {configs: [{from: "2024-01-01", store: tsdb, object_store: filesystem, schema: v13, index: {prefix: index_, period: 24h}}]}
+      storage_config: {filesystem: {directory: /data/chunks}}
+      compactor: {working_directory: /data/compactor, retention_enabled: true, delete_request_store: filesystem}
+      limits_config: {retention_period: 168h, allow_structured_metadata: true}
+    persistence: {enabled: true, size: 4Gi, mountPath: /data}
+    resources: {requests: {cpu: 75m, memory: 192Mi}, limits: {cpu: 500m, memory: 512Mi}}
+  tempo:
+    namespace: observability
+    image: grafana/tempo@sha256:4443be217c396b065ee34845534199c36fdba4dc619cb96550e228d73fba6e69
+    port: 3200
+    extraPorts: [{name: otlp-grpc, port: 4317}]
+    args: ["-config.file=/config/tempo.yaml"]
+    configFile: tempo.yaml
+    configMountPath: /config/tempo.yaml
+    config: |
+      server: {http_listen_port: 3200}
+      distributor: {receivers: {otlp: {protocols: {grpc: {endpoint: 0.0.0.0:4317}}}}}
+      ingester: {max_block_duration: 5m}
+      compactor: {compaction: {block_retention: 168h}}
+      storage: {trace: {backend: local, wal: {path: /data/wal}, local: {path: /data/blocks}}}
+    persistence: {enabled: true, size: 4Gi, mountPath: /data}
+    resources: {requests: {cpu: 75m, memory: 192Mi}, limits: {cpu: 500m, memory: 512Mi}}
+  grafana:
+    namespace: observability
+    image: grafana/grafana@sha256:8b37a2f028f164ce7b9889e1765b9d6ee23fec80f871d156fbf436d6198d32b7
+    port: 3000
+    secretRef: fw-grafana-env
+    persistence: {enabled: true, size: 2Gi, mountPath: /var/lib/grafana}
+    resources: {requests: {cpu: 50m, memory: 128Mi}, limits: {cpu: 500m, memory: 384Mi}}

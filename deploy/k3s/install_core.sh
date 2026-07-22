@@ -49,15 +49,21 @@ tar -xzf "$artifact_dir/helm-$HELM_VERSION.tar.gz" -C "$helm_extract"
 install -m 0755 "$helm_extract/linux-amd64/helm" /usr/local/bin/helm
 
 step=write-k3s-config
-cat >/etc/rancher/k3s/config.yaml <<'FW_K3S_CONFIG'
+node_ip=$(ip -4 route get 1.1.1.1 | awk '{for (i=1; i<=NF; i++) if ($i == "src") {print $(i+1); exit}}')
+case "$node_ip" in
+    10.*|192.168.*|172.1[6-9].*|172.2[0-9].*|172.3[0-1].*) ;;
+    *) printf 'FW_INSTALL_FAILED step=private-node-ip status=1\n' >&2; exit 1 ;;
+esac
+cat >/etc/rancher/k3s/config.yaml <<FW_K3S_CONFIG
 cluster-init: true
 cluster-cidr: 10.42.0.0/16
 service-cidr: 10.43.0.0/16
-bind-address: 127.0.0.1
+bind-address: $node_ip
 # faultwitness.dev/listener-hardening=single-node-v1
 flannel-backend: host-gw
 tls-san:
   - 127.0.0.1
+  - $node_ip
 disable:
   - traefik
   - servicelb
