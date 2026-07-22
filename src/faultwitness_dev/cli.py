@@ -34,6 +34,8 @@ from faultwitness_dev.control_api_deploy import (
     deploy_control_api,
     diagnose_control_api,
     inspect_control_api,
+    inspect_keycloak_realm,
+    provision_keycloak_realm,
 )
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.evals import evaluate_iteration
@@ -173,6 +175,10 @@ def parser() -> argparse.ArgumentParser:
     inspect_api = subparsers.add_parser("inspect-control-api")
     inspect_api.add_argument("--candidate-sha", required=True)
     subparsers.add_parser("diagnose-control-api")
+    provision_realm = subparsers.add_parser("provision-keycloak-realm")
+    provision_realm.add_argument("--candidate-sha", required=True)
+    inspect_realm = subparsers.add_parser("inspect-keycloak-realm")
+    inspect_realm.add_argument("--candidate-sha", required=True)
     subparsers.add_parser("compile-contracts")
     subparsers.add_parser("check-contracts")
     subparsers.add_parser("diagnose-k3s")
@@ -445,6 +451,20 @@ def main() -> int:
             )
         elif args.command == "diagnose-control-api":
             message = diagnose_control_api().strip()
+        elif args.command == "provision-keycloak-realm":
+            summary = provision_keycloak_realm(root, args.candidate_sha)
+            message = (
+                f"provisioned Keycloak realm for {summary['tenant_count']} synthetic tenants, "
+                f"{summary['role_count']} roles, and {summary['user_count']} users on "
+                f"{summary['candidate_sha']}"
+            )
+        elif args.command == "inspect-keycloak-realm":
+            summary = inspect_keycloak_realm(args.candidate_sha)
+            message = (
+                f"observed Keycloak realm with {summary['tenant_count']} tenants, "
+                f"{summary['role_count']} roles, and {summary['user_count']} users on "
+                f"{summary['candidate_sha']}"
+            )
         elif args.command == "compile-contracts":
             target = write_generated_resource(root)
             bundle = load_generated_resource(root)

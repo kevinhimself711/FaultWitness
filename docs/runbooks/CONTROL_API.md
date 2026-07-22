@@ -12,9 +12,13 @@ uv run python -m faultwitness_dev deploy-runtime-schema --candidate-sha $candida
 uv run python -m faultwitness_dev inspect-runtime-schema --candidate-sha $candidateSha
 uv run python -m faultwitness_dev deploy-control-api --candidate-sha $candidateSha
 uv run python -m faultwitness_dev inspect-control-api --candidate-sha $candidateSha
+uv run python -m faultwitness_dev provision-keycloak-realm --candidate-sha $candidateSha
+uv run python -m faultwitness_dev inspect-keycloak-realm --candidate-sha $candidateSha
 ```
 
 The deploy command stages the digest-pinned Python base through the repository's private offline-image path, builds the locked application image on the server, imports it into K3s, copies PostgreSQL Secret data across namespaces without printing values, and creates a private `ClusterIP` workload with default-deny and explicit DNS/PostgreSQL/Keycloak traffic. Local synthetic conformance injects a test authenticator explicitly; the production entrypoint never enables such a bypass.
+
+Realm provisioning creates the frozen public client, audience and tenant-attribute mappers, four roles, and eight users spanning two synthetic tenants. Random user passwords are generated only on the server and retained in `fw-synthetic-users`; neither values nor reversible fingerprints enter the repository or command output.
 
 ## Operational checks
 

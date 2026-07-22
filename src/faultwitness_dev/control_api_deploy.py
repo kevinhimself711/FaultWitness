@@ -6,6 +6,7 @@ import base64
 import gzip
 import hashlib
 import io
+import json
 import os
 import re
 import subprocess
@@ -183,12 +184,93 @@ printf '%s %s %s\n' "$available" "$ready" "$service_type"
 
 def diagnose_control_api() -> str:
     script = """set -eu
+/usr/local/bin/k3s kubectl -n fw-system get secret fw-keycloak-env \
+  -o go-template='{{range $key,$value := .data}}{{$key}}{{"\\n"}}{{end}}' | sort
 /usr/local/bin/k3s kubectl -n fw-control get pods -l app.kubernetes.io/name=control-api \
   -o json | python3 -c 'import json,sys; d=json.load(sys.stdin); print(json.dumps([{"phase":p.get("status",{}).get("phase"),"reason":p.get("status",{}).get("reason"),"waiting":[{"reason":s.get("state",{}).get("waiting",{}).get("reason"),"message":s.get("state",{}).get("waiting",{}).get("message")} for s in p.get("status",{}).get("containerStatuses",[])]} for p in d.get("items",[])]))'
 /usr/local/bin/k3s kubectl -n fw-control logs deployment/control-api --tail=30 2>&1 | \
   sed -E 's#(postgresql://)[^@ ]+@#\\1[REDACTED]@#g'
 """
     return run_remote_script(script, privileged=True)
+
+
+def provision_keycloak_realm(root: Path, candidate_sha: str) -> dict[str, Any]:
+    realm_path = root / "deploy" / "keycloak" / "faultwitness-realm.json"
+    _assert_candidate(root, candidate_sha, [realm_path])
+    try:
+        realm = json.loads(realm_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise GovernanceError("Keycloak realm asset is invalid") from error
+    if realm.get("realm") != "faultwitness" or len(realm.get("roles", {}).get("realm", [])) != 4:
+        raise GovernanceError("Keycloak realm asset does not define the frozen realm and roles")
+    encoded = base64.b64encode(realm_path.read_bytes()).decode()
+    policy = _keycloak_ingress_policy()
+    policy_encoded = base64.b64encode(policy.encode()).decode()
+    script = f"""set -eu
+pod=$(/usr/local/bin/k3s kubectl -n fw-system get pod -l app.kubernetes.io/name=keycloak -o jsonpath='{{.items[0].metadata.name}}')
+/usr/local/bin/k3s kubectl -n fw-system exec "$pod" -- sh -ec '
+  /opt/keycloak/bin/kcadm.sh config credentials --server http://localhost:8080 --realm master --user "$KC_BOOTSTRAP_ADMIN_USERNAME" --password "$KC_BOOTSTRAP_ADMIN_PASSWORD" >/dev/null
+'
+if ! /usr/local/bin/k3s kubectl -n fw-system exec "$pod" -- /opt/keycloak/bin/kcadm.sh get realms/faultwitness >/dev/null 2>&1; then
+  printf %s {encoded} | base64 -d | /usr/local/bin/k3s kubectl -n fw-system exec -i "$pod" -- sh -ec 'cat >/tmp/faultwitness-realm.json; /opt/keycloak/bin/kcadm.sh create realms -f /tmp/faultwitness-realm.json >/dev/null; rm -f /tmp/faultwitness-realm.json'
+fi
+if ! /usr/local/bin/k3s kubectl -n fw-system get secret fw-synthetic-users >/dev/null 2>&1; then
+  credentials=$(mktemp /tmp/faultwitness-users.XXXXXX)
+  chmod 0600 "$credentials"
+  for tenant in tenant-a tenant-b; do
+    for role in viewer operator approver admin; do
+      key=$(printf '%s_%s' "$tenant" "$role" | tr - _)
+      password=$(openssl rand -hex 32)
+      printf '%s=%s\n' "$key" "$password" >>"$credentials"
+    done
+  done
+  /usr/local/bin/k3s kubectl -n fw-system create secret generic fw-synthetic-users --from-env-file="$credentials" >/dev/null
+  rm -f "$credentials"
+fi
+for tenant in tenant-a tenant-b; do
+  for role in viewer operator approver admin; do
+    user="$tenant-$role"
+    key=$(printf '%s_%s' "$tenant" "$role" | tr - _)
+    password=$(/usr/local/bin/k3s kubectl -n fw-system get secret fw-synthetic-users -o go-template="{{{{index .data \"$key\"}}}}" | base64 -d)
+    printf '{{"username":"%s","enabled":true,"attributes":{{"tenant_id":["%s"]}},"credentials":[{{"type":"password","value":"%s","temporary":false}}]}}' "$user" "$tenant" "$password" | \
+      /usr/local/bin/k3s kubectl -n fw-system exec -i "$pod" -- sh -ec '
+        cat >/tmp/faultwitness-user.json
+        user="$1"; role="$2"
+        if ! /opt/keycloak/bin/kcadm.sh get users -r faultwitness -q exact=true -q username="$user" | grep -q "\\\"username\\\" : \\\"$user\\\""; then
+          /opt/keycloak/bin/kcadm.sh create users -r faultwitness -f /tmp/faultwitness-user.json >/dev/null
+        fi
+        /opt/keycloak/bin/kcadm.sh add-roles -r faultwitness --uusername "$user" --rolename "$role" >/dev/null
+        rm -f /tmp/faultwitness-user.json
+      ' sh "$user" "$role"
+  done
+done
+printf %s {policy_encoded} | base64 -d | /usr/local/bin/k3s kubectl apply -f - >/dev/null
+/usr/local/bin/k3s kubectl -n fw-system create configmap fw-keycloak-realm-candidate \
+  --from-literal=candidate_sha={candidate_sha} --from-literal=tenant_count=2 --from-literal=role_count=4 --from-literal=user_count=8 \
+  --dry-run=client -o yaml | /usr/local/bin/k3s kubectl apply -f - >/dev/null
+"""
+    run_remote_script(script, privileged=True, timeout=300)
+    return {"candidate_sha": candidate_sha, "tenant_count": 2, "role_count": 4, "user_count": 8}
+
+
+def inspect_keycloak_realm(candidate_sha: str) -> dict[str, Any]:
+    if not FULL_SHA.fullmatch(candidate_sha):
+        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+    script = f"""set -eu
+binding=$(/usr/local/bin/k3s kubectl -n fw-system get configmap fw-keycloak-realm-candidate -o jsonpath='{{.data.candidate_sha}}')
+tenants=$(/usr/local/bin/k3s kubectl -n fw-system get configmap fw-keycloak-realm-candidate -o jsonpath='{{.data.tenant_count}}')
+roles=$(/usr/local/bin/k3s kubectl -n fw-system get configmap fw-keycloak-realm-candidate -o jsonpath='{{.data.role_count}}')
+users=$(/usr/local/bin/k3s kubectl -n fw-system get configmap fw-keycloak-realm-candidate -o jsonpath='{{.data.user_count}}')
+test "$binding" = {candidate_sha}
+test "$tenants" = 2
+test "$roles" = 4
+test "$users" = 8
+printf '%s %s %s\n' "$tenants" "$roles" "$users"
+"""
+    fields = run_remote_script(script, privileged=True).strip().split()
+    if fields != ["2", "4", "8"]:
+        raise GovernanceError("Keycloak synthetic realm inventory is incomplete")
+    return {"candidate_sha": candidate_sha, "tenant_count": 2, "role_count": 4, "user_count": 8}
 
 
 def _manifest(candidate_sha: str, image: str) -> str:
@@ -285,4 +367,18 @@ spec:
         - namespaceSelector: {{matchLabels: {{kubernetes.io/metadata.name: fw-control}}}}
           podSelector: {{matchLabels: {{app.kubernetes.io/name: control-api}}}}
       ports: [{{protocol: TCP, port: 5432}}]
+"""
+
+
+def _keycloak_ingress_policy() -> str:
+    return """apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: allow-control-api-keycloak, namespace: fw-system}
+spec:
+  podSelector: {matchLabels: {app.kubernetes.io/name: keycloak}}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: fw-control}}
+      ports: [{protocol: TCP, port: 8080}]
 """
