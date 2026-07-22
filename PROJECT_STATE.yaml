@@ -10,7 +10,7 @@ governance_schema_version: "1.0.0"
 
 active_gate: G00
 active_gate_status: in_progress
-active_iteration: I-0006
+active_iteration: null
 next_iteration: null
 last_closed_gate: null
 latest_eval_run: EVAL-G00-006

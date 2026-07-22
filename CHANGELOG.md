@@ -27,5 +27,6 @@
 - Add fail-closed secret, publication, dependency-license, source-ownership, Action-pin, lockfile, and CycloneDX SBOM audits.
 - Add pinned browser rendering for every Mermaid diagram and a required Ubuntu audit status check.
 - Materialize fourteen frozen G00 design walkthroughs plus PR, Issue, external-link, and evidence-sync governance.
+- Complete I-0006 on immutable candidate `42b9708` with three required public checks and preserved SBOM evidence.
 
 No product implementation is included in this planning baseline.
