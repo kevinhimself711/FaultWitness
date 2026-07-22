@@ -38,6 +38,14 @@ def test_missing_required_field_is_rejected() -> None:
         validate_document(document, schema, "missing_project_field")
 
 
+def test_project_state_allows_frozen_not_started_gate_handoff() -> None:
+    document = load_data(ROOT / "PROJECT_STATE.yaml")
+    schema = load_data(SCHEMAS / "project-state.schema.json")
+    mutated = copy.deepcopy(document)
+    mutated["active_gate_status"] = "not_started"
+    validate_document(mutated, schema, "not_started_gate_handoff")
+
+
 def test_duplicate_identifier_is_rejected() -> None:
     document = load_data(FIXTURES / "duplicate_requirements.yaml")
     with pytest.raises(GovernanceError, match="duplicate IDs"):
