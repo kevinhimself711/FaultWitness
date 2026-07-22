@@ -2,14 +2,14 @@
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
-metadata: {name: default-deny, namespace: {{ $namespace }}}
+metadata: {name: platform-default-deny, namespace: {{ $namespace }}}
 spec:
   podSelector: {}
   policyTypes: [Ingress, Egress]
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
-metadata: {name: allow-dns, namespace: {{ $namespace }}}
+metadata: {name: platform-allow-dns, namespace: {{ $namespace }}}
 spec:
   podSelector: {}
   policyTypes: [Egress]
@@ -22,7 +22,7 @@ spec:
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
-metadata: {name: allow-same-boundary, namespace: {{ $namespace }}}
+metadata: {name: platform-allow-same-boundary, namespace: {{ $namespace }}}
 spec:
   podSelector: {}
   policyTypes: [Ingress, Egress]
