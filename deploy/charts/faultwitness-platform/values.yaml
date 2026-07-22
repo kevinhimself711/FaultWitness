@@ -16,14 +16,14 @@ quotas:
 services:
   postgres:
     namespace: data
-    image: postgres@sha256:301bcb60b8a3ee4ab7e147932723e3abd1cef53516ce5210b39fd9fe5e3602ae
+    image: postgres@sha256:e75c0253ec375a157657c75bbb1705a8bbdd844d5f258973f9e3eb33cfcd9e33
     port: 5432
     secretRef: fw-postgres-env
     persistence: {enabled: true, size: 12Gi, mountPath: /var/lib/postgresql/data}
     resources: {requests: {cpu: 100m, memory: 256Mi}, limits: {cpu: 750m, memory: 1Gi}}
   redis:
     namespace: data
-    image: redis@sha256:02419de7eddf55aa5bcf49efb74e88fa8d931b4d77c07eff8a6b2144472b6952
+    image: redis@sha256:519f0189dfdee3bc0bad61fb265fe73d864b5c64020e6579ad48a45c49965635
     port: 6379
     secretRef: fw-redis-env
     command: ["sh", "-ec"]
@@ -32,14 +32,14 @@ services:
     resources: {requests: {cpu: 50m, memory: 128Mi}, limits: {cpu: 500m, memory: 512Mi}}
   qdrant:
     namespace: data
-    image: qdrant/qdrant@sha256:318c11b72aaab96b36e9662ad244de3cabd0653a1b942d4e8191f18296c81af0
+    image: qdrant/qdrant@sha256:74aba889527770d5934f358865c6e574f5024ba2e047f69a474b71b4bb63f03d
     port: 6333
     secretRef: fw-qdrant-env
     persistence: {enabled: true, size: 8Gi, mountPath: /qdrant/storage}
     resources: {requests: {cpu: 100m, memory: 256Mi}, limits: {cpu: "1", memory: 1Gi}}
   minio:
     namespace: data
-    image: minio/minio@sha256:a929054ae025fa7997857cd0e2a2e3029238e31ad89877326dc032f4c1a14259
+    image: minio/minio@sha256:379b06de0d24339646b6139860b170c39b004818dcec95259ee680997839f7dc
     port: 9000
     secretRef: fw-minio-env
     args: ["server", "/data", "--console-address", ":9001"]
@@ -54,7 +54,7 @@ services:
     resources: {requests: {cpu: 100m, memory: 384Mi}, limits: {cpu: "1", memory: 1Gi}}
   opa:
     namespace: system
-    image: openpolicyagent/opa@sha256:2636af0937bf7c5ab7f79271399c53c45d4b4d2af8a2b9cc43f65c6598b49064
+    image: openpolicyagent/opa@sha256:271e8ab45df386bb516bfba63604fad757ee5be7bb8eebff56834fb855b1eddf
     port: 8181
     args: ["run", "--server", "--addr=0.0.0.0:8181", "/config/policy.rego"]
     configFile: policy.rego
@@ -65,7 +65,7 @@ services:
     resources: {requests: {cpu: 25m, memory: 32Mi}, limits: {cpu: 250m, memory: 128Mi}}
   otel-collector:
     namespace: observability
-    image: otel/opentelemetry-collector-contrib@sha256:789689988e379c58ac12b07718dbcf4b23c2214bd804173c1c77af346d381c15
+    image: otel/opentelemetry-collector-contrib@sha256:8314455bca10c8d9025ef97ef2bade9b5f09d92835aee249a0cc3e0000fa5ffc
     port: 4317
     extraPorts: [{name: otlp-http, port: 4318}, {name: metrics, port: 8889}]
     args: ["--config=/config/config.yaml"]
@@ -88,7 +88,7 @@ services:
     resources: {requests: {cpu: 50m, memory: 128Mi}, limits: {cpu: 500m, memory: 256Mi}}
   prometheus:
     namespace: observability
-    image: prom/prometheus@sha256:6927e0919a144aa7616fd0137d4816816d42f6b816de3af269ab065250859a62
+    image: prom/prometheus@sha256:5d34817348f69ddb956be509cafa4d4c2b5ecbbb5b786dd99d5a62e686b2ece4
     port: 9090
     args: ["--config.file=/config/prometheus.yaml", "--storage.tsdb.path=/data", "--storage.tsdb.retention.time=7d", "--storage.tsdb.retention.size=3GB"]
     configFile: prometheus.yaml
@@ -102,7 +102,7 @@ services:
     resources: {requests: {cpu: 100m, memory: 256Mi}, limits: {cpu: 750m, memory: 768Mi}}
   loki:
     namespace: observability
-    image: grafana/loki@sha256:58a6c186ce78ba04d58bfe2a927eff296ba733a430df09645d56cdc158f3ba08
+    image: grafana/loki@sha256:776847cc648cf21d309560fb9fde98dc0454156be0ababf252bbfca07dadf8af
     port: 3100
     args: ["-config.file=/config/loki.yaml"]
     configFile: loki.yaml
@@ -119,7 +119,7 @@ services:
     resources: {requests: {cpu: 75m, memory: 192Mi}, limits: {cpu: 500m, memory: 512Mi}}
   tempo:
     namespace: observability
-    image: grafana/tempo@sha256:4443be217c396b065ee34845534199c36fdba4dc619cb96550e228d73fba6e69
+    image: grafana/tempo@sha256:f7b6c13b39dfb13a3a79ea52309e8dc280da6a105ee109276d1948432f0d0bc2
     port: 3200
     extraPorts: [{name: otlp-grpc, port: 4317}]
     args: ["-config.file=/config/tempo.yaml"]
@@ -135,7 +135,7 @@ services:
     resources: {requests: {cpu: 75m, memory: 192Mi}, limits: {cpu: 500m, memory: 512Mi}}
   grafana:
     namespace: observability
-    image: grafana/grafana@sha256:8b37a2f028f164ce7b9889e1765b9d6ee23fec80f871d156fbf436d6198d32b7
+    image: grafana/grafana@sha256:83b35757385daafca6dbc2134715f932386331dcde02296609ab6123433552f0
     port: 3000
     secretRef: fw-grafana-env
     persistence: {enabled: true, size: 2Gi, mountPath: /var/lib/grafana}
