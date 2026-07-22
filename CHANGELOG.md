@@ -29,5 +29,6 @@
 - Materialize fourteen frozen G00 design walkthroughs plus PR, Issue, external-link, and evidence-sync governance.
 - Complete I-0006 on immutable candidate `42b9708` with three required public checks and preserved SBOM evidence.
 - Reopen I-0006 to correct the frozen `not_started` G01 handoff state found by full Gate readiness review.
+- Complete the I-0006 handoff correction on immutable candidate `b1bc316` with 43 tests and three required checks.
 
 No product implementation is included in this planning baseline.

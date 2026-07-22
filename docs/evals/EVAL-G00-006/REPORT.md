@@ -2,13 +2,13 @@
 
 ## Result
 
-Result: reopened; the prior candidate passed, but final handoff-correction evidence is pending.
+Result: pass.
 
 ## Candidate
 
 - Prior evaluated revision: `42b97088743d7741c7be4c7e0364794e31bbc59c`.
-- Current evaluated revision: pending handoff-correction candidate.
-- Protected-main revision: `ff87f7a16bd674143462c2d19726c7528b1ee588`.
+- Evaluated revision: `b1bc31681056bbcf6998ba6ea0a509bc9ae1ade9`.
+- Protected-main revision: `dbc825dca17b9bf81013e1b2607ffc5bca5a6293`.
 - Candidate kind: architecture, contract, governance, and CI baseline; no product runtime.
 
 ## Current evidence
@@ -19,19 +19,19 @@ Result: reopened; the prior candidate passed, but final handoff-correction evide
 | Dependency and publication audit | pass | 354 local Windows components and 353 locked Ubuntu components audited; platform-only dependency difference |
 | Mermaid browser rendering | pass | 9 committed diagrams rendered to SVG |
 | Fourteen design walkthroughs | pass | `WALKTHROUGHS.yaml` maps all frozen scenarios to contract bindings |
-| `make verify-fast` | pass | Ruff, 42 pytest tests, 47 Markdown files, Schemas, UTF-8, links, and diff checks |
+| `make verify-fast` | pass | Ruff, 43 pytest tests, 47 Markdown files, Schemas, UTF-8, links, and diff checks |
 | `make eval-changed` | pass | I-0006 validated for the complete changed asset set |
 | `make eval-g00` | pass | Full local candidate audit including 354 dependency components |
-| Windows and Ubuntu candidate CI | pass | GitHub Actions run 29931164225; all three jobs passed |
-| Immutable audit artifact | pass | Artifact 8534115105 is named for and internally records the exact candidate SHA |
-| Protected-main confirmation | pass | GitHub Actions run 29931318776; all three jobs passed after merge |
+| Windows and Ubuntu candidate CI | pass | GitHub Actions run 29932102129; all three jobs passed |
+| Immutable audit artifact | pass | Artifact 8534507651 is named for and internally records the exact candidate SHA |
+| Protected-main confirmation | pass | GitHub Actions run 29932234373; all three jobs passed after merge |
 | Active main Ruleset | pass | Ruleset 19545995 requires both platform checks and the Ubuntu audit |
 
-Candidate run: <https://github.com/kevinhimself711/FaultWitness/actions/runs/29931164225>
+Candidate run: <https://github.com/kevinhimself711/FaultWitness/actions/runs/29932102129>
 
-Audit artifact: <https://github.com/kevinhimself711/FaultWitness/actions/runs/29931164225/artifacts/8534115105>
+Audit artifact: <https://github.com/kevinhimself711/FaultWitness/actions/runs/29932102129/artifacts/8534507651>
 
-Protected-main run: <https://github.com/kevinhimself711/FaultWitness/actions/runs/29931318776>
+Protected-main run: <https://github.com/kevinhimself711/FaultWitness/actions/runs/29932234373>
 
 ## Applicability and limitations
 

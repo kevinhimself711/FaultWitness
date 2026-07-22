@@ -2,7 +2,7 @@ schema_version: "0.1.0"
 claims:
   - id: CLAIM-GOV-001
     statement: "The repository has a pinned, locally reproducible toolchain baseline."
-    status: partially_verified
+    status: verified
     requirements: []
     evidence:
       - EVAL-G00-001
@@ -42,5 +42,4 @@ claims:
     evidence:
       - EVAL-G00-006
     limitations:
-      - "The frozen G01 lifecycle handoff correction is awaiting cross-platform candidate evidence."
       - "This claim covers design and repository governance, not product runtime behavior."
