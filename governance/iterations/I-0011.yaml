@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0011
 gate: G01
 title: Durable State Checkpoint and Transactional Events
-status: planned
+status: in_progress
 scope:
   - Implement owner-isolated PostgreSQL schemas roles migrations versions idempotency Outbox Inbox and DLQ.
   - Implement at-least-once Redis Streams publication and consumption with deterministic deduplication and readiness limits.

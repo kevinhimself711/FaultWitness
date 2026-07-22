@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0010
 gate: G01
 title: Executable Contracts and Transition Kernel
-status: in_progress
+status: completed
 scope:
   - Compile the G00 state Command Event type error and failure specifications into deterministic package resources.
   - Implement strict Pydantic v2 core and G01 support types with explicit predicate registries.
@@ -16,7 +16,7 @@ tests:
   - uv run python -m faultwitness_dev eval-iteration I-0010 --candidate-sha <full-sha>
   - EVAL-G01-004 generated-contract drift transition mutation and compatibility suite
 eval_id: EVAL-G01-004
-commit: null
+commit: f81c7f0
 changed_paths:
   - pyproject.toml
   - uv.lock

@@ -67,6 +67,7 @@ claims:
     limitations:
       - "EVAL-G01-001 proves secure bootstrap, pinned host identity, dedicated-key access, and the pre-deployment host capability floor only; platform deployment and runtime behavior remain unverified until EVAL-G01-002 through EVAL-G01-006 pass."
       - "Candidate 0c8b66c deployed the eleven I-0009 platform workloads and observed point-in-time readiness, but EVAL-G01-003 remains pending until stability, recovery, restore, isolation, telemetry, and supply-chain evidence all pass."
+      - "Candidate f81c7f0 passed local executable-contract conformance for all 82 transitions and 492 rejected mutations; cross-platform generation and public compatibility evidence remain open in EVAL-G01-004."
       - "The planned topology is single-node and does not claim high availability or G06 horizontal scaling and sandbox security."
   - id: CLAIM-TRACE-001
     statement: "G01 will produce complete correlated sanitized and replayable LangSmith and OTel evidence for every platform and model stage that actually executes."
