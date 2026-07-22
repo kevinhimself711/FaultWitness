@@ -21,6 +21,10 @@ Result: pass.
 
 Cross-platform run: <https://github.com/kevinhimself711/FaultWitness/actions/runs/29918293502>
 
+Evidence-finalization run: <https://github.com/kevinhimself711/FaultWitness/actions/runs/29918433105>
+
+Protected-main confirmation: <https://github.com/kevinhimself711/FaultWitness/actions/runs/29918543956>
+
 ## Deviations
 
 - Initial validation exposed a JSON Schema `oneOf` ambiguity because a pattern-only branch also accepted null. The store branch now declares `type: string`; no contract rule was relaxed.

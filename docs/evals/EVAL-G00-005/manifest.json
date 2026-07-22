@@ -8,6 +8,10 @@
   "environments": ["windows-local", "windows-github-hosted", "ubuntu-github-hosted"],
   "commands": ["make verify-fast", "make eval-changed", "uv run pytest tests/contracts tests/governance -q"],
   "artifacts": ["docs/evals/EVAL-G00-005/PLAN.md", "docs/evals/EVAL-G00-005/REPORT.md"],
-  "evidence_urls": ["https://github.com/kevinhimself711/FaultWitness/actions/runs/29918293502"],
+  "evidence_urls": [
+    "https://github.com/kevinhimself711/FaultWitness/actions/runs/29918293502",
+    "https://github.com/kevinhimself711/FaultWitness/actions/runs/29918433105",
+    "https://github.com/kevinhimself711/FaultWitness/actions/runs/29918543956"
+  ],
   "open_evidence": []
 }
