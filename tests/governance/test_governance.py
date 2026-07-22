@@ -5,7 +5,12 @@ from pathlib import Path
 
 import pytest
 
-from faultwitness_dev.changes import infer_iteration_id, validate_change_record
+from faultwitness_dev.changes import (
+    G00_CLOSURE_PATHS,
+    infer_iteration_id,
+    validate_change_record,
+    validate_g00_closure_change,
+)
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.schemas import (
     _check_adr_invariants,
@@ -123,6 +128,39 @@ def test_iteration_inference_selects_current_in_progress_record() -> None:
         and load_data(ROOT / path)["docs_updated"]
     ]
     assert infer_iteration_id(ROOT, paths) == max(eligible)
+
+
+def _g00_closure_records() -> tuple[dict, dict, dict]:
+    state = {
+        "active_gate": "G01",
+        "active_gate_status": "not_started",
+        "active_iteration": None,
+        "next_iteration": None,
+        "last_closed_gate": "G00",
+        "active_gate_plan": "docs/gates/G01/PLAN.md",
+        "active_gate_report": "docs/gates/G01/REPORT.md",
+    }
+    return state, {"id": "G00", "status": "passed", "waivers": []}, {
+        "id": "G01",
+        "status": "planned",
+    }
+
+
+def test_asset_only_g00_closure_is_accepted() -> None:
+    validate_g00_closure_change(*_g00_closure_records(), sorted(G00_CLOSURE_PATHS))
+
+
+def test_g00_closure_rejects_source_code() -> None:
+    paths = sorted(G00_CLOSURE_PATHS | {"src/faultwitness_dev/runtime.py"})
+    with pytest.raises(GovernanceError, match="unexpected"):
+        validate_g00_closure_change(*_g00_closure_records(), paths)
+
+
+def test_g00_closure_rejects_inexact_handoff_state() -> None:
+    state, g00, g01 = _g00_closure_records()
+    state["active_gate_status"] = "planned"
+    with pytest.raises(GovernanceError, match="project-state drift"):
+        validate_g00_closure_change(state, g00, g01, sorted(G00_CLOSURE_PATHS))
 
 
 def _load_evidence_assets() -> tuple[list[dict], dict, dict]:
