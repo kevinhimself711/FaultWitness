@@ -58,7 +58,7 @@ def _assert_candidate(root: Path, candidate_sha: str, files: list[Path]) -> None
         raise GovernanceError("Control API deployment inputs differ from immutable candidate")
 
 
-def _context(root: Path, files: list[Path]) -> tuple[str, str]:
+def _context(root: Path, files: list[Path]) -> tuple[bytes, str]:
     tar_stream = io.BytesIO()
     with tarfile.open(fileobj=tar_stream, mode="w", format=tarfile.PAX_FORMAT) as archive:
         for path in files:
@@ -73,7 +73,7 @@ def _context(root: Path, files: list[Path]) -> tuple[str, str]:
     with gzip.GzipFile(fileobj=stream, mode="wb", filename="", mtime=0) as compressed:
         compressed.write(tar_stream.getvalue())
     payload = stream.getvalue()
-    return base64.b64encode(payload).decode(), hashlib.sha256(payload).hexdigest()
+    return payload, hashlib.sha256(payload).hexdigest()
 
 
 def _stage_base_image(root: Path) -> None:
@@ -83,6 +83,12 @@ def _stage_base_image(root: Path) -> None:
     archive = Path(appdata) / "FaultWitness" / "artifacts" / "I-0012" / "python-base.tar"
     crane = _ensure_crane(root)
     _pull_image_archive(crane, BASE_IMAGE, archive)
+    _stage_file(archive, "faultwitness-i0012-python-base.tar")
+
+
+def _stage_file(local_path: Path, remote_name: str) -> None:
+    if not re.fullmatch(r"[a-z0-9.-]+", remote_name):
+        raise GovernanceError("remote staging name is invalid")
     paths = BootstrapPaths.defaults()
     bundle, _ = _remote_arguments(paths)
     arguments = [
@@ -101,8 +107,8 @@ def _stage_base_image(root: Path) -> None:
         "PasswordAuthentication=no",
         "-i",
         str(paths.ssh_private_key),
-        str(archive),
-        f"{bundle.server_username}@{bundle.server_host}:faultwitness-i0012-python-base.tar",
+        str(local_path),
+        f"{bundle.server_username}@{bundle.server_host}:{remote_name}",
     ]
     result = subprocess.run(arguments, check=False, capture_output=True, text=True, timeout=300)
     if result.returncode:
@@ -110,9 +116,8 @@ def _stage_base_image(root: Path) -> None:
             "base image staging failed (" + ssh_failure_category(result.stderr) + ")"
         )
     run_remote_script(
-        'install -m 0600 "$HOME/faultwitness-i0012-python-base.tar" '
-        "/tmp/faultwitness-i0012-python-base.tar; "
-        'rm -f "$HOME/faultwitness-i0012-python-base.tar"\n',
+        f'install -m 0600 "$HOME/{remote_name}" "/tmp/{remote_name}"; '
+        f'rm -f "$HOME/{remote_name}"\n',
         privileged=False,
     )
 
@@ -120,8 +125,15 @@ def _stage_base_image(root: Path) -> None:
 def deploy_control_api(root: Path, candidate_sha: str) -> dict[str, Any]:
     files = _tracked_files(root)
     _assert_candidate(root, candidate_sha, files)
-    encoded, bundle_digest = _context(root, files)
+    context_payload, bundle_digest = _context(root, files)
+    appdata = os.environ.get("APPDATA")
+    if not appdata:
+        raise GovernanceError("APPDATA is required for private deployment staging")
+    context_path = Path(appdata) / "FaultWitness" / "artifacts" / "I-0012" / "context.tgz"
+    context_path.parent.mkdir(parents=True, exist_ok=True)
+    context_path.write_bytes(context_payload)
     _stage_base_image(root)
+    _stage_file(context_path, "faultwitness-i0012-context.tgz")
     image = f"docker.io/faultwitness/control-api:{candidate_sha}"
     manifest = _manifest(candidate_sha, image)
     manifest_encoded = base64.b64encode(manifest.encode()).decode()
@@ -129,7 +141,7 @@ def deploy_control_api(root: Path, candidate_sha: str) -> dict[str, Any]:
 work=$(mktemp -d /tmp/faultwitness-i0012-build.XXXXXX)
 trap 'rm -rf "$work"' EXIT HUP INT TERM
 docker load -i /tmp/faultwitness-i0012-python-base.tar >/dev/null
-printf %s {encoded} | base64 -d >"$work/context.tgz"
+install -m 0600 /tmp/faultwitness-i0012-context.tgz "$work/context.tgz"
 test "$(sha256sum "$work/context.tgz" | awk '{{print $1}}')" = {bundle_digest}
 tar -xzf "$work/context.tgz" -C "$work"
 docker build --pull=false --label faultwitness.candidate={candidate_sha} -t {image} -f "$work/deploy/control-api/Dockerfile" "$work" >/dev/null
