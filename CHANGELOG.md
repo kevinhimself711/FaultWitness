@@ -33,5 +33,6 @@
 - Reopen I-0006 to add fail-closed machine validation for full G00 closure readiness.
 - Complete I-0006 closure-readiness enforcement on immutable candidate `b6d5f4d` with 48 tests.
 - Reopen I-0006 to enforce the exact no-Iteration G00 closure asset boundary.
+- Complete I-0006 closure-protocol enforcement on immutable candidate `c38ca79` with 51 tests.
 
 No product implementation is included in this planning baseline.
