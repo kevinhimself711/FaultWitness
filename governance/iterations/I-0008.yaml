@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0008
 gate: G01
 title: K3s GPU and Isolated Runtime Foundation
-status: in_progress
+status: completed
 scope:
   - Install pinned single-node K3s and Helm with embedded-etcd snapshots and Kubernetes secret encryption.
   - Establish namespaces quotas default-deny network policy and private management access while preserving existing Docker workloads.
@@ -17,7 +17,7 @@ tests:
   - uv run python -m faultwitness_dev eval-iteration I-0008 --candidate-sha <full-sha>
   - EVAL-G01-002 coexistence network runtimeclass GPU and rollback suite
 eval_id: EVAL-G01-002
-commit: null
+commit: dcfb250
 changed_paths:
   - deploy/k3s
   - deploy/helm

@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0009
 gate: G01
 title: Platform Services and Operational Observability
-status: planned
+status: in_progress
 scope:
   - Deploy PostgreSQL Redis Qdrant MinIO Keycloak OPA and their isolated identities storage and backup contracts.
   - Deploy OTel Collector Prometheus Loki Tempo and Grafana with bounded resources and private access.

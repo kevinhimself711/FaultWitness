@@ -9,6 +9,7 @@
 
 ### Tooling
 
+- Hand off the landed I-0008 infrastructure implementation to I-0009 while retaining EVAL-G01-002 as explicit blocking candidate debt; activate only the frozen platform-service and operational-observability scope.
 - Land the I-0008 infrastructure checkpoint: pinned K3s/Helm deployment assets, gVisor/Kata/NVIDIA runtime integration, offline image handling, runtime and network smoke definitions, Docker coexistence auditing, diagnostics, and focused tests. The private K3s service and required runtimes are deployed; I-0008 remains open without an EVAL-G01-002 pass claim.
 - Add I-0007 SOPS/Age encrypted handoff migration, project identity bootstrap, fail-closed host pinning, operator-approved long-lived credential acceptance, read-only host probing, and private Eval commands.
 - Correct I-0007's risk premise: untracked owner-host handoff values are retained unchanged when publication/history scans show zero exposure; confirmed compromise or operator revocation remains the rotation trigger.
