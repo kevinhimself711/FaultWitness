@@ -40,5 +40,7 @@ assets:
     schema: schemas/bootstrap/secret-config.schema.json
   - path: config/secrets/toolchain.lock.yaml
     schema: schemas/bootstrap/toolchain-lock.schema.json
+  - path: docs/evals/EVAL-G01-001/CAPABILITY_BASELINE.json
+    schema: schemas/bootstrap/capability-baseline.schema.json
   - path: .github/rulesets/main.json
     schema: schemas/governance/github-ruleset.schema.json

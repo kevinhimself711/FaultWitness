@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0007
 gate: G01
 title: Secure Bootstrap and Capability Baseline
-status: in_progress
+status: completed
 scope:
   - Install checksum-pinned SOPS and Age outside the repository and establish schema-validated no-value public configuration.
   - Establish project-scoped Age and SSH identities strict host verification and secret bootstrap interfaces without committing values.
@@ -20,7 +20,7 @@ tests:
   - uv run python -m faultwitness_dev eval-iteration I-0007 --candidate-sha <full-sha>
   - EVAL-G01-001 secret canary credential migration and capability baseline suite
 eval_id: EVAL-G01-001
-commit: null
+commit: 7a9237c4c5b9fc0c736435e836534e72712c4169
 changed_paths:
   - AGENTS.md
   - PROJECT_STATE.yaml

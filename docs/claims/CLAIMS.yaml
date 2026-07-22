@@ -55,7 +55,7 @@ claims:
       - "G00 proves the planning architecture contract and governance baseline only; no product runtime is claimed."
   - id: CLAIM-PLATFORM-001
     statement: "G01 will establish a reproducible single-node platform with executable contracts durable state transactional events authenticated APIs and recoverable SSE."
-    status: pending
+    status: partially_verified
     requirements: [REQ-REL-002, REQ-SEC-003, REQ-PERF-001, REQ-OBS-002]
     evidence:
       - EVAL-G01-001
@@ -65,7 +65,7 @@ claims:
       - EVAL-G01-005
       - EVAL-G01-006
     limitations:
-      - "This is a pre-registered claim only; no G01 implementation or runtime evidence exists yet."
+      - "EVAL-G01-001 proves secure bootstrap, pinned host identity, dedicated-key access, and the pre-deployment host capability floor only; platform deployment and runtime behavior remain unverified until EVAL-G01-002 through EVAL-G01-006 pass."
       - "The planned topology is single-node and does not claim high availability or G06 horizontal scaling and sandbox security."
   - id: CLAIM-TRACE-001
     statement: "G01 will produce complete correlated sanitized and replayable LangSmith and OTel evidence for every platform and model stage that actually executes."

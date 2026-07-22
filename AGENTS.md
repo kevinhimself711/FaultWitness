@@ -4,7 +4,7 @@
 
 FaultWitness is a multi-tenant Agent Runtime for investigating microservice incidents, proposing bounded remediations, executing approved actions, and producing auditable evaluation and training assets.
 
-G00 is closed and G01 is in progress. I-0007 is the only active Iteration; its scope is secure bootstrap, acceptance of the operator-declared long-lived credentials without changing their values, and a sanitized host capability baseline. Read PROJECT_STATE.yaml, the authoritative final plan, the active Gate plan, the current Iteration/Eval assets, and the previous Gate report before doing any work. I-0007 does not authorize K3s installation, existing-workload mutation, model calls, LangSmith calls, credential rotation, or product implementation.
+G00 is closed and G01 is in progress. I-0007 and EVAL-G01-001 are complete on their immutable implementation candidate. No Iteration is active; I-0008 is next. Before activating it, read PROJECT_STATE.yaml, the authoritative final plan, the active Gate plan/report, I-0007's immutable Eval assets, and the planned I-0008 assets. Do not perform I-0008 server mutation until its activation commit is created.
 
 ## Source-of-truth order
 
