@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faultwitness.local/schemas/governance/claim-registry.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "claims"],
+  "properties": {
+    "schema_version": {"pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "statement", "status", "requirements", "evidence", "limitations"],
+        "properties": {
+          "id": {"pattern": "^CLAIM-[A-Z]+-[0-9]{3}$"},
+          "statement": {"type": "string", "minLength": 10},
+          "status": {"enum": ["pending", "partially_verified", "verified", "falsified", "withdrawn"]},
+          "requirements": {"type": "array", "items": {"pattern": "^REQ-[A-Z]+-[0-9]{3}$"}, "uniqueItems": true},
+          "evidence": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true},
+          "limitations": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

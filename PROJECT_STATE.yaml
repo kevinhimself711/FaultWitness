@@ -5,14 +5,14 @@ repository_visibility: private
 plan_version: "G00-master-plan-v1"
 architecture_version: "planned"
 requirements_version: "planned"
-governance_schema_version: "planned"
+governance_schema_version: "1.0.0"
 
 active_gate: G00
 active_gate_status: in_progress
-active_iteration: null
-next_iteration: I-0002
+active_iteration: I-0002
+next_iteration: I-0003
 last_closed_gate: null
-latest_eval_run: EVAL-G00-001
+latest_eval_run: EVAL-G00-002
 
 authoritative_plan: docs/blueprint/FINAL_PLAN.md
 active_gate_plan: docs/gates/G00/PLAN.md

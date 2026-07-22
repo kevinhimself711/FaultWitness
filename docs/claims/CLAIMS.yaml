@@ -7,3 +7,10 @@ claims:
     evidence:
       - EVAL-G00-001
     limitations: []
+  - id: CLAIM-GOV-002
+    statement: "Governance assets are schema-validated and policy violations fail closed."
+    status: partially_verified
+    requirements: []
+    evidence:
+      - EVAL-G00-002
+    limitations: []

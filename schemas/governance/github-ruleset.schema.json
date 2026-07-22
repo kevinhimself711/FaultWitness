@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faultwitness.local/schemas/governance/github-ruleset.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "target", "enforcement", "conditions", "rules"],
+  "properties": {
+    "name": {"const": "main-governance"},
+    "target": {"const": "branch"},
+    "enforcement": {"const": "active"},
+    "conditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref_name"],
+      "properties": {
+        "ref_name": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["include", "exclude"],
+          "properties": {
+            "include": {"const": ["~DEFAULT_BRANCH"]},
+            "exclude": {"const": []}
+          }
+        }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "minItems": 4,
+      "items": {"type": "object", "required": ["type"]}
+    }
+  }
+}

@@ -7,6 +7,7 @@
 - Pin the Python, Node.js, uv, and pnpm repository toolchains.
 - Add locked Python and Node workspaces and cross-platform verification entry points.
 - Record the I-0001 iteration and EVAL-G00-001 evidence assets.
+- Add versioned governance schemas, the canonical repository CLI, negative policy tests, and cross-platform baseline CI.
 
 ### Planning
 

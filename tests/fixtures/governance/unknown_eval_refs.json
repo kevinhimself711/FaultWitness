@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G99-001",
+  "gate": "G99",
+  "iteration": "I-9999",
+  "evaluated_revision": "fixture",
+  "status": "pending",
+  "environments": ["fixture"],
+  "commands": ["fixture"],
+  "artifacts": ["fixture"],
+  "open_evidence": []
+}

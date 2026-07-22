@@ -1,0 +1,18 @@
+schema_version: "1.0.0"
+requirements:
+  - id: REQ-GOV-001
+    statement: First duplicate requirement statement.
+    mandatory: true
+    priority: P0
+    source_ids: [SRC-001]
+    roles: [developer]
+    gates: [G00]
+    status: accepted
+  - id: REQ-GOV-001
+    statement: Second duplicate requirement statement.
+    mandatory: true
+    priority: P0
+    source_ids: [SRC-002]
+    roles: [developer]
+    gates: [G00]
+    status: accepted

@@ -1,0 +1,15 @@
+schema_version: "1.0.0"
+id: I-9000
+gate: G00
+title: Illegal Status Fixture
+status: silently_skipped
+scope: [Exercise illegal status rejection.]
+non_goals: []
+dependencies: []
+tests: [fixture]
+eval_id: EVAL-G00-900
+commit: null
+changed_paths: [src/example]
+behavior_change: false
+docs_updated: []
+threshold_changes: []

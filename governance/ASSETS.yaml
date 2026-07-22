@@ -1,0 +1,18 @@
+schema_version: "1.0.0"
+assets:
+  - path: PROJECT_STATE.yaml
+    schema: schemas/governance/project-state.schema.json
+  - path: docs/requirements/REQUIREMENTS.yaml
+    schema: schemas/governance/requirement-registry.schema.json
+  - path: docs/claims/CLAIMS.yaml
+    schema: schemas/governance/claim-registry.schema.json
+  - path: governance/iterations/I-*.yaml
+    schema: schemas/governance/iteration.schema.json
+  - path: governance/gates/G*.yaml
+    schema: schemas/governance/gate.schema.json
+  - path: docs/evals/EVAL-G*/manifest.json
+    schema: schemas/governance/eval-manifest.schema.json
+  - path: docs/adr/INDEX.yaml
+    schema: schemas/governance/adr-registry.schema.json
+  - path: .github/rulesets/main.json
+    schema: schemas/governance/github-ruleset.schema.json

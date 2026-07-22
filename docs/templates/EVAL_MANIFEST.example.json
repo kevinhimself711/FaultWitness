@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G99-999",
+  "gate": "G99",
+  "iteration": "I-9999",
+  "evaluated_revision": "candidate tree",
+  "status": "pending",
+  "environments": ["local"],
+  "commands": ["make verify-fast"],
+  "artifacts": ["docs/evals/EVAL-G99-999/REPORT.md"],
+  "open_evidence": []
+}

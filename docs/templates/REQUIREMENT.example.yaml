@@ -1,0 +1,8 @@
+id: REQ-DOMAIN-001
+statement: A testable requirement stated without copying source material.
+mandatory: true
+priority: P0
+source_ids: [SRC-JD-001]
+roles: [agent_engineer]
+gates: [G00]
+status: proposed

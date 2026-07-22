@@ -1,0 +1,17 @@
+schema_version: "1.0.0"
+id: I-0006
+gate: G00
+title: Gate Hardening and Candidate Audit
+status: planned
+scope:
+  - Harden CI and run the G00 candidate evaluation.
+non_goals:
+  - Product implementation.
+dependencies: [I-0005]
+tests: [EVAL-G00-006]
+eval_id: EVAL-G00-006
+commit: null
+changed_paths: [.github, docs/gates/G00]
+behavior_change: false
+docs_updated: []
+threshold_changes: []

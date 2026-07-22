@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faultwitness.local/schemas/governance/iteration.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "id", "gate", "title", "status", "scope", "non_goals", "dependencies", "tests", "eval_id", "commit", "changed_paths", "behavior_change", "docs_updated", "threshold_changes"],
+  "properties": {
+    "schema_version": {"pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "id": {"pattern": "^I-[0-9]{4}$"},
+    "gate": {"pattern": "^G[0-9]{2}$"},
+    "title": {"type": "string", "minLength": 5},
+    "status": {"enum": ["planned", "in_progress", "completed", "failed"]},
+    "scope": {"type": "array", "items": {"type": "string", "minLength": 3}, "minItems": 1},
+    "non_goals": {"type": "array", "items": {"type": "string"}},
+    "dependencies": {"type": "array", "items": {"type": "string"}},
+    "tests": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "eval_id": {"pattern": "^EVAL-G[0-9]{2}-[0-9]{3}$"},
+    "commit": {"oneOf": [{"type": "string", "pattern": "^[0-9a-f]{7,40}$"}, {"type": "null"}]},
+    "changed_paths": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "behavior_change": {"type": "boolean"},
+    "docs_updated": {"type": "array", "items": {"type": "string"}},
+    "threshold_changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "from", "to", "direction"],
+        "properties": {
+          "id": {"type": "string"},
+          "from": {"type": "number"},
+          "to": {"type": "number"},
+          "direction": {"enum": ["increase", "unchanged"]}
+        }
+      }
+    }
+  }
+}

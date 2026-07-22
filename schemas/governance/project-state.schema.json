@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faultwitness.local/schemas/governance/project-state.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project_name", "repository_visibility", "plan_version", "architecture_version", "requirements_version", "governance_schema_version", "active_gate", "active_gate_status", "active_iteration", "next_iteration", "last_closed_gate", "latest_eval_run", "authoritative_plan", "active_gate_plan", "active_gate_report", "updated_on"],
+  "properties": {
+    "schema_version": {"$ref": "#/$defs/version"},
+    "project_name": {"const": "FaultWitness"},
+    "repository_visibility": {"const": "private"},
+    "plan_version": {"type": "string", "minLength": 1},
+    "architecture_version": {"type": "string", "minLength": 1},
+    "requirements_version": {"type": "string", "minLength": 1},
+    "governance_schema_version": {"type": "string", "minLength": 1},
+    "active_gate": {"pattern": "^G[0-9]{2}$"},
+    "active_gate_status": {"enum": ["planned", "in_progress", "passed", "failed", "blocked"]},
+    "active_iteration": {"oneOf": [{"type": "string", "pattern": "^I-[0-9]{4}$"}, {"type": "null"}]},
+    "next_iteration": {"oneOf": [{"type": "string", "pattern": "^I-[0-9]{4}$"}, {"type": "null"}]},
+    "last_closed_gate": {"oneOf": [{"type": "string", "pattern": "^G[0-9]{2}$"}, {"type": "null"}]},
+    "latest_eval_run": {"oneOf": [{"type": "string", "pattern": "^EVAL-G[0-9]{2}-[0-9]{3}$"}, {"type": "null"}]},
+    "authoritative_plan": {"type": "string", "minLength": 1},
+    "active_gate_plan": {"type": "string", "minLength": 1},
+    "active_gate_report": {"type": "string", "minLength": 1},
+    "updated_on": {"type": ["string", "object"]}
+  },
+  "$defs": {"version": {"pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"}}
+}

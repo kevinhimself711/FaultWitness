@@ -1,0 +1,34 @@
+schema_version: "1.0.0"
+id: I-0002
+gate: G00
+title: Governance Schemas CLI and Baseline CI
+status: in_progress
+scope:
+  - Define governance schemas and machine-readable registries.
+  - Replace bootstrap checks with the faultwitness_dev CLI.
+  - Add positive and negative governance tests and baseline CI.
+  - Enable a main branch ruleset after CI passes.
+non_goals:
+  - Populate the first-party evidence registry.
+  - Define product architecture or runtime contracts.
+  - Implement product behavior.
+dependencies:
+  - I-0001
+tests:
+  - make verify-fast
+  - make eval-changed
+  - EVAL-G00-002 negative fixture suite
+eval_id: EVAL-G00-002
+commit: null
+changed_paths:
+  - schemas/governance
+  - governance
+  - src/faultwitness_dev
+  - tests/governance
+  - .github/workflows/baseline.yml
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/I-0002.md
+  - docs/evals/EVAL-G00-002/REPORT.md
+  - CHANGELOG.md
+threshold_changes: []

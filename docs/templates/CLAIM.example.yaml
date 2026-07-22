@@ -1,0 +1,6 @@
+id: CLAIM-DOMAIN-001
+statement: A falsifiable project claim tied to requirements and evidence.
+status: pending
+requirements: [REQ-DOMAIN-001]
+evidence: [EVAL-G00-000]
+limitations: []
