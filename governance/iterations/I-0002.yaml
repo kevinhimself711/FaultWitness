@@ -19,7 +19,7 @@ tests:
   - make eval-changed
   - EVAL-G00-002 negative fixture suite
 eval_id: EVAL-G00-002
-commit: 3e4fc7b0595ffddfc19b95ba15f7ce9fcc47ac4f
+commit: 1828610805c3c99d0a051f05b0083308d4fd3c32
 changed_paths:
   - schemas/governance
   - governance

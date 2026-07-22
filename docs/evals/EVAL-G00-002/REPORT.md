@@ -19,6 +19,8 @@ Cross-platform run: <https://github.com/kevinhimself711/FaultWitness/actions/run
 
 Ruleset evidence: <https://github.com/kevinhimself711/FaultWitness/rules>
 
+Protected-main confirmation: <https://github.com/kevinhimself711/FaultWitness/actions/runs/29913741421>
+
 ## Deviations
 
 - The initial private repository could not activate Rulesets on GitHub Free. The project owner explicitly approved public visibility. [AMD-0001](../../gates/G00/AMENDMENTS/AMD-0001.md) records the narrowly scoped Gate amendment and pre-publication safeguards; it is not a waiver for the full I-0006 audit.

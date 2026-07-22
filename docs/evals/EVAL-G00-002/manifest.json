@@ -3,7 +3,7 @@
   "eval_id": "EVAL-G00-002",
   "gate": "G00",
   "iteration": "I-0002",
-  "evaluated_revision": "3e4fc7b0595ffddfc19b95ba15f7ce9fcc47ac4f",
+  "evaluated_revision": "1828610805c3c99d0a051f05b0083308d4fd3c32",
   "status": "pass",
   "environments": ["windows-local", "windows-github-hosted", "ubuntu-github-hosted"],
   "commands": ["make verify-fast", "make eval-changed", "uv run pytest tests/governance -q"],
@@ -11,6 +11,8 @@
   "evidence_urls": [
     "https://github.com/kevinhimself711/FaultWitness/actions/runs/29912935245",
     "https://github.com/kevinhimself711/FaultWitness/actions/runs/29913529681",
+    "https://github.com/kevinhimself711/FaultWitness/actions/runs/29913663629",
+    "https://github.com/kevinhimself711/FaultWitness/actions/runs/29913741421",
     "https://github.com/kevinhimself711/FaultWitness/rules"
   ],
   "open_evidence": []
