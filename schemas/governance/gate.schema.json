@@ -3,7 +3,7 @@
   "$id": "https://faultwitness.local/schemas/governance/gate.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "id", "title", "status", "plan", "report", "iterations", "pass_criteria", "waivers"],
+  "required": ["schema_version", "id", "title", "status", "plan", "report", "iterations", "pass_criteria", "waivers", "amendments"],
   "properties": {
     "schema_version": {"pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
     "id": {"pattern": "^G[0-9]{2}$"},
@@ -13,6 +13,7 @@
     "report": {"type": "string", "minLength": 1},
     "iterations": {"type": "array", "items": {"pattern": "^I-[0-9]{4}$"}, "uniqueItems": true},
     "pass_criteria": {"type": "array", "items": {"type": "string", "minLength": 5}, "minItems": 1},
-    "waivers": {"type": "array", "items": {"type": "string"}}
+    "waivers": {"type": "array", "items": {"type": "string"}},
+    "amendments": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
   }
 }

@@ -7,7 +7,7 @@
   "properties": {
     "schema_version": {"$ref": "#/$defs/version"},
     "project_name": {"const": "FaultWitness"},
-    "repository_visibility": {"const": "private"},
+    "repository_visibility": {"const": "public"},
     "plan_version": {"type": "string", "minLength": 1},
     "architecture_version": {"type": "string", "minLength": 1},
     "requirements_version": {"type": "string", "minLength": 1},

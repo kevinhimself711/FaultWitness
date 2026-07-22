@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0002
 gate: G00
 title: Governance Schemas CLI and Baseline CI
-status: in_progress
+status: completed
 scope:
   - Define governance schemas and machine-readable registries.
   - Replace bootstrap checks with the faultwitness_dev CLI.
@@ -19,7 +19,7 @@ tests:
   - make eval-changed
   - EVAL-G00-002 negative fixture suite
 eval_id: EVAL-G00-002
-commit: null
+commit: 3e4fc7b0595ffddfc19b95ba15f7ce9fcc47ac4f
 changed_paths:
   - schemas/governance
   - governance
@@ -31,4 +31,5 @@ docs_updated:
   - docs/roadmap/iterations/I-0002.md
   - docs/evals/EVAL-G00-002/REPORT.md
   - CHANGELOG.md
+  - docs/gates/G00/AMENDMENTS/AMD-0001.md
 threshold_changes: []
