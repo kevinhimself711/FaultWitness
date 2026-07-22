@@ -143,6 +143,7 @@ printf %s {encoded} | base64 -d >"$work/platform.tgz"
 actual=$(sha256sum "$work/platform.tgz" | awk '{{print $1}}')
 test "$actual" = {bundle_digest}
 tar -xzf "$work/platform.tgz" -C "$work"
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 /usr/local/bin/helm lint "$work/chart" -f "$work/values.yaml" >/dev/null
 /usr/local/bin/helm upgrade --install {RELEASE_NAME} "$work/chart" \
   --namespace {NAMESPACE} --create-namespace -f "$work/values.yaml" \

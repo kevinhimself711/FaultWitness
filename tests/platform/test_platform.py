@@ -122,6 +122,7 @@ def test_deploy_platform_stages_helm_bundle_and_writes_private_summary(
         evidence_paths=evidence,
     )
     script = str(captured["script"])
+    assert "export KUBECONFIG=/etc/rancher/k3s/k3s.yaml" in script
     assert "helm upgrade --install fw-platform" in script
     assert "--atomic --wait --timeout 15m" in script
     assert "fw-platform-candidate-binding" in script
