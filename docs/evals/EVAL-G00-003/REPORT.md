@@ -19,6 +19,10 @@ Result: pass.
 
 Cross-platform run: <https://github.com/kevinhimself711/FaultWitness/actions/runs/29915287611>
 
+Evidence-finalization run: <https://github.com/kevinhimself711/FaultWitness/actions/runs/29915399658>
+
+Protected-main confirmation: <https://github.com/kevinhimself711/FaultWitness/actions/runs/29915529718>
+
 ## Deviations
 
 - The first local run correctly failed because the existing Iteration-inference regression hard-coded I-0002. The test was narrowed to prove planned bootstrap records are ignored and a new assertion verifies that the current in-progress I-0003 is selected. No validator or Gate threshold was weakened.
