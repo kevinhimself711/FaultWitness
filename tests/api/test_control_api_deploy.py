@@ -8,6 +8,7 @@ from faultwitness_dev.control_api_deploy import (
     inspect_control_api,
     inspect_keycloak_realm,
     provision_keycloak_realm,
+    run_control_api_smoke,
 )
 from faultwitness_dev.errors import GovernanceError
 
@@ -22,6 +23,8 @@ def test_control_api_deploy_rejects_invalid_candidate(candidate: str) -> None:
         provision_keycloak_realm(Path.cwd(), candidate)
     with pytest.raises(GovernanceError, match="candidate SHA"):
         inspect_keycloak_realm(candidate)
+    with pytest.raises(GovernanceError, match="candidate SHA"):
+        run_control_api_smoke(candidate)
 
 
 def test_control_api_container_is_pinned_and_non_root() -> None:

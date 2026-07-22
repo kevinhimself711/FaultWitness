@@ -273,6 +273,38 @@ printf '%s %s %s\n' "$tenants" "$roles" "$users"
     return {"candidate_sha": candidate_sha, "tenant_count": 2, "role_count": 4, "user_count": 8}
 
 
+def run_control_api_smoke(candidate_sha: str) -> dict[str, Any]:
+    if not FULL_SHA.fullmatch(candidate_sha):
+        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+    manifest = _smoke_manifest(candidate_sha)
+    encoded = base64.b64encode(manifest.encode()).decode()
+    script = f"""set -eu
+/usr/local/bin/k3s kubectl -n fw-system get secret fw-synthetic-users -o json | python3 -c 'import json,sys; d=json.load(sys.stdin); d["metadata"]={{"name":"fw-control-smoke-users","namespace":"fw-control"}}; d.pop("type",None); print(json.dumps(d))' | /usr/local/bin/k3s kubectl apply -f - >/dev/null
+/usr/local/bin/k3s kubectl -n fw-control delete job control-api-smoke --ignore-not-found --wait=true >/dev/null
+printf %s {encoded} | base64 -d | /usr/local/bin/k3s kubectl apply -f - >/dev/null
+/usr/local/bin/k3s kubectl -n fw-control wait --for=condition=complete job/control-api-smoke --timeout=120s >/dev/null
+/usr/local/bin/k3s kubectl -n fw-control logs job/control-api-smoke
+"""
+    output = run_remote_script(script, privileged=True, timeout=180).strip()
+    try:
+        result = json.loads(output.splitlines()[-1])
+    except (IndexError, json.JSONDecodeError) as error:
+        raise GovernanceError("Control API smoke returned malformed evidence") from error
+    expected = {
+        "create": 201,
+        "read": 200,
+        "cross_tenant": 404,
+        "identity_injection": 403,
+        "false_approval": 409,
+        "tools": 200,
+        "skills": 200,
+        "sse_first_sequence": 1,
+    }
+    if result != expected:
+        raise GovernanceError("Control API smoke did not satisfy the frozen outcome matrix")
+    return {"candidate_sha": candidate_sha, **result}
+
+
 def _manifest(candidate_sha: str, image: str) -> str:
     return f"""apiVersion: v1
 kind: ConfigMap
@@ -381,4 +413,90 @@ spec:
     - from:
         - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: fw-control}}
       ports: [{protocol: TCP, port: 8080}]
+"""
+
+
+def _smoke_manifest(candidate_sha: str) -> str:
+    return f"""apiVersion: v1
+kind: ConfigMap
+metadata: {{name: control-api-smoke, namespace: fw-control}}
+data:
+  smoke.py: |
+    import datetime
+    import json
+    import os
+    import uuid
+    import httpx
+
+    identity = "http://keycloak.fw-system.svc.cluster.local:8080/realms/faultwitness/protocol/openid-connect/token"
+    api = "http://control-api.fw-control.svc.cluster.local:8000"
+
+    def token(username, password):
+        response = httpx.post(identity, data={{"grant_type": "password", "client_id": "faultwitness-api", "username": username, "password": password}}, timeout=10)
+        response.raise_for_status()
+        return response.json()["access_token"]
+
+    operator = token("tenant-a-operator", os.environ["TENANT_A_OPERATOR"])
+    tenant_b = token("tenant-b-viewer", os.environ["TENANT_B_VIEWER"])
+    approver = token("tenant-a-approver", os.environ["TENANT_A_APPROVER"])
+    now = datetime.datetime.now(datetime.UTC)
+    body = {{"source":"g01-smoke","environment_id":"env_smoke","service_scope":["svc_smoke"],"time_window":{{"start":(now-datetime.timedelta(minutes=5)).isoformat(),"end":now.isoformat()}},"symptom_summary":"synthetic smoke","mode":"diagnosis_only","budget":{{"deadline":(now+datetime.timedelta(minutes=5)).isoformat(),"max_steps":2,"max_model_calls":0,"max_tokens":0,"max_cost_usd":0}}}}
+    auth = {{"Authorization": "Bearer " + operator, "Idempotency-Key": "smoke-" + uuid.uuid4().hex}}
+    created = httpx.post(api + "/v1/incidents", headers=auth, json=body, timeout=10)
+    incident = created.json()["incident_id"]
+    read = httpx.get(api + "/v1/incidents/" + incident, headers={{"Authorization":"Bearer " + operator}}, timeout=10)
+    cross = httpx.get(api + "/v1/incidents/" + incident, headers={{"Authorization":"Bearer " + tenant_b}}, timeout=10)
+    injected = httpx.get(api + "/v1/incidents/" + incident, headers={{"Authorization":"Bearer " + operator,"X-Tenant-ID":"tenant-b"}}, timeout=10)
+    approval = httpx.post(api + "/v1/incidents/" + incident + "/approvals", headers={{"Authorization":"Bearer " + approver,"Idempotency-Key":"approval-" + uuid.uuid4().hex}}, json={{"action_id":"act_missing","action_digest":"a"*64,"decision":"approve","expected_state_version":0}}, timeout=10)
+    tools = httpx.get(api + "/v1/tools", headers={{"Authorization":"Bearer " + operator}}, timeout=10)
+    skills = httpx.get(api + "/v1/skills", headers={{"Authorization":"Bearer " + operator}}, timeout=10)
+    sequence = 0
+    with httpx.stream("GET", api + "/v1/incidents/" + incident + "/events", headers={{"Authorization":"Bearer " + operator}}, timeout=10) as stream:
+        for line in stream.iter_lines():
+            if line.startswith("id: "):
+                sequence = int(line[4:])
+                break
+    print(json.dumps({{"create":created.status_code,"read":read.status_code,"cross_tenant":cross.status_code,"identity_injection":injected.status_code,"false_approval":approval.status_code,"tools":tools.status_code,"skills":skills.status_code,"sse_first_sequence":sequence}}, sort_keys=True))
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {{name: control-api-smoke-egress, namespace: fw-control}}
+spec:
+  podSelector: {{matchLabels: {{app.kubernetes.io/name: control-api-smoke}}}}
+  policyTypes: [Egress]
+  egress:
+    - to: [{{namespaceSelector: {{matchLabels: {{kubernetes.io/metadata.name: kube-system}}}}}}]
+      ports: [{{protocol: UDP, port: 53}}, {{protocol: TCP, port: 53}}]
+    - to: [{{namespaceSelector: {{matchLabels: {{kubernetes.io/metadata.name: fw-control}}}}}}]
+      ports: [{{protocol: TCP, port: 8000}}]
+    - to:
+        - namespaceSelector: {{matchLabels: {{kubernetes.io/metadata.name: fw-system}}}}
+          podSelector: {{matchLabels: {{app.kubernetes.io/name: keycloak}}}}
+      ports: [{{protocol: TCP, port: 8080}}]
+---
+apiVersion: batch/v1
+kind: Job
+metadata: {{name: control-api-smoke, namespace: fw-control}}
+spec:
+  backoffLimit: 0
+  template:
+    metadata: {{labels: {{app.kubernetes.io/name: control-api-smoke}}}}
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      containers:
+        - name: smoke
+          image: docker.io/faultwitness/control-api:{candidate_sha}
+          imagePullPolicy: Never
+          command: [python, /config/smoke.py]
+          env:
+            - name: TENANT_A_OPERATOR
+              valueFrom: {{secretKeyRef: {{name: fw-control-smoke-users, key: tenant_a_operator}}}}
+            - name: TENANT_B_VIEWER
+              valueFrom: {{secretKeyRef: {{name: fw-control-smoke-users, key: tenant_b_viewer}}}}
+            - name: TENANT_A_APPROVER
+              valueFrom: {{secretKeyRef: {{name: fw-control-smoke-users, key: tenant_a_approver}}}}
+          volumeMounts: [{{name: script, mountPath: /config, readOnly: true}}]
+          securityContext: {{allowPrivilegeEscalation: false, runAsNonRoot: true, capabilities: {{drop: [ALL]}}}}
+      volumes: [{{name: script, configMap: {{name: control-api-smoke}}}}]
 """

@@ -36,6 +36,7 @@ from faultwitness_dev.control_api_deploy import (
     inspect_control_api,
     inspect_keycloak_realm,
     provision_keycloak_realm,
+    run_control_api_smoke,
 )
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.evals import evaluate_iteration
@@ -179,6 +180,8 @@ def parser() -> argparse.ArgumentParser:
     provision_realm.add_argument("--candidate-sha", required=True)
     inspect_realm = subparsers.add_parser("inspect-keycloak-realm")
     inspect_realm.add_argument("--candidate-sha", required=True)
+    smoke_api = subparsers.add_parser("smoke-control-api")
+    smoke_api.add_argument("--candidate-sha", required=True)
     subparsers.add_parser("compile-contracts")
     subparsers.add_parser("check-contracts")
     subparsers.add_parser("diagnose-k3s")
@@ -464,6 +467,12 @@ def main() -> int:
                 f"observed Keycloak realm with {summary['tenant_count']} tenants, "
                 f"{summary['role_count']} roles, and {summary['user_count']} users on "
                 f"{summary['candidate_sha']}"
+            )
+        elif args.command == "smoke-control-api":
+            summary = run_control_api_smoke(args.candidate_sha)
+            message = (
+                f"passed live OIDC Control API smoke on {summary['candidate_sha']} with "
+                "create/read/SSE success and cross-tenant/injection/false-approval denial"
             )
         elif args.command == "compile-contracts":
             target = write_generated_resource(root)
