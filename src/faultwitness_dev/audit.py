@@ -32,7 +32,9 @@ TEXT_SUFFIXES = {
 
 OWNED_SOURCE_ROOTS = {
     "src/faultwitness_dev": "repository-governance",
+    "src/faultwitness/api": "CMP-CONTROL-API",
     "src/faultwitness/contracts": "CMP-CONTROL-API",
+    "src/faultwitness/identity": "CMP-IDENTITY",
     "src/faultwitness/persistence": "four-state-owner-services",
     "src/faultwitness/runtime": "CMP-AGENT-WORKER",
     "src/faultwitness/state": "four-state-owner-services",

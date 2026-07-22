@@ -16,7 +16,9 @@ FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
 
 
 def deploy_runtime_schema(root: Path, candidate_sha: str) -> dict[str, Any]:
-    migration = root / "migrations" / "001_i0011_durable_runtime.sql"
+    migrations = sorted((root / "migrations").glob("*.sql"))
+    if not migrations:
+        raise GovernanceError("runtime migrations are absent")
     if not FULL_SHA.fullmatch(candidate_sha):
         raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
     head = subprocess.run(
@@ -25,7 +27,13 @@ def deploy_runtime_schema(root: Path, candidate_sha: str) -> dict[str, Any]:
     if head != candidate_sha:
         raise GovernanceError("candidate SHA does not match repository HEAD")
     dirty = subprocess.run(
-        ["git", "status", "--porcelain", "--", str(migration.relative_to(root))],
+        [
+            "git",
+            "status",
+            "--porcelain",
+            "--",
+            *(str(migration.relative_to(root)) for migration in migrations),
+        ],
         cwd=root,
         check=True,
         capture_output=True,
@@ -33,7 +41,7 @@ def deploy_runtime_schema(root: Path, candidate_sha: str) -> dict[str, Any]:
     ).stdout
     if dirty.strip():
         raise GovernanceError("runtime migration differs from immutable candidate")
-    payload = migration.read_bytes()
+    payload = b"\n".join(migration.read_bytes() for migration in migrations)
     encoded = base64.b64encode(payload).decode()
     digest = hashlib.sha256(payload).hexdigest()
     script = f"""set -eu
@@ -50,13 +58,18 @@ test "$(sha256sum "$work/migration.sql" | awk '{{print $1}}')" = {digest}
   --dry-run=client -o yaml | /usr/local/bin/k3s kubectl apply -f - >/dev/null
 """
     run_remote_script(script, privileged=True, timeout=180)
-    return {"candidate_sha": candidate_sha, "migration_sha256": digest}
+    return {
+        "candidate_sha": candidate_sha,
+        "migration_sha256": digest,
+        "migration_count": len(migrations),
+    }
 
 
 def inspect_runtime_schema(candidate_sha: str) -> dict[str, Any]:
     if not FULL_SHA.fullmatch(candidate_sha):
         raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
-    query = """SELECT version FROM runtime_shared.schema_version WHERE version='001_i0011';
+    query = """SELECT version FROM runtime_shared.schema_version
+WHERE version IN ('001_i0011','002_i0012') ORDER BY version;
 SELECT count(*) FROM information_schema.tables
 WHERE table_schema IN ('runtime_shared','incident_owner','task_owner','graph_owner','action_owner');
 """
@@ -73,6 +86,10 @@ printf %s {encoded_query} | base64 -d | \
         for line in run_remote_script(script, privileged=True).splitlines()
         if line.strip()
     ]
-    if len(output) != 2 or output[0] != "001_i0011" or int(output[1]) < 17:
+    if output[:2] != ["001_i0011", "002_i0012"] or len(output) != 3 or int(output[2]) < 22:
         raise GovernanceError("runtime schema inventory is incomplete")
-    return {"candidate_sha": candidate_sha, "migration": output[0], "table_count": int(output[1])}
+    return {
+        "candidate_sha": candidate_sha,
+        "migrations": output[:2],
+        "table_count": int(output[2]),
+    }

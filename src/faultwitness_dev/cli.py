@@ -418,7 +418,7 @@ def main() -> int:
         elif args.command == "inspect-runtime-schema":
             summary = inspect_runtime_schema(args.candidate_sha)
             message = (
-                f"observed runtime migration {summary['migration']} with "
+                f"observed runtime migrations {','.join(summary['migrations'])} with "
                 f"{summary['table_count']} owner-isolated tables"
             )
         elif args.command == "compile-contracts":
