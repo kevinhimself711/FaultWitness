@@ -1,0 +1,15 @@
+schema_version: "1.0.0"
+id: G01
+title: Platform Contracts and Trace Foundation
+status: planned
+plan: docs/gates/G01/PLAN.md
+report: docs/gates/G01/REPORT.md
+iterations: []
+pass_criteria:
+  - A decision-complete G01 Master Plan is frozen before any implementation Iteration starts.
+  - K3s capability and required infrastructure services are reproducibly established.
+  - Domain contracts state transitions checkpoint and transactional outbox are implemented.
+  - Three model providers pass structured output tool streaming and fallback smoke checks.
+  - LangSmith instrumentation is mandatory and trace or log secret leakage is zero.
+waivers: []
+amendments: []
