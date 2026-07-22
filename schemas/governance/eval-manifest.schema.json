@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faultwitness.local/schemas/governance/eval-manifest.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "eval_id", "gate", "iteration", "evaluated_revision", "status", "environments", "commands", "artifacts", "open_evidence"],
+  "properties": {
+    "schema_version": {"pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "eval_id": {"pattern": "^EVAL-G[0-9]{2}-[0-9]{3}$"},
+    "gate": {"pattern": "^G[0-9]{2}$"},
+    "iteration": {"pattern": "^I-[0-9]{4}$"},
+    "evaluated_revision": {"type": "string", "minLength": 1},
+    "status": {"enum": ["pending", "running", "pass", "fail", "blocked", "not_applicable", "local_pass_pending_cross_platform"]},
+    "environments": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "commands": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "artifacts": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "evidence_urls": {"type": "array", "items": {"type": "string"}},
+    "open_evidence": {"type": "array", "items": {"type": "string"}}
+  }
+}

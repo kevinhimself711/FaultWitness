@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faultwitness.local/schemas/governance/adr-registry.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "adrs"],
+  "properties": {
+    "schema_version": {"pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "adrs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "status", "decision_date", "path", "supersedes"],
+        "properties": {
+          "id": {"pattern": "^ADR-[0-9]{4}$"},
+          "title": {"type": "string", "minLength": 5},
+          "status": {"enum": ["proposed", "accepted", "deprecated", "superseded", "rejected"]},
+          "decision_date": {"type": ["string", "object"]},
+          "path": {"type": "string", "minLength": 1},
+          "supersedes": {"oneOf": [{"type": "string", "pattern": "^ADR-[0-9]{4}$"}, {"type": "null"}]}
+        }
+      }
+    }
+  }
+}

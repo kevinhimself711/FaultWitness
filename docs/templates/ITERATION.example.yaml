@@ -1,0 +1,15 @@
+schema_version: "1.0.0"
+id: I-9999
+gate: G00
+title: Example Iteration
+status: planned
+scope: [Define one independently committable outcome.]
+non_goals: [Exclude adjacent product work.]
+dependencies: []
+tests: [make verify-fast, make eval-changed]
+eval_id: EVAL-G00-999
+commit: null
+changed_paths: [path/to/change]
+behavior_change: false
+docs_updated: []
+threshold_changes: []

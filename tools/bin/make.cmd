@@ -9,7 +9,7 @@ if "%~1"=="" (
 )
 
 pushd "%REPO_ROOT%" >nul
-uv run python tools\bootstrap_check.py %*
+uv run python -m faultwitness_dev %*
 set "EXIT_CODE=%ERRORLEVEL%"
 popd >nul
 exit /b %EXIT_CODE%

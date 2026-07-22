@@ -1,0 +1,49 @@
+name: baseline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: verify (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    env:
+      FW_BASE_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: "22.14.0"
+          package-manager-cache: false
+      - name: Install pinned bootstrap tools
+        run: |
+          python -m pip install uv==0.10.12
+          corepack enable
+          corepack prepare pnpm@11.9.0 --activate
+      - name: Install locked dependencies
+        run: |
+          uv sync --frozen --all-groups
+          pnpm install --frozen-lockfile
+      - name: Add Windows repository shim
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: (Resolve-Path tools\bin).Path | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Run fast verification
+        run: make verify-fast
+      - name: Evaluate changed assets
+        run: make eval-changed

@@ -1,0 +1,7 @@
+behavior_change: false
+docs_updated: []
+threshold_changes:
+  - id: required_requirement_coverage
+    from: 1.0
+    to: 0.9
+    direction: decrease

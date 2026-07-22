@@ -1,0 +1,6 @@
+id: ADR-9999
+title: Example Architecture Decision
+status: proposed
+decision_date: "2026-07-22"
+path: docs/adr/ADR-9999.md
+supersedes: null

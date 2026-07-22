@@ -1,0 +1,20 @@
+schema_version: "1.0.0"
+id: G00
+title: Architecture and Governance Baseline
+status: in_progress
+plan: docs/gates/G00/PLAN.md
+report: docs/gates/G00/REPORT.md
+iterations:
+  - I-0001
+  - I-0002
+  - I-0003
+  - I-0004
+  - I-0005
+  - I-0006
+pass_criteria:
+  - Cross-platform repository reproduction passes on Windows and Ubuntu.
+  - Governance schemas and negative policy fixtures pass without waivers.
+  - Evidence-backed requirements cover the frozen source inventory.
+  - Architecture, state, interface, and failure contracts are complete and consistent.
+  - All fourteen frozen walkthroughs pass the candidate Gate evaluation.
+waivers: []

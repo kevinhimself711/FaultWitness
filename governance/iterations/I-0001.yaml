@@ -1,0 +1,28 @@
+schema_version: "1.0.0"
+id: I-0001
+gate: G00
+title: Repository Toolchain and Private Remote
+status: completed
+scope:
+  - Pin and lock the repository toolchains.
+  - Create and verify the private GitHub remote.
+non_goals:
+  - Product implementation.
+dependencies:
+  - Frozen G00 Gate Master Plan.
+tests:
+  - make verify-fast
+  - make eval-changed
+  - Clean Windows and Ubuntu smoke run.
+eval_id: EVAL-G00-001
+commit: d9afe07
+changed_paths:
+  - pyproject.toml
+  - package.json
+  - tools/bin/make.cmd
+  - docs/evals/EVAL-G00-001
+behavior_change: false
+docs_updated:
+  - docs/roadmap/iterations/I-0001.md
+  - docs/evals/EVAL-G00-001/REPORT.md
+threshold_changes: []
