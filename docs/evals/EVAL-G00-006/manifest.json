@@ -3,8 +3,8 @@
   "eval_id": "EVAL-G00-006",
   "gate": "G00",
   "iteration": "I-0006",
-  "evaluated_revision": "42b97088743d7741c7be4c7e0364794e31bbc59c",
-  "status": "pass",
+  "evaluated_revision": "pending-handoff-correction-candidate",
+  "status": "running",
   "environments": ["windows-local", "windows-github-hosted", "ubuntu-github-hosted"],
   "commands": ["make verify-fast", "make eval-changed", "make eval-g00"],
   "artifacts": [
@@ -26,5 +26,5 @@
       "reason": "G00 has no Agent runtime and therefore cannot produce a runtime trace."
     }
   },
-  "open_evidence": []
+  "open_evidence": ["fixed handoff-correction candidate SHA", "cross-platform CI", "protected-main confirmation"]
 }
