@@ -1,2 +1,8 @@
 schema_version: "1.0.0"
-adrs: []
+adrs:
+  - {id: ADR-0001, title: "Integrate three engineering planes behind five logical responsibility planes", status: accepted, decision_date: "2026-07-22", path: docs/adr/ADR-0001.md, supersedes: null}
+  - {id: ADR-0002, title: "Coordinate state owners with transactional outbox commands and events", status: accepted, decision_date: "2026-07-22", path: docs/adr/ADR-0002.md, supersedes: null}
+  - {id: ADR-0003, title: "Use LangSmith as a strong trace and evaluation dependency", status: accepted, decision_date: "2026-07-22", path: docs/adr/ADR-0003.md, supersedes: null}
+  - {id: ADR-0004, title: "Store large artifacts and datasets locally with MinIO and DVC", status: accepted, decision_date: "2026-07-22", path: docs/adr/ADR-0004.md, supersedes: null}
+  - {id: ADR-0005, title: "Adopt at-least-once delivery with idempotency and fencing", status: accepted, decision_date: "2026-07-22", path: docs/adr/ADR-0005.md, supersedes: null}
+  - {id: ADR-0006, title: "Make Action Executor the sole privileged write boundary", status: accepted, decision_date: "2026-07-22", path: docs/adr/ADR-0006.md, supersedes: null}

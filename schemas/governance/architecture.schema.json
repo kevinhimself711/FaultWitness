@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faultwitness.local/schemas/governance/architecture.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "engineering_planes", "logical_planes", "components", "stores", "state_ownership", "trust_boundaries", "prohibited_paths", "walkthroughs"],
+  "properties": {
+    "schema_version": {"pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "engineering_planes": {
+      "type": "array", "minItems": 3, "uniqueItems": true,
+      "items": {"enum": ["agent_application", "runtime_infra", "data_eval_training"]}
+    },
+    "logical_planes": {
+      "type": "array", "minItems": 5, "uniqueItems": true,
+      "items": {"enum": ["experience_plane", "control_plane", "data_plane", "execution_plane", "evaluation_plane"]}
+    },
+    "components": {
+      "type": "array", "minItems": 10,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "engineering_plane", "logical_planes", "responsibility", "trust_level", "inputs", "outputs", "authoritative_stores", "writes_states", "invokes"],
+        "properties": {
+          "id": {"pattern": "^CMP-[A-Z0-9-]+$"},
+          "engineering_plane": {"enum": ["agent_application", "runtime_infra", "data_eval_training"]},
+          "logical_planes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["experience_plane", "control_plane", "data_plane", "execution_plane", "evaluation_plane"]}},
+          "responsibility": {"type": "string", "minLength": 20},
+          "trust_level": {"enum": ["untrusted_edge", "authenticated_edge", "trusted_control", "constrained_compute", "privileged_execution", "sealed_evaluation"]},
+          "inputs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 2}},
+          "outputs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 2}},
+          "authoritative_stores": {"type": "array", "uniqueItems": true, "items": {"pattern": "^STORE-[A-Z0-9-]+$"}},
+          "writes_states": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 3}},
+          "invokes": {"type": "array", "uniqueItems": true, "items": {"pattern": "^CMP-[A-Z0-9-]+$"}}
+        }
+      }
+    },
+    "stores": {
+      "type": "array", "minItems": 6,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "technology", "owner_component", "truth_for", "data_classes"],
+        "properties": {
+          "id": {"pattern": "^STORE-[A-Z0-9-]+$"},
+          "technology": {"type": "string", "minLength": 2},
+          "owner_component": {"pattern": "^CMP-[A-Z0-9-]+$"},
+          "truth_for": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 3}},
+          "data_classes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 3}}
+        }
+      }
+    },
+    "state_ownership": {
+      "type": "array", "minItems": 6,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["state", "owner_component", "authoritative_store", "concurrency_control"],
+        "properties": {
+          "state": {"type": "string", "minLength": 3},
+          "owner_component": {"pattern": "^CMP-[A-Z0-9-]+$"},
+          "authoritative_store": {"pattern": "^STORE-[A-Z0-9-]+$"},
+          "concurrency_control": {"enum": ["state_version", "fencing_token", "append_only_version"]}
+        }
+      }
+    },
+    "trust_boundaries": {
+      "type": "array", "minItems": 6,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "from_component", "to_component", "controls"],
+        "properties": {
+          "id": {"pattern": "^TB-[0-9]{3}$"},
+          "from_component": {"pattern": "^CMP-[A-Z0-9-]+$"},
+          "to_component": {"pattern": "^CMP-[A-Z0-9-]+$"},
+          "controls": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 3}}
+        }
+      }
+    },
+    "prohibited_paths": {
+      "type": "array", "minItems": 4,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "source", "target", "reason"],
+        "properties": {
+          "id": {"pattern": "^DENY-[A-Z0-9-]+$"},
+          "source": {"type": "string", "minLength": 3},
+          "target": {"type": "string", "minLength": 3},
+          "reason": {"type": "string", "minLength": 15}
+        }
+      }
+    },
+    "walkthroughs": {
+      "type": "array", "minItems": 10,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "scenario", "component_path", "expected_outcome", "failure_semantics"],
+        "properties": {
+          "id": {"pattern": "^W-ARCH-[0-9]{3}$"},
+          "scenario": {"type": "string", "minLength": 8},
+          "component_path": {"type": "array", "minItems": 2, "items": {"pattern": "^CMP-[A-Z0-9-]+$"}},
+          "expected_outcome": {"type": "string", "minLength": 10},
+          "failure_semantics": {"type": "string", "minLength": 10}
+        }
+      }
+    }
+  }
+}

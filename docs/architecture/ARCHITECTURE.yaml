@@ -1,0 +1,273 @@
+schema_version: "1.0.0"
+engineering_planes: [agent_application, runtime_infra, data_eval_training]
+logical_planes: [experience_plane, control_plane, data_plane, execution_plane, evaluation_plane]
+components:
+  - id: CMP-INCIDENT-CONSOLE
+    engineering_plane: agent_application
+    logical_planes: [experience_plane]
+    responsibility: Present tenant-scoped incident progress, evidence, approvals, actions, and final reports without private reasoning.
+    trust_level: authenticated_edge
+    inputs: [authenticated user intent, typed domain events]
+    outputs: [incident commands, approval decisions, visible status]
+    authoritative_stores: []
+    writes_states: []
+    invokes: [CMP-CONTROL-API]
+  - id: CMP-CONTROL-API
+    engineering_plane: agent_application
+    logical_planes: [experience_plane, control_plane]
+    responsibility: Authenticate incident commands, own Incident Lifecycle transitions, and atomically emit transactional outbox events.
+    trust_level: trusted_control
+    inputs: [OIDC claims, incident commands, domain events]
+    outputs: [incident snapshots, scheduler commands, SSE events]
+    authoritative_stores: [STORE-INCIDENT-POSTGRES]
+    writes_states: [Incident Lifecycle]
+    invokes: [CMP-IDENTITY-PROVIDER, CMP-SCHEDULER, CMP-TRACE-INSTRUMENTATION]
+  - id: CMP-IDENTITY-PROVIDER
+    engineering_plane: runtime_infra
+    logical_planes: [control_plane]
+    responsibility: Issue and validate tenant-scoped OIDC identities while keeping user supplied tenant fields non-authoritative.
+    trust_level: trusted_control
+    inputs: [identity credentials, token validation requests]
+    outputs: [signed tenant context, authentication denial]
+    authoritative_stores: []
+    writes_states: []
+    invokes: []
+  - id: CMP-SCHEDULER
+    engineering_plane: runtime_infra
+    logical_planes: [control_plane, execution_plane]
+    responsibility: Own Runtime Task lifecycle, quotas, leases, fencing tokens, deadlines, retries, cancellation, and backpressure.
+    trust_level: trusted_control
+    inputs: [typed task commands, worker heartbeats, completion events]
+    outputs: [leased tasks, cancellation commands, runtime events]
+    authoritative_stores: [STORE-TASK-POSTGRES, STORE-REDIS]
+    writes_states: [Runtime Task]
+    invokes: [CMP-AGENT-WORKER, CMP-SANDBOX-RUNTIME, CMP-TRACE-INSTRUMENTATION]
+  - id: CMP-AGENT-WORKER
+    engineering_plane: agent_application
+    logical_planes: [control_plane, data_plane]
+    responsibility: Execute the bounded investigation graph, own checkpoints, collect evidence, and emit ToolCall or ActionProposal only.
+    trust_level: constrained_compute
+    inputs: [leased task, tenant context, tool results, retrieved context]
+    outputs: [checkpoints, evidence, hypotheses, tool calls, action proposals]
+    authoritative_stores: [STORE-CHECKPOINT-POSTGRES]
+    writes_states: [Agent Graph State]
+    invokes: [CMP-MODEL-GATEWAY, CMP-TOOL-GATEWAY, CMP-KNOWLEDGE-SERVICE, CMP-POLICY-ENGINE, CMP-TRACE-INSTRUMENTATION]
+  - id: CMP-MODEL-GATEWAY
+    engineering_plane: agent_application
+    logical_planes: [control_plane]
+    responsibility: Normalize model structured output, tool calling, streaming, budgets, retries, fallback, usage, and trace attribution.
+    trust_level: constrained_compute
+    inputs: [typed model request, provider policy, task budget]
+    outputs: [typed model response, usage record, typed provider error]
+    authoritative_stores: []
+    writes_states: []
+    invokes: [CMP-TRACE-INSTRUMENTATION]
+  - id: CMP-TOOL-GATEWAY
+    engineering_plane: agent_application
+    logical_planes: [control_plane, data_plane]
+    responsibility: Validate and authorize typed read-tool calls, constrain scope, and normalize results without exposing arbitrary execution.
+    trust_level: constrained_compute
+    inputs: [typed tool call, tenant context, tool policy]
+    outputs: [typed tool result, evidence reference, typed error]
+    authoritative_stores: []
+    writes_states: []
+    invokes: [CMP-POLICY-ENGINE, CMP-EXTERNAL-SUT, CMP-TRACE-INSTRUMENTATION]
+  - id: CMP-KNOWLEDGE-SERVICE
+    engineering_plane: data_eval_training
+    logical_planes: [data_plane]
+    responsibility: Own ACL-filtered knowledge indexes, durable memory records, provenance, freshness, tombstones, and retrieval stages.
+    trust_level: constrained_compute
+    inputs: [versioned documents, tenant retrieval query, memory write proposal]
+    outputs: [evidence references, retrieval trace, indexed version events]
+    authoritative_stores: [STORE-QDRANT]
+    writes_states: []
+    invokes: [CMP-TRACE-INSTRUMENTATION]
+  - id: CMP-POLICY-ENGINE
+    engineering_plane: runtime_infra
+    logical_planes: [control_plane, execution_plane]
+    responsibility: Evaluate versioned OPA policy for tenant scope, tool access, risk tier, approval need, and action authorization.
+    trust_level: trusted_control
+    inputs: [tenant context, proposed operation, resource snapshot, policy version]
+    outputs: [allow or deny decision, required obligations, policy evidence]
+    authoritative_stores: []
+    writes_states: []
+    invokes: [CMP-TRACE-INSTRUMENTATION]
+  - id: CMP-ACTION-EXECUTOR
+    engineering_plane: runtime_infra
+    logical_planes: [control_plane, execution_plane]
+    responsibility: Solely own ActionTransaction and execute approved typed writes with digest checks, idempotency, verification, and compensation.
+    trust_level: privileged_execution
+    inputs: [authorized action command, immutable approval grant, resource precondition]
+    outputs: [action receipt, postcondition evidence, compensation or uncertainty event]
+    authoritative_stores: [STORE-ACTION-POSTGRES]
+    writes_states: [ActionTransaction]
+    invokes: [CMP-POLICY-ENGINE, CMP-EXTERNAL-SUT, CMP-TRACE-INSTRUMENTATION]
+  - id: CMP-EVAL-DATA-WORKER
+    engineering_plane: data_eval_training
+    logical_planes: [data_plane, evaluation_plane]
+    responsibility: Own versioned datasets and artifacts, construct TrajectoryIR, run deterministic evaluation, and prepare training inputs without test leakage.
+    trust_level: sealed_evaluation
+    inputs: [sanitized trajectory events, versioned scenarios, locked evaluator data]
+    outputs: [eval result, badcase record, dataset or model artifact]
+    authoritative_stores: [STORE-ARTIFACT-MINIO-DVC]
+    writes_states: [Artifact/Dataset]
+    invokes: [CMP-TRACE-INSTRUMENTATION]
+  - id: CMP-TRACE-INSTRUMENTATION
+    engineering_plane: data_eval_training
+    logical_planes: [data_plane, evaluation_plane]
+    responsibility: Own sanitized trace and evaluation records, propagate correlation lineage, buffer outages, and reject private reasoning or secrets.
+    trust_level: sealed_evaluation
+    inputs: [typed domain event, span, metric, sanitized model or tool metadata]
+    outputs: [trace reference, eval run reference, observability export]
+    authoritative_stores: [STORE-LANGSMITH]
+    writes_states: [Agent Trace/Eval]
+    invokes: [CMP-OBSERVABILITY]
+  - id: CMP-SANDBOX-RUNTIME
+    engineering_plane: runtime_infra
+    logical_planes: [execution_plane]
+    responsibility: Run explicitly admitted compute jobs with identity isolation, resource limits, filesystem controls, and deny-by-default networking.
+    trust_level: constrained_compute
+    inputs: [signed sandbox job, resource quota, network allowlist]
+    outputs: [bounded job result, resource usage, security event]
+    authoritative_stores: []
+    writes_states: []
+    invokes: [CMP-TRACE-INSTRUMENTATION]
+  - id: CMP-OBSERVABILITY
+    engineering_plane: runtime_infra
+    logical_planes: [experience_plane, evaluation_plane]
+    responsibility: Store and present operational metrics, logs, and traces while preserving tenant filters and redaction guarantees.
+    trust_level: trusted_control
+    inputs: [redacted telemetry export, service health]
+    outputs: [dashboards, alerts, operational queries]
+    authoritative_stores: [STORE-OBSERVABILITY]
+    writes_states: []
+    invokes: []
+  - id: CMP-EXTERNAL-SUT
+    engineering_plane: runtime_infra
+    logical_planes: [data_plane, execution_plane]
+    responsibility: Represent the isolated microservice systems under test and their governed telemetry and typed action adapters.
+    trust_level: untrusted_edge
+    inputs: [read query, approved typed action, fault injection outside Agent authority]
+    outputs: [telemetry, resource snapshot, action receipt, postcondition signal]
+    authoritative_stores: []
+    writes_states: []
+    invokes: []
+stores:
+  - id: STORE-INCIDENT-POSTGRES
+    technology: PostgreSQL
+    owner_component: CMP-CONTROL-API
+    truth_for: [Incident Lifecycle, incident command idempotency, incident outbox]
+    data_classes: [tenant operational metadata, incident evidence links]
+  - id: STORE-TASK-POSTGRES
+    technology: PostgreSQL
+    owner_component: CMP-SCHEDULER
+    truth_for: [Runtime Task, attempts, leases, fencing tokens]
+    data_classes: [tenant operational metadata, scheduling metadata]
+  - id: STORE-REDIS
+    technology: Redis
+    owner_component: CMP-SCHEDULER
+    truth_for: [ephemeral queue delivery, rate counters, short-lived coordination]
+    data_classes: [ephemeral tenant task metadata]
+  - id: STORE-CHECKPOINT-POSTGRES
+    technology: PostgreSQL Checkpoint
+    owner_component: CMP-AGENT-WORKER
+    truth_for: [Agent Graph State, graph checkpoint versions]
+    data_classes: [sanitized agent working state, evidence references]
+  - id: STORE-ACTION-POSTGRES
+    technology: PostgreSQL
+    owner_component: CMP-ACTION-EXECUTOR
+    truth_for: [ActionTransaction, approval digest, action idempotency, audit receipt]
+    data_classes: [privileged action metadata, immutable approval evidence]
+  - id: STORE-QDRANT
+    technology: Qdrant
+    owner_component: CMP-KNOWLEDGE-SERVICE
+    truth_for: [retrieval index, ACL projection, version and tombstone projection]
+    data_classes: [tenant knowledge embeddings, provenance metadata]
+  - id: STORE-LANGSMITH
+    technology: LangSmith
+    owner_component: CMP-TRACE-INSTRUMENTATION
+    truth_for: [Agent Trace/Eval, experiment lineage, trace evaluation]
+    data_classes: [sanitized trace metadata, eval outputs]
+  - id: STORE-ARTIFACT-MINIO-DVC
+    technology: MinIO and DVC
+    owner_component: CMP-EVAL-DATA-WORKER
+    truth_for: [Artifact/Dataset, large evidence objects, dataset and model versions]
+    data_classes: [versioned artifacts, sealed evaluation data, training data]
+  - id: STORE-OBSERVABILITY
+    technology: Prometheus Loki Tempo Grafana
+    owner_component: CMP-OBSERVABILITY
+    truth_for: [operational telemetry projection, service-level dashboards]
+    data_classes: [redacted metrics, logs, spans]
+state_ownership:
+  - {state: Incident Lifecycle, owner_component: CMP-CONTROL-API, authoritative_store: STORE-INCIDENT-POSTGRES, concurrency_control: state_version}
+  - {state: Runtime Task, owner_component: CMP-SCHEDULER, authoritative_store: STORE-TASK-POSTGRES, concurrency_control: fencing_token}
+  - {state: Agent Graph State, owner_component: CMP-AGENT-WORKER, authoritative_store: STORE-CHECKPOINT-POSTGRES, concurrency_control: state_version}
+  - {state: ActionTransaction, owner_component: CMP-ACTION-EXECUTOR, authoritative_store: STORE-ACTION-POSTGRES, concurrency_control: state_version}
+  - {state: Agent Trace/Eval, owner_component: CMP-TRACE-INSTRUMENTATION, authoritative_store: STORE-LANGSMITH, concurrency_control: append_only_version}
+  - {state: Artifact/Dataset, owner_component: CMP-EVAL-DATA-WORKER, authoritative_store: STORE-ARTIFACT-MINIO-DVC, concurrency_control: append_only_version}
+trust_boundaries:
+  - {id: TB-001, from_component: CMP-INCIDENT-CONSOLE, to_component: CMP-CONTROL-API, controls: [OIDC validation, tenant from token only, request schema, idempotency key]}
+  - {id: TB-002, from_component: CMP-CONTROL-API, to_component: CMP-SCHEDULER, controls: [typed command, transactional outbox, event deduplication]}
+  - {id: TB-003, from_component: CMP-SCHEDULER, to_component: CMP-AGENT-WORKER, controls: [lease, fencing token, task deadline, tenant scope]}
+  - {id: TB-004, from_component: CMP-AGENT-WORKER, to_component: CMP-TOOL-GATEWAY, controls: [typed tool schema, scope policy, bounded timeout, result sanitization]}
+  - {id: TB-005, from_component: CMP-AGENT-WORKER, to_component: CMP-ACTION-EXECUTOR, controls: [ActionProposal only, OPA decision, immutable digest, approval grant]}
+  - {id: TB-006, from_component: CMP-ACTION-EXECUTOR, to_component: CMP-EXTERNAL-SUT, controls: [typed adapter, idempotency token, resource precondition, postcondition verification]}
+  - {id: TB-007, from_component: CMP-AGENT-WORKER, to_component: CMP-KNOWLEDGE-SERVICE, controls: [authenticated ACL filter, freshness filter, provenance, prompt-injection isolation]}
+  - {id: TB-008, from_component: CMP-TRACE-INSTRUMENTATION, to_component: CMP-EVAL-DATA-WORKER, controls: [sanitization, dataset lineage, split isolation, ground-truth boundary]}
+  - {id: TB-009, from_component: CMP-SCHEDULER, to_component: CMP-SANDBOX-RUNTIME, controls: [signed job, tenant identity, resource quota, network allowlist]}
+prohibited_paths:
+  - {id: DENY-AGENT-DIRECT-ACTION, source: Agent Worker or model output, target: External SUT write API, reason: All writes must pass policy approval digest and the sole Action Executor.}
+  - {id: DENY-AGENT-GROUND-TRUTH, source: Agent Runtime credentials, target: Locked evaluation Ground Truth, reason: Evaluation answers and hidden labels must remain sealed from Agent execution.}
+  - {id: DENY-CROSS-TENANT, source: Any tenant-scoped component, target: Another tenant data or action, reason: Tenant identity comes only from authentication and is enforced at every storage and execution boundary.}
+  - {id: DENY-UNSANDBOXED-CODE, source: Agent Worker or Tool Gateway, target: Arbitrary shell Kubernetes or host execution, reason: Code execution requires an admitted sandbox job and never grants an action-write bypass.}
+walkthroughs:
+  - id: W-ARCH-001
+    scenario: Read-only diagnosis succeeds
+    component_path: [CMP-INCIDENT-CONSOLE, CMP-CONTROL-API, CMP-SCHEDULER, CMP-AGENT-WORKER, CMP-TOOL-GATEWAY, CMP-EXTERNAL-SUT, CMP-TRACE-INSTRUMENTATION]
+    expected_outcome: Incident resolves with evidence-linked diagnosis and no ActionTransaction.
+    failure_semantics: Missing evidence or exhausted budget escalates instead of inventing a conclusion.
+  - id: W-ARCH-002
+    scenario: R2 approval succeeds
+    component_path: [CMP-INCIDENT-CONSOLE, CMP-CONTROL-API, CMP-AGENT-WORKER, CMP-POLICY-ENGINE, CMP-ACTION-EXECUTOR, CMP-EXTERNAL-SUT]
+    expected_outcome: Immutable matching approval permits one verified action effect.
+    failure_semantics: Digest resource version or tenant mismatch invalidates approval before dispatch.
+  - id: W-ARCH-003
+    scenario: Approval is rejected or expires
+    component_path: [CMP-INCIDENT-CONSOLE, CMP-CONTROL-API, CMP-POLICY-ENGINE, CMP-ACTION-EXECUTOR]
+    expected_outcome: No external write occurs and the incident records escalation or cancellation evidence.
+    failure_semantics: Rejection and expiry are terminal for that immutable action digest.
+  - id: W-ARCH-004
+    scenario: Worker lease is lost
+    component_path: [CMP-SCHEDULER, CMP-AGENT-WORKER, CMP-TRACE-INSTRUMENTATION]
+    expected_outcome: The old worker is fenced and a new attempt resumes from a committed checkpoint.
+    failure_semantics: A stale fencing token cannot commit state or dispatch downstream work.
+  - id: W-ARCH-005
+    scenario: Action executes but its response is lost
+    component_path: [CMP-ACTION-EXECUTOR, CMP-EXTERNAL-SUT, CMP-TRACE-INSTRUMENTATION]
+    expected_outcome: ActionTransaction becomes UNCERTAIN and reconciliation determines the effect.
+    failure_semantics: The executor never blindly retries a possibly completed external side effect.
+  - id: W-ARCH-006
+    scenario: Postcondition verification fails and compensation succeeds
+    component_path: [CMP-ACTION-EXECUTOR, CMP-EXTERNAL-SUT, CMP-TRACE-INSTRUMENTATION]
+    expected_outcome: Compensation is verified and the immutable transaction ends rolled back.
+    failure_semantics: Failed postconditions cannot be reported as a committed successful action.
+  - id: W-ARCH-007
+    scenario: Compensation result is uncertain
+    component_path: [CMP-ACTION-EXECUTOR, CMP-EXTERNAL-SUT, CMP-CONTROL-API]
+    expected_outcome: The transaction requires manual reconciliation and the incident escalates.
+    failure_semantics: Uncertainty cannot transition automatically to committed or rolled back.
+  - id: W-ARCH-008
+    scenario: Cancellation arrives before or during execution
+    component_path: [CMP-INCIDENT-CONSOLE, CMP-CONTROL-API, CMP-SCHEDULER, CMP-AGENT-WORKER, CMP-ACTION-EXECUTOR]
+    expected_outcome: Cancellation takes effect at a safe checkpoint with current side effects reconciled.
+    failure_semantics: A possibly started side effect forces verification or escalation, not silent cancellation.
+  - id: W-ARCH-009
+    scenario: LangSmith OPA or Keycloak is unavailable
+    component_path: [CMP-IDENTITY-PROVIDER, CMP-CONTROL-API, CMP-POLICY-ENGINE, CMP-TRACE-INSTRUMENTATION, CMP-ACTION-EXECUTOR]
+    expected_outcome: New identity or write paths fail closed while explicitly allowed read-only work degrades safely.
+    failure_semantics: Missing identity policy or mandatory trace evidence can never authorize a write or close a Gate.
+  - id: W-ARCH-010
+    scenario: Cross-tenant access is attempted
+    component_path: [CMP-INCIDENT-CONSOLE, CMP-CONTROL-API, CMP-KNOWLEDGE-SERVICE, CMP-ACTION-EXECUTOR]
+    expected_outcome: The request is denied before data disclosure or action dispatch and produces audit evidence.
+    failure_semantics: User supplied tenant identifiers never override the authenticated TenantContext.

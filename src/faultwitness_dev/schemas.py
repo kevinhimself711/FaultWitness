@@ -62,6 +62,8 @@ def validate_repository_schemas(root: Path) -> dict[str, Any]:
             loaded[label] = document
     _check_cross_references(loaded)
     _check_ruleset_invariants(loaded[".github/rulesets/main.json"])
+    _check_adr_invariants(root, loaded["docs/adr/INDEX.yaml"])
+    _check_architecture_documents(root)
     return loaded
 
 
@@ -102,6 +104,7 @@ def _check_cross_references(loaded: dict[str, Any]) -> None:
     source_catalog = loaded["docs/requirements/SOURCE_CATALOG.yaml"]
     evidence_matrix = loaded["docs/requirements/EVIDENCE_MATRIX.yaml"]
     _check_evidence_invariants(requirements, source_catalog, evidence_matrix)
+    _check_architecture_invariants(loaded["docs/architecture/ARCHITECTURE.yaml"])
     if state["active_gate"] not in gates:
         raise GovernanceError(f"unknown active_gate: {state['active_gate']}")
     for field in ("active_iteration", "next_iteration"):
@@ -214,3 +217,135 @@ def _check_evidence_invariants(
     missing_coverage = sorted(requirement_ids - set(covered))
     if missing_coverage:
         raise GovernanceError(f"evidence matrix misses requirements: {missing_coverage}")
+
+
+def _check_architecture_invariants(architecture: dict[str, Any]) -> None:
+    expected_engineering_planes = {
+        "agent_application",
+        "runtime_infra",
+        "data_eval_training",
+    }
+    if set(architecture["engineering_planes"]) != expected_engineering_planes:
+        raise GovernanceError("architecture must include all three mandatory engineering planes")
+    expected_logical_planes = {
+        "experience_plane",
+        "control_plane",
+        "data_plane",
+        "execution_plane",
+        "evaluation_plane",
+    }
+    if set(architecture["logical_planes"]) != expected_logical_planes:
+        raise GovernanceError("architecture must include all five logical planes")
+
+    components = {component["id"]: component for component in architecture["components"]}
+    stores = {store["id"]: store for store in architecture["stores"]}
+    if len(components) != len(architecture["components"]):
+        raise GovernanceError("architecture has duplicate component IDs")
+    if len(stores) != len(architecture["stores"]):
+        raise GovernanceError("architecture has duplicate store IDs")
+
+    for component in components.values():
+        unknown_stores = sorted(set(component["authoritative_stores"]) - set(stores))
+        unknown_invocations = sorted(set(component["invokes"]) - set(components))
+        if unknown_stores or unknown_invocations:
+            raise GovernanceError(
+                f"component {component['id']} has unknown references: "
+                f"stores={unknown_stores}, invokes={unknown_invocations}"
+            )
+    for store in stores.values():
+        if store["owner_component"] not in components:
+            raise GovernanceError(f"store {store['id']} has unknown owner")
+
+    ownership = architecture["state_ownership"]
+    expected_states = {
+        "Incident Lifecycle",
+        "Runtime Task",
+        "Agent Graph State",
+        "ActionTransaction",
+        "Agent Trace/Eval",
+        "Artifact/Dataset",
+    }
+    state_names = [record["state"] for record in ownership]
+    duplicates = sorted(name for name, count in Counter(state_names).items() if count > 1)
+    if duplicates:
+        raise GovernanceError(f"architecture has duplicate state owners: {duplicates}")
+    if set(state_names) != expected_states:
+        raise GovernanceError("architecture state ownership set is incomplete")
+    owner_by_state = {record["state"]: record["owner_component"] for record in ownership}
+    store_by_state = {record["state"]: record["authoritative_store"] for record in ownership}
+    for state, owner in owner_by_state.items():
+        if owner not in components or store_by_state[state] not in stores:
+            raise GovernanceError(f"state {state} has an unknown owner or store")
+        if state not in components[owner]["writes_states"]:
+            raise GovernanceError(
+                f"state owner {owner} does not declare write authority for {state}"
+            )
+    for component in components.values():
+        for state in component["writes_states"]:
+            if owner_by_state.get(state) != component["id"]:
+                raise GovernanceError(
+                    f"component {component['id']} declares cross-owner state write: {state}"
+                )
+
+    for boundary in architecture["trust_boundaries"]:
+        if (
+            boundary["from_component"] not in components
+            or boundary["to_component"] not in components
+        ):
+            raise GovernanceError(f"trust boundary {boundary['id']} has an unknown component")
+    required_denials = {
+        "DENY-AGENT-DIRECT-ACTION",
+        "DENY-AGENT-GROUND-TRUTH",
+        "DENY-CROSS-TENANT",
+        "DENY-UNSANDBOXED-CODE",
+    }
+    denial_ids = {path["id"] for path in architecture["prohibited_paths"]}
+    if not required_denials.issubset(denial_ids):
+        raise GovernanceError("architecture is missing a mandatory prohibited path")
+
+    required_walkthroughs = {f"W-ARCH-{number:03d}" for number in range(1, 11)}
+    walkthrough_ids = [walkthrough["id"] for walkthrough in architecture["walkthroughs"]]
+    if set(walkthrough_ids) != required_walkthroughs or len(walkthrough_ids) != 10:
+        raise GovernanceError("architecture walkthrough set must be exactly W-ARCH-001 through 010")
+    for walkthrough in architecture["walkthroughs"]:
+        unknown = sorted(set(walkthrough["component_path"]) - set(components))
+        if unknown:
+            raise GovernanceError(
+                f"walkthrough {walkthrough['id']} has unknown components: {unknown}"
+            )
+
+
+def _check_adr_invariants(root: Path, index: dict[str, Any]) -> None:
+    required = {f"ADR-{number:04d}" for number in range(1, 7)}
+    records = {record["id"]: record for record in index["adrs"]}
+    missing = sorted(required - set(records))
+    if missing:
+        raise GovernanceError(f"architecture decision baseline is incomplete: {missing}")
+    for record in records.values():
+        if record["status"] == "accepted" and not (root / record["path"]).is_file():
+            raise GovernanceError(f"accepted ADR path does not exist: {record['path']}")
+
+
+def _check_architecture_documents(root: Path) -> None:
+    document_names = {
+        "SYSTEM_CONTEXT.md",
+        "CONTAINER_ARCHITECTURE.md",
+        "DATA_AND_CONTROL_FLOW.md",
+        "DEPLOYMENT_AND_TRUST_BOUNDARIES.md",
+        "STATE_MACHINES.md",
+    }
+    architecture_root = root / "docs" / "architecture"
+    for name in sorted(document_names):
+        path = architecture_root / name
+        if not path.is_file():
+            raise GovernanceError(f"missing architecture document: {name}")
+        text = path.read_text(encoding="utf-8")
+        if "```mermaid" not in text:
+            raise GovernanceError(f"architecture document has no Mermaid view: {name}")
+        missing_links = sorted(other for other in document_names - {name} if other not in text)
+        if missing_links:
+            raise GovernanceError(
+                f"architecture document {name} is missing cross-links: {missing_links}"
+            )
+    if not (root / "docs" / "security" / "THREAT_MODEL.md").is_file():
+        raise GovernanceError("missing initial Threat Model")

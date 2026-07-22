@@ -8,6 +8,8 @@ assets:
     schema: schemas/governance/source-catalog.schema.json
   - path: docs/requirements/EVIDENCE_MATRIX.yaml
     schema: schemas/governance/evidence-matrix.schema.json
+  - path: docs/architecture/ARCHITECTURE.yaml
+    schema: schemas/governance/architecture.schema.json
   - path: docs/claims/CLAIMS.yaml
     schema: schemas/governance/claim-registry.schema.json
   - path: governance/iterations/I-*.yaml

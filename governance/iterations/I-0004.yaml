@@ -2,16 +2,44 @@ schema_version: "1.0.0"
 id: I-0004
 gate: G00
 title: Architecture Trust Boundaries and Decisions
-status: planned
+status: in_progress
 scope:
-  - Freeze architecture views threat model and ADRs.
+  - Freeze five architecture views and a machine-readable architecture source.
+  - Define engineering and logical planes component responsibilities and data truth.
+  - Freeze state ownership Command/Event trust and prohibited-path boundaries.
+  - Establish the initial Threat Model and six required ADRs.
+  - Walk through ten fixed success and failure scenarios.
 non_goals:
   - Product implementation.
-dependencies: [I-0003]
-tests: [EVAL-G00-004]
+  - State transition tables and interface contracts reserved for I-0005.
+  - Runtime parameters deployment or model calls.
+dependencies:
+  - I-0003
+tests:
+  - make verify-fast
+  - make eval-changed
+  - uv run pytest tests/governance -q
+  - EVAL-G00-004 architecture invariant and walkthrough cases
 eval_id: EVAL-G00-004
 commit: null
-changed_paths: [docs/architecture]
-behavior_change: false
-docs_updated: []
+changed_paths:
+  - docs/architecture
+  - docs/security/THREAT_MODEL.md
+  - docs/adr
+  - schemas/governance/architecture.schema.json
+  - src/faultwitness_dev/schemas.py
+  - tests/governance
+  - docs/evals/EVAL-G00-004
+behavior_change: true
+docs_updated:
+  - docs/architecture/SYSTEM_CONTEXT.md
+  - docs/architecture/CONTAINER_ARCHITECTURE.md
+  - docs/architecture/DATA_AND_CONTROL_FLOW.md
+  - docs/architecture/DEPLOYMENT_AND_TRUST_BOUNDARIES.md
+  - docs/architecture/STATE_MACHINES.md
+  - docs/security/THREAT_MODEL.md
+  - docs/roadmap/iterations/I-0004.md
+  - docs/evals/EVAL-G00-004/PLAN.md
+  - docs/evals/EVAL-G00-004/REPORT.md
+  - CHANGELOG.md
 threshold_changes: []
