@@ -9,12 +9,24 @@ from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.platform import (
     PlatformPaths,
     _assert_candidate,
+    _bundle,
+    _deployment_files,
     _sanitize_inventory,
     deploy_platform,
     inspect_platform_readiness,
 )
 
 CANDIDATE = "a" * 40
+
+
+def test_platform_bundle_is_byte_stable(tmp_path: Path) -> None:
+    chart = tmp_path / "chart"
+    chart.mkdir()
+    (chart / "Chart.yaml").write_text("apiVersion: v2\nname: stable\nversion: 1.0.0\n")
+    values = tmp_path / "values.yaml"
+    values.write_text("replicas: 1\n")
+    files = _deployment_files(chart, values)
+    assert _bundle(files) == _bundle(files)
 
 
 def _inventory(*, ready: int = 1, generation: int = 4) -> str:

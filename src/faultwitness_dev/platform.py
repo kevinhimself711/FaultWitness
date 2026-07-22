@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import gzip
 import hashlib
 import io
 import json
@@ -98,8 +99,8 @@ def _validate_values(values: Path) -> None:
 
 
 def _bundle(files: list[tuple[Path, str]]) -> tuple[str, str]:
-    stream = io.BytesIO()
-    with tarfile.open(fileobj=stream, mode="w:gz", format=tarfile.PAX_FORMAT) as archive:
+    tar_stream = io.BytesIO()
+    with tarfile.open(fileobj=tar_stream, mode="w", format=tarfile.PAX_FORMAT) as archive:
         for path, name in files:
             info = archive.gettarinfo(str(path), arcname=name)
             info.uid = info.gid = 0
@@ -107,6 +108,9 @@ def _bundle(files: list[tuple[Path, str]]) -> tuple[str, str]:
             info.mtime = 0
             with path.open("rb") as source:
                 archive.addfile(info, source)
+    stream = io.BytesIO()
+    with gzip.GzipFile(fileobj=stream, mode="wb", filename="", mtime=0) as compressed:
+        compressed.write(tar_stream.getvalue())
     payload = stream.getvalue()
     return base64.b64encode(payload).decode("ascii"), hashlib.sha256(payload).hexdigest()
 
