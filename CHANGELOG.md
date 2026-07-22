@@ -16,5 +16,8 @@
 - Freeze the architecture-first final project blueprint.
 - Freeze the decision-complete G00 Gate Master Plan.
 - Establish the initial project state and repository collaboration rules.
+- Catalog the complete JD and interview corpus without publishing raw third-party material.
+- Establish 57 evidence-backed requirements with role, architecture-plane, Gate, and verification mappings.
+- Add fail-closed evidence quality and exact-coverage validation for the requirement registry.
 
 No product implementation is included in this planning baseline.

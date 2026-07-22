@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G00-003",
+  "gate": "G00",
+  "iteration": "I-0003",
+  "evaluated_revision": "I-0003 candidate working tree",
+  "status": "local_pass_pending_cross_platform",
+  "environments": ["windows-local"],
+  "commands": ["make verify-fast", "make eval-changed", "uv run pytest tests/governance -q"],
+  "artifacts": ["docs/evals/EVAL-G00-003/PLAN.md", "docs/evals/EVAL-G00-003/REPORT.md"],
+  "evidence_urls": [],
+  "open_evidence": ["Windows and Ubuntu pull-request CI"]
+}

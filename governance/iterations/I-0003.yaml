@@ -2,16 +2,39 @@ schema_version: "1.0.0"
 id: I-0003
 gate: G00
 title: Requirements Evidence and Source Governance
-status: planned
+status: in_progress
 scope:
-  - Establish the source catalog requirements and evidence matrix.
+  - Catalog every in-scope source with anonymous integrity metadata and an inclusion decision.
+  - Establish 57 evidence-backed requirements mapped to roles architecture planes and Gates.
+  - Enforce evidence quality reference integrity source counts and exact matrix coverage.
+  - Document upstream originality and third-party boundaries.
 non_goals:
   - Product implementation.
-dependencies: [I-0002]
-tests: [EVAL-G00-003]
+  - Product architecture state machines and runtime contracts.
+  - Redistribution of raw third-party research.
+dependencies:
+  - I-0002
+tests:
+  - make verify-fast
+  - make eval-changed
+  - uv run pytest tests/governance -q
+  - EVAL-G00-003 negative evidence-policy cases
 eval_id: EVAL-G00-003
 commit: null
-changed_paths: [docs/requirements]
-behavior_change: false
-docs_updated: []
+changed_paths:
+  - docs/requirements
+  - schemas/governance
+  - src/faultwitness_dev/schemas.py
+  - tests/governance
+  - docs/evals/EVAL-G00-003
+behavior_change: true
+docs_updated:
+  - docs/requirements/METHODOLOGY.md
+  - docs/requirements/UPSTREAM.md
+  - docs/requirements/ORIGINALITY.md
+  - docs/requirements/THIRD_PARTY.md
+  - docs/roadmap/iterations/I-0003.md
+  - docs/evals/EVAL-G00-003/PLAN.md
+  - docs/evals/EVAL-G00-003/REPORT.md
+  - CHANGELOG.md
 threshold_changes: []

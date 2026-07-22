@@ -1,0 +1,114 @@
+schema_version: "1.0.0"
+entries:
+  - requirement_ids: [REQ-BUS-001, REQ-BUS-002, REQ-BUS-003, REQ-BUS-004]
+    source_ids: [SRC-JD-001, SRC-JD-002, SRC-JD-003, SRC-INT-NK-001, SRC-INT-NK-002, SRC-INT-XHS-001, SRC-INT-XHS-003, SRC-UPSTREAM-001]
+    evidence_strength: corroborated
+    rationale: Product ownership, measurable outcomes, non-Agent baselines, and complete incident closure recur across job descriptions and independent interview channels.
+    role_targets: [application, algorithm, infra, product_client]
+    architecture_targets: [experience_plane, control_plane, execution_plane, evaluation_plane]
+    gates: [G02, G05, G07, G08, G10]
+  - requirement_ids: [REQ-ENV-001, REQ-ENV-002, REQ-ENV-003]
+    source_ids: [SRC-JD-001, SRC-JD-005, SRC-JD-013, SRC-INT-NK-002, SRC-INT-NK-006, SRC-INT-XHS-001, SRC-INT-XHS-015, SRC-UPSTREAM-001]
+    evidence_strength: corroborated
+    rationale: Reproducible systems, real failure scenarios, noisy observations, and adversarial ambiguity are supported by platform roles and systems-focused interviews.
+    role_targets: [application, algorithm, infra]
+    architecture_targets: [data_plane, execution_plane, evaluation_plane]
+    gates: [G02, G04, G07]
+  - requirement_ids: [REQ-AGT-001, REQ-AGT-002, REQ-AGT-003, REQ-AGT-004, REQ-AGT-005]
+    source_ids: [SRC-JD-001, SRC-JD-003, SRC-JD-013, SRC-INT-NK-002, SRC-INT-NK-012, SRC-INT-XHS-001, SRC-INT-XHS-003, SRC-UPSTREAM-001]
+    evidence_strength: corroborated
+    rationale: Typed state, bounded execution, recovery, verifier independence, and topology ablation directly address repeated questions about Agent control and reliability.
+    role_targets: [application, algorithm, infra]
+    architecture_targets: [control_plane, execution_plane, evaluation_plane]
+    gates: [G03, G05, G06, G07, G08]
+  - requirement_ids: [REQ-TOOL-001, REQ-TOOL-002, REQ-TOOL-003, REQ-TOOL-004, REQ-TOOL-005]
+    source_ids: [SRC-JD-001, SRC-JD-002, SRC-JD-003, SRC-JD-013, SRC-INT-NK-002, SRC-INT-NK-011, SRC-INT-XHS-004, SRC-UPSTREAM-001]
+    evidence_strength: corroborated
+    rationale: Tool schemas, real backends, permission boundaries, side effects, and controlled exposure are recurring implementation and security depth signals.
+    role_targets: [application, algorithm, infra]
+    architecture_targets: [control_plane, data_plane, execution_plane, evaluation_plane]
+    gates: [G03, G04, G05, G06, G08]
+  - requirement_ids: [REQ-SKILL-001]
+    source_ids: [SRC-JD-001, SRC-JD-003, SRC-INT-NK-010, SRC-INT-XHS-004, SRC-UPSTREAM-001]
+    evidence_strength: corroborated
+    rationale: Reusable capability packaging is valuable only when triggers, boundaries, failure behavior, and independent effectiveness evaluation are explicit.
+    role_targets: [application, product_client]
+    architecture_targets: [experience_plane, control_plane, evaluation_plane]
+    gates: [G04]
+  - requirement_ids: [REQ-RAG-001, REQ-RAG-002, REQ-RAG-003, REQ-RAG-004, REQ-RAG-005, REQ-RAG-006, REQ-RAG-007]
+    source_ids: [SRC-JD-001, SRC-JD-003, SRC-JD-004, SRC-INT-NK-002, SRC-INT-NK-004, SRC-INT-NK-005, SRC-INT-XHS-002, SRC-INT-XHS-004, SRC-UPSTREAM-001]
+    evidence_strength: corroborated
+    rationale: Interview evidence consistently requires explainable ingestion, chunking, hybrid retrieval, reranking, citations, freshness, authorization, and measured scale.
+    role_targets: [application, algorithm, infra, product_client]
+    architecture_targets: [experience_plane, control_plane, data_plane, evaluation_plane]
+    gates: [G04, G06, G07, G08]
+  - requirement_ids: [REQ-MEM-001, REQ-MEM-002, REQ-MEM-003, REQ-MEM-004]
+    source_ids: [SRC-JD-001, SRC-JD-003, SRC-INT-NK-010, SRC-INT-NK-012, SRC-INT-XHS-001, SRC-UPSTREAM-001]
+    evidence_strength: corroborated
+    rationale: Memory must be separated from runtime state, governed on write, conflict-aware, and evaluated rather than represented as unbounded chat history.
+    role_targets: [application, algorithm, infra]
+    architecture_targets: [control_plane, data_plane, evaluation_plane]
+    gates: [G04, G07, G08]
+  - requirement_ids: [REQ-EVAL-001, REQ-EVAL-002, REQ-EVAL-003, REQ-EVAL-004, REQ-EVAL-005, REQ-EVAL-006]
+    source_ids: [SRC-JD-001, SRC-JD-003, SRC-INT-NK-005, SRC-INT-XHS-001, SRC-UPSTREAM-001]
+    evidence_strength: corroborated
+    rationale: Dataset construction, metric decomposition, repeatability, calibrated judging, regression protection, and trajectory scale distinguish evidence from demos.
+    role_targets: [application, algorithm, infra]
+    architecture_targets: [data_plane, evaluation_plane]
+    gates: [G07, G09, G10]
+  - requirement_ids: [REQ-REL-001, REQ-REL-002, REQ-REL-003, REQ-REL-004]
+    source_ids: [SRC-JD-001, SRC-JD-005, SRC-JD-013, SRC-INT-NK-002, SRC-INT-XHS-001, SRC-UPSTREAM-001]
+    evidence_strength: corroborated
+    rationale: Rate limits, timeouts, duplicate delivery, backpressure, false success, compensation, and uncertainty are mandatory distributed-system failure semantics.
+    role_targets: [application, infra]
+    architecture_targets: [control_plane, data_plane, execution_plane, evaluation_plane]
+    gates: [G03, G05, G06]
+  - requirement_ids: [REQ-SEC-001, REQ-SEC-002, REQ-SEC-003, REQ-SEC-004]
+    source_ids: [SRC-JD-001, SRC-JD-002, SRC-INT-NK-011, SRC-INT-XHS-004, SRC-UPSTREAM-001]
+    evidence_strength: corroborated
+    rationale: Risk-tier enforcement, prompt-injection resistance, secret boundaries, tenant isolation, and reconstructable audit trails recur across security-sensitive roles.
+    role_targets: [application, algorithm, infra, product_client]
+    architecture_targets: [experience_plane, control_plane, data_plane, execution_plane, evaluation_plane]
+    gates: [G01, G04, G05, G06, G07, G10]
+  - requirement_ids: [REQ-PERF-001, REQ-PERF-002, REQ-PERF-003, REQ-PERF-004]
+    source_ids: [SRC-JD-001, SRC-JD-002, SRC-JD-005, SRC-INT-NK-001, SRC-INT-NK-003, SRC-INT-XHS-001, SRC-UPSTREAM-001]
+    evidence_strength: corroborated
+    rationale: Stage latency, concurrency, capacity, cost budgets, and quality-latency-cost tradeoffs convert performance assertions into reproducible engineering evidence.
+    role_targets: [application, algorithm, infra]
+    architecture_targets: [control_plane, data_plane, execution_plane, evaluation_plane]
+    gates: [G01, G03, G06, G08]
+  - requirement_ids: [REQ-OBS-001, REQ-OBS-002, REQ-OBS-003]
+    source_ids: [SRC-JD-001, SRC-JD-002, SRC-JD-005, SRC-TECH-001, SRC-INT-NK-011, SRC-INT-NK-017, SRC-INT-XHS-001, SRC-INT-XHS-010, SRC-UPSTREAM-001]
+    evidence_strength: corroborated
+    rationale: Claim lineage, typed event streaming, reconnect semantics, and version-segmented operations views are supported by roles, interviews, and an official protocol reference.
+    role_targets: [application, algorithm, infra, product_client]
+    architecture_targets: [experience_plane, control_plane, data_plane, execution_plane, evaluation_plane]
+    gates: [G01, G03, G07, G10]
+  - requirement_ids: [REQ-DEV-001, REQ-DEV-002, REQ-DEV-003, REQ-DEV-004]
+    source_ids: [SRC-JD-001, SRC-JD-005, SRC-INT-NK-007, SRC-INT-XHS-005, SRC-UPSTREAM-001]
+    evidence_strength: corroborated
+    rationale: Test layering, decision records, clean-environment operation, and honest development metrics make the project explainable and reproducible under interview scrutiny.
+    role_targets: [application, algorithm, infra, product_client]
+    architecture_targets: [experience_plane, control_plane, data_plane, execution_plane, evaluation_plane]
+    gates: [G00, G02, G10]
+  - requirement_ids: [REQ-ALG-001]
+    source_ids: [SRC-JD-001, SRC-JD-002, SRC-INT-NK-005, SRC-INT-XHS-002, SRC-UPSTREAM-001]
+    evidence_strength: corroborated
+    rationale: Training is an integrated optimization path whose admission depends on attributed badcases, data lineage, hidden-set improvement, and safety regression checks.
+    role_targets: [algorithm]
+    architecture_targets: [data_plane, evaluation_plane]
+    gates: [G09]
+  - requirement_ids: [REQ-INFRA-001]
+    source_ids: [SRC-JD-001, SRC-JD-005, SRC-INT-NK-002, SRC-INT-XHS-001, SRC-UPSTREAM-001]
+    evidence_strength: corroborated
+    rationale: Multi-tenant runtime depth requires isolation, quotas, leases, queues, recovery, backpressure, scaling evidence, and a usable integration surface.
+    role_targets: [infra]
+    architecture_targets: [control_plane, execution_plane, evaluation_plane]
+    gates: [G06]
+  - requirement_ids: [REQ-MM-001]
+    source_ids: [SRC-JD-001, SRC-JD-002, SRC-INT-NK-015, SRC-INT-XHS-002, SRC-UPSTREAM-001]
+    evidence_strength: corroborated
+    rationale: Multimodal processing remains integrated but must earn scope through fixed-subset quality gain over OCR after latency and cost are included.
+    role_targets: [application, algorithm, product_client]
+    architecture_targets: [data_plane, evaluation_plane]
+    gates: [G04]

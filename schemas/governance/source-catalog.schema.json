@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faultwitness.local/schemas/governance/source-catalog.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "methodology", "expected_counts", "sources"],
+  "properties": {
+    "schema_version": {"pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "methodology": {"type": "string", "minLength": 20},
+    "expected_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["job_descriptions", "included_interviews", "excluded_empty_interviews", "technical_references", "upstream_reports"],
+      "properties": {
+        "job_descriptions": {"const": 22},
+        "included_interviews": {"const": 84},
+        "excluded_empty_interviews": {"const": 2},
+        "technical_references": {"const": 1},
+        "upstream_reports": {"const": 1}
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 110,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind", "channel", "tier", "content_sha256", "byte_size", "character_count", "included", "exclusion_reason", "themes", "indexed"],
+        "properties": {
+          "id": {"pattern": "^SRC-[A-Z]+(?:-[A-Z]+)?-[0-9]{3}$"},
+          "kind": {"enum": ["job_description", "interview", "interview_collection", "technical_reference", "upstream_report"]},
+          "channel": {"enum": ["published_job", "nowcoder", "xiaohongshu", "official_doc", "project_report"]},
+          "tier": {"enum": ["A", "B", "C"]},
+          "content_sha256": {"pattern": "^[0-9a-f]{64}$"},
+          "byte_size": {"type": "integer", "minimum": 0},
+          "character_count": {"type": "integer", "minimum": 0},
+          "included": {"type": "boolean"},
+          "exclusion_reason": {"oneOf": [{"type": "string", "minLength": 1}, {"type": "null"}]},
+          "themes": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+          "indexed": {"type": "boolean"}
+        }
+      }
+    }
+  }
+}
