@@ -18,3 +18,7 @@ The strengthened publication scanner now detects both Bailian/OpenAI-shaped and 
 ## Open evidence
 
 Open evidence: out-of-band host fingerprint confirmation, SSH key installation/login, server/Bailian/LangSmith rotation, two matching host probes, handoff deletion, immutable candidate binding, and final EVAL-G01-001 execution.
+
+## Deviations retained
+
+- Candidate `1bd9c712cfe565c50b8f51f015a11367ca78cc35` passed local code/document checks but was rejected before private Eval because the inherited broad `secrets/` ignore rule excluded the public `config/secrets` schema and toolchain lock. The rule is narrowed to root-only `/secrets/`; no security threshold or failed evidence was removed.

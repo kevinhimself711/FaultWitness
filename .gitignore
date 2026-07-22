@@ -16,7 +16,7 @@ build/
 .env.*
 !.env.example
 *.age
-secrets/
+/secrets/
 
 .dvc/cache/
 artifacts/
