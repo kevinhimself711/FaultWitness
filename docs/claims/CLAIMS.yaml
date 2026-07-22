@@ -1,0 +1,9 @@
+schema_version: "0.1.0"
+claims:
+  - id: CLAIM-GOV-001
+    statement: "The repository has a pinned, locally reproducible toolchain baseline."
+    status: verified
+    requirements: []
+    evidence:
+      - EVAL-G00-001
+    limitations: []

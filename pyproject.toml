@@ -1,0 +1,15 @@
+[project]
+name = "faultwitness"
+version = "0.0.0"
+description = "Evidence-driven reliability agent platform"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = { text = "Apache-2.0" }
+authors = [{ name = "FaultWitness Contributors" }]
+dependencies = []
+
+[dependency-groups]
+dev = []
+
+[tool.uv]
+package = false

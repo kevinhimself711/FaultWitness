@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Tooling
+
+- Pin the Python, Node.js, uv, and pnpm repository toolchains.
+- Add locked Python and Node workspaces and cross-platform verification entry points.
+- Record the I-0001 iteration and EVAL-G00-001 evidence assets.
+
 ### Planning
 
 - Freeze the architecture-first final project blueprint.

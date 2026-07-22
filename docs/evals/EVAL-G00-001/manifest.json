@@ -1,0 +1,27 @@
+{
+  "schema_version": "0.1.0",
+  "eval_id": "EVAL-G00-001",
+  "gate": "G00",
+  "iteration": "I-0001",
+  "evaluated_revision": "I-0001 scoped commit",
+  "status": "pass",
+  "environments": [
+    "windows-local-clean-clone",
+    "windows-github-hosted-node-22.14.0",
+    "ubuntu-github-hosted-node-22.14.0"
+  ],
+  "commands": [
+    "make verify-fast",
+    "make eval-changed",
+    "uv lock --check",
+    "pnpm install --lockfile-only --frozen-lockfile"
+  ],
+  "artifacts": [
+    "docs/evals/EVAL-G00-001/PLAN.md",
+    "docs/evals/EVAL-G00-001/REPORT.md"
+  ],
+  "evidence_urls": [
+    "https://github.com/kevinhimself711/FaultWitness/actions/runs/29911801135"
+  ],
+  "open_evidence": []
+}

@@ -1,0 +1,11 @@
+{
+  "name": "faultwitness-workspace",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Pinned Node.js workspace for FaultWitness documentation and contract tooling",
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": "22.14.0",
+    "pnpm": "11.9.0"
+  }
+}
