@@ -85,7 +85,6 @@ def _stage_base_image(root: Path) -> None:
     _pull_image_archive(crane, BASE_IMAGE, archive)
     paths = BootstrapPaths.defaults()
     bundle, _ = _remote_arguments(paths)
-    run_remote_script("umask 077; mkdir -p /tmp/faultwitness-i0012\n", privileged=False)
     arguments = [
         "scp",
         "-P",
@@ -103,13 +102,19 @@ def _stage_base_image(root: Path) -> None:
         "-i",
         str(paths.ssh_private_key),
         str(archive),
-        f"{bundle.server_username}@{bundle.server_host}:/tmp/faultwitness-i0012/python-base.tar",
+        f"{bundle.server_username}@{bundle.server_host}:faultwitness-i0012-python-base.tar",
     ]
     result = subprocess.run(arguments, check=False, capture_output=True, text=True, timeout=300)
     if result.returncode:
         raise GovernanceError(
             "base image staging failed (" + ssh_failure_category(result.stderr) + ")"
         )
+    run_remote_script(
+        'install -m 0600 "$HOME/faultwitness-i0012-python-base.tar" '
+        "/tmp/faultwitness-i0012-python-base.tar; "
+        'rm -f "$HOME/faultwitness-i0012-python-base.tar"\n',
+        privileged=False,
+    )
 
 
 def deploy_control_api(root: Path, candidate_sha: str) -> dict[str, Any]:
@@ -123,7 +128,7 @@ def deploy_control_api(root: Path, candidate_sha: str) -> dict[str, Any]:
     script = f"""set -eu
 work=$(mktemp -d /tmp/faultwitness-i0012-build.XXXXXX)
 trap 'rm -rf "$work"' EXIT HUP INT TERM
-docker load -i /tmp/faultwitness-i0012/python-base.tar >/dev/null
+docker load -i /tmp/faultwitness-i0012-python-base.tar >/dev/null
 printf %s {encoded} | base64 -d >"$work/context.tgz"
 test "$(sha256sum "$work/context.tgz" | awk '{{print $1}}')" = {bundle_digest}
 tar -xzf "$work/context.tgz" -C "$work"
