@@ -11,6 +11,7 @@ Audit one fixed G00 candidate revision for repository reproducibility, governanc
 3. Require Windows and Ubuntu baseline jobs plus the Ubuntu audit job to pass for the same candidate.
 4. Upload the generated CycloneDX 1.6 SBOM and audit summary as immutable CI artifacts.
 5. Finalize evidence in an asset-only synchronization commit; do not change implementation or thresholds.
+6. Run `make eval-g00-close`; it must reject any incomplete Iteration, non-passing Eval, open evidence, pending Iteration, or waiver.
 
 ## Blocking checks
 
@@ -19,6 +20,7 @@ Audit one fixed G00 candidate revision for repository reproducibility, governanc
 - Full-SHA GitHub Actions, locked dependencies, compatible licenses, source ownership, secret and absolute-local-path scan.
 - CycloneDX 1.6 SBOM has a fixed candidate SHA and unique versioned licensed components.
 - Exactly fourteen G00 walkthroughs pass and map to the frozen I-0005 contract bindings.
+- Gate closure readiness confirms all six Iterations are completed with commits and all six Evals pass with no open evidence or waivers.
 - Changed assets satisfy the I-0006 record with no threshold decrease or locked-test mutation.
 
 ## Non-blocking check

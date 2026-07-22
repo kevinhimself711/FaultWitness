@@ -4,7 +4,7 @@ set "SCRIPT_DIR=%~dp0"
 for %%I in ("%SCRIPT_DIR%\..\..") do set "REPO_ROOT=%%~fI"
 
 if "%~1"=="" (
-  echo Usage: make ^<verify-fast^|eval-changed^|audit-g00^|eval-g00^>
+  echo Usage: make ^<verify-fast^|eval-changed^|audit-g00^|eval-g00^|eval-g00-close^>
   exit /b 2
 )
 

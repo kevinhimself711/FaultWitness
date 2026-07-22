@@ -351,6 +351,67 @@ def audit_repository(root: Path, output_dir: Path | None = None) -> dict[str, An
     return summary
 
 
+def validate_g00_closure_documents(
+    state: dict[str, Any],
+    gate: dict[str, Any],
+    iterations: list[dict[str, Any]],
+    manifests: list[dict[str, Any]],
+) -> None:
+    if state.get("active_gate") != "G00" or state.get("active_gate_status") != "in_progress":
+        raise GovernanceError("G00 closure requires the active Gate to be in progress")
+    if state.get("active_iteration") is not None or state.get("next_iteration") is not None:
+        raise GovernanceError("G00 closure requires no active or pending Iteration")
+    if gate.get("status") != "in_progress":
+        raise GovernanceError("G00 Gate record must be in progress before closure")
+    if gate.get("waivers"):
+        raise GovernanceError("G00 closure does not permit waivers")
+
+    expected = set(gate["iterations"])
+    records = {record["id"]: record for record in iterations}
+    if set(records) != expected:
+        raise GovernanceError("G00 closure requires exactly the Iterations declared by the Gate")
+    incomplete = sorted(
+        iteration_id
+        for iteration_id, record in records.items()
+        if record.get("status") != "completed" or not record.get("commit")
+    )
+    if incomplete:
+        raise GovernanceError("G00 has incomplete Iterations: " + ", ".join(incomplete))
+
+    manifest_by_iteration: dict[str, dict[str, Any]] = {}
+    for manifest in manifests:
+        iteration_id = manifest["iteration"]
+        if iteration_id in manifest_by_iteration:
+            raise GovernanceError(f"G00 has duplicate Eval manifests for {iteration_id}")
+        manifest_by_iteration[iteration_id] = manifest
+    if set(manifest_by_iteration) != expected:
+        raise GovernanceError("G00 closure requires one Eval manifest per Iteration")
+    unresolved = sorted(
+        iteration_id
+        for iteration_id, manifest in manifest_by_iteration.items()
+        if manifest.get("status") != "pass" or manifest.get("open_evidence")
+    )
+    if unresolved:
+        raise GovernanceError("G00 has unresolved Eval evidence: " + ", ".join(unresolved))
+
+
+def validate_g00_closure_readiness(root: Path) -> str:
+    from faultwitness_dev.schemas import load_data
+
+    state = load_data(root / "PROJECT_STATE.yaml")
+    gate = load_data(root / "governance" / "gates" / "G00.yaml")
+    iterations = [
+        load_data(root / "governance" / "iterations" / f"{iteration_id}.yaml")
+        for iteration_id in gate["iterations"]
+    ]
+    manifests = [
+        load_data(root / "docs" / "evals" / f"EVAL-G00-{number:03d}" / "manifest.json")
+        for number in range(1, len(gate["iterations"]) + 1)
+    ]
+    validate_g00_closure_documents(state, gate, iterations, manifests)
+    return f"{len(iterations)} completed Iterations and {len(manifests)} passing Evals"
+
+
 def check_external_links(root: Path, output_dir: Path | None = None) -> dict[str, Any]:
     import urllib.error
     import urllib.request

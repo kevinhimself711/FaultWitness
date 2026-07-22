@@ -4,7 +4,11 @@ import argparse
 import subprocess
 from pathlib import Path
 
-from faultwitness_dev.audit import audit_repository, check_external_links
+from faultwitness_dev.audit import (
+    audit_repository,
+    check_external_links,
+    validate_g00_closure_readiness,
+)
 from faultwitness_dev.checks import eval_changed, run, verify_fast
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.schemas import validate_repository_schemas
@@ -31,6 +35,7 @@ def parser() -> argparse.ArgumentParser:
             "validate",
             "audit-g00",
             "eval-g00",
+            "eval-g00-close",
             "external-links",
         ),
     )
@@ -52,14 +57,17 @@ def main() -> int:
         elif args.command == "audit-g00":
             summary = audit_repository(root)
             message = f"audited {summary['component_count']} dependency components"
-        elif args.command == "eval-g00":
+        elif args.command in {"eval-g00", "eval-g00-close"}:
             verify_fast(root)
             summary = audit_repository(root)
             run(["pnpm", "run", "check:mermaid"], root)
             changed_message = eval_changed(root)
+            closure_message = ""
+            if args.command == "eval-g00-close":
+                closure_message = "; " + validate_g00_closure_readiness(root)
             message = (
                 f"full candidate passed with {summary['component_count']} components; "
-                f"{changed_message}"
+                f"{changed_message}{closure_message}"
             )
         else:
             report = check_external_links(root)

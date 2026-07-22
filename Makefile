@@ -1,4 +1,4 @@
-.PHONY: verify-fast eval-changed audit-g00 eval-g00
+.PHONY: verify-fast eval-changed audit-g00 eval-g00 eval-g00-close
 
 verify-fast:
 	uv run python -m faultwitness_dev verify-fast
@@ -12,3 +12,6 @@ audit-g00:
 
 eval-g00:
 	uv run python -m faultwitness_dev eval-g00
+
+eval-g00-close:
+	uv run python -m faultwitness_dev eval-g00-close
