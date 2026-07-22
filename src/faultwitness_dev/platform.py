@@ -136,6 +136,15 @@ trap on_exit EXIT
 work=$(mktemp -d /tmp/faultwitness-i0009.XXXXXX)
 cleanup() {{ rm -rf "$work"; }}
 trap cleanup HUP INT TERM
+step=namespaces
+for boundary in data observability system; do
+  namespace=fw-$boundary
+  /usr/local/bin/k3s kubectl create namespace "$namespace" --dry-run=client -o yaml \
+    | /usr/local/bin/k3s kubectl apply -f - >/dev/null
+  /usr/local/bin/k3s kubectl label namespace "$namespace" \
+    kubernetes.io/metadata.name="$namespace" faultwitness.io/boundary="$boundary" \
+    --overwrite >/dev/null
+done
 step=dependency-secrets
 for dependency in \
   fw-data/fw-postgres-env fw-data/fw-redis-env fw-data/fw-qdrant-env \

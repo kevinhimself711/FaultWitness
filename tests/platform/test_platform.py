@@ -123,6 +123,8 @@ def test_deploy_platform_stages_helm_bundle_and_writes_private_summary(
     )
     script = str(captured["script"])
     assert "FW_PLATFORM_DEPLOY_FAILED step=%s" in script
+    assert "step=namespaces" in script
+    assert 'kubectl create namespace "$namespace"' in script
     assert "export KUBECONFIG=/etc/rancher/k3s/k3s.yaml" in script
     assert "helm upgrade --install fw-platform" in script
     assert "--atomic --wait --timeout 15m" in script

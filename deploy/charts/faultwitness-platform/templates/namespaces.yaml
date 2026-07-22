@@ -1,14 +1,6 @@
 {{- range $key, $namespace := .Values.namespaces }}
 ---
 apiVersion: v1
-kind: Namespace
-metadata:
-  name: {{ $namespace }}
-  labels:
-    kubernetes.io/metadata.name: {{ $namespace }}
-    faultwitness.io/boundary: {{ $key }}
----
-apiVersion: v1
 kind: ResourceQuota
 metadata:
   name: bounded-platform
