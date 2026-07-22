@@ -53,3 +53,45 @@ claims:
       - https://github.com/kevinhimself711/FaultWitness/actions/runs/29934431213
     limitations:
       - "G00 proves the planning architecture contract and governance baseline only; no product runtime is claimed."
+  - id: CLAIM-PLATFORM-001
+    statement: "G01 will establish a reproducible single-node platform with executable contracts durable state transactional events authenticated APIs and recoverable SSE."
+    status: pending
+    requirements: [REQ-REL-002, REQ-SEC-003, REQ-PERF-001, REQ-OBS-002]
+    evidence:
+      - EVAL-G01-001
+      - EVAL-G01-002
+      - EVAL-G01-003
+      - EVAL-G01-004
+      - EVAL-G01-005
+      - EVAL-G01-006
+    limitations:
+      - "This is a pre-registered claim only; no G01 implementation or runtime evidence exists yet."
+      - "The planned topology is single-node and does not claim high availability or G06 horizontal scaling and sandbox security."
+  - id: CLAIM-TRACE-001
+    statement: "G01 will produce complete correlated sanitized and replayable LangSmith and OTel evidence for every platform and model stage that actually executes."
+    status: pending
+    requirements: [REQ-SEC-003, REQ-PERF-001, REQ-OBS-001, REQ-OBS-002]
+    evidence:
+      - EVAL-G01-007
+    limitations:
+      - "A LangSmith credential is available locally but has not been accessed or used; credential readiness is not trace evidence."
+      - "G01 does not claim traces for Agent reasoning tools retrieval or actions that are outside this Gate."
+  - id: CLAIM-MODEL-001
+    statement: "G01 will provide one typed ModelGateway for Qwen DeepSeek and GLM live model families and a compatible Bailian and NewAPI channel contract."
+    status: pending
+    requirements: [REQ-REL-001, REQ-SEC-003, REQ-PERF-001, REQ-OBS-001]
+    evidence:
+      - EVAL-G01-008
+    limitations:
+      - "All required live G01 evidence uses one Bailian upstream; this does not prove three independent providers or upstream failure independence."
+      - "NewAPI live evidence is deferred until a token exists; G01 requires only its offline wire contract."
+      - "This Gate does not evaluate incident diagnosis quality model ranking or cost optimization."
+  - id: CLAIM-GATE-002
+    statement: "G01 will close only after nine Iterations nine Evals and fourteen frozen failure walkthroughs pass on an immutable candidate without waiver or open evidence."
+    status: pending
+    requirements: [REQ-SEC-003, REQ-PERF-001, REQ-OBS-001, REQ-OBS-002]
+    evidence:
+      - EVAL-G01-009
+      - docs/gates/G01/REPORT.md
+    limitations:
+      - "The G01 Master Plan is frozen, but the Gate is not started, evaluated, passed, or closed."

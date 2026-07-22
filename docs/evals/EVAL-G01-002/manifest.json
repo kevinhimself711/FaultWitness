@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G01-002",
+  "gate": "G01",
+  "iteration": "I-0008",
+  "evaluated_revision": "pending",
+  "status": "pending",
+  "environments": ["ubuntu-private-server"],
+  "commands": ["uv run python -m faultwitness_dev eval-iteration I-0008 --candidate-sha <full-sha>"],
+  "artifacts": ["docs/evals/EVAL-G01-002/PLAN.md", "docs/evals/EVAL-G01-002/REPORT.md"],
+  "evidence_urls": [],
+  "integrations": {
+    "langsmith": {
+      "status": "required",
+      "reason": "LangSmith is required by the complete G01 candidate although this Eval measures infrastructure capability."
+    }
+  },
+  "open_evidence": ["Docker coexistence comparison", "network and listener matrix", "runc gVisor Kata GPU and restore results"]
+}

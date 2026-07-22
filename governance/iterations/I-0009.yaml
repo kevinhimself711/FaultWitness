@@ -1,0 +1,32 @@
+schema_version: "1.0.0"
+id: I-0009
+gate: G01
+title: Platform Services and Operational Observability
+status: planned
+scope:
+  - Deploy PostgreSQL Redis Qdrant MinIO Keycloak OPA and their isolated identities storage and backup contracts.
+  - Deploy OTel Collector Prometheus Loki Tempo and Grafana with bounded resources and private access.
+  - Establish health restore network authorization image digest SBOM and license evidence.
+non_goals:
+  - Product business flows or Agent traces.
+  - Full G06 tenant RLS ACL and horizontal-scale certification.
+dependencies: [I-0008]
+tests:
+  - make verify-fast
+  - uv run python -m faultwitness_dev eval-iteration I-0009 --candidate-sha <full-sha>
+  - EVAL-G01-003 readiness isolation backup restore observability and supply-chain suite
+eval_id: EVAL-G01-003
+commit: null
+changed_paths:
+  - deploy/charts
+  - deploy/environments
+  - docs/runbooks
+  - docs/evals/EVAL-G01-003
+  - tests/platform
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/I-0009.md
+  - docs/evals/EVAL-G01-003/PLAN.md
+  - docs/evals/EVAL-G01-003/REPORT.md
+  - CHANGELOG.md
+threshold_changes: []

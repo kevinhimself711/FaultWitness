@@ -1,9 +1,11 @@
 ---
 document_id: FW-BLUEPRINT-001
-version: 1.0.0
-status: frozen_for_g00
+version: 1.1.0
+status: frozen_for_g01
 owner: project
 approved_on: 2026-07-22
+amendments:
+  - docs/blueprint/AMENDMENTS/AMD-0001.md
 ---
 
 # FaultWitness 最终项目规划
@@ -144,7 +146,7 @@ ActionTransaction：
 - SOPS + Age 管理秘密。
 - TRL、PEFT、bitsandbytes、Accelerate 支撑训练 smoke。
 
-ModelGateway 实现 GLM、DeepSeek 和 Qwen/Bailian Adapter，统一 Structured Output、Tool Calling、Streaming、timeout、retry、fallback、Token、费用和 Trace。
+ModelGateway 通过 Bailian live channel 调用 Qwen、DeepSeek 和 GLM 三个模型族，并保留 NewAPI-compatible channel，统一 Structured Output、Tool Calling、Streaming、timeout、retry、fallback、Token、费用和 Trace。三个模型族共享一个当前 live upstream，因此不得表述为三家独立 Provider 或跨供应商容灾；NewAPI live 证据在取得 token 后单独补齐。
 
 默认 Agent 架构为单 Orchestrator 加确定性并行 Evidence Collectors。Multi-Agent 只有消融证明收益后才能成为默认路径。
 
@@ -207,7 +209,7 @@ Makefile 只能作为 Linux 薄封装。
 退出：
 
 - 非法状态转换被拒绝。
-- 三个 Provider 完成结构化输出、工具、流式和 fallback smoke。
+- Qwen、DeepSeek、GLM 三个模型族通过 Bailian 完成结构化输出、工具和流式 live smoke；Bailian/NewAPI 两个 channel 通过统一契约，NewAPI live 在 token 可用前保持显式 deferred。
 - Trace/日志密钥泄漏为 0。
 
 ### G02：故障实验室与基线

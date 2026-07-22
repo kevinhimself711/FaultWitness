@@ -1,0 +1,33 @@
+schema_version: "1.0.0"
+id: I-0012
+gate: G01
+title: Authenticated Control API and Recoverable SSE
+status: planned
+scope:
+  - Implement all eight frozen FastAPI REST and SSE paths with OIDC-derived TenantContext.
+  - Implement Incident event projection Last-Event-ID replay retention-gap and slow-consumer semantics.
+  - Validate idempotency optimistic concurrency role and cross-tenant denial across two synthetic tenants.
+non_goals:
+  - Incident investigation logic or real Tool Skill and Action capability.
+  - Public ingress or production identity federation.
+dependencies: [I-0011]
+tests:
+  - make verify-fast
+  - uv run python -m faultwitness_dev eval-iteration I-0012 --candidate-sha <full-sha>
+  - EVAL-G01-006 OpenAPI OIDC tenant isolation idempotency SSE replay and backpressure suite
+eval_id: EVAL-G01-006
+commit: null
+changed_paths:
+  - src/faultwitness/api
+  - src/faultwitness/identity
+  - docs/contracts
+  - docs/evals/EVAL-G01-006
+  - tests/api
+  - tests/security
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/I-0012.md
+  - docs/evals/EVAL-G01-006/PLAN.md
+  - docs/evals/EVAL-G01-006/REPORT.md
+  - CHANGELOG.md
+threshold_changes: []

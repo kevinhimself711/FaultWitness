@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G01-009",
+  "gate": "G01",
+  "iteration": "I-0015",
+  "evaluated_revision": "pending",
+  "status": "pending",
+  "environments": ["windows-github-hosted", "ubuntu-github-hosted", "ubuntu-private-server", "bailian-live", "langsmith-developer"],
+  "commands": ["uv run python -m faultwitness_dev eval-g01 --candidate-sha <full-sha> --profile private-server", "uv run python -m faultwitness_dev eval-g01-close --candidate-sha <full-sha>"],
+  "artifacts": ["docs/evals/EVAL-G01-009/PLAN.md", "docs/evals/EVAL-G01-009/REPORT.md"],
+  "evidence_urls": [],
+  "integrations": {
+    "langsmith": {
+      "status": "required",
+      "reason": "Complete sanitized LangSmith evidence is a blocking no-waiver condition for the G01 candidate audit."
+    }
+  },
+  "open_evidence": ["immutable cross-platform and private-server candidate", "fourteen G01 walkthroughs", "complete Gate readiness and close-mode negative audit"]
+}

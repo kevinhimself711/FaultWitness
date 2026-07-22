@@ -4,7 +4,7 @@
 
 FaultWitness is a multi-tenant Agent Runtime for investigating microservice incidents, proposing bounded remediations, executing approved actions, and producing auditable evaluation and training assets.
 
-The repository is currently in G00 planning state. Read PROJECT_STATE.yaml, the authoritative final plan, and the active Gate plan before doing any work. Do not start product implementation until an iteration is explicitly selected and materialized.
+G00 is closed. The G01 Master Plan is frozen and its Iteration/Eval records are planned, but no G01 Iteration is active. Read PROJECT_STATE.yaml, the authoritative final plan, the active Gate plan, and the previous Gate report before doing any work. Do not start product implementation, deployment, secret migration, or live integration until I-0007 is explicitly selected and moved to `in_progress` in an implementation-authorizing commit.
 
 ## Source-of-truth order
 
@@ -28,7 +28,7 @@ PROJECT_STATE.yaml is the authority for the active Gate and iteration, not for a
 - Gate closure is a separate asset-only commit evaluated against an immutable candidate SHA.
 - Do not commit or push unless the user explicitly requests it.
 
-The initial planning commit is the only bootstrap exception to the iteration requirement because the iteration infrastructure does not yet exist.
+Planning-only commits may create or refine future Iteration and Eval assets without activating them. They never authorize product behavior, infrastructure mutation, credential use, or live evaluation.
 
 ## Architecture invariants
 
@@ -56,9 +56,7 @@ Changes to these invariants require an ADR, an architecture version update, migr
 
 ## Commands
 
-During the planning bootstrap, the only required checks are read-only repository and document checks such as git diff --check, local-link validation, and required-section validation.
-
-After I-0002 introduces the governance CLI, the canonical entry point becomes:
+The governance CLI is established. The canonical entry point is:
 
     uv run python -m faultwitness_dev <command>
 

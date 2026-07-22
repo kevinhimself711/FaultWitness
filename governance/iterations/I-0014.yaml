@@ -1,0 +1,32 @@
+schema_version: "1.0.0"
+id: I-0014
+gate: G01
+title: Multi-Family ModelGateway and Compatible Channels
+status: planned
+scope:
+  - Implement channel-neutral model contracts BailianChannel NewAPIChannel capability discovery and versioned routing.
+  - Implement structured output forced tools streaming usage retry repair pre-output fallback and typed partial failure.
+  - Run live Bailian capability evidence for Qwen DeepSeek and GLM and offline NewAPI wire compatibility evidence.
+non_goals:
+  - Claiming three independent providers or live NewAPI redundancy.
+  - Evaluating incident diagnosis quality model ranking or cost optimization.
+dependencies: [I-0010, I-0013]
+tests:
+  - make verify-fast
+  - uv run python -m faultwitness_dev eval-iteration I-0014 --candidate-sha <full-sha>
+  - EVAL-G01-008 thirty-six-trial live model and compatible-channel failure suite
+eval_id: EVAL-G01-008
+commit: null
+changed_paths:
+  - src/faultwitness/models
+  - config/models
+  - docs/runbooks
+  - docs/evals/EVAL-G01-008
+  - tests/models
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/I-0014.md
+  - docs/evals/EVAL-G01-008/PLAN.md
+  - docs/evals/EVAL-G01-008/REPORT.md
+  - CHANGELOG.md
+threshold_changes: []

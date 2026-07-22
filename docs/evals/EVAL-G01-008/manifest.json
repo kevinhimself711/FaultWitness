@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G01-008",
+  "gate": "G01",
+  "iteration": "I-0014",
+  "evaluated_revision": "pending",
+  "status": "pending",
+  "environments": ["ubuntu-private-server", "bailian-live", "newapi-fake", "langsmith-developer"],
+  "commands": ["uv run python -m faultwitness_dev eval-iteration I-0014 --candidate-sha <full-sha>"],
+  "artifacts": ["docs/evals/EVAL-G01-008/PLAN.md", "docs/evals/EVAL-G01-008/REPORT.md"],
+  "evidence_urls": [],
+  "integrations": {
+    "langsmith": {
+      "status": "required",
+      "reason": "Every live and failure-injected ModelGateway trial requires a sanitized attributable LangSmith trace."
+    }
+  },
+  "open_evidence": ["exact live model capability catalog", "thirty-six Bailian trials", "NewAPI wire matrix and sanitized LangSmith traces"]
+}

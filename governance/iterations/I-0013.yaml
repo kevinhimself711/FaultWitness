@@ -1,0 +1,33 @@
+schema_version: "1.0.0"
+id: I-0013
+gate: G01
+title: Sanitized LangSmith and OTel Trace Foundation
+status: planned
+scope:
+  - Implement TraceEnvelope stage taxonomy correlation causation and allowlist sanitization.
+  - Export Agent and model traces to LangSmith and operational telemetry to OTel Tempo Loki and Prometheus.
+  - Implement bounded outage buffering exact replay and durable sanitized MinIO DVC evidence manifests.
+non_goals:
+  - Persisting private chain of thought or raw secrets.
+  - Claiming trace completeness for Agent behavior that G01 does not implement.
+dependencies: [I-0009, I-0011, I-0012]
+tests:
+  - make verify-fast
+  - uv run python -m faultwitness_dev eval-iteration I-0013 --candidate-sha <full-sha>
+  - EVAL-G01-007 LangSmith OTel redaction outage replay correlation and latency-reconciliation suite
+eval_id: EVAL-G01-007
+commit: null
+changed_paths:
+  - src/faultwitness/observability
+  - deploy/charts/observability
+  - docs/runbooks
+  - docs/evals/EVAL-G01-007
+  - tests/observability
+  - tests/security
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/I-0013.md
+  - docs/evals/EVAL-G01-007/PLAN.md
+  - docs/evals/EVAL-G01-007/REPORT.md
+  - CHANGELOG.md
+threshold_changes: []

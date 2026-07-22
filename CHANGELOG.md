@@ -18,6 +18,10 @@
 
 ### Planning
 
+- Freeze the decision-complete G01 Master Plan with nine implementation Iterations, nine pre-registered Evals, fourteen failure walkthroughs, and immutable no-waiver closure criteria.
+- Record a host-coexisting single-node K3s topology that protects existing Docker workloads and exposes no public control plane.
+- Correct the model topology to three live model families through Bailian plus a NewAPI-compatible channel, without claiming three independent providers.
+- Retain LangSmith as the required Agent/Eval trace backend and record its credential as available but unused until secure bootstrap I-0007.
 - Freeze the architecture-first final project blueprint.
 - Freeze the decision-complete G00 Gate Master Plan.
 - Establish the initial project state and repository collaboration rules.
@@ -40,4 +44,4 @@
 - Reopen I-0006 to enforce the exact no-Iteration G00 closure asset boundary.
 - Complete I-0006 closure-protocol enforcement on immutable candidate `c38ca79` with 51 tests.
 
-No product implementation is included in this planning baseline.
+No product implementation, deployment, secret migration, live model call, or LangSmith trace is included in this planning baseline.

@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G01-005",
+  "gate": "G01",
+  "iteration": "I-0011",
+  "evaluated_revision": "pending",
+  "status": "pending",
+  "environments": ["ubuntu-private-server"],
+  "commands": ["uv run python -m faultwitness_dev eval-iteration I-0011 --candidate-sha <full-sha>"],
+  "artifacts": ["docs/evals/EVAL-G01-005/PLAN.md", "docs/evals/EVAL-G01-005/REPORT.md"],
+  "evidence_urls": [],
+  "integrations": {
+    "langsmith": {
+      "status": "required",
+      "reason": "G01 closure requires correlated LangSmith traces for the durable runtime paths established by this Eval."
+    }
+  },
+  "open_evidence": ["real database transition conformance", "duplicate and crash matrix", "fencing checkpoint and queue reconciliation"]
+}

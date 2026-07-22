@@ -1,0 +1,32 @@
+schema_version: "1.0.0"
+id: I-0008
+gate: G01
+title: K3s GPU and Isolated Runtime Foundation
+status: planned
+scope:
+  - Install pinned single-node K3s and Helm with embedded-etcd snapshots and Kubernetes secret encryption.
+  - Establish namespaces quotas default-deny network policy and private management access while preserving existing Docker workloads.
+  - Register and smoke runc gVisor Kata and NVIDIA runtime capabilities.
+non_goals:
+  - Multi-node high availability or public ingress.
+  - Product Sandbox scheduling and escape certification.
+dependencies: [I-0007]
+tests:
+  - make verify-fast
+  - uv run python -m faultwitness_dev eval-iteration I-0008 --candidate-sha <full-sha>
+  - EVAL-G01-002 coexistence network runtimeclass GPU and rollback suite
+eval_id: EVAL-G01-002
+commit: null
+changed_paths:
+  - deploy/k3s
+  - deploy/helm
+  - docs/runbooks
+  - docs/evals/EVAL-G01-002
+  - tests/infra
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/I-0008.md
+  - docs/evals/EVAL-G01-002/PLAN.md
+  - docs/evals/EVAL-G01-002/REPORT.md
+  - CHANGELOG.md
+threshold_changes: []

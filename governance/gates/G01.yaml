@@ -4,12 +4,16 @@ title: Platform Contracts and Trace Foundation
 status: planned
 plan: docs/gates/G01/PLAN.md
 report: docs/gates/G01/REPORT.md
-iterations: []
+iterations: [I-0007, I-0008, I-0009, I-0010, I-0011, I-0012, I-0013, I-0014, I-0015]
 pass_criteria:
-  - A decision-complete G01 Master Plan is frozen before any implementation Iteration starts.
-  - K3s capability and required infrastructure services are reproducibly established.
-  - Domain contracts state transitions checkpoint and transactional outbox are implemented.
-  - Three model providers pass structured output tool streaming and fallback smoke checks.
-  - LangSmith instrumentation is mandatory and trace or log secret leakage is zero.
+  - The decision-complete G01 Master Plan remains frozen and all nine planned Iterations and Evals are complete on one immutable candidate.
+  - Pinned single-node K3s coexists with existing Docker without public control-plane exposure or workload regression.
+  - PostgreSQL Redis Qdrant MinIO Keycloak OPA and the operational observability stack are reproducibly deployed and recoverable.
+  - All 21 core types 52 states 82 transitions and versioned support contracts have zero drift or illegal acceptance.
+  - State idempotency checkpoint outbox inbox and delivery failure tests show zero partial commit duplicate mutation or stale-fence acceptance.
+  - All eight REST and SSE paths pass authentication tenant isolation replay retention-gap and backpressure conformance.
+  - LangSmith and OTel traces are complete correlated sanitized replayable and contain zero secret PII or private-reasoning leakage.
+  - Qwen DeepSeek and GLM model families pass all 36 Bailian live capability trials while the NewAPI channel passes its offline wire contract.
+  - The full fourteen-scenario failure matrix passes with zero waiver open evidence unexplained backlog or pending trace export.
 waivers: []
-amendments: []
+amendments: [docs/blueprint/AMENDMENTS/AMD-0001.md]
