@@ -21,5 +21,8 @@
 - Add fail-closed evidence quality and exact-coverage validation for the requirement registry.
 - Freeze five linked architecture views, component/data ownership, trust boundaries, and failure walkthroughs.
 - Add the initial Threat Model and accepted decisions for planes, outbox, trace/eval, artifacts, delivery, and Action safety.
+- Freeze four machine-readable state machines and deterministically validated Mermaid views.
+- Add OpenAPI 3.1, AsyncAPI 3.0, core type, Command/Event, error, and fixed failure contracts.
+- Enforce reachability, terminal convergence, R2 approval, uncertainty, fencing, identity, idempotency, and version semantics.
 
 No product implementation is included in this planning baseline.

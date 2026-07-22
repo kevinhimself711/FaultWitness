@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faultwitness.local/schemas/contracts/asyncapi-design.schema.json",
+  "type": "object",
+  "required": ["asyncapi", "info", "defaultContentType", "channels", "operations", "components"],
+  "properties": {
+    "asyncapi": {"const": "3.0.0"},
+    "info": {"type": "object", "required": ["title", "version"]},
+    "defaultContentType": {"const": "application/json"},
+    "channels": {"type": "object", "minProperties": 4},
+    "operations": {"type": "object", "minProperties": 4},
+    "components": {"type": "object", "required": ["messages", "schemas"]}
+  }
+}

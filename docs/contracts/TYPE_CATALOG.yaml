@@ -1,0 +1,222 @@
+schema_version: "1.0.0"
+types:
+  - name: TenantContext
+    owner_component: CMP-CONTROL-API
+    authoritative_store: null
+    version: "1.0.0"
+    fields:
+      - {name: tenant_id, type: TenantId, required: true, source: oidc_claim, sensitive: false}
+      - {name: user_id, type: UserId, required: true, source: oidc_claim, sensitive: true}
+      - {name: roles, type: "set<Role>", required: true, source: oidc_claim, sensitive: false}
+      - {name: token_id, type: TokenId, required: true, source: oidc_claim, sensitive: true}
+      - {name: expires_at, type: Timestamp, required: true, source: oidc_claim, sensitive: false}
+    invariants: ["Identity fields are never accepted from request body query or model output."]
+  - name: IncidentSpec
+    owner_component: CMP-CONTROL-API
+    authoritative_store: STORE-INCIDENT-POSTGRES
+    version: "1.0.0"
+    fields:
+      - {name: environment_id, type: EnvironmentId, required: true, source: request, sensitive: false}
+      - {name: service_scope, type: "set<ServiceId>", required: true, source: request, sensitive: false}
+      - {name: time_window, type: TimeRange, required: true, source: request, sensitive: false}
+      - {name: symptom_summary, type: BoundedText, required: true, source: request, sensitive: true}
+      - {name: mode, type: "enum<diagnosis_only|allow_actions>", required: true, source: request, sensitive: false}
+      - {name: budget, type: AgentBudget, required: true, source: request, sensitive: false}
+    invariants: ["Service scope and budget are bounded before scheduling."]
+  - name: IncidentState
+    owner_component: CMP-CONTROL-API
+    authoritative_store: STORE-INCIDENT-POSTGRES
+    version: "1.0.0"
+    fields:
+      - {name: incident_id, type: IncidentId, required: true, source: system, sensitive: false}
+      - {name: state, type: IncidentStateName, required: true, source: system, sensitive: false}
+      - {name: state_version, type: UInt64, required: true, source: system, sensitive: false}
+      - {name: final_report_ref, type: "optional<ArtifactRef>", required: false, source: reference, sensitive: false}
+    invariants: ["Only Control API mutates state and terminal states are immutable."]
+  - name: RunTask
+    owner_component: CMP-SCHEDULER
+    authoritative_store: STORE-TASK-POSTGRES
+    version: "1.0.0"
+    fields:
+      - {name: task_id, type: TaskId, required: true, source: system, sensitive: false}
+      - {name: incident_id, type: IncidentId, required: true, source: reference, sensitive: false}
+      - {name: tenant_id, type: TenantId, required: true, source: reference, sensitive: false}
+      - {name: deadline, type: Timestamp, required: true, source: derived, sensitive: false}
+    invariants: ["Stable task_id spans attempts and never authorizes another tenant."]
+  - name: RunState
+    owner_component: CMP-SCHEDULER
+    authoritative_store: STORE-TASK-POSTGRES
+    version: "1.0.0"
+    fields:
+      - {name: state, type: RunStateName, required: true, source: system, sensitive: false}
+      - {name: state_version, type: UInt64, required: true, source: system, sensitive: false}
+      - {name: attempt_id, type: AttemptId, required: true, source: system, sensitive: false}
+      - {name: terminal_reason, type: "optional<TerminalReason>", required: false, source: derived, sensitive: false}
+    invariants: ["Every terminal failure has a typed reason and retained attempt history."]
+  - name: Lease
+    owner_component: CMP-SCHEDULER
+    authoritative_store: STORE-TASK-POSTGRES
+    version: "1.0.0"
+    fields:
+      - {name: attempt_id, type: AttemptId, required: true, source: reference, sensitive: false}
+      - {name: worker_id, type: WorkerId, required: true, source: system, sensitive: false}
+      - {name: fencing_token, type: UInt64, required: true, source: system, sensitive: true}
+      - {name: expires_at, type: Timestamp, required: true, source: system, sensitive: false}
+    invariants: ["Fencing tokens are monotonic and stale workers cannot commit."]
+  - name: ChangeEvent
+    owner_component: CMP-AGENT-WORKER
+    authoritative_store: STORE-CHECKPOINT-POSTGRES
+    version: "1.0.0"
+    fields:
+      - {name: change_id, type: ChangeId, required: true, source: system, sensitive: false}
+      - {name: resource_ref, type: ResourceRef, required: true, source: reference, sensitive: false}
+      - {name: observed_at, type: Timestamp, required: true, source: derived, sensitive: false}
+      - {name: evidence_refs, type: "list<EvidenceRefId>", required: true, source: reference, sensitive: false}
+    invariants: ["A change is evidence not causation and retains source version."]
+  - name: AgentState
+    owner_component: CMP-AGENT-WORKER
+    authoritative_store: STORE-CHECKPOINT-POSTGRES
+    version: "1.0.0"
+    fields:
+      - {name: graph_state, type: AgentGraphStateName, required: true, source: system, sensitive: false}
+      - {name: state_version, type: UInt64, required: true, source: system, sensitive: false}
+      - {name: budgets_used, type: BudgetCounters, required: true, source: derived, sensitive: false}
+      - {name: evidence_progress, type: ProgressDigest, required: true, source: derived, sensitive: false}
+    invariants: ["State is typed versioned bounded and excludes private chain-of-thought."]
+  - name: EvidenceRef
+    owner_component: CMP-AGENT-WORKER
+    authoritative_store: STORE-ARTIFACT-MINIO-DVC
+    version: "1.0.0"
+    fields:
+      - {name: evidence_id, type: EvidenceRefId, required: true, source: system, sensitive: false}
+      - {name: source_ref, type: SourceVersionRef, required: true, source: reference, sensitive: false}
+      - {name: observed_at, type: Timestamp, required: true, source: derived, sensitive: false}
+      - {name: artifact_digest, type: Sha256, required: true, source: reference, sensitive: false}
+    invariants: ["Every supported critical claim resolves to immutable source and artifact versions."]
+  - name: Hypothesis
+    owner_component: CMP-AGENT-WORKER
+    authoritative_store: STORE-CHECKPOINT-POSTGRES
+    version: "1.0.0"
+    fields:
+      - {name: hypothesis_id, type: HypothesisId, required: true, source: system, sensitive: false}
+      - {name: statement, type: BoundedText, required: true, source: derived, sensitive: false}
+      - {name: supporting_evidence, type: "list<EvidenceRefId>", required: true, source: reference, sensitive: false}
+      - {name: contradicting_evidence, type: "list<EvidenceRefId>", required: true, source: reference, sensitive: false}
+    invariants: ["Confidence never replaces cited supporting and contradicting evidence."]
+  - name: ProbePlan
+    owner_component: CMP-AGENT-WORKER
+    authoritative_store: STORE-CHECKPOINT-POSTGRES
+    version: "1.0.0"
+    fields:
+      - {name: probe_id, type: ProbeId, required: true, source: system, sensitive: false}
+      - {name: hypothesis_id, type: HypothesisId, required: true, source: reference, sensitive: false}
+      - {name: tool_calls, type: "list<ToolCall>", required: true, source: derived, sensitive: false}
+      - {name: expected_information_gain, type: BoundedScore, required: true, source: derived, sensitive: false}
+    invariants: ["Probe tools stay inside Incident scope and no-progress budget."]
+  - name: ToolDefinition
+    owner_component: CMP-TOOL-GATEWAY
+    authoritative_store: null
+    version: "1.0.0"
+    fields:
+      - {name: tool_id, type: ToolId, required: true, source: system, sensitive: false}
+      - {name: input_schema_ref, type: SchemaRef, required: true, source: reference, sensitive: false}
+      - {name: output_schema_ref, type: SchemaRef, required: true, source: reference, sensitive: false}
+      - {name: risk, type: "enum<R0|R1|R2|R3>", required: true, source: system, sensitive: false}
+    invariants: ["Definitions expose no arbitrary shell and declare timeout error and authorization semantics."]
+  - name: ToolCall
+    owner_component: CMP-AGENT-WORKER
+    authoritative_store: STORE-CHECKPOINT-POSTGRES
+    version: "1.0.0"
+    fields:
+      - {name: call_id, type: ToolCallId, required: true, source: system, sensitive: false}
+      - {name: tool_id, type: ToolId, required: true, source: reference, sensitive: false}
+      - {name: arguments, type: TypedObject, required: true, source: derived, sensitive: true}
+      - {name: tenant_id, type: TenantId, required: true, source: reference, sensitive: false}
+    invariants: ["Gateway revalidates schema tenant scope policy timeout and budget."]
+  - name: ToolResult
+    owner_component: CMP-TOOL-GATEWAY
+    authoritative_store: null
+    version: "1.0.0"
+    fields:
+      - {name: call_id, type: ToolCallId, required: true, source: reference, sensitive: false}
+      - {name: status, type: "enum<success|error|timeout>", required: true, source: system, sensitive: false}
+      - {name: result_ref, type: "optional<ArtifactRef>", required: false, source: reference, sensitive: true}
+      - {name: error_code, type: "optional<ErrorCode>", required: false, source: system, sensitive: false}
+    invariants: ["Results are typed sanitized bounded and treated as untrusted data."]
+  - name: SkillManifest
+    owner_component: CMP-AGENT-WORKER
+    authoritative_store: STORE-ARTIFACT-MINIO-DVC
+    version: "1.0.0"
+    fields:
+      - {name: skill_id, type: SkillId, required: true, source: system, sensitive: false}
+      - {name: triggers, type: "list<Trigger>", required: true, source: derived, sensitive: false}
+      - {name: anti_triggers, type: "list<Trigger>", required: true, source: derived, sensitive: false}
+      - {name: allowed_tools, type: "set<ToolId>", required: true, source: reference, sensitive: false}
+    invariants: ["Skill boundaries cannot widen authenticated tool or action authority."]
+  - name: ActionProposal
+    owner_component: CMP-AGENT-WORKER
+    authoritative_store: STORE-CHECKPOINT-POSTGRES
+    version: "1.0.0"
+    fields:
+      - {name: action_id, type: ActionId, required: true, source: system, sensitive: false}
+      - {name: action_type, type: ActionType, required: true, source: derived, sensitive: false}
+      - {name: canonical_parameters, type: TypedObject, required: true, source: derived, sensitive: true}
+      - {name: resource_version, type: ResourceVersion, required: true, source: reference, sensitive: false}
+      - {name: action_digest, type: Sha256, required: true, source: system, sensitive: false}
+    invariants: ["Proposal is not executable authority and digest binds every safety field."]
+  - name: ApprovalGrant
+    owner_component: CMP-ACTION-EXECUTOR
+    authoritative_store: STORE-ACTION-POSTGRES
+    version: "1.0.0"
+    fields:
+      - {name: action_digest, type: Sha256, required: true, source: reference, sensitive: false}
+      - {name: approver_id, type: UserId, required: true, source: oidc_claim, sensitive: true}
+      - {name: approver_scope, type: ApprovalScope, required: true, source: oidc_claim, sensitive: false}
+      - {name: expires_at, type: Timestamp, required: true, source: system, sensitive: false}
+      - {name: single_use_token, type: OpaqueToken, required: true, source: system, sensitive: true}
+    invariants: ["Grant is immutable single use and invalid after any bound field changes."]
+  - name: ActionTransaction
+    owner_component: CMP-ACTION-EXECUTOR
+    authoritative_store: STORE-ACTION-POSTGRES
+    version: "1.0.0"
+    fields:
+      - {name: action_id, type: ActionId, required: true, source: reference, sensitive: false}
+      - {name: state, type: ActionStateName, required: true, source: system, sensitive: false}
+      - {name: state_version, type: UInt64, required: true, source: system, sensitive: false}
+      - {name: idempotency_key, type: IdempotencyKey, required: true, source: system, sensitive: true}
+      - {name: receipt_ref, type: "optional<ActionReceiptRef>", required: false, source: reference, sensitive: false}
+    invariants: ["Only Action Executor mutates the transaction and UNCERTAIN never blind retries."]
+  - name: TrajectoryIR
+    owner_component: CMP-EVAL-DATA-WORKER
+    authoritative_store: STORE-ARTIFACT-MINIO-DVC
+    version: "1.0.0"
+    fields:
+      - {name: trajectory_id, type: TrajectoryId, required: true, source: system, sensitive: false}
+      - {name: event_refs, type: "list<EventId>", required: true, source: reference, sensitive: false}
+      - {name: version_bundle, type: VersionBundle, required: true, source: derived, sensitive: false}
+      - {name: split, type: "enum<train|dev|validation|locked|external>", required: true, source: system, sensitive: false}
+    invariants: ["Lineage and split isolation are preserved without private reasoning."]
+  - name: EvalResult
+    owner_component: CMP-EVAL-DATA-WORKER
+    authoritative_store: STORE-LANGSMITH
+    version: "1.0.0"
+    fields:
+      - {name: eval_id, type: EvalId, required: true, source: system, sensitive: false}
+      - {name: candidate_sha, type: GitSha, required: true, source: reference, sensitive: false}
+      - {name: metrics, type: "map<MetricId,MetricValue>", required: true, source: derived, sensitive: false}
+      - {name: artifact_digest, type: Sha256, required: true, source: reference, sensitive: false}
+    invariants: ["Result is attributable to immutable inputs evaluator and candidate revision."]
+  - name: DomainEvent
+    owner_component: CMP-TRACE-INSTRUMENTATION
+    authoritative_store: STORE-LANGSMITH
+    version: "1.0.0"
+    fields:
+      - {name: event_id, type: EventId, required: true, source: system, sensitive: false}
+      - {name: event_type, type: EventType, required: true, source: system, sensitive: false}
+      - {name: schema_version, type: SemVer, required: true, source: system, sensitive: false}
+      - {name: tenant_id, type: TenantId, required: true, source: reference, sensitive: false}
+      - {name: correlation_id, type: CorrelationId, required: true, source: system, sensitive: false}
+      - {name: causation_id, type: "optional<EventId>", required: false, source: reference, sensitive: false}
+      - {name: sequence, type: UInt64, required: true, source: system, sensitive: false}
+      - {name: payload, type: TypedObject, required: true, source: derived, sensitive: true}
+    invariants: ["Event payload is typed redacted at-least-once and deduplicated by event_id."]

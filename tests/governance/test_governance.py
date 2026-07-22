@@ -84,8 +84,9 @@ def test_ruleset_cannot_drop_a_required_platform() -> None:
 
 
 def test_iteration_inference_ignores_planned_bootstrap_records() -> None:
-    paths = [f"governance/iterations/I-{number:04d}.yaml" for number in range(5, 7)]
-    assert infer_iteration_id(ROOT, paths) is None
+    paths = [f"governance/iterations/I-{number:04d}.yaml" for number in range(1, 7)]
+    planned = [path for path in paths if load_data(ROOT / path)["status"] == "planned"]
+    assert infer_iteration_id(ROOT, planned) is None
 
 
 def test_iteration_inference_selects_current_in_progress_record() -> None:

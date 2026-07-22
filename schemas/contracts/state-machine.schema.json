@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faultwitness.local/schemas/contracts/state-machine.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "id", "owner_component", "authoritative_store", "initial_state", "terminal_states", "states", "transitions", "invariants"],
+  "properties": {
+    "schema_version": {"pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "id": {"enum": ["incident", "runtime_task", "agent_graph", "action_transaction"]},
+    "owner_component": {"pattern": "^CMP-[A-Z0-9-]+$"},
+    "authoritative_store": {"pattern": "^STORE-[A-Z0-9-]+$"},
+    "initial_state": {"pattern": "^[A-Z][A-Z0-9_]+$"},
+    "terminal_states": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"pattern": "^[A-Z][A-Z0-9_]+$"}},
+    "states": {"type": "array", "minItems": 3, "uniqueItems": true, "items": {"pattern": "^[A-Z][A-Z0-9_]+$"}},
+    "transitions": {
+      "type": "array", "minItems": 2,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "from", "to", "actor", "guard", "preconditions", "command", "event", "automatic", "failure_semantics"],
+        "properties": {
+          "id": {"pattern": "^TR-[A-Z0-9-]+$"},
+          "from": {"pattern": "^[A-Z][A-Z0-9_]+$"},
+          "to": {"pattern": "^[A-Z][A-Z0-9_]+$"},
+          "actor": {"pattern": "^CMP-[A-Z0-9-]+$"},
+          "guard": {"type": "string", "minLength": 3},
+          "preconditions": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 3}},
+          "command": {"pattern": "^CMD-[A-Z0-9-]+$"},
+          "event": {"pattern": "^EVT-[A-Z0-9-]+$"},
+          "automatic": {"type": "boolean"},
+          "failure_semantics": {"type": "string", "minLength": 10}
+        }
+      }
+    },
+    "invariants": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 10}}
+  }
+}

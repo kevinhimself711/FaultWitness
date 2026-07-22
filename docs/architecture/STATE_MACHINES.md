@@ -1,8 +1,10 @@
 # State Machines Architecture View
 
-## 本阶段边界
+## 规范资产
 
-本文件在 I-0004 冻结状态域、唯一写入者、权威存储和跨域协调边界。四套逐转换机器可读 YAML、Actor/Guard/Command/Event、可达性验证和由 YAML 校验的 Mermaid 图由 I-0005 提交；在此之前本文件不冒充转换表的单一事实源。
+I-0004 冻结了状态域、唯一写入者、权威存储和跨域协调边界。I-0005 已增加四套逐转换机器可读 YAML；它们是转换的单一事实源。每条转换都包含 Actor、Guard、结构化 Preconditions、Command、Event、自动性和失败语义。
+
+由 YAML 确定性生成并逐字节校验的完整 Mermaid 图见 [Generated State Machine Diagrams](../contracts/STATE_MACHINE_DIAGRAMS.md)。源文件位于 `docs/contracts/state-machines/`；OpenAPI、AsyncAPI、类型和 Command/Event 目录位于 `docs/contracts/`。
 
 ## 四层状态域
 
@@ -40,9 +42,9 @@ Trace/Eval 与 Artifact/Dataset 也是独立状态资产，分别由 Trace Instr
 - `UNCERTAIN` 只能 reconciliation 或人工处置，禁止自动重复外部动作。
 - cancel 是请求，在安全点生效；已经可能产生副作用时先验证或升级。
 
-## I-0005 固定入口
+## 后续 Gate 固定入口
 
-I-0005 必须在上述所有权不变的前提下增加四个状态机 YAML、OpenAPI/AsyncAPI、核心类型目录和 conformance validator。若发现所有权或信任边界必须改变，先写新 ADR 并重新运行 EVAL-G00-004，不能在接口实现中静默漂移。
+G01 及后续 Gate 只能在上述所有权和契约下实现状态服务。若发现所有权或信任边界必须改变，先写新 ADR 并重新运行 EVAL-G00-004/EVAL-G00-005，不能在接口实现中静默漂移。
 
 ## 关联视图
 

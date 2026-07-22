@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faultwitness.local/schemas/contracts/command-event-catalog.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema_version", "commands", "events"],
+  "properties": {
+    "schema_version": {"pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "commands": {
+      "type": "array", "minItems": 12,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "sender", "owner", "purpose", "idempotency", "version_check", "errors"],
+        "properties": {
+          "id": {"pattern": "^CMD-[A-Z0-9-]+$"},
+          "sender": {"type": "string", "minLength": 3},
+          "owner": {"pattern": "^CMP-[A-Z0-9-]+$"},
+          "purpose": {"type": "string", "minLength": 10},
+          "idempotency": {"enum": ["required", "derived", "not_applicable"]},
+          "version_check": {"enum": ["state_version", "fencing_token", "digest_and_state_version", "not_applicable"]},
+          "errors": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"pattern": "^ERR-[A-Z0-9-]+$"}}
+        }
+      }
+    },
+    "events": {
+      "type": "array", "minItems": 8,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "producer", "purpose", "delivery", "dedupe_key"],
+        "properties": {
+          "id": {"pattern": "^EVT-[A-Z0-9-]+$"},
+          "producer": {"pattern": "^CMP-[A-Z0-9-]+$"},
+          "purpose": {"type": "string", "minLength": 10},
+          "delivery": {"const": "at_least_once"},
+          "dedupe_key": {"const": "event_id"}
+        }
+      }
+    }
+  }
+}

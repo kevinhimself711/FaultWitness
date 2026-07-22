@@ -1,0 +1,152 @@
+asyncapi: 3.0.0
+info:
+  title: FaultWitness Command and Event Design
+  version: 1.0.0
+  description: Design-only at-least-once contracts for state-owner coordination.
+defaultContentType: application/json
+channels:
+  incidentCommands:
+    address: fw.incident.commands.v1
+    messages:
+      IncidentCommand: {$ref: "#/components/messages/IncidentCommand"}
+  incidentEvents:
+    address: fw.incident.events.v1
+    messages:
+      IncidentEvent: {$ref: "#/components/messages/IncidentEvent"}
+  runtimeCommands:
+    address: fw.runtime.commands.v1
+    messages:
+      RuntimeCommand: {$ref: "#/components/messages/RuntimeCommand"}
+  runtimeEvents:
+    address: fw.runtime.events.v1
+    messages:
+      RuntimeEvent: {$ref: "#/components/messages/RuntimeEvent"}
+  agentEvents:
+    address: fw.agent.events.v1
+    messages:
+      AgentEvent: {$ref: "#/components/messages/AgentEvent"}
+  actionCommands:
+    address: fw.action.commands.v1
+    messages:
+      ActionCommand: {$ref: "#/components/messages/ActionCommand"}
+  actionEvents:
+    address: fw.action.events.v1
+    messages:
+      ActionEvent: {$ref: "#/components/messages/ActionEvent"}
+  traceEvents:
+    address: fw.trace.events.v1
+    messages:
+      TraceEvent: {$ref: "#/components/messages/TraceEvent"}
+operations:
+  receiveIncidentCommand:
+    action: receive
+    channel: {$ref: "#/channels/incidentCommands"}
+    messages: [{$ref: "#/channels/incidentCommands/messages/IncidentCommand"}]
+  sendIncidentEvent:
+    action: send
+    channel: {$ref: "#/channels/incidentEvents"}
+    messages: [{$ref: "#/channels/incidentEvents/messages/IncidentEvent"}]
+  receiveRuntimeCommand:
+    action: receive
+    channel: {$ref: "#/channels/runtimeCommands"}
+    messages: [{$ref: "#/channels/runtimeCommands/messages/RuntimeCommand"}]
+  sendRuntimeEvent:
+    action: send
+    channel: {$ref: "#/channels/runtimeEvents"}
+    messages: [{$ref: "#/channels/runtimeEvents/messages/RuntimeEvent"}]
+  sendAgentEvent:
+    action: send
+    channel: {$ref: "#/channels/agentEvents"}
+    messages: [{$ref: "#/channels/agentEvents/messages/AgentEvent"}]
+  receiveActionCommand:
+    action: receive
+    channel: {$ref: "#/channels/actionCommands"}
+    messages: [{$ref: "#/channels/actionCommands/messages/ActionCommand"}]
+  sendActionEvent:
+    action: send
+    channel: {$ref: "#/channels/actionEvents"}
+    messages: [{$ref: "#/channels/actionEvents/messages/ActionEvent"}]
+  sendTraceEvent:
+    action: send
+    channel: {$ref: "#/channels/traceEvents"}
+    messages: [{$ref: "#/channels/traceEvents/messages/TraceEvent"}]
+components:
+  messages:
+    IncidentCommand:
+      name: IncidentCommand
+      correlationId: {location: "$message.payload#/correlation_id"}
+      payload:
+        allOf:
+          - {$ref: "#/components/schemas/CommandEnvelope"}
+          - {type: object, properties: {command_type: {pattern: "^CMD-(CREATE-INCIDENT|START-INVESTIGATION|RECORD-DIAGNOSIS|RECORD-ACTION-PROPOSAL|RECORD-APPROVAL-DECISION|RECORD-ACTION-RESULT|RECORD-OUTCOME-VERIFICATION|RECORD-COMPENSATION|CANCEL-INCIDENT|ESCALATE-INCIDENT)$"}}}
+    IncidentEvent:
+      name: IncidentEvent
+      correlationId: {location: "$message.payload#/correlation_id"}
+      payload: {$ref: "#/components/schemas/DomainEventEnvelope"}
+    RuntimeCommand:
+      name: RuntimeCommand
+      correlationId: {location: "$message.payload#/correlation_id"}
+      payload:
+        allOf:
+          - {$ref: "#/components/schemas/CommandEnvelope"}
+          - {type: object, properties: {command_type: {pattern: "^CMD-(ACQUIRE-TASK-LEASE|START-TASK-ATTEMPT|COMPLETE-TASK|PAUSE-TASK|RESUME-TASK|RETRY-TASK|FAIL-TASK|CANCEL-TASK)$"}}}
+    RuntimeEvent:
+      name: RuntimeEvent
+      correlationId: {location: "$message.payload#/correlation_id"}
+      payload: {$ref: "#/components/schemas/DomainEventEnvelope"}
+    AgentEvent:
+      name: AgentEvent
+      correlationId: {location: "$message.payload#/correlation_id"}
+      payload: {$ref: "#/components/schemas/DomainEventEnvelope"}
+    ActionCommand:
+      name: ActionCommand
+      correlationId: {location: "$message.payload#/correlation_id"}
+      payload:
+        allOf:
+          - {$ref: "#/components/schemas/CommandEnvelope"}
+          - {type: object, properties: {command_type: {pattern: "^CMD-(DISPATCH-ACTION-PROPOSAL|REQUEST-COMPENSATION|AUTHORIZE-ACTION|ACTION-APPROVAL-DECISION|DISPATCH-ACTION|RECORD-ACTION-RECEIPT|VERIFY-ACTION|COMPENSATE-ACTION|RECONCILE-ACTION|CANCEL-ACTION)$"}}}
+    ActionEvent:
+      name: ActionEvent
+      correlationId: {location: "$message.payload#/correlation_id"}
+      payload: {$ref: "#/components/schemas/DomainEventEnvelope"}
+    TraceEvent:
+      name: TraceEvent
+      correlationId: {location: "$message.payload#/correlation_id"}
+      payload: {$ref: "#/components/schemas/DomainEventEnvelope"}
+  schemas:
+    CommandEnvelope:
+      type: object
+      additionalProperties: false
+      required: [command_id, command_type, schema_version, occurred_at, tenant_id, correlation_id, causation_id, idempotency_key, expected_state_version, payload]
+      properties:
+        command_id: {type: string, minLength: 1}
+        command_type: {type: string, pattern: "^CMD-[A-Z0-9-]+$"}
+        schema_version: {type: string, pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+$"}
+        occurred_at: {type: string, format: date-time}
+        tenant_id: {type: string, description: Copied from authenticated TenantContext; never from untrusted message payload}
+        incident_id: {type: [string, "null"]}
+        run_id: {type: [string, "null"]}
+        action_id: {type: [string, "null"]}
+        correlation_id: {type: string, minLength: 1}
+        causation_id: {type: [string, "null"]}
+        idempotency_key: {type: string, minLength: 1}
+        expected_state_version: {type: integer, minimum: 0}
+        fencing_token: {type: [integer, "null"], minimum: 0}
+        payload: {type: object}
+    DomainEventEnvelope:
+      type: object
+      additionalProperties: false
+      required: [event_id, event_type, schema_version, occurred_at, tenant_id, correlation_id, causation_id, sequence, payload]
+      properties:
+        event_id: {type: string, minLength: 1, description: Global consumer deduplication key}
+        event_type: {type: string, pattern: "^EVT-[A-Z0-9-]+$"}
+        schema_version: {type: string, pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+$"}
+        occurred_at: {type: string, format: date-time}
+        tenant_id: {type: string}
+        incident_id: {type: [string, "null"]}
+        run_id: {type: [string, "null"]}
+        action_id: {type: [string, "null"]}
+        correlation_id: {type: string, minLength: 1}
+        causation_id: {type: [string, "null"]}
+        sequence: {type: integer, minimum: 0}
+        payload: {type: object, description: Typed redacted event-specific payload without credentials or private reasoning}
