@@ -63,6 +63,9 @@ spec:
         - name: {{ $name }}
           image: {{ $service.image | quote }}
           imagePullPolicy: {{ $.Values.global.imagePullPolicy }}
+          {{- with $service.command }}
+          command: {{ toJson . }}
+          {{- end }}
           {{- with $service.args }}
           args: {{ toJson . }}
           {{- end }}

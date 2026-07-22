@@ -26,7 +26,8 @@ services:
     image: redis@sha256:02419de7eddf55aa5bcf49efb74e88fa8d931b4d77c07eff8a6b2144472b6952
     port: 6379
     secretRef: fw-redis-env
-    args: ["redis-server", "--appendonly", "yes", "--requirepass", "$(REDIS_PASSWORD)"]
+    command: ["sh", "-ec"]
+    args: ['exec redis-server --appendonly yes --requirepass "$REDIS_PASSWORD"']
     persistence: {enabled: true, size: 4Gi, mountPath: /data}
     resources: {requests: {cpu: 50m, memory: 128Mi}, limits: {cpu: 500m, memory: 512Mi}}
   qdrant:
