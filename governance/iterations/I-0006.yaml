@@ -2,16 +2,46 @@ schema_version: "1.0.0"
 id: I-0006
 gate: G00
 title: Gate Hardening and Candidate Audit
-status: planned
+status: in_progress
 scope:
-  - Harden CI and run the G00 candidate evaluation.
+  - Harden public CI with a required Ubuntu governance audit beside Windows and Ubuntu verification.
+  - Enforce secret publication license source ownership Action pin lockfile and SBOM checks.
+  - Render every Mermaid diagram through the pinned CLI and a system browser.
+  - Materialize PR Issue external-link and evidence synchronization workflows.
+  - Evaluate all fourteen frozen G00 design walkthroughs against the versioned contracts.
+  - Run the complete G00 candidate audit without closing the Gate.
 non_goals:
   - Product implementation.
+  - Agent runtime model call sandbox infrastructure deployment or runtime trace.
+  - Closing G00 or changing architecture semantics and Gate thresholds.
 dependencies: [I-0005]
-tests: [EVAL-G00-006]
+tests:
+  - make verify-fast
+  - make eval-changed
+  - make eval-g00
+  - uv run pytest tests/audit tests/contracts tests/governance -q
+  - EVAL-G00-006 publication dependency CI and fourteen-walkthrough cases
 eval_id: EVAL-G00-006
 commit: null
-changed_paths: [.github, docs/gates/G00]
-behavior_change: false
-docs_updated: []
-threshold_changes: []
+changed_paths:
+  - .github
+  - src/faultwitness_dev/audit.py
+  - tools/validate-mermaid.mjs
+  - schemas/governance
+  - docs/evals/EVAL-G00-006
+  - docs/governance
+  - tests/audit
+  - package.json
+  - pnpm-lock.yaml
+behavior_change: true
+docs_updated:
+  - docs/governance/ASSET_SYNC.md
+  - docs/roadmap/iterations/I-0006.md
+  - docs/evals/EVAL-G00-006/PLAN.md
+  - docs/evals/EVAL-G00-006/REPORT.md
+  - CHANGELOG.md
+threshold_changes:
+  - id: required-main-status-check-count
+    from: 2
+    to: 3
+    direction: increase

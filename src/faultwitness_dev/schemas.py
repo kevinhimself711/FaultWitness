@@ -83,7 +83,11 @@ def _check_ruleset_invariants(ruleset: dict[str, Any]) -> None:
         raise GovernanceError("main ruleset must require review thread resolution")
     status_parameters = rules["required_status_checks"]["parameters"]
     contexts = {item["context"] for item in status_parameters["required_status_checks"]}
-    expected = {"verify (ubuntu-latest)", "verify (windows-latest)"}
+    expected = {
+        "audit (ubuntu-latest)",
+        "verify (ubuntu-latest)",
+        "verify (windows-latest)",
+    }
     if contexts != expected:
         raise GovernanceError(f"main ruleset status checks drifted: {sorted(contexts)}")
     if not status_parameters.get("strict_required_status_checks_policy"):
@@ -108,6 +112,11 @@ def _check_cross_references(loaded: dict[str, Any]) -> None:
     evidence_matrix = loaded["docs/requirements/EVIDENCE_MATRIX.yaml"]
     _check_evidence_invariants(requirements, source_catalog, evidence_matrix)
     _check_architecture_invariants(loaded["docs/architecture/ARCHITECTURE.yaml"])
+    if "docs/evals/EVAL-G00-006/WALKTHROUGHS.yaml" in loaded:
+        _check_gate_walkthroughs(
+            loaded["docs/evals/EVAL-G00-006/WALKTHROUGHS.yaml"],
+            loaded["docs/contracts/WALKTHROUGH_BINDINGS.yaml"],
+        )
     if state["active_gate"] not in gates:
         raise GovernanceError(f"unknown active_gate: {state['active_gate']}")
     for field in ("active_iteration", "next_iteration"):
@@ -316,6 +325,24 @@ def _check_architecture_invariants(architecture: dict[str, Any]) -> None:
             raise GovernanceError(
                 f"walkthrough {walkthrough['id']} has unknown components: {unknown}"
             )
+
+
+def _check_gate_walkthroughs(document: dict[str, Any], bindings: dict[str, Any]) -> None:
+    expected = {f"W-G00-{number:03d}" for number in range(1, 15)}
+    records = document["walkthroughs"]
+    ids = [record["id"] for record in records]
+    if len(ids) != len(set(ids)) or set(ids) != expected:
+        raise GovernanceError("G00 walkthrough set must be exactly W-G00-001 through 014")
+    binding_ids = {record["id"] for record in bindings["bindings"]}
+    unknown = sorted(
+        record["source_binding"]
+        for record in records
+        if record["source_binding"] not in binding_ids
+    )
+    if unknown:
+        raise GovernanceError(f"G00 walkthroughs reference unknown contract bindings: {unknown}")
+    if any(record["status"] != "pass" for record in records):
+        raise GovernanceError("all fourteen G00 design walkthroughs must pass")
 
 
 def _check_adr_invariants(root: Path, index: dict[str, Any]) -> None:

@@ -32,6 +32,8 @@ assets:
     schema: schemas/governance/gate.schema.json
   - path: docs/evals/EVAL-G*/manifest.json
     schema: schemas/governance/eval-manifest.schema.json
+  - path: docs/evals/EVAL-G00-006/WALKTHROUGHS.yaml
+    schema: schemas/governance/gate-walkthroughs.schema.json
   - path: docs/adr/INDEX.yaml
     schema: schemas/governance/adr-registry.schema.json
   - path: .github/rulesets/main.json

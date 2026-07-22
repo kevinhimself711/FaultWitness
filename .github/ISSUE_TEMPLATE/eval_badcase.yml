@@ -1,0 +1,31 @@
+name: Eval bad case
+description: Preserve a reproducible evaluation failure or regression candidate.
+title: "[eval] "
+labels: [evaluation]
+body:
+  - type: input
+    id: eval
+    attributes:
+      label: Eval ID and candidate SHA
+    validations:
+      required: true
+  - type: textarea
+    id: failure
+    attributes:
+      label: Failure and expected invariant
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Reproducible evidence references
+      description: Reference sanitized assets; do not paste raw interviews, secrets, or private traces.
+    validations:
+      required: true
+  - type: checkboxes
+    id: integrity
+    attributes:
+      label: Integrity
+      options:
+        - label: I did not modify locked tests, ground truth, or thresholds to make this case pass.
+          required: true

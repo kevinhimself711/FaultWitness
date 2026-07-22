@@ -1,1 +1,4 @@
 packages: []
+allowBuilds:
+  # Use the runner's pinned system Chrome; never execute dependency install scripts.
+  puppeteer: false

@@ -36,6 +36,9 @@
           },
           {
             "context": "verify (windows-latest)"
+          },
+          {
+            "context": "audit (ubuntu-latest)"
           }
         ]
       }

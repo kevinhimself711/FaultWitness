@@ -47,3 +47,36 @@ jobs:
         run: make verify-fast
       - name: Evaluate changed assets
         run: make eval-changed
+
+  audit:
+    name: audit (ubuntu-latest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: "22.14.0"
+          package-manager-cache: false
+      - name: Install pinned bootstrap tools
+        run: |
+          python -m pip install uv==0.10.12
+          corepack enable
+          corepack prepare pnpm@11.9.0 --activate
+      - name: Install locked dependencies
+        run: |
+          uv sync --frozen --all-groups
+          pnpm install --frozen-lockfile
+      - name: Run G00 audit
+        run: make audit-g00
+      - name: Upload immutable audit artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: g00-audit-${{ github.sha }}
+          path: .audit/
+          if-no-files-found: error
+          retention-days: 30
