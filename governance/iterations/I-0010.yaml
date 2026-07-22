@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0010
 gate: G01
 title: Executable Contracts and Transition Kernel
-status: planned
+status: in_progress
 scope:
   - Compile the G00 state Command Event type error and failure specifications into deterministic package resources.
   - Implement strict Pydantic v2 core and G01 support types with explicit predicate registries.

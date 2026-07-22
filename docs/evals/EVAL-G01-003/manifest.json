@@ -20,7 +20,6 @@
     }
   },
   "open_evidence": [
-    "immutable candidate-bound implementation and private deployment",
     "15-minute platform and observability readiness plus controlled recovery",
     "paired authorized controls and network secret schema object-prefix observability denials",
     "fresh-target PostgreSQL restore with exact canonical digest equality",

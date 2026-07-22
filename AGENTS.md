@@ -4,7 +4,7 @@
 
 FaultWitness is a multi-tenant Agent Runtime for investigating microservice incidents, proposing bounded remediations, executing approved actions, and producing auditable evaluation and training assets.
 
-G00 is closed and G01 is in progress. I-0007 and EVAL-G01-001 are complete. The main I-0008 infrastructure implementation is landed at `dcfb250`; EVAL-G01-002 remains pending and must be replayed before Gate closure. I-0009 is the sole active Iteration and authorizes only the frozen platform data, identity, policy, object/vector storage, operational observability, backup/restore, isolation, and supply-chain scope. It does not authorize product business flows, Agent traces, public ingress, full G06 tenant certification, or model calls.
+G00 is closed and G01 is in progress. I-0007 and EVAL-G01-001 are complete. The I-0008 infrastructure implementation is landed at `dcfb250`, and the I-0009 platform implementation is deployed from `0c8b66c`; EVAL-G01-002 and EVAL-G01-003 remain pending and must be replayed before Gate closure. I-0010 is the sole active Iteration and authorizes only deterministic contract compilation, strict typed models, predicate registries, owner-specific transition services, and compatibility checks. It does not authorize persistence, APIs, Agent graphs, tools, or model calls.
 
 ## Source-of-truth order
 
