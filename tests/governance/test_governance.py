@@ -8,6 +8,8 @@ import pytest
 from faultwitness_dev.changes import infer_iteration_id, validate_change_record
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.schemas import (
+    _check_adr_invariants,
+    _check_architecture_invariants,
     _check_cross_references,
     _check_evidence_invariants,
     _check_ruleset_invariants,
@@ -82,17 +84,19 @@ def test_ruleset_cannot_drop_a_required_platform() -> None:
 
 
 def test_iteration_inference_ignores_planned_bootstrap_records() -> None:
-    paths = [
-        "governance/iterations/I-0001.yaml",
-        "governance/iterations/I-0002.yaml",
-        *[f"governance/iterations/I-{number:04d}.yaml" for number in range(4, 7)],
-    ]
-    assert infer_iteration_id(ROOT, paths) == "I-0002"
+    paths = [f"governance/iterations/I-{number:04d}.yaml" for number in range(5, 7)]
+    assert infer_iteration_id(ROOT, paths) is None
 
 
 def test_iteration_inference_selects_current_in_progress_record() -> None:
     paths = [f"governance/iterations/I-{number:04d}.yaml" for number in range(1, 7)]
-    assert infer_iteration_id(ROOT, paths) == "I-0003"
+    eligible = [
+        load_data(ROOT / path)["id"]
+        for path in paths
+        if load_data(ROOT / path)["status"] in {"in_progress", "completed"}
+        and load_data(ROOT / path)["docs_updated"]
+    ]
+    assert infer_iteration_id(ROOT, paths) == max(eligible)
 
 
 def _load_evidence_assets() -> tuple[list[dict], dict, dict]:
@@ -135,3 +139,52 @@ def test_duplicate_evidence_matrix_coverage_is_rejected() -> None:
     mutated["entries"][1]["requirement_ids"].append("REQ-BUS-001")
     with pytest.raises(GovernanceError, match="duplicates requirement coverage"):
         _check_evidence_invariants(requirements, sources, mutated)
+
+
+def _load_architecture() -> dict:
+    return load_data(ROOT / "docs" / "architecture" / "ARCHITECTURE.yaml")
+
+
+def test_missing_mandatory_engineering_plane_is_rejected() -> None:
+    architecture = _load_architecture()
+    mutated = copy.deepcopy(architecture)
+    mutated["engineering_planes"].remove("data_eval_training")
+    with pytest.raises(GovernanceError, match="three mandatory engineering planes"):
+        _check_architecture_invariants(mutated)
+
+
+def test_cross_owner_state_write_is_rejected() -> None:
+    architecture = _load_architecture()
+    mutated = copy.deepcopy(architecture)
+    console = next(item for item in mutated["components"] if item["id"] == "CMP-INCIDENT-CONSOLE")
+    console["writes_states"].append("Incident Lifecycle")
+    with pytest.raises(GovernanceError, match="cross-owner state write"):
+        _check_architecture_invariants(mutated)
+
+
+def test_unknown_walkthrough_component_is_rejected() -> None:
+    architecture = _load_architecture()
+    mutated = copy.deepcopy(architecture)
+    mutated["walkthroughs"][0]["component_path"].append("CMP-NOT-REAL")
+    with pytest.raises(GovernanceError, match="unknown components"):
+        _check_architecture_invariants(mutated)
+
+
+def test_mandatory_prohibited_path_cannot_be_removed() -> None:
+    architecture = _load_architecture()
+    mutated = copy.deepcopy(architecture)
+    mutated["prohibited_paths"] = [
+        item
+        for item in mutated["prohibited_paths"]
+        if item["id"] != "DENY-AGENT-DIRECT-ACTION"
+    ]
+    with pytest.raises(GovernanceError, match="mandatory prohibited path"):
+        _check_architecture_invariants(mutated)
+
+
+def test_accepted_adr_must_resolve_to_a_file() -> None:
+    index = load_data(ROOT / "docs" / "adr" / "INDEX.yaml")
+    mutated = copy.deepcopy(index)
+    mutated["adrs"][0]["path"] = "docs/adr/ADR-NOT-REAL.md"
+    with pytest.raises(GovernanceError, match="accepted ADR path does not exist"):
+        _check_adr_invariants(ROOT, mutated)

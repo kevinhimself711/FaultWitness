@@ -19,5 +19,7 @@
 - Catalog the complete JD and interview corpus without publishing raw third-party material.
 - Establish 57 evidence-backed requirements with role, architecture-plane, Gate, and verification mappings.
 - Add fail-closed evidence quality and exact-coverage validation for the requirement registry.
+- Freeze five linked architecture views, component/data ownership, trust boundaries, and failure walkthroughs.
+- Add the initial Threat Model and accepted decisions for planes, outbox, trace/eval, artifacts, delivery, and Action safety.
 
 No product implementation is included in this planning baseline.

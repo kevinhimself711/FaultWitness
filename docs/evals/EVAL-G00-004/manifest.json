@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G00-004",
+  "gate": "G00",
+  "iteration": "I-0004",
+  "evaluated_revision": "72ed0962a4c81af855bd37188e2e0f4c57d0c4e3",
+  "status": "pass",
+  "environments": ["windows-local", "windows-github-hosted", "ubuntu-github-hosted"],
+  "commands": ["make verify-fast", "make eval-changed", "uv run pytest tests/governance -q"],
+  "artifacts": ["docs/evals/EVAL-G00-004/PLAN.md", "docs/evals/EVAL-G00-004/REPORT.md"],
+  "evidence_urls": ["https://github.com/kevinhimself711/FaultWitness/actions/runs/29916449844"],
+  "open_evidence": []
+}
