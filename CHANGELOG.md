@@ -18,6 +18,7 @@
 
 ### Planning
 
+- Activate I-0007 as the sole G01 Iteration authorized for secure bootstrap and sanitized read-only capability evidence.
 - Freeze the decision-complete G01 Master Plan with nine implementation Iterations, nine pre-registered Evals, fourteen failure walkthroughs, and immutable no-waiver closure criteria.
 - Record a host-coexisting single-node K3s topology that protects existing Docker workloads and exposes no public control plane.
 - Correct the model topology to three live model families through Bailian plus a NewAPI-compatible channel, without claiming three independent providers.

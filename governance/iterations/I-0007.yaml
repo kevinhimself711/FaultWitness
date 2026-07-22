@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0007
 gate: G01
 title: Secure Bootstrap and Capability Baseline
-status: planned
+status: in_progress
 scope:
   - Establish project-scoped SSH host verification SOPS Age and secret bootstrap interfaces without committing secret values.
   - Migrate rotate and delete the plaintext handoff file only after replacement credentials are verified.
