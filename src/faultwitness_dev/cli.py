@@ -59,6 +59,12 @@ from faultwitness_dev.infra import (
     run_network_matrix,
     run_runtime_smokes,
 )
+from faultwitness_dev.observability_deploy import (
+    deploy_trace_service,
+    diagnose_trace_service,
+    inspect_trace_service,
+    run_trace_service_smoke,
+)
 from faultwitness_dev.platform import deploy_platform, inspect_platform_readiness
 from faultwitness_dev.runtime_deploy import deploy_runtime_schema, inspect_runtime_schema
 from faultwitness_dev.schemas import validate_repository_schemas
@@ -182,6 +188,13 @@ def parser() -> argparse.ArgumentParser:
     inspect_realm.add_argument("--candidate-sha", required=True)
     smoke_api = subparsers.add_parser("smoke-control-api")
     smoke_api.add_argument("--candidate-sha", required=True)
+    deploy_trace = subparsers.add_parser("deploy-trace-service")
+    deploy_trace.add_argument("--candidate-sha", required=True)
+    inspect_trace = subparsers.add_parser("inspect-trace-service")
+    inspect_trace.add_argument("--candidate-sha", required=True)
+    subparsers.add_parser("diagnose-trace-service")
+    smoke_trace = subparsers.add_parser("smoke-trace-service")
+    smoke_trace.add_argument("--candidate-sha", required=True)
     subparsers.add_parser("compile-contracts")
     subparsers.add_parser("check-contracts")
     subparsers.add_parser("diagnose-k3s")
@@ -473,6 +486,26 @@ def main() -> int:
             message = (
                 f"passed live OIDC Control API smoke on {summary['candidate_sha']} with "
                 "create/read/SSE success and cross-tenant/injection/false-approval denial"
+            )
+        elif args.command == "deploy-trace-service":
+            summary = deploy_trace_service(root, args.candidate_sha)
+            message = (
+                f"deployed private trace service from {summary['candidate_sha']} with bundle "
+                f"digest {summary['bundle_sha256']}"
+            )
+        elif args.command == "inspect-trace-service":
+            summary = inspect_trace_service(args.candidate_sha)
+            message = (
+                f"observed trace service {summary['ready']}/{summary['available']} Ready as "
+                f"{summary['service_type']} on {summary['candidate_sha']}"
+            )
+        elif args.command == "diagnose-trace-service":
+            message = diagnose_trace_service().strip()
+        elif args.command == "smoke-trace-service":
+            summary = run_trace_service_smoke(args.candidate_sha)
+            message = (
+                f"passed sanitized LangSmith/OTLP/archive trace smoke on "
+                f"{summary['candidate_sha']} with zero pending delivery"
             )
         elif args.command == "compile-contracts":
             target = write_generated_resource(root)

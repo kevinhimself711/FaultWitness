@@ -4,7 +4,7 @@
 
 Result: pending.
 
-A LangSmith key is locally available, but the planning commit has not accessed it, created a project, sent a trace, deployed OTel components, or run a canary. Credential availability is not pass evidence.
+The repository now contains the I-0013 sanitizer, encrypted bounded PostgreSQL buffer, deterministic LangSmith/OTLP exporters, correlated Trace/Metric/Log payloads, MinIO/DVC evidence archive, private Trace Service deployment and candidate-bound checkpoint evaluator. Local focused tests pass, but no immutable implementation candidate has yet been deployed or sent to LangSmith. Credential availability and offline tests are not live pass evidence.
 
 ## Required evidence
 
@@ -14,4 +14,7 @@ A LangSmith key is locally available, but the planning commit has not accessed i
 
 ## Open evidence
 
-All EVAL-G01-007 evidence remains open until I-0013 is implemented and evaluated.
+- Candidate-bound LangSmith, OTel and MinIO live export with zero pending delivery.
+- Full persistence/egress canary scan and rejected-payload absence proof.
+- Backend outage/uncertain-ACK replay with zero duplicate or lost span.
+- Cross-store correlation, independent wall-time reconciliation and final usage count.

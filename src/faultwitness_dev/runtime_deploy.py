@@ -69,9 +69,9 @@ def inspect_runtime_schema(candidate_sha: str) -> dict[str, Any]:
     if not FULL_SHA.fullmatch(candidate_sha):
         raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
     query = """SELECT version FROM runtime_shared.schema_version
-WHERE version IN ('001_i0011','002_i0012') ORDER BY version;
+WHERE version IN ('001_i0011','002_i0012','003_i0013') ORDER BY version;
 SELECT count(*) FROM information_schema.tables
-WHERE table_schema IN ('runtime_shared','incident_owner','task_owner','graph_owner','action_owner');
+WHERE table_schema IN ('runtime_shared','incident_owner','task_owner','graph_owner','action_owner','trace_buffer_owner');
 """
     encoded_query = base64.b64encode(query.encode()).decode()
     script = f"""set -eu
@@ -86,10 +86,11 @@ printf %s {encoded_query} | base64 -d | \
         for line in run_remote_script(script, privileged=True).splitlines()
         if line.strip()
     ]
-    if output[:2] != ["001_i0011", "002_i0012"] or len(output) != 3 or int(output[2]) < 22:
+    migrations = ["001_i0011", "002_i0012", "003_i0013"]
+    if output[:3] != migrations or len(output) != 4 or int(output[3]) < 24:
         raise GovernanceError("runtime schema inventory is incomplete")
     return {
         "candidate_sha": candidate_sha,
-        "migrations": output[:2],
-        "table_count": int(output[2]),
+        "migrations": migrations,
+        "table_count": int(output[3]),
     }

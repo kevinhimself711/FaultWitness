@@ -34,3 +34,15 @@ def test_i0012_migration_adds_durable_incident_projection() -> None:
     assert "REFERENCES incident_owner.incident" in sql
     assert "002_i0012" in sql
     assert sql.startswith("BEGIN;") and sql.rstrip().endswith("COMMIT;")
+
+
+def test_i0013_migration_adds_encrypted_bounded_delivery_state() -> None:
+    sql = Path("migrations/003_i0013_observability.sql").read_text(encoding="utf-8")
+    assert "CREATE SCHEMA IF NOT EXISTS trace_buffer_owner" in sql
+    assert "trace_buffer_owner.trace_payload" in sql
+    assert "trace_buffer_owner.delivery" in sql
+    assert "ciphertext bytea NOT NULL" in sql
+    assert "sink IN ('langsmith','otlp','archive')" in sql
+    assert "state IN ('PENDING','LEASED','ACKED')" in sql
+    assert "003_i0013" in sql
+    assert sql.startswith("BEGIN;") and sql.rstrip().endswith("COMMIT;")

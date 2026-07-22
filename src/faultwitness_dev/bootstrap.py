@@ -364,8 +364,8 @@ def migrate_handoff(
         },
         "credential_verification": {
             "server.password": "pending_login",
-            "bailian.api_key": "deferred_to_I-0013_live_eval",
-            "langsmith.api_key": "deferred_to_I-0014_live_eval",
+            "bailian.api_key": "deferred_to_I-0014_live_eval",
+            "langsmith.api_key": "deferred_to_I-0013_live_eval",
         },
         "host_key_verified": False,
         "ssh_key_verified": False,
@@ -419,11 +419,28 @@ def accept_existing_credentials(paths: BootstrapPaths, sops: Path) -> None:
         "server.password": (
             "verified_login" if metadata.get("ssh_key_verified") is True else "pending_login"
         ),
-        "bailian.api_key": "deferred_to_I-0013_live_eval",
-        "langsmith.api_key": "deferred_to_I-0014_live_eval",
+        "bailian.api_key": "deferred_to_I-0014_live_eval",
+        "langsmith.api_key": "deferred_to_I-0013_live_eval",
     }
     metadata["credential_acceptance_method"] = "operator_confirmed_existing_long_lived"
     metadata["credentials_accepted_at"] = datetime.now(UTC).isoformat()
+    _write_private_metadata(paths, metadata)
+
+
+def record_live_api_verification(
+    paths: BootstrapPaths, *, secret_name: str, iteration: str
+) -> None:
+    owners = {"langsmith.api_key": "I-0013", "bailian.api_key": "I-0014"}
+    if owners.get(secret_name) != iteration:
+        raise GovernanceError("API credential verification owner is invalid")
+    metadata = load_private_metadata(paths.metadata_file)
+    if metadata.get("credential_acceptance", {}).get(secret_name) != "accepted_existing":
+        raise GovernanceError("API credential must be accepted before live verification")
+    verification = metadata.setdefault("credential_verification", {})
+    if verification.get("bailian.api_key") == "deferred_to_I-0013_live_eval":
+        verification["bailian.api_key"] = "deferred_to_I-0014_live_eval"
+    verification[secret_name] = f"verified_live_{iteration}"
+    metadata.setdefault("credential_verified_at", {})[secret_name] = datetime.now(UTC).isoformat()
     _write_private_metadata(paths, metadata)
 
 

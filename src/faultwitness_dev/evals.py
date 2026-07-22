@@ -41,6 +41,11 @@ from faultwitness_dev.bootstrap import (
     validate_migration,
 )
 from faultwitness_dev.errors import GovernanceError
+from faultwitness_dev.observability_deploy import (
+    inspect_trace_service,
+    run_trace_service_smoke,
+)
+from faultwitness_dev.runtime_deploy import inspect_runtime_schema
 from faultwitness_dev.schemas import load_data, validate_document, validate_repository_schemas
 
 
@@ -160,11 +165,14 @@ def evaluate_i0007(root: Path, candidate_sha: str) -> dict[str, Any]:
     verification = metadata.get("credential_verification", {})
     if verification.get("server.password") != "verified_login":
         raise GovernanceError("existing server password has not passed login verification")
-    expected_deferred = {
-        "bailian.api_key": "deferred_to_I-0013_live_eval",
-        "langsmith.api_key": "deferred_to_I-0014_live_eval",
+    allowed_verification = {
+        "bailian.api_key": {"deferred_to_I-0014_live_eval", "verified_live_I-0014"},
+        "langsmith.api_key": {"deferred_to_I-0013_live_eval", "verified_live_I-0013"},
     }
-    if any(verification.get(name) != status for name, status in expected_deferred.items()):
+    if any(
+        verification.get(name) not in statuses
+        for name, statuses in allowed_verification.items()
+    ):
         raise GovernanceError("API credential live verification ownership drifted")
     flags = {
         "host_key_verified": metadata.get("host_key_verified") is True,
@@ -382,6 +390,53 @@ def evaluate_i0010(root: Path, candidate_sha: str) -> dict[str, Any]:
     }
 
 
+def evaluate_i0013(root: Path, candidate_sha: str) -> dict[str, Any]:
+    """Run the candidate-bound implementation checkpoint for EVAL-G01-007."""
+    if _head_sha(root) != candidate_sha:
+        raise GovernanceError("EVAL-G01-007 candidate SHA must equal the checked-out HEAD")
+    loaded = validate_repository_schemas(root)
+    state = loaded["PROJECT_STATE.yaml"]
+    record = loaded["governance/iterations/I-0013.yaml"]
+    if state.get("active_gate") != "G01" or state.get("active_iteration") != "I-0013":
+        raise GovernanceError("EVAL-G01-007 requires I-0013 as the sole active Iteration")
+    if state.get("active_gate_status") != "in_progress" or record.get("status") != "in_progress":
+        raise GovernanceError("EVAL-G01-007 requires G01 and I-0013 in progress")
+    schema = inspect_runtime_schema(candidate_sha)
+    if "003_i0013" not in schema["migrations"]:
+        raise GovernanceError("EVAL-G01-007 trace buffer migration is absent")
+    service = inspect_trace_service(candidate_sha)
+    smoke = run_trace_service_smoke(candidate_sha)
+    scan_publication_boundary(root)
+    for field, length in (
+        ("trace_ref", 24),
+        ("langsmith_trace_id", 36),
+        ("otlp_trace_id", 32),
+    ):
+        if not isinstance(smoke.get(field), str) or len(smoke[field]) != length:
+            raise GovernanceError(f"EVAL-G01-007 sanitized {field} is invalid")
+    return {
+        "eval_id": "EVAL-G01-007",
+        "candidate_sha": candidate_sha,
+        "status": "implementation_checkpoint_pass",
+        "checks": {
+            "encrypted_trace_schema": "pass",
+            "private_clusterip_service": "pass",
+            "langsmith_live_export": "pass",
+            "otlp_trace_metric_log_export": "pass",
+            "minio_dvc_archive": "pass",
+            "duplicate_ingest": "pass",
+            "pre_persistence_canary_rejection": "pass",
+            "zero_pending_delivery": "pass",
+            "publication_boundary": "pass",
+        },
+        "table_count": schema["table_count"],
+        "service_type": service["service_type"],
+        "trace_ref": smoke["trace_ref"],
+        "langsmith_trace_id": smoke["langsmith_trace_id"],
+        "otlp_trace_id": smoke["otlp_trace_id"],
+    }
+
+
 def evaluate_iteration(root: Path, iteration: str, candidate_sha: str) -> dict[str, Any]:
     if iteration == "I-0007":
         if os.name != "nt":
@@ -391,4 +446,6 @@ def evaluate_iteration(root: Path, iteration: str, candidate_sha: str) -> dict[s
         return evaluate_i0007(root, candidate_sha)
     if iteration == "I-0010":
         return evaluate_i0010(root, candidate_sha)
+    if iteration == "I-0013":
+        return evaluate_i0013(root, candidate_sha)
     raise GovernanceError(f"no private Eval implementation is registered for {iteration}")
