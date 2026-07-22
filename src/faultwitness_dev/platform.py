@@ -125,9 +125,18 @@ def deploy_platform(
     _validate_values(values)
     encoded, bundle_digest = _bundle(_deployment_files(chart, values))
     script = f"""set -eu
+step=bootstrap
+on_exit() {{
+  status=$?
+  if test "$status" -ne 0; then
+    printf 'FW_PLATFORM_DEPLOY_FAILED step=%s status=%s\n' "$step" "$status" >&2
+  fi
+}}
+trap on_exit EXIT
 work=$(mktemp -d /tmp/faultwitness-i0009.XXXXXX)
 cleanup() {{ rm -rf "$work"; }}
-trap cleanup EXIT HUP INT TERM
+trap cleanup HUP INT TERM
+step=dependency-secrets
 for dependency in \
   fw-data/fw-postgres-env fw-data/fw-redis-env fw-data/fw-qdrant-env \
   fw-data/fw-minio-env fw-system/fw-keycloak-env fw-observability/fw-grafana-env; do
@@ -139,19 +148,25 @@ for dependency in \
     exit 1
   fi
 done
+step=decode-bundle
 printf %s {encoded} | base64 -d >"$work/platform.tgz"
 actual=$(sha256sum "$work/platform.tgz" | awk '{{print $1}}')
 test "$actual" = {bundle_digest}
 tar -xzf "$work/platform.tgz" -C "$work"
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+step=helm-lint
 /usr/local/bin/helm lint "$work/chart" -f "$work/values.yaml" >/dev/null
+step=helm-upgrade
 /usr/local/bin/helm upgrade --install {RELEASE_NAME} "$work/chart" \
   --namespace {NAMESPACE} --create-namespace -f "$work/values.yaml" \
   --atomic --wait --timeout 15m >/dev/null
+step=candidate-binding
 /usr/local/bin/k3s kubectl -n {NAMESPACE} create configmap fw-platform-candidate-binding \
   --from-literal=candidate_sha={candidate_sha} \
   --from-literal=bundle_sha256={bundle_digest} --dry-run=client -o yaml \
   | /usr/local/bin/k3s kubectl apply -f - >/dev/null
+step=cleanup
+cleanup
 """
     run_remote_script(script, privileged=True, timeout=1200)
     evidence = evidence_paths or PlatformPaths.defaults()
