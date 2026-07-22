@@ -10,9 +10,11 @@ Apply both additive migrations from a clean candidate:
 $candidateSha = git rev-parse HEAD
 uv run python -m faultwitness_dev deploy-runtime-schema --candidate-sha $candidateSha
 uv run python -m faultwitness_dev inspect-runtime-schema --candidate-sha $candidateSha
+uv run python -m faultwitness_dev deploy-control-api --candidate-sha $candidateSha
+uv run python -m faultwitness_dev inspect-control-api --candidate-sha $candidateSha
 ```
 
-Local synthetic conformance injects a test authenticator explicitly; the production entrypoint never enables such a bypass.
+The deploy command stages the digest-pinned Python base through the repository's private offline-image path, builds the locked application image on the server, imports it into K3s, copies PostgreSQL Secret data across namespaces without printing values, and creates a private `ClusterIP` workload with default-deny and explicit DNS/PostgreSQL/Keycloak traffic. Local synthetic conformance injects a test authenticator explicitly; the production entrypoint never enables such a bypass.
 
 ## Operational checks
 

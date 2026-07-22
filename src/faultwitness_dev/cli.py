@@ -30,6 +30,7 @@ from faultwitness_dev.bootstrap import (
     validate_migration,
 )
 from faultwitness_dev.checks import eval_changed, run, verify_fast
+from faultwitness_dev.control_api_deploy import deploy_control_api, inspect_control_api
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.evals import evaluate_iteration
 from faultwitness_dev.infra import (
@@ -163,6 +164,10 @@ def parser() -> argparse.ArgumentParser:
     deploy_runtime.add_argument("--candidate-sha", required=True)
     inspect_runtime = subparsers.add_parser("inspect-runtime-schema")
     inspect_runtime.add_argument("--candidate-sha", required=True)
+    deploy_api = subparsers.add_parser("deploy-control-api")
+    deploy_api.add_argument("--candidate-sha", required=True)
+    inspect_api = subparsers.add_parser("inspect-control-api")
+    inspect_api.add_argument("--candidate-sha", required=True)
     subparsers.add_parser("compile-contracts")
     subparsers.add_parser("check-contracts")
     subparsers.add_parser("diagnose-k3s")
@@ -420,6 +425,18 @@ def main() -> int:
             message = (
                 f"observed runtime migrations {','.join(summary['migrations'])} with "
                 f"{summary['table_count']} owner-isolated tables"
+            )
+        elif args.command == "deploy-control-api":
+            summary = deploy_control_api(root, args.candidate_sha)
+            message = (
+                f"deployed private Control API from {summary['candidate_sha']} with bundle "
+                f"digest {summary['bundle_sha256']}"
+            )
+        elif args.command == "inspect-control-api":
+            summary = inspect_control_api(args.candidate_sha)
+            message = (
+                f"observed Control API {summary['ready']}/{summary['available']} Ready as "
+                f"{summary['service_type']} on {summary['candidate_sha']}"
             )
         elif args.command == "compile-contracts":
             target = write_generated_resource(root)

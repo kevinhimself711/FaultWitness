@@ -10,6 +10,7 @@
 ### Tooling
 
 - Implement the I-0012 authenticated Control API foundation: eight frozen FastAPI paths, fail-closed RS256 OIDC tenant derivation, role and cross-tenant denial, PostgreSQL Incident/idempotency/event projection, exact replay cursors, typed retention/backpressure SSE controls, and truthful empty capability/approval behavior.
+- Add a candidate-bound, non-root, private-ClusterIP Control API image and K3s deployment path with locked dependencies and explicit network policy.
 - Complete the I-0011 implementation checkpoint on candidate `4844961`: add owner-isolated PostgreSQL state/idempotency/outbox/inbox/DLQ, Redis Streams recovery, fenced AES-GCM checkpoints, and deploy migration `001_i0011` with 17 observed runtime tables; retain the complete EVAL-G01-005 fault matrix as Gate debt and activate I-0012.
 - Pass the Windows EVAL-G01-004 conformance run on candidate `f81c7f0` with 82 deterministic legal transitions and 492 rejected mutations; retain cross-platform digest and public compatibility evidence for the final candidate, and activate I-0011 durable state work.
 - Compile the nine frozen G00 contract sources into a byte-stable 1.1.0 package resource; add 21 strict core models, 12 G01 support models, and a deterministic four-owner kernel that executes all 82 transitions with explicit predicates and fail-closed version, fencing, digest, idempotency, terminal-state, and private-reasoning boundaries.
