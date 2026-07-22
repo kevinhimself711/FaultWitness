@@ -56,13 +56,17 @@ test "$(sha256sum "$work/migration.sql" | awk '{{print $1}}')" = {digest}
 def inspect_runtime_schema(candidate_sha: str) -> dict[str, Any]:
     if not FULL_SHA.fullmatch(candidate_sha):
         raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+    query = """SELECT version FROM runtime_shared.schema_version WHERE version='001_i0011';
+SELECT count(*) FROM information_schema.tables
+WHERE table_schema IN ('runtime_shared','incident_owner','task_owner','graph_owner','action_owner');
+"""
+    encoded_query = base64.b64encode(query.encode()).decode()
     script = f"""set -eu
 binding=$(/usr/local/bin/k3s kubectl -n fw-system get configmap fw-runtime-candidate-binding -o jsonpath='{{.data.candidate_sha}}')
 test "$binding" = {candidate_sha}
-/usr/local/bin/k3s kubectl -n fw-data exec postgres-0 -- sh -ec \
-  'PGPASSWORD="$POSTGRES_PASSWORD" psql -At -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c \
-  "SELECT version FROM runtime_shared.schema_version WHERE version=''001_i0011'';
-   SELECT count(*) FROM information_schema.tables WHERE table_schema IN (''runtime_shared'',''incident_owner'',''task_owner'',''graph_owner'',''action_owner'');"'
+printf %s {encoded_query} | base64 -d | \
+  /usr/local/bin/k3s kubectl -n fw-data exec -i postgres-0 -- sh -ec \
+  'PGPASSWORD="$POSTGRES_PASSWORD" psql -At -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
 """
     output = [
         line.strip()
