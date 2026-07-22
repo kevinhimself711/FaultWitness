@@ -30,7 +30,11 @@ from faultwitness_dev.bootstrap import (
     validate_migration,
 )
 from faultwitness_dev.checks import eval_changed, run, verify_fast
-from faultwitness_dev.control_api_deploy import deploy_control_api, inspect_control_api
+from faultwitness_dev.control_api_deploy import (
+    deploy_control_api,
+    diagnose_control_api,
+    inspect_control_api,
+)
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.evals import evaluate_iteration
 from faultwitness_dev.infra import (
@@ -168,6 +172,7 @@ def parser() -> argparse.ArgumentParser:
     deploy_api.add_argument("--candidate-sha", required=True)
     inspect_api = subparsers.add_parser("inspect-control-api")
     inspect_api.add_argument("--candidate-sha", required=True)
+    subparsers.add_parser("diagnose-control-api")
     subparsers.add_parser("compile-contracts")
     subparsers.add_parser("check-contracts")
     subparsers.add_parser("diagnose-k3s")
@@ -438,6 +443,8 @@ def main() -> int:
                 f"observed Control API {summary['ready']}/{summary['available']} Ready as "
                 f"{summary['service_type']} on {summary['candidate_sha']}"
             )
+        elif args.command == "diagnose-control-api":
+            message = diagnose_control_api().strip()
         elif args.command == "compile-contracts":
             target = write_generated_resource(root)
             bundle = load_generated_resource(root)

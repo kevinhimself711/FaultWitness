@@ -181,6 +181,16 @@ printf '%s %s %s\n' "$available" "$ready" "$service_type"
     return {"candidate_sha": candidate_sha, "available": 1, "ready": 1, "service_type": "ClusterIP"}
 
 
+def diagnose_control_api() -> str:
+    script = """set -eu
+/usr/local/bin/k3s kubectl -n fw-control get pods -l app.kubernetes.io/name=control-api \
+  -o json | python3 -c 'import json,sys; d=json.load(sys.stdin); print(json.dumps([{"phase":p.get("status",{}).get("phase"),"reason":p.get("status",{}).get("reason"),"waiting":[{"reason":s.get("state",{}).get("waiting",{}).get("reason"),"message":s.get("state",{}).get("waiting",{}).get("message")} for s in p.get("status",{}).get("containerStatuses",[])]} for p in d.get("items",[])]))'
+/usr/local/bin/k3s kubectl -n fw-control logs deployment/control-api --tail=30 2>&1 | \
+  sed -E 's#(postgresql://)[^@ ]+@#\\1[REDACTED]@#g'
+"""
+    return run_remote_script(script, privileged=True)
+
+
 def _manifest(candidate_sha: str, image: str) -> str:
     return f"""apiVersion: v1
 kind: ConfigMap
@@ -263,4 +273,16 @@ spec:
         - namespaceSelector: {{matchLabels: {{kubernetes.io/metadata.name: fw-system}}}}
           podSelector: {{matchLabels: {{app.kubernetes.io/name: keycloak}}}}
       ports: [{{protocol: TCP, port: 8080}}]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {{name: allow-control-api-postgres, namespace: fw-data}}
+spec:
+  podSelector: {{matchLabels: {{app.kubernetes.io/name: postgres}}}}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector: {{matchLabels: {{kubernetes.io/metadata.name: fw-control}}}}
+          podSelector: {{matchLabels: {{app.kubernetes.io/name: control-api}}}}
+      ports: [{{protocol: TCP, port: 5432}}]
 """
