@@ -2,12 +2,13 @@
 
 ## Result
 
-Result: pass.
+Result: reopened; prior candidates passed, but closure-validator evidence is pending.
 
 ## Candidate
 
 - Prior evaluated revision: `42b97088743d7741c7be4c7e0364794e31bbc59c`.
 - Evaluated revision: `b1bc31681056bbcf6998ba6ea0a509bc9ae1ade9`.
+- Current evaluated revision: pending closure-validator candidate.
 - Protected-main revision: `dbc825dca17b9bf81013e1b2607ffc5bca5a6293`.
 - Candidate kind: architecture, contract, governance, and CI baseline; no product runtime.
 
@@ -44,3 +45,4 @@ Protected-main run: <https://github.com/kevinhimself711/FaultWitness/actions/run
 - Candidate `91e9187d01a28c55063c149bcb4144165c71b9bf` passed the audit itself, but run 29930777384 failed because the artifact action excluded the hidden `.audit` directory. The workflow now explicitly includes hidden files; no audit threshold changed.
 - Candidate `57719e84e75de332f287efb1c080079319ef5df3` passed all checks in run 29930973690, but its artifact display name used the PR merge-ref SHA. It was superseded so both the artifact name and content bind to the evaluated head SHA.
 - The full Gate readiness audit against `530a285f1e461b6bf72da8eb36101e6888ca16ae` passed executable checks but found that `PROJECT_STATE` could not encode the frozen `not_started` G01 handoff. I-0006 was reopened to add the missing lifecycle value and a regression test; no Gate threshold was lowered.
+- The final coverage audit found that `eval-g00` did not machine-reject incomplete Iteration/Eval closure evidence. I-0006 was reopened to add `eval-g00-close` and negative cases for incomplete work, failed or open Eval evidence, and waivers.

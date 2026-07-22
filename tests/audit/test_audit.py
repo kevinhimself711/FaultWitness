@@ -11,6 +11,7 @@ from faultwitness_dev.audit import (
     build_sbom,
     scan_publication_boundary,
     validate_action_pins,
+    validate_g00_closure_documents,
     validate_licenses,
     validate_sbom,
 )
@@ -68,3 +69,45 @@ def test_repository_audit_generates_valid_cyclonedx(tmp_path: Path) -> None:
     assert summary["component_count"] > 0
     assert (tmp_path / "sbom.cdx.json").is_file()
     assert (tmp_path / "audit-summary.json").is_file()
+
+
+def _closure_documents() -> tuple[dict, dict, list[dict], list[dict]]:
+    state = {
+        "active_gate": "G00",
+        "active_gate_status": "in_progress",
+        "active_iteration": None,
+        "next_iteration": None,
+    }
+    gate = {
+        "status": "in_progress",
+        "iterations": ["I-0001", "I-0002"],
+        "waivers": [],
+    }
+    iterations = [
+        {"id": "I-0001", "status": "completed", "commit": "a" * 40},
+        {"id": "I-0002", "status": "completed", "commit": "b" * 40},
+    ]
+    manifests = [
+        {"iteration": "I-0001", "status": "pass", "open_evidence": []},
+        {"iteration": "I-0002", "status": "pass", "open_evidence": []},
+    ]
+    return state, gate, iterations, manifests
+
+
+def test_g00_closure_readiness_accepts_complete_evidence() -> None:
+    validate_g00_closure_documents(*_closure_documents())
+
+
+@pytest.mark.parametrize("failure_kind", ["iteration", "eval", "open_evidence", "waiver"])
+def test_g00_closure_readiness_rejects_unresolved_evidence(failure_kind: str) -> None:
+    state, gate, iterations, manifests = _closure_documents()
+    if failure_kind == "iteration":
+        iterations[1]["status"] = "in_progress"
+    elif failure_kind == "eval":
+        manifests[1]["status"] = "fail"
+    elif failure_kind == "open_evidence":
+        manifests[1]["open_evidence"] = ["missing CI"]
+    else:
+        gate["waivers"] = ["temporary waiver"]
+    with pytest.raises(GovernanceError):
+        validate_g00_closure_documents(state, gate, iterations, manifests)

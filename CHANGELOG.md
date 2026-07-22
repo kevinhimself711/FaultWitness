@@ -30,5 +30,6 @@
 - Complete I-0006 on immutable candidate `42b9708` with three required public checks and preserved SBOM evidence.
 - Reopen I-0006 to correct the frozen `not_started` G01 handoff state found by full Gate readiness review.
 - Complete the I-0006 handoff correction on immutable candidate `b1bc316` with 43 tests and three required checks.
+- Reopen I-0006 to add fail-closed machine validation for full G00 closure readiness.
 
 No product implementation is included in this planning baseline.

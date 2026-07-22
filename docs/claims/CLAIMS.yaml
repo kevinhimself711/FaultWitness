@@ -2,7 +2,7 @@ schema_version: "0.1.0"
 claims:
   - id: CLAIM-GOV-001
     statement: "The repository has a pinned, locally reproducible toolchain baseline."
-    status: verified
+    status: partially_verified
     requirements: []
     evidence:
       - EVAL-G00-001
@@ -42,4 +42,5 @@ claims:
     evidence:
       - EVAL-G00-006
     limitations:
+      - "The fail-closed Gate closure readiness validator is awaiting cross-platform evidence."
       - "This claim covers design and repository governance, not product runtime behavior."
