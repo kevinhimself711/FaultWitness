@@ -69,13 +69,7 @@ def validate_changed_assets(root: Path, paths: list[str]) -> str:
     state = load_data(root / "PROJECT_STATE.yaml")
     iteration_id = os.environ.get("FW_ITERATION") or state.get("active_iteration")
     if iteration_id is None:
-        candidates = [
-            Path(path).stem
-            for path in paths
-            if path.startswith("governance/iterations/I-") and path.endswith(".yaml")
-        ]
-        if len(candidates) == 1:
-            iteration_id = candidates[0]
+        iteration_id = infer_iteration_id(root, paths)
     if any(path.startswith(GOVERNED_PREFIXES) for path in paths) and iteration_id is None:
         raise GovernanceError("governed change is missing an Iteration record")
     if iteration_id is None:
@@ -86,3 +80,14 @@ def validate_changed_assets(root: Path, paths: list[str]) -> str:
     record = load_data(record_path)
     validate_change_record(record, root)
     return f"validated {iteration_id} for {len(paths)} changed files"
+
+
+def infer_iteration_id(root: Path, paths: list[str]) -> str | None:
+    candidates: list[str] = []
+    for path in paths:
+        if not path.startswith("governance/iterations/I-") or not path.endswith(".yaml"):
+            continue
+        record = load_data(root / path)
+        if record.get("status") in {"in_progress", "completed"} and record.get("docs_updated"):
+            candidates.append(record["id"])
+    return max(candidates) if candidates else None

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from faultwitness_dev.changes import validate_change_record
+from faultwitness_dev.changes import infer_iteration_id, validate_change_record
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.schemas import (
     _check_cross_references,
@@ -78,3 +78,8 @@ def test_ruleset_cannot_drop_a_required_platform() -> None:
     status_rule["parameters"]["required_status_checks"].pop()
     with pytest.raises(GovernanceError, match="status checks drifted"):
         _check_ruleset_invariants(mutated)
+
+
+def test_iteration_inference_ignores_planned_bootstrap_records() -> None:
+    paths = [f"governance/iterations/I-{number:04d}.yaml" for number in range(1, 7)]
+    assert infer_iteration_id(ROOT, paths) == "I-0002"
