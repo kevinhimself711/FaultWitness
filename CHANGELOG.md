@@ -32,5 +32,6 @@
 - Complete the I-0006 handoff correction on immutable candidate `b1bc316` with 43 tests and three required checks.
 - Reopen I-0006 to add fail-closed machine validation for full G00 closure readiness.
 - Complete I-0006 closure-readiness enforcement on immutable candidate `b6d5f4d` with 48 tests.
+- Reopen I-0006 to enforce the exact no-Iteration G00 closure asset boundary.
 
 No product implementation is included in this planning baseline.

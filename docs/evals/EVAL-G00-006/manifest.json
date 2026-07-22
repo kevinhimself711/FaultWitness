@@ -3,8 +3,8 @@
   "eval_id": "EVAL-G00-006",
   "gate": "G00",
   "iteration": "I-0006",
-  "evaluated_revision": "b6d5f4d7a3956586bd0bb3bd8cc0eb404e7150e9",
-  "status": "pass",
+  "evaluated_revision": "pending-closure-protocol-candidate",
+  "status": "running",
   "environments": ["windows-local", "windows-github-hosted", "ubuntu-github-hosted"],
   "commands": ["make verify-fast", "make eval-changed", "make eval-g00", "make eval-g00-close"],
   "artifacts": [
@@ -34,5 +34,5 @@
       "reason": "G00 has no Agent runtime and therefore cannot produce a runtime trace."
     }
   },
-  "open_evidence": []
+  "open_evidence": ["fixed closure-protocol candidate SHA", "cross-platform CI", "protected-main confirmation"]
 }
