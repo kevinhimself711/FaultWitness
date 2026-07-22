@@ -58,7 +58,11 @@ spec:
     spec:
       serviceAccountName: {{ $name }}
       automountServiceAccountToken: false
-      securityContext: {seccompProfile: {type: RuntimeDefault}}
+      securityContext:
+        seccompProfile: {type: RuntimeDefault}
+        {{- with $service.podSecurityContext }}
+{{ toYaml . | indent 8 }}
+        {{- end }}
       containers:
         - name: {{ $name }}
           image: {{ $service.image | quote }}

@@ -19,6 +19,7 @@ services:
     image: postgres@sha256:e75c0253ec375a157657c75bbb1705a8bbdd844d5f258973f9e3eb33cfcd9e33
     port: 5432
     secretRef: fw-postgres-env
+    podSecurityContext: {runAsUser: 999, runAsGroup: 999, fsGroup: 999, fsGroupChangePolicy: OnRootMismatch}
     persistence: {enabled: true, size: 12Gi, mountPath: /var/lib/postgresql/data}
     resources: {requests: {cpu: 100m, memory: 256Mi}, limits: {cpu: 750m, memory: 1Gi}}
   redis:
@@ -74,7 +75,9 @@ services:
     config: |
       receivers:
         otlp:
-          protocols: {grpc: {}, http: {}}
+          protocols:
+            grpc: {endpoint: 0.0.0.0:4317}
+            http: {endpoint: 0.0.0.0:4318}
       processors:
         memory_limiter: {limit_mib: 192, check_interval: 1s}
         batch: {}
