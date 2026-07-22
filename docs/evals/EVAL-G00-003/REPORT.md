@@ -2,7 +2,7 @@
 
 ## Result
 
-Result: local pass; protected-main cross-platform evidence pending.
+Result: pass.
 
 ## Evidence
 
@@ -14,6 +14,10 @@ Result: local pass; protected-main cross-platform evidence pending.
 | Full-corpus counts | pass | 110 catalog records; 22 JDs, 84 included interviews, 2 excluded empty interviews, 1 technical reference, and 1 upstream report |
 | Requirement and matrix coverage | pass | 57 requirements and 57 exact-once matrix references; 41 P0, 13 P1, and 3 integrated P2 requirements |
 | Publication boundary review | pass | Candidate scan found no raw source paths, credentials, private keys, or common secret tokens |
+| Windows baseline | pass | GitHub Actions job 88907609199 |
+| Ubuntu baseline | pass | GitHub Actions job 88907609230 |
+
+Cross-platform run: <https://github.com/kevinhimself711/FaultWitness/actions/runs/29915287611>
 
 ## Deviations
 

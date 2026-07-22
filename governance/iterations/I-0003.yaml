@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0003
 gate: G00
 title: Requirements Evidence and Source Governance
-status: in_progress
+status: completed
 scope:
   - Catalog every in-scope source with anonymous integrity metadata and an inclusion decision.
   - Establish 57 evidence-backed requirements mapped to roles architecture planes and Gates.
@@ -20,7 +20,7 @@ tests:
   - uv run pytest tests/governance -q
   - EVAL-G00-003 negative evidence-policy cases
 eval_id: EVAL-G00-003
-commit: null
+commit: 1271e1217b40507b51cad95185a2a8d07e49a5ac
 changed_paths:
   - docs/requirements
   - schemas/governance
