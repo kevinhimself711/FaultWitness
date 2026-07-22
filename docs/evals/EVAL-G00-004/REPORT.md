@@ -20,6 +20,10 @@ Result: pass.
 
 Cross-platform run: <https://github.com/kevinhimself711/FaultWitness/actions/runs/29916449844>
 
+Evidence-finalization run: <https://github.com/kevinhimself711/FaultWitness/actions/runs/29916569620>
+
+Protected-main confirmation: <https://github.com/kevinhimself711/FaultWitness/actions/runs/29916657571>
+
 ## Deviations
 
 - The first local run exposed lifecycle-coupled tests that hard-coded the current Iteration number. They were replaced with stable properties for planned-only and highest-eligible inference. No governance behavior or Gate threshold was weakened.
