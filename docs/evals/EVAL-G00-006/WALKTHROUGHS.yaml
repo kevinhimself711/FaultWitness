@@ -1,0 +1,18 @@
+schema_version: "1.0.0"
+gate: G00
+candidate_kind: design_contract
+walkthroughs:
+  - {id: W-G00-001, scenario: Read-only investigation succeeds, source_binding: W-ARCH-001, assertion: "Evidence-linked diagnosis reaches a terminal report without creating an ActionTransaction.", status: pass}
+  - {id: W-G00-002, scenario: Diagnosis-only mode terminates, source_binding: W-ARCH-001, assertion: "Diagnosis-only mode reaches RESOLVED and cannot enter any external write path.", status: pass}
+  - {id: W-G00-003, scenario: R1 bounded action succeeds, source_binding: W-ARCH-002, assertion: "Current policy can authorize a bounded R1 action once with idempotency and verified postconditions.", status: pass}
+  - {id: W-G00-004, scenario: R2 approval succeeds, source_binding: W-ARCH-002, assertion: "A matching immutable unexpired approval digest permits one verified R2 action effect.", status: pass}
+  - {id: W-G00-005, scenario: Approval is rejected, source_binding: W-ARCH-003, assertion: "Rejection terminates the proposal digest and produces no external write.", status: pass}
+  - {id: W-G00-006, scenario: Approval expires, source_binding: W-ARCH-003, assertion: "Expiry invalidates the proposal digest and requires a new proposal before execution.", status: pass}
+  - {id: W-G00-007, scenario: Worker exits before checkpoint, source_binding: W-ARCH-004, assertion: "The stale attempt is fenced and recovery starts from the previous durable checkpoint.", status: pass}
+  - {id: W-G00-008, scenario: Worker exits after checkpoint, source_binding: W-ARCH-004, assertion: "A new attempt resumes the committed checkpoint and the old fencing token cannot commit.", status: pass}
+  - {id: W-G00-009, scenario: Executed action response is lost, source_binding: W-ARCH-005, assertion: "The transaction enters UNCERTAIN and performs read-only reconciliation without blind redispatch.", status: pass}
+  - {id: W-G00-010, scenario: Postcondition fails and compensation succeeds, source_binding: W-ARCH-006, assertion: "Verified compensation ends ROLLED_BACK and a failed postcondition is never reported committed.", status: pass}
+  - {id: W-G00-011, scenario: Compensation effect is uncertain, source_binding: W-ARCH-007, assertion: "Unknown compensation remains explicit and terminates in MANUAL with Incident escalation.", status: pass}
+  - {id: W-G00-012, scenario: Cancellation before and during action, source_binding: W-ARCH-008, assertion: "Cancellation applies only at a safe checkpoint and any possible effect is reconciled or escalated.", status: pass}
+  - {id: W-G00-013, scenario: Mandatory dependency outage, source_binding: W-ARCH-009, assertion: "LangSmith OPA Keycloak Qdrant and MinIO failures follow their fixed degrade or fail-closed semantics.", status: pass}
+  - {id: W-G00-014, scenario: Cross-tenant or Ground Truth access, source_binding: W-ARCH-010, assertion: "Authenticated tenant isolation and sealed Ground Truth deny access before disclosure or action dispatch.", status: pass}

@@ -4,7 +4,8 @@ import argparse
 import subprocess
 from pathlib import Path
 
-from faultwitness_dev.checks import eval_changed, verify_fast
+from faultwitness_dev.audit import audit_repository, check_external_links
+from faultwitness_dev.checks import eval_changed, run, verify_fast
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.schemas import validate_repository_schemas
 
@@ -22,7 +23,17 @@ def repository_root() -> Path:
 
 def parser() -> argparse.ArgumentParser:
     command_parser = argparse.ArgumentParser(prog="faultwitness_dev")
-    command_parser.add_argument("command", choices=("verify-fast", "eval-changed", "validate"))
+    command_parser.add_argument(
+        "command",
+        choices=(
+            "verify-fast",
+            "eval-changed",
+            "validate",
+            "audit-g00",
+            "eval-g00",
+            "external-links",
+        ),
+    )
     return command_parser
 
 
@@ -35,9 +46,24 @@ def main() -> int:
             message = "repository checks, tests, and Markdown passed"
         elif args.command == "eval-changed":
             message = eval_changed(root)
-        else:
+        elif args.command == "validate":
             loaded = validate_repository_schemas(root)
             message = f"validated {len(loaded)} governed assets"
+        elif args.command == "audit-g00":
+            summary = audit_repository(root)
+            message = f"audited {summary['component_count']} dependency components"
+        elif args.command == "eval-g00":
+            verify_fast(root)
+            summary = audit_repository(root)
+            run(["pnpm", "run", "check:mermaid"], root)
+            changed_message = eval_changed(root)
+            message = (
+                f"full candidate passed with {summary['component_count']} components; "
+                f"{changed_message}"
+            )
+        else:
+            report = check_external_links(root)
+            message = f"recorded {report['checked']} external link results (non-blocking)"
         print(f"PASS {args.command}: {message}")
         return 0
     except (GovernanceError, subprocess.CalledProcessError) as error:

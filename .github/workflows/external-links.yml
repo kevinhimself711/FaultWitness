@@ -1,0 +1,35 @@
+name: external-links
+
+on:
+  schedule:
+    - cron: "23 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: external links (non-blocking)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: "3.12"
+      - name: Install pinned bootstrap tool
+        run: python -m pip install uv==0.10.12
+      - name: Install locked Python dependencies
+        run: uv sync --frozen --all-groups
+      - name: Record external link results
+        run: uv run python -m faultwitness_dev external-links
+      - name: Upload link report
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: external-links-${{ github.sha }}
+          path: .audit/external-links.json
+          if-no-files-found: warn
+          retention-days: 14
+          include-hidden-files: true

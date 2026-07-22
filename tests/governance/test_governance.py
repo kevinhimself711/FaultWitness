@@ -12,6 +12,7 @@ from faultwitness_dev.schemas import (
     _check_architecture_invariants,
     _check_cross_references,
     _check_evidence_invariants,
+    _check_gate_walkthroughs,
     _check_ruleset_invariants,
     _check_unique_ids,
     load_data,
@@ -81,6 +82,22 @@ def test_ruleset_cannot_drop_a_required_platform() -> None:
     status_rule["parameters"]["required_status_checks"].pop()
     with pytest.raises(GovernanceError, match="status checks drifted"):
         _check_ruleset_invariants(mutated)
+
+
+def test_ruleset_requires_cross_platform_and_audit_checks() -> None:
+    ruleset = load_data(ROOT / ".github" / "rulesets" / "main.json")
+    status_rule = next(
+        rule for rule in ruleset["rules"] if rule["type"] == "required_status_checks"
+    )
+    contexts = {
+        item["context"]
+        for item in status_rule["parameters"]["required_status_checks"]
+    }
+    assert contexts == {
+        "audit (ubuntu-latest)",
+        "verify (ubuntu-latest)",
+        "verify (windows-latest)",
+    }
 
 
 def test_iteration_inference_ignores_planned_bootstrap_records() -> None:
@@ -189,3 +206,21 @@ def test_accepted_adr_must_resolve_to_a_file() -> None:
     mutated["adrs"][0]["path"] = "docs/adr/ADR-NOT-REAL.md"
     with pytest.raises(GovernanceError, match="accepted ADR path does not exist"):
         _check_adr_invariants(ROOT, mutated)
+
+
+def test_g00_walkthrough_set_cannot_be_reduced() -> None:
+    walkthroughs = load_data(ROOT / "docs" / "evals" / "EVAL-G00-006" / "WALKTHROUGHS.yaml")
+    bindings = load_data(ROOT / "docs" / "contracts" / "WALKTHROUGH_BINDINGS.yaml")
+    mutated = copy.deepcopy(walkthroughs)
+    mutated["walkthroughs"].pop()
+    with pytest.raises(GovernanceError, match="exactly W-G00-001 through 014"):
+        _check_gate_walkthroughs(mutated, bindings)
+
+
+def test_g00_walkthrough_requires_known_contract_binding() -> None:
+    walkthroughs = load_data(ROOT / "docs" / "evals" / "EVAL-G00-006" / "WALKTHROUGHS.yaml")
+    bindings = load_data(ROOT / "docs" / "contracts" / "WALKTHROUGH_BINDINGS.yaml")
+    mutated = copy.deepcopy(walkthroughs)
+    mutated["walkthroughs"][0]["source_binding"] = "W-ARCH-999"
+    with pytest.raises(GovernanceError, match="unknown contract bindings"):
+        _check_gate_walkthroughs(mutated, bindings)

@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G00-006",
+  "gate": "G00",
+  "iteration": "I-0006",
+  "evaluated_revision": "pending-i0006-candidate",
+  "status": "local_pass_pending_cross_platform",
+  "environments": ["windows-local", "windows-github-hosted", "ubuntu-github-hosted"],
+  "commands": ["make verify-fast", "make eval-changed", "make eval-g00"],
+  "artifacts": [
+    "docs/evals/EVAL-G00-006/PLAN.md",
+    "docs/evals/EVAL-G00-006/REPORT.md",
+    "docs/evals/EVAL-G00-006/WALKTHROUGHS.yaml",
+    ".audit/sbom.cdx.json",
+    ".audit/audit-summary.json"
+  ],
+  "evidence_urls": [],
+  "integrations": {
+    "langsmith": {
+      "status": "not_applicable",
+      "reason": "G00 has no Agent runtime and therefore cannot produce a runtime trace."
+    }
+  },
+  "open_evidence": ["fixed candidate SHA", "cross-platform CI", "protected-main confirmation"]
+}

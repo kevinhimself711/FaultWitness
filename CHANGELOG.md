@@ -24,5 +24,8 @@
 - Freeze four machine-readable state machines and deterministically validated Mermaid views.
 - Add OpenAPI 3.1, AsyncAPI 3.0, core type, Command/Event, error, and fixed failure contracts.
 - Enforce reachability, terminal convergence, R2 approval, uncertainty, fencing, identity, idempotency, and version semantics.
+- Add fail-closed secret, publication, dependency-license, source-ownership, Action-pin, lockfile, and CycloneDX SBOM audits.
+- Add pinned browser rendering for every Mermaid diagram and a required Ubuntu audit status check.
+- Materialize fourteen frozen G00 design walkthroughs plus PR, Issue, external-link, and evidence-sync governance.
 
 No product implementation is included in this planning baseline.

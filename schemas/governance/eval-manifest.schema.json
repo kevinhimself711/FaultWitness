@@ -15,6 +15,18 @@
     "commands": {"type": "array", "items": {"type": "string"}, "minItems": 1},
     "artifacts": {"type": "array", "items": {"type": "string"}, "minItems": 1},
     "evidence_urls": {"type": "array", "items": {"type": "string"}},
+    "integrations": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["status", "reason"],
+        "properties": {
+          "status": {"enum": ["required", "pass", "not_applicable"]},
+          "reason": {"type": "string", "minLength": 10}
+        }
+      }
+    },
     "open_evidence": {"type": "array", "items": {"type": "string"}}
   }
 }

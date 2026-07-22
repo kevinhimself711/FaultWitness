@@ -8,7 +8,12 @@
     "node": "22.14.0",
     "pnpm": "11.9.0"
   },
+  "scripts": {
+    "check:mermaid": "node tools/validate-mermaid.mjs --render",
+    "check:mermaid:render": "node tools/validate-mermaid.mjs --render"
+  },
   "devDependencies": {
+    "@mermaid-js/mermaid-cli": "11.15.0",
     "markdownlint-cli2": "0.23.1"
   }
 }
