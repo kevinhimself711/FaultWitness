@@ -3,8 +3,8 @@
   "eval_id": "EVAL-G00-006",
   "gate": "G00",
   "iteration": "I-0006",
-  "evaluated_revision": "pending-closure-protocol-candidate",
-  "status": "running",
+  "evaluated_revision": "c38ca79e2d8bde583c78844ee485e739f60edeca",
+  "status": "pass",
   "environments": ["windows-local", "windows-github-hosted", "ubuntu-github-hosted"],
   "commands": ["make verify-fast", "make eval-changed", "make eval-g00", "make eval-g00-close"],
   "artifacts": [
@@ -26,7 +26,11 @@
     "https://github.com/kevinhimself711/FaultWitness/actions/runs/29932872592",
     "https://github.com/kevinhimself711/FaultWitness/actions/runs/29932872592/artifacts/8534820581",
     "https://github.com/kevinhimself711/FaultWitness/actions/runs/29932988123",
-    "https://github.com/kevinhimself711/FaultWitness/pull/13"
+    "https://github.com/kevinhimself711/FaultWitness/pull/13",
+    "https://github.com/kevinhimself711/FaultWitness/actions/runs/29933820970",
+    "https://github.com/kevinhimself711/FaultWitness/actions/runs/29933820970/artifacts/8535210942",
+    "https://github.com/kevinhimself711/FaultWitness/actions/runs/29933966319",
+    "https://github.com/kevinhimself711/FaultWitness/pull/15"
   ],
   "integrations": {
     "langsmith": {
@@ -34,5 +38,5 @@
       "reason": "G00 has no Agent runtime and therefore cannot produce a runtime trace."
     }
   },
-  "open_evidence": ["fixed closure-protocol candidate SHA", "cross-platform CI", "protected-main confirmation"]
+  "open_evidence": []
 }
