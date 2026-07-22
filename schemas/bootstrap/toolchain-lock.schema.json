@@ -9,7 +9,7 @@
     "tools": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["sops", "age"],
+      "required": ["sops", "age", "ssh_askpass"],
       "properties": {
         "sops": {"$ref": "#/$defs/tool"},
         "age": {
@@ -27,12 +27,25 @@
               }
             }
           ]
-        }
+        },
+        "ssh_askpass": {"$ref": "#/$defs/source_tool"}
       }
     }
   },
   "$defs": {
     "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "source_tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "platform", "source", "sha256", "verification"],
+      "properties": {
+        "version": {"pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+        "platform": {"const": "windows-amd64"},
+        "source": {"const": "deploy/bootstrap/ssh_askpass/Program.cs"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "verification": {"const": "repository-source-digest"}
+      }
+    },
     "tool": {
       "type": "object",
       "additionalProperties": false,

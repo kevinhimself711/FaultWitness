@@ -14,6 +14,7 @@ from faultwitness_dev.bootstrap import (
     canonical_capability_report,
     default_age_keygen_executable,
     default_sops_executable,
+    default_ssh_askpass_executable,
     derive_age_recipient,
     validate_migration,
 )
@@ -84,19 +85,30 @@ def _validate_toolchain(root: Path) -> None:
     sops = default_sops_executable()
     age_keygen = default_age_keygen_executable()
     age = age_keygen.with_name("age.exe")
+    askpass = default_ssh_askpass_executable()
+    askpass_source = root / lock["ssh_askpass"]["source"]
+    askpass_source_marker = askpass.with_name("source.sha256")
     actual = {
         "sops": _sha256(sops),
         "age.exe": _sha256(age),
         "age-keygen.exe": _sha256(age_keygen),
+        "ssh_askpass_source": _sha256(askpass_source),
     }
     expected = {
         "sops": lock["sops"]["sha256"],
         "age.exe": lock["age"]["executables"]["age.exe"],
         "age-keygen.exe": lock["age"]["executables"]["age-keygen.exe"],
+        "ssh_askpass_source": lock["ssh_askpass"]["sha256"],
     }
     drift = sorted(name for name in expected if actual[name] != expected[name])
     if drift:
         raise GovernanceError("bootstrap toolchain checksum drift: " + ", ".join(drift))
+    if not askpass.is_file() or not askpass_source_marker.is_file():
+        raise GovernanceError("compiled SSH askpass helper or source marker is missing")
+    if askpass_source_marker.read_text(encoding="utf-8").strip() != expected[
+        "ssh_askpass_source"
+    ]:
+        raise GovernanceError("compiled SSH askpass source marker drifted")
 
 
 def evaluate_i0007(root: Path, candidate_sha: str) -> dict[str, Any]:

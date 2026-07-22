@@ -15,5 +15,5 @@
       "reason": "LangSmith remains mandatory for G01 runtime evidence even though secure bootstrap must precede its use."
     }
   },
-  "open_evidence": ["server-login and dedicated-key verification", "sanitized host capability report", "secret and host-pin negative cases"]
+  "open_evidence": ["sanitized host capability report", "candidate-bound private Eval", "final secret and host-pin negative cases"]
 }

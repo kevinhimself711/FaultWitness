@@ -32,6 +32,8 @@ Public repository assets：
 
 脚本只从冻结的官方 GitHub release URL 下载 SOPS 3.13.2 和 Age 1.3.1，并校验 `config/secrets/toolchain.lock.yaml` 中的 SHA-256。任何版本、URL、archive 或 executable hash 漂移都失败。
 
+同一脚本还从 tracked `deploy/bootstrap/ssh_askpass/Program.cs` 构建仓库外的最小 Windows askpass executable，并用 dummy value 与无秘密 sentinel 自测。OpenSSH 不直接执行 `.cmd`，因此禁止退回批处理 helper。该 executable 只读取短生命周期 `FW_SSH_PASSWORD` environment 并写入 SSH stdin，不把值放进参数或文件。
+
 ## 4. Create project identities
 
 全新 owner host 执行：

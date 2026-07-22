@@ -11,6 +11,7 @@
 
 - Add I-0007 SOPS/Age encrypted handoff migration, project identity bootstrap, fail-closed host pinning, operator-approved long-lived credential acceptance, read-only host probing, and private Eval commands.
 - Correct I-0007's risk premise: untracked owner-host handoff values are retained unchanged when publication/history scans show zero exposure; confirmed compromise or operator revocation remains the rotation trigger.
+- Replace the non-executable Windows SSH askpass batch helper with a repository-source-digest-locked native helper, dummy-value self-test, and redacted authentication failure categories.
 - Pin and checksum SOPS 3.13.2 and Age 1.3.1, validate their public configuration with JSON Schema, and keep all private stores outside the repository.
 - Extend publication scanning to PowerShell/shell assets and LangSmith token shapes with negative tests.
 - Pin the Python, Node.js, uv, and pnpm repository toolchains.

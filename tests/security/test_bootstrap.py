@@ -18,6 +18,7 @@ from faultwitness_dev.bootstrap import (
     host_key_fingerprint,
     migrate_handoff,
     parse_handoff,
+    ssh_failure_category,
 )
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.evals import validate_capability_baseline
@@ -276,3 +277,20 @@ def test_host_key_acceptance_requires_exact_out_of_band_fingerprint(tmp_path: Pa
     metadata = json.loads(paths.metadata_file.read_text(encoding="utf-8"))
     assert metadata["host_key_verified"] is True
     assert "fingerprint" not in json.dumps(metadata)
+
+
+@pytest.mark.parametrize(
+    ("stderr", "expected"),
+    [
+        ("Permission denied (publickey,password).", "authentication_rejected"),
+        ("Host key verification failed.", "host_key_rejected"),
+        ("CreateProcessW failed error:2", "askpass_unavailable"),
+        ("opaque failure", "remote_command_or_transport_failed"),
+    ],
+)
+def test_ssh_failure_category_never_echoes_raw_diagnostics(
+    stderr: str, expected: str
+) -> None:
+    category = ssh_failure_category(stderr)
+    assert category == expected
+    assert stderr not in category

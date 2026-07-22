@@ -135,6 +135,20 @@ def default_age_keygen_executable() -> Path:
     )
 
 
+def default_ssh_askpass_executable() -> Path:
+    local_appdata = os.environ.get("LOCALAPPDATA")
+    if not local_appdata:
+        raise GovernanceError("LOCALAPPDATA is required for the SSH askpass helper")
+    return (
+        Path(local_appdata)
+        / "FaultWitness"
+        / "tools"
+        / "ssh-askpass"
+        / "1.0.0"
+        / "faultwitness-ssh-askpass.exe"
+    )
+
+
 def _value_after_separator(line: str) -> str:
     for separator in ("：", ":", "="):
         if separator in line:
@@ -500,6 +514,25 @@ def _ssh_base_arguments(bundle: SecretBundle, paths: BootstrapPaths) -> list[str
     ]
 
 
+def ssh_failure_category(stderr: str) -> str:
+    lowered = stderr.casefold()
+    categories = (
+        ("permission denied", "authentication_rejected"),
+        ("host key verification failed", "host_key_rejected"),
+        ("connection timed out", "connection_timeout"),
+        ("connection refused", "connection_refused"),
+        ("no route to host", "network_unreachable"),
+        ("could not resolve hostname", "name_resolution_failed"),
+        ("ssh_askpass", "askpass_unavailable"),
+        ("read_passphrase", "askpass_unavailable"),
+        ("createprocessw failed", "askpass_unavailable"),
+    )
+    return next(
+        (category for marker, category in categories if marker in lowered),
+        "remote_command_or_transport_failed",
+    )
+
+
 def install_and_verify_ssh_key(
     paths: BootstrapPaths,
     sops: Path,
@@ -515,6 +548,10 @@ def install_and_verify_ssh_key(
         raise GovernanceError("SSH askpass helper is missing")
     bundle = load_secret_bundle(paths, sops)
     public_key = public_key_path.read_text(encoding="utf-8").strip()
+    paths.private_evidence_dir.mkdir(parents=True, exist_ok=True)
+    askpass_sentinel = paths.private_evidence_dir / ".askpass-invoked"
+    if askpass_sentinel.exists():
+        askpass_sentinel.unlink()
     environment = os.environ.copy()
     environment.update(
         {
@@ -522,6 +559,7 @@ def install_and_verify_ssh_key(
             "SSH_ASKPASS_REQUIRE": "force",
             "DISPLAY": "faultwitness-bootstrap",
             "FW_SSH_PASSWORD": bundle.server_password,
+            "FW_SSH_ASKPASS_SENTINEL": str(askpass_sentinel),
         }
     )
     install_command = (
@@ -530,14 +568,39 @@ def install_and_verify_ssh_key(
         'IFS= read -r key; grep -qxF "$key" "$HOME/.ssh/authorized_keys" || '
         'printf "%s\\n" "$key" >> "$HOME/.ssh/authorized_keys"'
     )
+    password_arguments = [
+        *_ssh_base_arguments(bundle, paths),
+        "-o",
+        "PubkeyAuthentication=no",
+        "-o",
+        "PreferredAuthentications=password,keyboard-interactive",
+        f"{bundle.server_username}@{bundle.server_host}",
+    ]
+    preflight = subprocess.run(
+        [*password_arguments, "true"],
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        env=environment,
+    )
+    if preflight.returncode:
+        askpass_invoked = askpass_sentinel.is_file()
+        if askpass_invoked:
+            askpass_sentinel.unlink()
+        environment.pop("FW_SSH_PASSWORD", None)
+        environment.pop("FW_SSH_ASKPASS_SENTINEL", None)
+        category = ssh_failure_category(preflight.stderr)
+        if category == "authentication_rejected" and not askpass_invoked:
+            category = "askpass_not_invoked"
+        raise GovernanceError(
+            "password-authenticated SSH preflight failed ("
+            + category
+            + ")"
+        )
     result = subprocess.run(
         [
-            *_ssh_base_arguments(bundle, paths),
-            "-o",
-            "PubkeyAuthentication=no",
-            "-o",
-            "PreferredAuthentications=password,keyboard-interactive",
-            f"{bundle.server_username}@{bundle.server_host}",
+            *password_arguments,
             install_command,
         ],
         input=public_key + "\n",
@@ -548,8 +611,15 @@ def install_and_verify_ssh_key(
         env=environment,
     )
     environment.pop("FW_SSH_PASSWORD", None)
+    environment.pop("FW_SSH_ASKPASS_SENTINEL", None)
+    if askpass_sentinel.exists():
+        askpass_sentinel.unlink()
     if result.returncode:
-        raise GovernanceError("password-authenticated public-key installation failed")
+        raise GovernanceError(
+            "public-key installation command failed ("
+            + ssh_failure_category(result.stderr)
+            + ")"
+        )
     verification = subprocess.run(
         [
             *_ssh_base_arguments(bundle, paths),

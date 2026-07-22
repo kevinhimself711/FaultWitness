@@ -81,4 +81,6 @@ if (-not (Test-Path -LiteralPath $ageExecutable) -or -not (Test-Path -LiteralPat
 Assert-Hash -Path $ageExecutable -Expected $ageExecutableHash
 Assert-Hash -Path $ageKeygen -Expected $ageKeygenHash
 
+& (Join-Path $PSScriptRoot 'build_ssh_askpass.ps1') -ToolRoot $ToolRoot
+
 Write-Output "PASS bootstrap tools: sops=$sopsVersion age=$ageVersion checksums=verified"

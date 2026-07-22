@@ -16,6 +16,7 @@ from faultwitness_dev.bootstrap import (
     capture_host_key_candidate,
     default_age_keygen_executable,
     default_sops_executable,
+    default_ssh_askpass_executable,
     finalize_handoff,
     install_and_verify_ssh_key,
     migrate_handoff,
@@ -167,8 +168,8 @@ def main() -> int:
                 args.sops or default_sops_executable(),
             )
             message = (
-                "deleted plaintext handoff after existing-credential, host, and capability "
-                "evidence passed"
+                "deleted plaintext handoff after existing-credential, host-pin, and dedicated-"
+                "key evidence passed"
             )
         elif args.command == "capture-host-key":
             paths = (
@@ -197,7 +198,7 @@ def main() -> int:
                 if args.config_root
                 else BootstrapPaths.defaults()
             )
-            askpass = args.askpass or root / "deploy" / "bootstrap" / "ssh-askpass.cmd"
+            askpass = args.askpass or default_ssh_askpass_executable()
             install_and_verify_ssh_key(
                 paths,
                 args.sops or default_sops_executable(),
