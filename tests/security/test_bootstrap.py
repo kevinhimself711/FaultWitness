@@ -10,18 +10,18 @@ import pytest
 from faultwitness_dev.bootstrap import (
     BootstrapPaths,
     SecretBundle,
+    accept_existing_credentials,
     accept_host_key_candidate,
     assert_no_sensitive_capability_fields,
     canonical_capability_report,
     finalize_handoff,
-    generate_server_password,
     host_key_fingerprint,
     migrate_handoff,
     parse_handoff,
-    password_meets_rotation_policy,
 )
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.evals import validate_capability_baseline
+from faultwitness_dev.schemas import load_data
 
 
 def handoff_text() -> str:
@@ -96,12 +96,10 @@ def test_handoff_parser_rejects_missing_secret_without_echoing_value() -> None:
     assert "x" * 20 not in str(raised.value)
 
 
-def test_legacy_password_can_be_secured_but_cannot_satisfy_rotation_policy() -> None:
+def test_existing_password_can_be_secured_without_mutating_its_value() -> None:
     legacy = handoff_text().replace("x" * 32, "weak", 1)
     parsed = parse_handoff(legacy)
-    assert not password_meets_rotation_policy(parsed.server_password)
-    assert password_meets_rotation_policy("Correct-Horse-2026-Battery")
-    assert password_meets_rotation_policy(generate_server_password())
+    assert parsed.server_password == "weak"
 
 
 def test_migration_writes_ciphertext_and_metadata_but_retains_source(
@@ -132,25 +130,58 @@ def test_migration_writes_ciphertext_and_metadata_but_retains_source(
     assert source.is_file()
     assert paths.encrypted_store.read_text(encoding="utf-8") == "sops: encrypted fixture\n"
     assert metadata["encrypted_round_trip"] == "pass"
-    assert set(metadata["rotation"].values()) == {"pending"}
+    assert set(metadata["credential_acceptance"].values()) == {
+        "pending_operator_confirmation"
+    }
+    assert metadata["credential_policy"] == "operator_declared_long_lived"
     assert "x" * 20 not in paths.metadata_file.read_text(encoding="utf-8")
 
 
-def test_finalize_refuses_pending_rotation_and_preserves_handoff(
+def test_accept_existing_credentials_changes_status_without_changing_secret(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    paths = BootstrapPaths.under(tmp_path / "private")
+    paths.metadata_file.parent.mkdir(parents=True)
+    paths.metadata_file.write_text(
+        json.dumps(
+            {
+                "encrypted_round_trip": "pass",
+                "rotation": {
+                    "server.password": "pending",
+                    "bailian.api_key": "pending",
+                    "langsmith.api_key": "pending",
+                },
+                "ssh_key_verified": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr("faultwitness_dev.bootstrap.load_secret_bundle", lambda *_: bundle())
+
+    accept_existing_credentials(paths, tmp_path / "sops")
+
+    metadata = json.loads(paths.metadata_file.read_text(encoding="utf-8"))
+    assert "rotation" not in metadata
+    assert set(metadata["credential_acceptance"].values()) == {"accepted_existing"}
+    assert metadata["credential_verification"]["server.password"] == "pending_login"
+
+
+def test_finalize_refuses_pending_acceptance_and_preserves_handoff(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     source = tmp_path / "envs.txt"
     source.write_text("opaque", encoding="utf-8")
     paths = BootstrapPaths.under(tmp_path / "private")
     metadata = {
-        "rotation": {
-            "server.password": "pending",
-            "bailian.api_key": "verified",
-            "langsmith.api_key": "verified",
+        "credential_acceptance": {
+            "server.password": "pending_operator_confirmation",
+            "bailian.api_key": "accepted_existing",
+            "langsmith.api_key": "accepted_existing",
         },
+        "credential_verification": {"server.password": "verified_login"},
         "host_key_verified": True,
         "ssh_key_verified": True,
-        "capability_reprobe_match": True,
+        "capability_reprobe_match": False,
     }
     monkeypatch.setattr("faultwitness_dev.bootstrap.validate_migration", lambda *_: metadata)
     with pytest.raises(GovernanceError, match="server.password"):
@@ -158,21 +189,22 @@ def test_finalize_refuses_pending_rotation_and_preserves_handoff(
     assert source.is_file()
 
 
-def test_finalize_deletes_handoff_only_after_every_evidence_flag(
+def test_finalize_deletes_handoff_before_capability_probe_after_identity_evidence(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     source = tmp_path / "envs.txt"
     source.write_text("opaque", encoding="utf-8")
     paths = BootstrapPaths.under(tmp_path / "private")
     metadata = {
-        "rotation": {
-            "server.password": "verified",
-            "bailian.api_key": "verified",
-            "langsmith.api_key": "verified",
+        "credential_acceptance": {
+            "server.password": "accepted_existing",
+            "bailian.api_key": "accepted_existing",
+            "langsmith.api_key": "accepted_existing",
         },
+        "credential_verification": {"server.password": "verified_login"},
         "host_key_verified": True,
         "ssh_key_verified": True,
-        "capability_reprobe_match": True,
+        "capability_reprobe_match": False,
     }
     monkeypatch.setattr("faultwitness_dev.bootstrap.validate_migration", lambda *_: metadata)
     finalize_handoff(source, paths, tmp_path / "sops")
@@ -197,12 +229,32 @@ def test_capability_report_is_deterministic_and_rejects_sensitive_fields() -> No
 def test_capability_eval_enforces_frozen_server_floor() -> None:
     candidate = "a" * 40
     report = canonical_capability_report(capability_document(), candidate)
-    validate_capability_baseline(report, candidate)
+    schema = load_data(
+        Path(__file__).parents[2]
+        / "schemas"
+        / "bootstrap"
+        / "capability-baseline.schema.json"
+    )
+    validate_capability_baseline(report, candidate, schema)
 
     failed = capability_document()
     failed["cpu_count"] = 31
     with pytest.raises(GovernanceError, match="cpu_count"):
         validate_capability_baseline(canonical_capability_report(failed, candidate), candidate)
+
+
+def test_capability_schema_rejects_undeclared_fields() -> None:
+    candidate = "a" * 40
+    report = canonical_capability_report(capability_document(), candidate)
+    report["private_host"] = "must-not-be-published"
+    schema = load_data(
+        Path(__file__).parents[2]
+        / "schemas"
+        / "bootstrap"
+        / "capability-baseline.schema.json"
+    )
+    with pytest.raises(GovernanceError, match="Additional properties"):
+        validate_capability_baseline(report, candidate, schema)
 
 
 def test_host_key_acceptance_requires_exact_out_of_band_fingerprint(tmp_path: Path) -> None:

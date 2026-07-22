@@ -18,7 +18,7 @@ from faultwitness_dev.bootstrap import (
     validate_migration,
 )
 from faultwitness_dev.errors import GovernanceError
-from faultwitness_dev.schemas import load_data, validate_repository_schemas
+from faultwitness_dev.schemas import load_data, validate_document, validate_repository_schemas
 
 
 def _sha256(path: Path) -> str:
@@ -39,7 +39,11 @@ def _head_sha(root: Path) -> str:
     return result.stdout.strip()
 
 
-def validate_capability_baseline(report: dict[str, Any], candidate_sha: str) -> None:
+def validate_capability_baseline(
+    report: dict[str, Any], candidate_sha: str, schema: dict[str, Any] | None = None
+) -> None:
+    if schema is not None:
+        validate_document(report, schema, "sanitized capability baseline")
     assert_no_sensitive_capability_fields(report)
     capabilities = report.get("capabilities")
     if not isinstance(capabilities, dict):
@@ -112,10 +116,22 @@ def evaluate_i0007(root: Path, candidate_sha: str) -> dict[str, Any]:
         raise GovernanceError(".gitignore must contain exactly one precise /envs.txt rule")
     paths = BootstrapPaths.defaults()
     metadata = validate_migration(paths, default_sops_executable())
-    rotations = metadata.get("rotation", {})
-    pending = sorted(name for name, status in rotations.items() if status != "verified")
+    acceptance = metadata.get("credential_acceptance", {})
+    required_credentials = {"server.password", "bailian.api_key", "langsmith.api_key"}
+    pending = sorted(
+        name for name in required_credentials if acceptance.get(name) != "accepted_existing"
+    )
     if pending:
-        raise GovernanceError("unverified credential rotations: " + ", ".join(pending))
+        raise GovernanceError("unaccepted existing credentials: " + ", ".join(pending))
+    verification = metadata.get("credential_verification", {})
+    if verification.get("server.password") != "verified_login":
+        raise GovernanceError("existing server password has not passed login verification")
+    expected_deferred = {
+        "bailian.api_key": "deferred_to_I-0013_live_eval",
+        "langsmith.api_key": "deferred_to_I-0014_live_eval",
+    }
+    if any(verification.get(name) != status for name, status in expected_deferred.items()):
+        raise GovernanceError("API credential live verification ownership drifted")
     flags = {
         "host_key_verified": metadata.get("host_key_verified") is True,
         "ssh_key_verified": metadata.get("ssh_key_verified") is True,
@@ -139,7 +155,10 @@ def evaluate_i0007(root: Path, candidate_sha: str) -> dict[str, Any]:
     if not capability_path.is_file():
         raise GovernanceError("sanitized capability baseline is missing")
     capability = json.loads(capability_path.read_text(encoding="utf-8"))
-    validate_capability_baseline(capability, candidate_sha)
+    capability_schema = load_data(
+        root / "schemas" / "bootstrap" / "capability-baseline.schema.json"
+    )
+    validate_capability_baseline(capability, candidate_sha, capability_schema)
     scan_publication_boundary(root)
     tracked = subprocess.run(
         ["git", "ls-files"],
@@ -166,11 +185,11 @@ def evaluate_i0007(root: Path, candidate_sha: str) -> dict[str, Any]:
         "candidate_sha": candidate_sha,
         "status": "pass",
         "secret_count": len(metadata["secret_names"]),
-        "rotation_count": len(rotations),
+        "accepted_credential_count": len(acceptance),
         "capability_sha256": capability["normalized_sha256"],
         "checks": {
             "encrypted_round_trip": "pass",
-            "credential_rotation": "pass",
+            "credential_acceptance": "pass",
             "host_key": "pass",
             "ssh_key": "pass",
             "capability_reprobe": "pass",

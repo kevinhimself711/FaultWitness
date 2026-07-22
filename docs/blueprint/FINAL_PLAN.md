@@ -1,11 +1,12 @@
 ---
 document_id: FW-BLUEPRINT-001
-version: 1.1.0
+version: 1.2.0
 status: frozen_for_g01
 owner: project
 approved_on: 2026-07-22
 amendments:
   - docs/blueprint/AMENDMENTS/AMD-0001.md
+  - docs/blueprint/AMENDMENTS/AMD-0002.md
 ---
 
 # FaultWitness 最终项目规划

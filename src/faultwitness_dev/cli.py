@@ -11,6 +11,7 @@ from faultwitness_dev.audit import (
 )
 from faultwitness_dev.bootstrap import (
     BootstrapPaths,
+    accept_existing_credentials,
     accept_host_key_candidate,
     capture_host_key_candidate,
     default_age_keygen_executable,
@@ -18,8 +19,6 @@ from faultwitness_dev.bootstrap import (
     finalize_handoff,
     install_and_verify_ssh_key,
     migrate_handoff,
-    record_api_rotation_from_clipboard,
-    rotate_and_verify_server_password,
     run_capability_probe,
     validate_migration,
 )
@@ -89,21 +88,12 @@ def parser() -> argparse.ArgumentParser:
     probe_host.add_argument("--sops", type=Path)
     probe_host.add_argument("--probe-script", type=Path)
 
-    rotate_server = subparsers.add_parser("rotate-server-password")
-    rotate_server.add_argument("--config-root", type=Path)
-    rotate_server.add_argument("--sops", type=Path)
-    rotate_server.add_argument("--age-keygen", type=Path)
-    rotate_server.add_argument("--askpass", type=Path)
-
-    rotate_api = subparsers.add_parser("record-api-rotation")
-    rotate_api.add_argument(
-        "--name", choices=("bailian.api_key", "langsmith.api_key"), required=True
+    accept_credentials = subparsers.add_parser("accept-existing-credentials")
+    accept_credentials.add_argument(
+        "--operator-confirmed-long-lived", action="store_true", required=True
     )
-    rotate_api.add_argument("--from-clipboard", action="store_true", required=True)
-    rotate_api.add_argument("--provider-ui-confirmed", action="store_true", required=True)
-    rotate_api.add_argument("--config-root", type=Path)
-    rotate_api.add_argument("--sops", type=Path)
-    rotate_api.add_argument("--age-keygen", type=Path)
+    accept_credentials.add_argument("--config-root", type=Path)
+    accept_credentials.add_argument("--sops", type=Path)
 
     eval_iteration = subparsers.add_parser("eval-iteration")
     eval_iteration.add_argument("iteration")
@@ -152,7 +142,7 @@ def main() -> int:
             )
             message = (
                 f"migrated {len(metadata['secret_names'])} named secrets to the encrypted "
-                "private store; plaintext handoff retained pending rotation evidence"
+                "private store; plaintext handoff retained pending acceptance and host evidence"
             )
         elif args.command == "verify-bootstrap":
             paths = (
@@ -176,7 +166,10 @@ def main() -> int:
                 paths,
                 args.sops or default_sops_executable(),
             )
-            message = "deleted plaintext handoff after all rotation and capability evidence passed"
+            message = (
+                "deleted plaintext handoff after existing-credential, host, and capability "
+                "evidence passed"
+            )
         elif args.command == "capture-host-key":
             paths = (
                 BootstrapPaths.under(args.config_root)
@@ -228,36 +221,16 @@ def main() -> int:
                 "captured two matching sanitized capability probes with normalized digest "
                 f"{report['normalized_sha256']}"
             )
-        elif args.command == "rotate-server-password":
+        elif args.command == "accept-existing-credentials":
             paths = (
                 BootstrapPaths.under(args.config_root)
                 if args.config_root
                 else BootstrapPaths.defaults()
             )
-            rotate_and_verify_server_password(
-                paths,
-                args.sops or default_sops_executable(),
-                args.age_keygen or default_age_keygen_executable(),
-                args.askpass or root / "deploy" / "bootstrap" / "ssh-askpass.cmd",
-            )
-            message = "rotated and verified the server password without emitting either value"
-        elif args.command == "record-api-rotation":
-            paths = (
-                BootstrapPaths.under(args.config_root)
-                if args.config_root
-                else BootstrapPaths.defaults()
-            )
-            record_api_rotation_from_clipboard(
-                args.name,
-                paths,
-                args.sops or default_sops_executable(),
-                args.age_keygen or default_age_keygen_executable(),
-                args.provider_ui_confirmed,
-            )
-            message = (
-                "stored the provider-UI replacement directly from clipboard and marked its "
-                "rotation verified"
-            )
+            if not args.operator_confirmed_long_lived:
+                raise GovernanceError("operator confirmation is required")
+            accept_existing_credentials(paths, args.sops or default_sops_executable())
+            message = "accepted the three existing long-lived credentials without changing values"
         elif args.command == "eval-iteration":
             summary = evaluate_iteration(root, args.iteration, args.candidate_sha)
             message = (

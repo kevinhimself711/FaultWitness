@@ -57,7 +57,7 @@ uv run python -m faultwitness_dev verify-bootstrap
 - Plaintext 通过 stdin 交给 SOPS，不创建 plaintext temporary file。
 - Encrypted store 写入后立即在进程内 decrypt/validate，并与原值做内存比较。
 - Public stdout 只报告字段数量和状态。
-- 旧服务器密码即使弱也先安全收容，但 metadata 必须标记为需要轮换。
+- 三项 credential 按项目所有者决定作为 long-lived value 原值收容；I-0007 不生成 replacement。
 - 在所有后续验证完成前保留 `envs.txt`，防止半迁移锁死。
 
 ## 6. Verify and pin the SSH host out of band
@@ -90,26 +90,17 @@ uv run python -m faultwitness_dev install-ssh-key
 
 旧密码只存在于父进程和短生命周期 `SSH_ASKPASS` environment，不出现在 command arguments、stdout、stderr 或文件中。公钥安装后必须用 `BatchMode=yes`、password disabled 和 accepted `known_hosts` 验证；失败时保留旧登录方式和 handoff。
 
-## 8. Rotate credentials
+## 8. Accept the existing long-lived credentials
 
-### Server password
-
-```powershell
-uv run python -m faultwitness_dev rotate-server-password
-```
-
-流程先产生符合策略的随机 replacement 并验证下一版 SOPS ciphertext，再通过 dedicated SSH key 执行受控 password change。只有新密码登录成功后才原子切换 encrypted store 并把 rotation 标记为 verified；失败时保留 staged ciphertext 供 reconciliation。
-
-### Bailian and LangSmith
-
-分别在官方 Provider UI 新建 replacement key、确认 active，并使用 UI 的 Copy 操作。不要粘贴到 terminal、文件或 Codex message。每次复制后立即运行：
+项目所有者已明确要求服务器密码、Bailian key 和 LangSmith key 保持原值并长期使用。完成 SOPS round-trip 后运行：
 
 ```powershell
-uv run python -m faultwitness_dev record-api-rotation --name bailian.api_key --from-clipboard --provider-ui-confirmed
-uv run python -m faultwitness_dev record-api-rotation --name langsmith.api_key --from-clipboard --provider-ui-confirmed
+uv run python -m faultwitness_dev accept-existing-credentials --operator-confirmed-long-lived
 ```
 
-命令直接从 clipboard 读取到进程内存，完成 SOPS round-trip 后原子替换 store。I-0007 不调用模型或 LangSmith API；Provider UI 的 creation/active 状态是本 Gate 的 rotation evidence，真正调用由 I-0013/I-0014 Eval 完成。
+该命令不读取 clipboard、不生成 replacement、不修改 encrypted payload，只在 private metadata 中记录三项现有 credential 的显式接受。服务器密码的可用性由第 7 步实际 password login 验证；Bailian 与 LangSmith 的 live validity 分别由 I-0013 和 I-0014 负责，因为 I-0007 禁止调用模型和 LangSmith API。
+
+只有 confirmed compromise、public/history scan 命中或项目所有者撤销时才触发轮换。未跟踪的 owner-host handoff 本身不再被错误地等同于已泄漏，但完成迁移后仍必须删除，不能作为长期明文密钥库。
 
 ## 9. Capture the sanitized capability baseline
 
@@ -125,13 +116,13 @@ CLI 通过 accepted host pin 和 dedicated key 两次发送同一 allowlisted re
 
 ## 10. Finalize and evaluate
 
-仅在三项 rotation、host pin、SSH key 和 repeated capability evidence 全部 verified 后：
+仅在三项 existing credential acceptance、server password login、host pin 和 dedicated SSH key 全部通过后：
 
 ```powershell
 uv run python -m faultwitness_dev finalize-bootstrap
 ```
 
-该命令普通删除 `envs.txt`，不声称 SSD secure erase。随后向 `.gitignore` 增加且只增加精确 `/envs.txt` 规则。
+该命令普通删除 `envs.txt`，不声称 SSD secure erase。随后向 `.gitignore` 增加且只增加精确 `/envs.txt` 规则并形成 implementation candidate。能力报告随后绑定这个已存在的 full SHA；两次 probe 和完整 Eval 仍是 I-0007 的硬通过条件。
 
 ```powershell
 .\tools\bin\make.cmd verify-fast
@@ -139,7 +130,7 @@ uv run python -m faultwitness_dev finalize-bootstrap
 uv run python -m faultwitness_dev eval-iteration I-0007 --candidate-sha <FULL_HEAD_SHA>
 ```
 
-EVAL-G01-001 必须验证 tool hash、SOPS round-trip、rotation、host pin、SSH key、两次 probe、frozen server floor、publication boundary 和 private-material tracking 均通过。失败时回到对应步骤，不修改阈值或删除失败证据。
+EVAL-G01-001 必须验证 tool hash、SOPS round-trip、existing-credential acceptance、server password login、host pin、SSH key、两次 probe、frozen server floor、publication boundary 和 private-material tracking 均通过。失败时回到对应步骤，不修改阈值或删除失败证据。
 
 ## 11. Recovery and failure semantics
 
@@ -147,7 +138,7 @@ EVAL-G01-001 必须验证 tool hash、SOPS round-trip、rotation、host pin、SS
 - Encryption/round-trip failure：保留 handoff，不写通过状态。
 - Host fingerprint mismatch：删除或隔离 candidate，不认证。
 - SSH key verification failure：保留密码登录与 handoff。
-- Password change 后验证失败：使用 dedicated SSH key 和 staged ciphertext reconciliation，禁止猜测/盲目重试。
-- Provider replacement 未确认：rotation 保持 pending，禁止 finalize。
+- Existing server password login 失败：保留 handoff，不安装 key、不 finalize，禁止猜测/盲目重试。
+- Existing credential 未得到 owner acceptance：保持 pending，禁止 finalize。
 - Probe drift：保存 private failure summary，调查 Docker/host 状态变化后重跑两次。
 - Publication scan hit：I-0007 失败；不得通过 ignore broad pattern 隐藏泄漏。

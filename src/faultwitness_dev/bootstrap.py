@@ -8,7 +8,7 @@ import os
 import re
 import secrets
 import subprocess
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -218,18 +218,6 @@ def validate_bundle(bundle: SecretBundle) -> None:
             raise GovernanceError(f"{name} does not meet the bootstrap shape policy")
 
 
-def password_meets_rotation_policy(value: str) -> bool:
-    character_classes = (
-        any(character.islower() for character in value),
-        any(character.isupper() for character in value),
-        any(character.isdigit() for character in value),
-        any(not character.isalnum() for character in value),
-    )
-    return len(value) >= 20 and sum(character_classes) >= 3 and not any(
-        character in value for character in "\r\n\0"
-    )
-
-
 def derive_age_recipient(age_keygen: Path, identity_file: Path) -> str:
     if not age_keygen.is_file() or not identity_file.is_file():
         raise GovernanceError("pinned age-keygen or project Age identity is missing")
@@ -354,19 +342,20 @@ def migrate_handoff(
         "migrated_at": timestamp,
         "secret_names": list(REQUIRED_SECRET_NAMES),
         "encrypted_round_trip": "pass",
-        "initial_server_password_policy": (
-            "pass"
-            if password_meets_rotation_policy(bundle.server_password)
-            else "fail_requires_rotation"
-        ),
+        "credential_policy": "operator_declared_long_lived",
+        "credential_acceptance": {
+            "server.password": "pending_operator_confirmation",
+            "bailian.api_key": "pending_operator_confirmation",
+            "langsmith.api_key": "pending_operator_confirmation",
+        },
+        "credential_verification": {
+            "server.password": "pending_login",
+            "bailian.api_key": "deferred_to_I-0013_live_eval",
+            "langsmith.api_key": "deferred_to_I-0014_live_eval",
+        },
         "host_key_verified": False,
         "ssh_key_verified": False,
         "capability_reprobe_match": False,
-        "rotation": {
-            "server.password": "pending",
-            "bailian.api_key": "pending",
-            "langsmith.api_key": "pending",
-        },
         "handoff_deleted": False,
     }
     _atomic_write(paths.metadata_file, json.dumps(metadata, indent=2) + "\n")
@@ -395,192 +384,32 @@ def load_secret_bundle(paths: BootstrapPaths, sops: Path) -> SecretBundle:
     )
 
 
-def _bundle_with_replacement(bundle: SecretBundle, name: str, value: str) -> SecretBundle:
-    if name == "server.password":
-        if not password_meets_rotation_policy(value):
-            raise GovernanceError("replacement server password does not meet rotation policy")
-        updated = replace(bundle, server_password=value)
-    elif name == "bailian.api_key":
-        updated = replace(bundle, bailian_api_key=value)
-    elif name == "langsmith.api_key":
-        updated = replace(bundle, langsmith_api_key=value)
-    else:
-        raise GovernanceError("only declared rotatable secrets can be replaced")
-    validate_bundle(updated)
-    current_value = {
-        "server.password": bundle.server_password,
-        "bailian.api_key": bundle.bailian_api_key,
-        "langsmith.api_key": bundle.langsmith_api_key,
-    }[name]
-    if secrets.compare_digest(current_value, value):
-        raise GovernanceError("replacement secret must differ from the current secret")
-    return updated
-
-
-def _stage_encrypted_bundle(
-    paths: BootstrapPaths,
-    sops: Path,
-    age_keygen: Path,
-    bundle: SecretBundle,
-) -> Path:
-    staged = paths.encrypted_store.with_name("faultwitness.secrets.next.yaml")
-    if staged.exists():
-        raise GovernanceError("a staged secret rotation already exists and requires reconciliation")
-    recipient = derive_age_recipient(age_keygen, paths.identity_file)
-    ciphertext = encrypt_bundle(bundle, sops, recipient)
-    round_trip = decrypt_bundle(ciphertext, sops, paths.identity_file)
-    if not secrets.compare_digest(bundle_fingerprint(bundle), bundle_fingerprint(round_trip)):
-        raise GovernanceError("staged encrypted secret round-trip failed")
-    _atomic_write(staged, ciphertext)
-    return staged
-
-
-def _activate_staged_bundle(paths: BootstrapPaths, sops: Path, staged: Path) -> None:
-    previous = paths.encrypted_store.with_name("faultwitness.secrets.previous.yaml")
-    if not staged.is_file() or previous.exists():
-        raise GovernanceError("secret-store activation preconditions are not satisfied")
-    os.replace(paths.encrypted_store, previous)
-    try:
-        os.replace(staged, paths.encrypted_store)
-        load_secret_bundle(paths, sops)
-    except Exception:
-        if paths.encrypted_store.exists():
-            os.replace(paths.encrypted_store, staged)
-        os.replace(previous, paths.encrypted_store)
-        raise
-    previous.unlink()
-
-
-def read_clipboard_secret() -> str:
-    result = subprocess.run(
-        ["powershell", "-NoProfile", "-Command", "Get-Clipboard -Raw"],
-        check=False,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-    )
-    value = result.stdout.strip()
-    if result.returncode or not value:
-        raise GovernanceError("clipboard does not contain a replacement secret")
-    return value
-
-
-def record_api_rotation_from_clipboard(
-    name: str,
-    paths: BootstrapPaths,
-    sops: Path,
-    age_keygen: Path,
-    provider_ui_confirmed: bool,
-) -> None:
-    if name not in {"bailian.api_key", "langsmith.api_key"}:
-        raise GovernanceError("API rotation name is not supported")
-    if not provider_ui_confirmed:
-        raise GovernanceError("provider UI creation and activation must be explicitly confirmed")
-    current = load_secret_bundle(paths, sops)
-    replacement_value = read_clipboard_secret()
-    updated = _bundle_with_replacement(current, name, replacement_value)
-    staged = _stage_encrypted_bundle(paths, sops, age_keygen, updated)
-    _activate_staged_bundle(paths, sops, staged)
+def accept_existing_credentials(paths: BootstrapPaths, sops: Path) -> None:
+    load_secret_bundle(paths, sops)
     metadata = load_private_metadata(paths.metadata_file)
-    metadata["rotation"][name] = "verified"
-    metadata.setdefault("rotation_method", {})[name] = "provider_ui_created_and_active"
-    metadata.setdefault("rotated_at", {})[name] = datetime.now(UTC).isoformat()
-    _write_private_metadata(paths, metadata)
-
-
-def generate_server_password() -> str:
-    alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#%_-+="
-    while True:
-        value = "".join(secrets.choice(alphabet) for _ in range(32))
-        if password_meets_rotation_policy(value):
-            return value
-
-
-def rotate_and_verify_server_password(
-    paths: BootstrapPaths,
-    sops: Path,
-    age_keygen: Path,
-    askpass: Path,
-) -> None:
-    metadata = validate_migration(paths, sops)
-    if (
-        metadata.get("host_key_verified") is not True
-        or metadata.get("ssh_key_verified") is not True
-    ):
-        raise GovernanceError("verified host pin and SSH key are required before password rotation")
-    current = load_secret_bundle(paths, sops)
-    replacement_value = generate_server_password()
-    updated = _bundle_with_replacement(current, "server.password", replacement_value)
-    staged = _stage_encrypted_bundle(paths, sops, age_keygen, updated)
-    change_command = (
-        "IFS= read -r sudo_password; IFS= read -r account_line; "
-        'if [ "$(id -u)" -eq 0 ]; then printf "%s\\n" "$account_line" | chpasswd; '
-        "else printf \"%s\\n\" \"$sudo_password\" | sudo -S -p '' -v && "
-        'printf "%s\\n" "$account_line" | sudo -n chpasswd; fi'
-    )
-    change_input = (
-        current.server_password
-        + "\n"
-        + current.server_username
-        + ":"
-        + replacement_value
-        + "\n"
-    )
-    change = subprocess.run(
-        [
-            *_ssh_base_arguments(current, paths),
-            "-o",
-            "BatchMode=yes",
-            "-o",
-            "PasswordAuthentication=no",
-            "-i",
-            str(paths.ssh_private_key),
-            f"{current.server_username}@{current.server_host}",
-            change_command,
-        ],
-        input=change_input,
-        check=False,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-    )
-    if change.returncode:
-        raise GovernanceError("server password rotation failed; staged encrypted value retained")
-    environment = os.environ.copy()
-    environment.update(
-        {
-            "SSH_ASKPASS": str(askpass),
-            "SSH_ASKPASS_REQUIRE": "force",
-            "DISPLAY": "faultwitness-bootstrap",
-            "FW_SSH_PASSWORD": replacement_value,
-        }
-    )
-    verification = subprocess.run(
-        [
-            *_ssh_base_arguments(updated, paths),
-            "-o",
-            "PubkeyAuthentication=no",
-            "-o",
-            "PreferredAuthentications=password,keyboard-interactive",
-            f"{updated.server_username}@{updated.server_host}",
-            "true",
-        ],
-        check=False,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        env=environment,
-    )
-    environment.pop("FW_SSH_PASSWORD", None)
-    if verification.returncode:
-        raise GovernanceError(
-            "replacement server password could not be verified; staged value retained for recovery"
+    if metadata.get("encrypted_round_trip") != "pass":
+        raise GovernanceError("encrypted round-trip evidence must pass before acceptance")
+    metadata.pop("rotation", None)
+    metadata.pop("rotation_method", None)
+    metadata.pop("rotated_at", None)
+    metadata.pop("initial_server_password_policy", None)
+    metadata["credential_policy"] = "operator_declared_long_lived"
+    metadata["credential_acceptance"] = {
+        name: "accepted_existing" for name in (
+            "server.password",
+            "bailian.api_key",
+            "langsmith.api_key",
         )
-    _activate_staged_bundle(paths, sops, staged)
-    metadata = load_private_metadata(paths.metadata_file)
-    metadata["rotation"]["server.password"] = "verified"
-    metadata.setdefault("rotation_method", {})["server.password"] = "remote_change_and_login"
-    metadata.setdefault("rotated_at", {})["server.password"] = datetime.now(UTC).isoformat()
+    }
+    metadata["credential_verification"] = {
+        "server.password": (
+            "verified_login" if metadata.get("ssh_key_verified") is True else "pending_login"
+        ),
+        "bailian.api_key": "deferred_to_I-0013_live_eval",
+        "langsmith.api_key": "deferred_to_I-0014_live_eval",
+    }
+    metadata["credential_acceptance_method"] = "operator_confirmed_existing_long_lived"
+    metadata["credentials_accepted_at"] = datetime.now(UTC).isoformat()
     _write_private_metadata(paths, metadata)
 
 
@@ -742,6 +571,9 @@ def install_and_verify_ssh_key(
         raise GovernanceError("dedicated SSH key verification failed")
     metadata = load_private_metadata(paths.metadata_file)
     metadata["ssh_key_verified"] = True
+    metadata.setdefault("credential_verification", {})[
+        "server.password"
+    ] = "verified_login"
     _write_private_metadata(paths, metadata)
 
 
@@ -808,13 +640,15 @@ def run_capability_probe(
 
 def finalize_handoff(handoff: Path, paths: BootstrapPaths, sops: Path) -> None:
     metadata = validate_migration(paths, sops)
-    rotation = metadata.get("rotation", {})
-    pending = sorted(name for name in REQUIRED_SECRET_NAMES if False)
-    required_rotations = ("server.password", "bailian.api_key", "langsmith.api_key")
-    pending = [name for name in required_rotations if rotation.get(name) != "verified"]
+    acceptance = metadata.get("credential_acceptance", {})
+    required_credentials = ("server.password", "bailian.api_key", "langsmith.api_key")
+    pending = [name for name in required_credentials if acceptance.get(name) != "accepted_existing"]
     if pending:
-        raise GovernanceError("credential rotations are not verified: " + ", ".join(pending))
-    required_flags = ("host_key_verified", "ssh_key_verified", "capability_reprobe_match")
+        raise GovernanceError("existing credentials are not accepted: " + ", ".join(pending))
+    verification = metadata.get("credential_verification", {})
+    if verification.get("server.password") != "verified_login":
+        raise GovernanceError("existing server password has not passed login verification")
+    required_flags = ("host_key_verified", "ssh_key_verified")
     missing_flags = [name for name in required_flags if metadata.get(name) is not True]
     if missing_flags:
         raise GovernanceError("bootstrap evidence is incomplete: " + ", ".join(missing_flags))

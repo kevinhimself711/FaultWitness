@@ -14,7 +14,7 @@ Audit one immutable G01 candidate for cross-platform reproducibility, private-se
 
 ## Frozen walkthroughs
 
-1. Secret migration, rotation, deletion, and public-repository scan.
+1. Same-value secret migration, long-lived credential acceptance, handoff deletion, and public-repository scan.
 2. K3s coexistence with zero existing-Docker regression.
 3. runc, gVisor, Kata, and RTX 4090 capability smoke.
 4. Duplicate Incident creation returns the original result.

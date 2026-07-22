@@ -32,6 +32,22 @@ function Assert-Hash {
     }
 }
 
+function Remove-VerifiedTemporaryDirectory {
+    param([string]$Path)
+    $temporaryRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath())
+    $resolved = [System.IO.Path]::GetFullPath($Path)
+    $leaf = [System.IO.Path]::GetFileName($resolved.TrimEnd(
+        [System.IO.Path]::DirectorySeparatorChar,
+        [System.IO.Path]::AltDirectorySeparatorChar
+    ))
+    if (-not $resolved.StartsWith($temporaryRoot, [System.StringComparison]::OrdinalIgnoreCase) -or
+        -not $leaf.StartsWith('faultwitness-age-', [System.StringComparison]::Ordinal) -or
+        $resolved -eq $temporaryRoot) {
+        throw 'Refusing to recursively remove an unverified temporary directory.'
+    }
+    Remove-Item -LiteralPath $resolved -Recurse
+}
+
 [System.IO.Directory]::CreateDirectory($sopsDirectory) | Out-Null
 if (-not (Test-Path -LiteralPath $sopsExecutable)) {
     Invoke-WebRequest -Headers $headers -Uri $sopsUrl -OutFile $sopsExecutable
@@ -58,7 +74,7 @@ if (-not (Test-Path -LiteralPath $ageExecutable) -or -not (Test-Path -LiteralPat
     }
     finally {
         if (Test-Path -LiteralPath $temporary) {
-            Remove-Item -LiteralPath $temporary -Recurse
+            Remove-VerifiedTemporaryDirectory -Path $temporary
         }
     }
 }

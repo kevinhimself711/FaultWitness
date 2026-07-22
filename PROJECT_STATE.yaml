@@ -2,7 +2,7 @@ schema_version: "0.1.0"
 project_name: FaultWitness
 repository_visibility: public
 
-plan_version: "G01-master-plan-v1"
+plan_version: "G01-master-plan-v1.1"
 architecture_version: "1.0.0"
 requirements_version: "1.0.0"
 contracts_version: "1.0.0"

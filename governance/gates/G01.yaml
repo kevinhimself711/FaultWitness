@@ -16,4 +16,6 @@ pass_criteria:
   - Qwen DeepSeek and GLM model families pass all 36 Bailian live capability trials while the NewAPI channel passes its offline wire contract.
   - The full fourteen-scenario failure matrix passes with zero waiver open evidence unexplained backlog or pending trace export.
 waivers: []
-amendments: [docs/blueprint/AMENDMENTS/AMD-0001.md]
+amendments:
+  - docs/blueprint/AMENDMENTS/AMD-0001.md
+  - docs/blueprint/AMENDMENTS/AMD-0002.md
