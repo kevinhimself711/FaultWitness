@@ -55,6 +55,10 @@ spec:
       labels:
         app.kubernetes.io/name: {{ $name }}
         app.kubernetes.io/part-of: faultwitness-platform
+      {{- if $service.config }}
+      annotations:
+        faultwitness.io/config-sha256: {{ $service.config | sha256sum | quote }}
+      {{- end }}
     spec:
       serviceAccountName: {{ $name }}
       automountServiceAccountToken: false

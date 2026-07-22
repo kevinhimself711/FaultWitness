@@ -29,6 +29,14 @@ def test_platform_bundle_is_byte_stable(tmp_path: Path) -> None:
     assert _bundle(files) == _bundle(files)
 
 
+def test_configured_workloads_roll_when_config_changes() -> None:
+    template = Path("deploy/charts/faultwitness-platform/templates/workloads.yaml").read_text(
+        encoding="utf-8"
+    )
+    assert "faultwitness.io/config-sha256" in template
+    assert "$service.config | sha256sum" in template
+
+
 def _inventory(*, ready: int = 1, generation: int = 4) -> str:
     return json.dumps(
         {
