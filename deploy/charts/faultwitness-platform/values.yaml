@@ -1,6 +1,7 @@
 global:
   storageClass: local-path
   imagePullPolicy: IfNotPresent
+  initImage: docker.io/rancher/mirrored-library-busybox@sha256:101b4afd76732482eff9b95cae5f94bcf295e521fbec4e01b69c5421f3f3f3e5
 
 namespaces:
   system: fw-system
@@ -20,6 +21,7 @@ services:
     port: 5432
     secretRef: fw-postgres-env
     podSecurityContext: {runAsUser: 999, runAsGroup: 999, fsGroup: 999, fsGroupChangePolicy: OnRootMismatch}
+    initOwnership: {uid: 999, gid: 999, path: /var/lib/postgresql/data}
     persistence: {enabled: true, size: 12Gi, mountPath: /var/lib/postgresql/data}
     resources: {requests: {cpu: 100m, memory: 256Mi}, limits: {cpu: 750m, memory: 1Gi}}
   redis:
