@@ -10,6 +10,7 @@ from faultwitness_dev.g01_eval import (
     _platform_stability,
     _require_candidate,
     evaluate_g01_close,
+    inspect_g01_reconciliation,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -74,3 +75,26 @@ def test_platform_stability_rejects_specific_error_after_window(
     monkeypatch.setattr("faultwitness_dev.g01_eval.time.monotonic", lambda: next(ticks))
     with pytest.raises(GovernanceError, match="not Ready"):
         _platform_stability(ROOT, "a" * 40)
+
+
+def test_reconciliation_accepts_exact_candidate_and_zero_counters(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = "\n".join([*("a" * 40 for _ in range(6)), "0", "0", "0", "0", "3"])
+    monkeypatch.setattr("faultwitness_dev.g01_eval.run_remote_script", lambda *a, **k: output)
+    result = inspect_g01_reconciliation("a" * 40)
+    assert result["status"] == "pass"
+    assert result["binding_count"] == 6
+
+
+def test_reconciliation_rejects_candidate_drift_or_backlog(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    drift = "\n".join(["b" * 40, *("a" * 40 for _ in range(5)), "0", "0", "0", "0", "3"])
+    monkeypatch.setattr("faultwitness_dev.g01_eval.run_remote_script", lambda *a, **k: drift)
+    with pytest.raises(GovernanceError, match="candidate binding drift"):
+        inspect_g01_reconciliation("a" * 40)
+    backlog = "\n".join([*("a" * 40 for _ in range(6)), "0", "1", "0", "0", "3"])
+    monkeypatch.setattr("faultwitness_dev.g01_eval.run_remote_script", lambda *a, **k: backlog)
+    with pytest.raises(GovernanceError, match="unresolved durable work"):
+        inspect_g01_reconciliation("a" * 40)

@@ -40,7 +40,11 @@ from faultwitness_dev.control_api_deploy import (
 )
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.evals import evaluate_iteration
-from faultwitness_dev.g01_eval import evaluate_g01, evaluate_g01_close
+from faultwitness_dev.g01_eval import (
+    evaluate_g01,
+    evaluate_g01_close,
+    inspect_g01_reconciliation,
+)
 from faultwitness_dev.infra import (
     audit_runtime_coexistence,
     capture_preinstall_baseline,
@@ -151,6 +155,8 @@ def parser() -> argparse.ArgumentParser:
     eval_g01.add_argument("--profile", required=True, choices=("private-server", "local"))
     eval_g01_close = subparsers.add_parser("eval-g01-close")
     eval_g01_close.add_argument("--candidate-sha", required=True)
+    reconcile_g01 = subparsers.add_parser("inspect-g01-reconciliation")
+    reconcile_g01.add_argument("--candidate-sha", required=True)
     infra_baseline = subparsers.add_parser("capture-infra-baseline")
     infra_baseline.add_argument("--candidate-sha", required=True)
     install_core = subparsers.add_parser("install-k3s-core")
@@ -372,6 +378,12 @@ def main() -> int:
                 f"with {summary['manifest_count']} manifests and "
                 f"{summary['iteration_count']} completed iterations"
             )
+        elif args.command == "inspect-g01-reconciliation":
+            summary = inspect_g01_reconciliation(args.candidate_sha)
+            message = (
+                f"reconciled {summary['binding_count']} candidate bindings and "
+                f"{summary['migration_count']} migrations with zero durable backlog"
+            )
         elif args.command == "capture-infra-baseline":
             summary = capture_preinstall_baseline(root, args.candidate_sha)
             message = (
@@ -547,8 +559,7 @@ def main() -> int:
         elif args.command == "inspect-model-gateway":
             summary = inspect_model_gateway(args.candidate_sha)
             message = (
-                f"observed Model Gateway {summary['ready']}/1 Ready as "
-                f"{summary['service_type']}"
+                f"observed Model Gateway {summary['ready']}/1 Ready as {summary['service_type']}"
             )
         elif args.command == "smoke-model-gateway":
             summary = run_model_gateway_smoke(args.candidate_sha)
