@@ -413,6 +413,19 @@ def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str)
         f"{remote_root}\n",
         privileged=True,
     )
+    inventory = run_remote_script(
+        f"for file in {remote_root}/*.tar; do "
+        'test -f "$file" || continue; '
+        'printf "%s=%s\\n" "$(basename "$file" .tar)" "$(stat -c %s "$file")"; '
+        "done\n",
+        privileged=True,
+    )
+    remote_sizes = {
+        name: int(size)
+        for name, size in (
+            line.split("=", 1) for line in inventory.splitlines() if "=" in line
+        )
+    }
     common = [
         "-P",
         str(bundle.server_port),
@@ -430,6 +443,8 @@ def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str)
         str(paths.ssh_private_key),
     ]
     for name, archive in archives.items():
+        if remote_sizes.get(name) == archive.stat().st_size:
+            continue
         try:
             result = subprocess.run(
                 [
