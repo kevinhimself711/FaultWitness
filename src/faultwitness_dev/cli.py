@@ -45,7 +45,11 @@ from faultwitness_dev.g01_eval import (
     evaluate_g01_close,
     inspect_g01_reconciliation,
 )
-from faultwitness_dev.g01_recovery import run_postgres_restore_rehearsal
+from faultwitness_dev.g01_recovery import (
+    run_k3s_restore_rehearsal,
+    run_k3s_snapshot_rehearsal,
+    run_postgres_restore_rehearsal,
+)
 from faultwitness_dev.infra import (
     audit_runtime_coexistence,
     capture_preinstall_baseline,
@@ -160,6 +164,10 @@ def parser() -> argparse.ArgumentParser:
     reconcile_g01.add_argument("--candidate-sha", required=True)
     restore_g01 = subparsers.add_parser("rehearse-g01-postgres-restore")
     restore_g01.add_argument("--candidate-sha", required=True)
+    snapshot_g01 = subparsers.add_parser("rehearse-g01-k3s-snapshot")
+    snapshot_g01.add_argument("--candidate-sha", required=True)
+    restore_k3s_g01 = subparsers.add_parser("rehearse-g01-k3s-restore")
+    restore_k3s_g01.add_argument("--candidate-sha", required=True)
     infra_baseline = subparsers.add_parser("capture-infra-baseline")
     infra_baseline.add_argument("--candidate-sha", required=True)
     install_core = subparsers.add_parser("install-k3s-core")
@@ -393,6 +401,20 @@ def main() -> int:
                 "restored PostgreSQL into a fresh temporary target with matching "
                 f"schema/data digests {summary['schema_sha256'][:12]}/"
                 f"{summary['data_sha256'][:12]} and removed the target"
+            )
+        elif args.command == "rehearse-g01-k3s-snapshot":
+            summary = run_k3s_snapshot_rehearsal(args.candidate_sha)
+            message = (
+                f"created and inventoried {summary['snapshot_name']} with digest "
+                f"{summary['snapshot_sha256'][:12]} and "
+                f"{summary['snapshot_size_bytes']} bytes"
+            )
+        elif args.command == "rehearse-g01-k3s-restore":
+            summary = run_k3s_restore_rehearsal(args.candidate_sha)
+            message = (
+                f"restored {summary['snapshot_name']} with digest "
+                f"{summary['snapshot_sha256'][:12]} and recovered "
+                f"{summary['ready_node_count']} Ready node"
             )
         elif args.command == "capture-infra-baseline":
             summary = capture_preinstall_baseline(root, args.candidate_sha)
