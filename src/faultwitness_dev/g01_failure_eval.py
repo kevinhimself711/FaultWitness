@@ -134,7 +134,7 @@ binding=$(/usr/local/bin/k3s kubectl -n fw-system get configmap \
 test "$binding" = {candidate_sha}
 printf %s {encoded} | base64 -d | gzip -d | \
   /usr/local/bin/k3s kubectl -n fw-data exec -i postgres-0 -- sh -ec \
-  'PGPASSWORD="$POSTGRES_PASSWORD" psql -At -v ON_ERROR_STOP=1 \
+  'PGPASSWORD="$POSTGRES_PASSWORD" psql -qAt -v ON_ERROR_STOP=1 \
     -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
 """
     lines = [
