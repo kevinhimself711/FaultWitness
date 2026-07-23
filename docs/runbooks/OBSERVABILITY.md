@@ -62,7 +62,7 @@ uv run python -m faultwitness_dev inspect-trace-service --candidate-sha $candida
 uv run python -m faultwitness_dev smoke-trace-service --candidate-sha $candidate
 ```
 
-`deploy-platform` 更新 OTel Collector 的三条 pipeline：Trace 到 Tempo、Log 到 Loki、Metric 到 Prometheus。`deploy-trace-service` 从仓库外加密存储读取 LangSmith key，经受控 stdin/API 创建 Kubernetes Secret；不打印 key、suffix 或可逆指纹。
+`deploy-platform` 更新 OTel Collector 的三条 pipeline：Trace 到 Tempo、Log 到 Loki、Metric 到 Prometheus。Trace Service 支持 `direct` 与 `operator_relay` 两种 LangSmith 导出模式。只有服务器能够直接完成 LangSmith TLS 连接时才使用 `direct`。当前私有服务器使用 `operator_relay`：LangSmith key 保留在 operator 主机的仓库外加密存储中，不进入 Kubernetes Secret；受控命令通过固定服务器指纹和专用密钥建立本地 SSH tunnel，领取已脱敏的待投递内容，在 operator 主机完成导出，并且仅在 LangSmith 成功后 ACK。OTLP 与 archive 仍由服务器自动 drain。命令不得打印 key、suffix 或可逆指纹。
 
 部署成功必须同时满足：候选绑定匹配完整 SHA、Deployment `1/1 Ready`、Service 为 `ClusterIP`、readiness 查询成功、数据库 migration `003_i0013` 存在。
 

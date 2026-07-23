@@ -70,15 +70,17 @@ claims:
       - "Candidate f81c7f0 passed local executable-contract conformance for all 82 transitions and 492 rejected mutations; cross-platform generation and public compatibility evidence remain open in EVAL-G01-004."
       - "Candidate 4844961 deployed the additive I-0011 migration and observed 17 owner-isolated runtime tables; full transition, duplicate, crash, fencing, queue-drain, and LangSmith evidence remains open in EVAL-G01-005."
       - "Candidate 5a1b607 deployed the authenticated Control API and synthetic Keycloak realm and passed live create/read/SSE plus cross-tenant, role-injection, and false-approval denial smoke; the complete conformance, 10,000-event, 100-reconnect, backpressure, and LangSmith evidence remains open in EVAL-G01-006."
+      - "Candidate ae0a3be deployed migration 003 and the private Trace Service and passed a sanitized LangSmith/OTLP/archive live checkpoint with zero pending delivery; the complete outage/replay, canary, cross-store, wall-time, and usage matrix remains open in EVAL-G01-007."
       - "The planned topology is single-node and does not claim high availability or G06 horizontal scaling and sandbox security."
   - id: CLAIM-TRACE-001
     statement: "G01 will produce complete correlated sanitized and replayable LangSmith and OTel evidence for every platform and model stage that actually executes."
-    status: pending
+    status: partially_verified
     requirements: [REQ-SEC-003, REQ-PERF-001, REQ-OBS-001, REQ-OBS-002]
     evidence:
       - EVAL-G01-007
     limitations:
-      - "A LangSmith credential is available locally but has not been accessed or used; credential readiness is not trace evidence."
+      - "Candidate ae0a3be passed the candidate-bound implementation checkpoint and a live three-sink smoke with zero pending delivery; this is not the complete EVAL-G01-007 failure-matrix pass."
+      - "Direct LangSmith TLS from the private server is unavailable; the current evidence uses a host-key-pinned operator relay that ACKs only after successful sanitized export."
       - "G01 does not claim traces for Agent reasoning tools retrieval or actions that are outside this Gate."
   - id: CLAIM-MODEL-001
     statement: "G01 will provide one typed ModelGateway for Qwen DeepSeek and GLM live model families and a compatible Bailian and NewAPI channel contract."

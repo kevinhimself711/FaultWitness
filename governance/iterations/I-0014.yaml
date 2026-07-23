@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0014
 gate: G01
 title: Multi-Family ModelGateway and Compatible Channels
-status: planned
+status: in_progress
 scope:
   - Implement channel-neutral model contracts BailianChannel NewAPIChannel capability discovery and versioned routing.
   - Implement structured output forced tools streaming usage retry repair pre-output fallback and typed partial failure.

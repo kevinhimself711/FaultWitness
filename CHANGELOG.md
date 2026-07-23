@@ -9,6 +9,7 @@
 
 ### Tooling
 
+- Complete the I-0013 implementation checkpoint on candidate `ae0a3be`: deploy migration `003_i0013` and the private Trace Service, pass live sanitized LangSmith/OTLP/archive delivery with zero pending traces, retain the complete outage/canary/correlation/latency matrix as Gate debt, and activate I-0014.
 - Implement the I-0013 sanitized Trace foundation: strict pre-persistence allowlisting, irreversible tenant/correlation references, encrypted bounded PostgreSQL delivery state, deterministic LangSmith/OTLP replay, correlated Tempo/Loki/Prometheus signals, private MinIO/DVC manifests, and a candidate-bound private Trace Service deployment path.
 - Complete the I-0012 implementation checkpoint on candidate `5a1b607`: deploy the private candidate-bound Control API and Keycloak realm, pass live OIDC create/read/SSE and tenant/role/approval denial smoke, retain the full EVAL-G01-006 conformance/load matrix as Gate debt, and activate I-0013.
 - Implement the I-0012 authenticated Control API foundation: eight frozen FastAPI paths, fail-closed RS256 OIDC tenant derivation, role and cross-tenant denial, PostgreSQL Incident/idempotency/event projection, exact replay cursors, typed retention/backpressure SSE controls, and truthful empty capability/approval behavior.

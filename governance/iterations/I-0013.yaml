@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0013
 gate: G01
 title: Sanitized LangSmith and OTel Trace Foundation
-status: in_progress
+status: completed
 scope:
   - Implement TraceEnvelope stage taxonomy correlation causation and allowlist sanitization.
   - Export Agent and model traces to LangSmith and operational telemetry to OTel Tempo Loki and Prometheus.
@@ -16,7 +16,7 @@ tests:
   - uv run python -m faultwitness_dev eval-iteration I-0013 --candidate-sha <full-sha>
   - EVAL-G01-007 LangSmith OTel redaction outage replay correlation and latency-reconciliation suite
 eval_id: EVAL-G01-007
-commit: null
+commit: "ae0a3be"
 changed_paths:
   - src/faultwitness/observability
   - deploy/charts/observability
