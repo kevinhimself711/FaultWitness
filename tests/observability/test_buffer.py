@@ -79,3 +79,25 @@ def test_service_replays_only_failed_sink_and_drains_without_duplicates() -> Non
     assert len(exporters[DeliverySink.LANGSMITH].ids) == 2
     assert len(exporters[DeliverySink.OTLP].ids) == 1
     assert len(exporters[DeliverySink.ARCHIVE].ids) == 1
+
+
+def test_operator_relay_mode_leaves_only_langsmith_for_explicit_claim() -> None:
+    store = InMemoryTraceBuffer(PayloadCipher("test-key", b"p" * 32))
+    exporters = {
+        DeliverySink.LANGSMITH: FakeExporter(),
+        DeliverySink.OTLP: FakeExporter(),
+        DeliverySink.ARCHIVE: FakeExporter(),
+    }
+    service = TraceExportService(
+        store,
+        TraceSanitizer(b"r" * 32),
+        exporters,
+        automatic_sinks=(DeliverySink.OTLP, DeliverySink.ARCHIVE),
+    )
+    trace, _ = run(service.ingest(envelope()))
+    assert run(service.drain_once()) == {"acked": 2, "retried": 0}
+    assert run(store.status()) == {"langsmith": 1, "otlp": 0, "archive": 0, "traces": 1}
+    claim = run(store.claim(DeliverySink.LANGSMITH))[0]
+    assert claim.trace == trace
+    run(store.acknowledge(trace.trace_ref, DeliverySink.LANGSMITH))
+    assert run(store.status())["traces"] == 0

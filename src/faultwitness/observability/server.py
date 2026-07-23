@@ -7,10 +7,10 @@ import base64
 import hmac
 import os
 from contextlib import asynccontextmanager
-from typing import Annotated
+from typing import Annotated, Any
 from urllib.parse import quote
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Request, status
+from fastapi import Depends, FastAPI, Header, HTTPException, Request, Response, status
 from pydantic import BaseModel, ConfigDict, ValidationError
 
 from faultwitness.contracts.models import TraceEnvelope
@@ -22,6 +22,7 @@ from faultwitness.observability.buffer import (
 )
 from faultwitness.observability.exporters import (
     EvidenceArchiveExporter,
+    ExportFailure,
     LangSmithExporter,
     OTLPHTTPExporter,
     S3Credentials,
@@ -78,13 +79,21 @@ def _build_service() -> TraceExportService:
         cipher,
         capacity=int(os.environ.get("TRACE_BUFFER_CAPACITY", "10000")),
     )
-    exporters = {
-        DeliverySink.LANGSMITH: LangSmithExporter(
+    export_mode = os.environ.get("LANGSMITH_EXPORT_MODE", "direct")
+    if export_mode not in {"direct", "operator_relay"}:
+        raise RuntimeError("LANGSMITH_EXPORT_MODE is invalid")
+    langsmith_exporter = (
+        LangSmithExporter(
             _required("LANGSMITH_API_KEY"),
             project=_required("LANGSMITH_PROJECT"),
             endpoint=os.environ.get("LANGSMITH_ENDPOINT", "https://api.smith.langchain.com"),
             workspace_id=os.environ.get("LANGSMITH_WORKSPACE_ID"),
-        ),
+        )
+        if export_mode == "direct"
+        else RelayOnlyExporter()
+    )
+    exporters = {
+        DeliverySink.LANGSMITH: langsmith_exporter,
         DeliverySink.OTLP: OTLPHTTPExporter(_required("OTLP_HTTP_ENDPOINT")),
         DeliverySink.ARCHIVE: EvidenceArchiveExporter(
             _required("MINIO_ENDPOINT"),
@@ -92,7 +101,22 @@ def _build_service() -> TraceExportService:
             bucket=os.environ.get("TRACE_EVIDENCE_BUCKET", "faultwitness-evidence"),
         ),
     }
-    return TraceExportService(store, TraceSanitizer(_key("TRACE_REFERENCE_KEY_B64")), exporters)
+    automatic_sinks = (
+        tuple(DeliverySink)
+        if export_mode == "direct"
+        else (DeliverySink.OTLP, DeliverySink.ARCHIVE)
+    )
+    return TraceExportService(
+        store,
+        TraceSanitizer(_key("TRACE_REFERENCE_KEY_B64")),
+        exporters,
+        automatic_sinks=automatic_sinks,
+    )
+
+
+class RelayOnlyExporter:
+    async def export(self, trace: Any) -> dict[str, Any]:
+        raise ExportFailure("langsmith_operator_relay_required", retryable=True)
 
 
 def _postgres_dsn() -> str:
@@ -214,3 +238,42 @@ async def drain(request: Request) -> DrainResult:
         retried=result["retried"],
         status=_status(await service.store.status()),
     )
+
+
+@app.post(
+    "/internal/v1/relay/langsmith/claim",
+    response_model=None,
+    dependencies=[Depends(_authorize)],
+)
+async def relay_claim(request: Request) -> Response | dict[str, Any]:
+    service = _service(request)
+    if DeliverySink.LANGSMITH in service.automatic_sinks:
+        raise HTTPException(status_code=409, detail="operator relay is not enabled")
+    deliveries = await service.store.claim(DeliverySink.LANGSMITH, limit=1, lease_seconds=120)
+    if not deliveries:
+        return Response(status_code=204)
+    return deliveries[0].trace.document()
+
+
+@app.post(
+    "/internal/v1/relay/langsmith/{trace_ref}/ack",
+    status_code=204,
+    dependencies=[Depends(_authorize)],
+)
+async def relay_ack(trace_ref: str, request: Request) -> Response:
+    if len(trace_ref) != 24 or any(character not in "0123456789abcdef" for character in trace_ref):
+        raise HTTPException(status_code=422, detail="invalid trace reference")
+    await _service(request).store.acknowledge(trace_ref, DeliverySink.LANGSMITH)
+    return Response(status_code=204)
+
+
+@app.post(
+    "/internal/v1/relay/langsmith/{trace_ref}/retry",
+    status_code=204,
+    dependencies=[Depends(_authorize)],
+)
+async def relay_retry(trace_ref: str, request: Request) -> Response:
+    if len(trace_ref) != 24 or any(character not in "0123456789abcdef" for character in trace_ref):
+        raise HTTPException(status_code=422, detail="invalid trace reference")
+    await _service(request).store.retry(trace_ref, DeliverySink.LANGSMITH, "operator_relay_failure")
+    return Response(status_code=204)

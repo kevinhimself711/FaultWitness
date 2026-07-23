@@ -19,6 +19,8 @@ class TraceExportService:
         store: Any,
         sanitizer: TraceSanitizer,
         exporters: Mapping[DeliverySink, TraceExporter],
+        *,
+        automatic_sinks: tuple[DeliverySink, ...] | None = None,
     ) -> None:
         expected = set(DeliverySink)
         if set(exporters) != expected:
@@ -26,15 +28,23 @@ class TraceExportService:
         self.store = store
         self.sanitizer = sanitizer
         self.exporters = dict(exporters)
+        self.automatic_sinks = automatic_sinks or tuple(DeliverySink)
+        if not set(self.automatic_sinks).issubset(expected):
+            raise ValueError("automatic trace sink is invalid")
 
     async def ingest(self, envelope: TraceEnvelope) -> tuple[SanitizedTrace, bool]:
         trace = self.sanitizer.sanitize(envelope)
         created = await self.store.enqueue(trace)
         return trace, created
 
-    async def drain_once(self, *, per_sink_limit: int = 10) -> dict[str, int]:
+    async def drain_once(
+        self,
+        *,
+        per_sink_limit: int = 10,
+        sinks: tuple[DeliverySink, ...] | None = None,
+    ) -> dict[str, int]:
         result = {"acked": 0, "retried": 0}
-        for sink in DeliverySink:
+        for sink in sinks or self.automatic_sinks:
             deliveries = await self.store.claim(sink, limit=per_sink_limit)
             for delivery in deliveries:
                 try:

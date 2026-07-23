@@ -2,16 +2,23 @@
 
 from __future__ import annotations
 
+import asyncio
 import base64
 import json
 import os
+import socket
+import subprocess
+import time
 from pathlib import Path
 from typing import Any
 
+import httpx
+
+from faultwitness.observability.exporters import LangSmithExporter
+from faultwitness.observability.sanitizer import SanitizedTrace
+
 from faultwitness_dev.bootstrap import (
     BootstrapPaths,
-    default_sops_executable,
-    load_secret_bundle,
     record_live_api_verification,
 )
 from faultwitness_dev.control_api_deploy import (
@@ -22,7 +29,7 @@ from faultwitness_dev.control_api_deploy import (
     _stage_file,
 )
 from faultwitness_dev.errors import GovernanceError
-from faultwitness_dev.infra import run_remote_script
+from faultwitness_dev.infra import _remote_arguments, run_remote_script
 
 
 def _tracked_files(root: Path) -> list[Path]:
@@ -48,8 +55,6 @@ def deploy_trace_service(root: Path, candidate_sha: str) -> dict[str, Any]:
     context_path.write_bytes(payload)
     _stage_base_image(root)
     _stage_file(context_path, "faultwitness-i0013-context.tgz")
-    bundle = load_secret_bundle(BootstrapPaths.defaults(), default_sops_executable())
-    langsmith_key = base64.b64encode(bundle.langsmith_api_key.encode()).decode()
     image = f"docker.io/faultwitness/trace-service:{candidate_sha}"
     manifest = base64.b64encode(_manifest(candidate_sha, image).encode()).decode()
     project = f"faultwitness-g01-{candidate_sha[:12]}"
@@ -82,7 +87,6 @@ else
   reference_key=$(openssl rand -base64 32 | tr -d '\n')
   ingest_token=$(openssl rand -hex 32)
 fi
-langsmith_key=$(printf %s {langsmith_key} | base64 -d)
 {{
   printf 'POSTGRES_USER=%s\n' "$postgres_user"
   printf 'POSTGRES_PASSWORD=%s\n' "$postgres_password"
@@ -94,8 +98,8 @@ langsmith_key=$(printf %s {langsmith_key} | base64 -d)
   printf 'TRACE_INGEST_TOKEN=%s\n' "$ingest_token"
   printf 'TRACE_KEY_ID=i0013-v1\n'
   printf 'TRACE_BUFFER_CAPACITY=10000\n'
-  printf 'LANGSMITH_API_KEY=%s\n' "$langsmith_key"
   printf 'LANGSMITH_PROJECT={project}\n'
+  printf 'LANGSMITH_EXPORT_MODE=operator_relay\n'
   printf 'OTLP_HTTP_ENDPOINT=http://otel-collector.fw-observability.svc.cluster.local:4318\n'
   printf 'MINIO_ENDPOINT=http://minio.fw-data.svc.cluster.local:9000\n'
 }} >"$envfile"
@@ -175,17 +179,123 @@ test "$succeeded" = 1
         "duplicate": 202,
         "duplicate_flag": True,
         "canary_rejected": 422,
-        "pending_traces": 0,
-        "pending_langsmith": 0,
+        "pending_traces": 1,
+        "pending_langsmith": 1,
         "pending_otlp": 0,
         "pending_archive": 0,
     }
     if any(result.get(key) != value for key, value in expected.items()):
         raise GovernanceError("trace service smoke did not satisfy the frozen outcome matrix")
+    relay = relay_langsmith(candidate_sha)
+    if relay["pending_traces"] != 0 or relay["pending_langsmith"] != 0:
+        raise GovernanceError("LangSmith operator relay did not drain the candidate buffer")
+    if result["langsmith_trace_id"] not in relay["langsmith_trace_ids"]:
+        raise GovernanceError("candidate LangSmith trace was not acknowledged by the relay")
+    result.update(relay)
     record_live_api_verification(
         BootstrapPaths.defaults(), secret_name="langsmith.api_key", iteration="I-0013"
     )
     return {"candidate_sha": candidate_sha, **result}
+
+
+def relay_langsmith(candidate_sha: str) -> dict[str, Any]:
+    if not FULL_SHA.fullmatch(candidate_sha):
+        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+    private = run_remote_script(
+        "set -eu\n"
+        "binding=$(/usr/local/bin/k3s kubectl -n fw-control get configmap fw-trace-candidate -o jsonpath='{.data.candidate_sha}')\n"
+        f'test "$binding" = {candidate_sha}\n'
+        "service_ip=$(/usr/local/bin/k3s kubectl -n fw-control get service trace-service -o jsonpath='{.spec.clusterIP}')\n"
+        "token=$(/usr/local/bin/k3s kubectl -n fw-control get secret fw-trace-env -o jsonpath='{.data.TRACE_INGEST_TOKEN}' | base64 -d)\n"
+        'printf \'service_ip=%s\\ntoken=%s\\n\' "$service_ip" "$token"\n',
+        privileged=True,
+    )
+    values = dict(line.split("=", 1) for line in private.splitlines() if "=" in line)
+    service_ip = values.get("service_ip")
+    token = values.get("token")
+    if not service_ip or not token:
+        raise GovernanceError("private trace relay prerequisites are incomplete")
+    paths = BootstrapPaths.defaults()
+    bundle, arguments = _remote_arguments(paths)
+    with socket.socket() as listener:
+        listener.bind(("127.0.0.1", 0))
+        local_port = listener.getsockname()[1]
+    tunnel_arguments = [
+        *arguments[:-1],
+        "-N",
+        "-L",
+        f"127.0.0.1:{local_port}:{service_ip}:8001",
+        arguments[-1],
+    ]
+    creationflags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
+    tunnel = subprocess.Popen(
+        tunnel_arguments,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+        text=True,
+        creationflags=creationflags,
+    )
+    base = f"http://127.0.0.1:{local_port}"
+    headers = {"x-faultwitness-ingest-token": token}
+    exported: list[str] = []
+    try:
+        with httpx.Client(timeout=10) as client:
+            for _ in range(30):
+                if tunnel.poll() is not None:
+                    raise GovernanceError("private trace relay tunnel exited before readiness")
+                try:
+                    if client.get(base + "/health/ready").status_code == 200:
+                        break
+                except httpx.TransportError:
+                    pass
+                time.sleep(0.5)
+            else:
+                raise GovernanceError("private trace relay tunnel did not become ready")
+            for _ in range(100):
+                response = client.post(base + "/internal/v1/relay/langsmith/claim", headers=headers)
+                if response.status_code == 204:
+                    break
+                if response.status_code != 200:
+                    raise GovernanceError("private Trace Service rejected a relay claim")
+                trace = SanitizedTrace.from_document(response.json())
+                exporter = LangSmithExporter(
+                    bundle.langsmith_api_key,
+                    project=f"faultwitness-g01-{trace.candidate_sha[:12]}",
+                )
+                try:
+                    summary = asyncio.run(exporter.export(trace))
+                except Exception as error:
+                    client.post(
+                        base + f"/internal/v1/relay/langsmith/{trace.trace_ref}/retry",
+                        headers=headers,
+                    )
+                    raise GovernanceError("LangSmith operator relay failed") from error
+                ack = client.post(
+                    base + f"/internal/v1/relay/langsmith/{trace.trace_ref}/ack",
+                    headers=headers,
+                )
+                if ack.status_code != 204:
+                    raise GovernanceError("Trace Service did not acknowledge LangSmith relay")
+                exported.append(summary["remote_trace_id"])
+            else:
+                raise GovernanceError("LangSmith relay exceeded its bounded drain limit")
+            status_response = client.get(base + "/internal/v1/status", headers=headers)
+            if status_response.status_code != 200:
+                raise GovernanceError("Trace Service relay status is unavailable")
+            status = status_response.json()
+    finally:
+        tunnel.terminate()
+        try:
+            tunnel.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            tunnel.kill()
+            tunnel.wait(timeout=5)
+    return {
+        **status,
+        "relayed_langsmith_traces": len(exported),
+        "langsmith_trace_ids": exported,
+    }
 
 
 def _manifest(candidate_sha: str, image: str) -> str:
@@ -277,6 +387,7 @@ data:
     import datetime
     import json
     import os
+    import secrets
     import time
     import httpx
 
@@ -284,16 +395,20 @@ data:
     end = now + datetime.timedelta(milliseconds=100)
     child_start = now + datetime.timedelta(milliseconds=20)
     child_end = now + datetime.timedelta(milliseconds=80)
+    alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+    new_id = lambda prefix: prefix + "".join(secrets.choice(alphabet) for _ in range(26))
+    root_span = new_id("span_")
+    child_span = new_id("span_")
     base = {{
-      "trace_id":"trace_" + "0" * 26,
-      "tenant_id":"ten_" + "0" * 26,
-      "correlation_id":"corr_" + "0" * 26,
-      "incident_id":"inc_" + "0" * 26,
+      "trace_id":new_id("trace_"),
+      "tenant_id":new_id("ten_"),
+      "correlation_id":new_id("corr_"),
+      "incident_id":new_id("inc_"),
       "contracts_version":"1.1.0",
       "candidate_sha":"{candidate_sha}",
       "spans":[
-        {{"span_id":"span_" + "0" * 26,"parent_span_id":None,"name":"api.incident.create","stage":"api","started_at":now.isoformat(),"ended_at":end.isoformat(),"status":"ok","attributes":{{"http.request.method":"POST","http.route":"/v1/incidents","http.response.status_code":201}}}},
-        {{"span_id":"span_" + "1" * 26,"parent_span_id":"span_" + "0" * 26,"name":"state.incident.create","stage":"state_transition","started_at":child_start.isoformat(),"ended_at":child_end.isoformat(),"status":"ok","attributes":{{"state.from":"NEW","state.to":"QUEUED"}}}}
+        {{"span_id":root_span,"parent_span_id":None,"name":"api.incident.create","stage":"api","started_at":now.isoformat(),"ended_at":end.isoformat(),"status":"ok","attributes":{{"http.request.method":"POST","http.route":"/v1/incidents","http.response.status_code":201}}}},
+        {{"span_id":child_span,"parent_span_id":root_span,"name":"state.incident.create","stage":"state_transition","started_at":child_start.isoformat(),"ended_at":child_end.isoformat(),"status":"ok","attributes":{{"state.from":"NEW","state.to":"QUEUED"}}}}
       ],
       "emitted_at":end.isoformat()
     }}
@@ -310,17 +425,17 @@ data:
       raise SystemExit("trace service did not become reachable")
     duplicate = httpx.post(api + "/internal/v1/traces", headers=headers, json=base, timeout=10)
     canary = copy.deepcopy(base)
-    canary["trace_id"] = "trace_" + "2" * 26
-    canary["spans"][0]["span_id"] = "span_" + "2" * 26
-    canary["spans"][1]["span_id"] = "span_" + "3" * 26
-    canary["spans"][1]["parent_span_id"] = "span_" + "2" * 26
+    canary["trace_id"] = new_id("trace_")
+    canary["spans"][0]["span_id"] = new_id("span_")
+    canary["spans"][1]["span_id"] = new_id("span_")
+    canary["spans"][1]["parent_span_id"] = canary["spans"][0]["span_id"]
     canary["spans"][0]["attributes"] = {{"outcome":"FW_SECRET_CANARY-live-smoke"}}
     rejected = httpx.post(api + "/internal/v1/traces", headers=headers, json=canary, timeout=10)
     state = None
     for _ in range(60):
       httpx.post(api + "/internal/v1/drain", headers=headers, timeout=30)
       state = httpx.get(api + "/internal/v1/status", headers=headers, timeout=10).json()
-      if state["pending_traces"] == 0:
+      if state["pending_otlp"] == 0 and state["pending_archive"] == 0:
         break
       time.sleep(1)
     print(json.dumps({{
