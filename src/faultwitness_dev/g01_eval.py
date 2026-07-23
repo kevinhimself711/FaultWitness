@@ -26,6 +26,7 @@ from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.g01_recovery import (
     run_k3s_restore_rehearsal,
     run_k3s_snapshot_rehearsal,
+    run_platform_rollback_rehearsal,
     run_postgres_restore_rehearsal,
 )
 from faultwitness_dev.infra import (
@@ -314,6 +315,7 @@ def evaluate_g01(root: Path, candidate_sha: str, *, profile: str) -> dict[str, A
             "etcd_snapshot": run_k3s_snapshot_rehearsal(candidate_sha),
             "etcd_restore": run_k3s_restore_rehearsal(candidate_sha),
             "postgres_restore": run_postgres_restore_rehearsal(candidate_sha),
+            "platform_rollback": run_platform_rollback_rehearsal(root, candidate_sha),
         }
         if private
         else {"status": "deferred_private"}
