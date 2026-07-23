@@ -126,6 +126,129 @@ Observation = Mapping[str, Any]
 Observer = Callable[[str, str], Observation]
 
 
+class RemoteFlagClient:
+    def __init__(self, candidate_sha: str) -> None:
+        if not FULL_SHA.fullmatch(candidate_sha):
+            raise GovernanceError("remote flag client requires a full candidate SHA")
+        self.candidate_sha = candidate_sha
+
+    def _prelude(self) -> str:
+        candidate = shlex.quote(self.candidate_sha)
+        return f"""set -eu
+binding=$(/usr/local/bin/k3s kubectl -n fw-sut \
+  get configmap fw-g02-candidate-binding -o jsonpath='{{.data.candidate_sha}}')
+test "$binding" = {candidate}
+cluster_ip=$(/usr/local/bin/k3s kubectl -n fw-sut \
+  get service flagd -o jsonpath='{{.spec.clusterIP}}')
+endpoint="http://$cluster_ip:4000"
+"""
+
+    def read(self) -> dict[str, Any]:
+        output = run_remote_script(
+            self._prelude() + 'curl -fsS "$endpoint/api/read"\n', privileged=True
+        )
+        try:
+            document = json.loads(output)
+        except json.JSONDecodeError as error:
+            raise GovernanceError("flagd UI returned malformed JSON") from error
+        if not isinstance(document, dict) or not isinstance(document.get("flags"), dict):
+            raise GovernanceError("flagd UI returned an invalid flag document")
+        return document
+
+    def write(self, document: Mapping[str, Any]) -> None:
+        body = base64.b64encode(
+            json.dumps({"data": document}, separators=(",", ":")).encode()
+        ).decode("ascii")
+        output = run_remote_script(
+            self._prelude()
+            + f"printf %s {shlex.quote(body)} | base64 -d | "
+            + "curl -fsS -H 'content-type: application/json' --data-binary @- "
+            + '"$endpoint/api/write" >/dev/null\n'
+            + 'curl -fsS "$endpoint/api/read"\n',
+            privileged=True,
+        )
+        try:
+            readback = json.loads(output)
+        except json.JSONDecodeError as error:
+            raise GovernanceError("flagd UI write readback was malformed") from error
+        if canonical_json(readback) != canonical_json(document):
+            raise GovernanceError("flagd UI write readback drifted")
+
+
+def _operation_root() -> Path:
+    return InfraPaths.defaults().evidence_dir.parent.parent / "artifacts" / "I-0017" / "operations"
+
+
+def _operation_path(operation_id: str) -> Path:
+    if not re.fullmatch(r"op-[0-9]{8}T[0-9]{6}Z-[0-9a-f]{12}", operation_id):
+        raise GovernanceError("invalid G02 fault operation ID")
+    return _operation_root() / f"{operation_id}.json"
+
+
+def inject_live_fault(candidate_sha: str, fault_class: str) -> dict[str, Any]:
+    adapter = ADAPTERS.get(fault_class)
+    if adapter is None:
+        raise GovernanceError("G02 live injection uses an unknown fault class")
+    client = RemoteFlagClient(candidate_sha)
+    original = client.read()
+    flags = original["flags"]
+    if adapter.flag_key not in flags:
+        raise GovernanceError("G02 live flag is absent from the candidate document")
+    mutated = copy.deepcopy(original)
+    mutated["flags"][adapter.flag_key]["defaultVariant"] = adapter.variant
+    changed = [key for key in flags if original["flags"][key] != mutated["flags"][key]]
+    if changed != [adapter.flag_key]:
+        raise GovernanceError("G02 live injection must change exactly one allowlisted flag")
+    timestamp = datetime.now(UTC)
+    operation_id = "op-" + timestamp.strftime("%Y%m%dT%H%M%SZ-") + hashlib.sha256(
+        (candidate_sha + fault_class + canonical_json(original)).encode()
+    ).hexdigest()[:12]
+    record = {
+        "operation_id": operation_id,
+        "candidate_sha": candidate_sha,
+        "fault_class": fault_class,
+        "flag_key": adapter.flag_key,
+        "original": original,
+        "original_digest": hashlib.sha256(canonical_json(original).encode()).hexdigest(),
+        "injected_digest": hashlib.sha256(canonical_json(mutated).encode()).hexdigest(),
+        "started_at": timestamp.isoformat(),
+        "status": "prepared",
+    }
+    _write_json(_operation_path(operation_id), record)
+    client.write(mutated)
+    record["status"] = "injected"
+    record["injected_at"] = datetime.now(UTC).isoformat()
+    _write_json(_operation_path(operation_id), record)
+    public_keys = (
+        "operation_id",
+        "fault_class",
+        "original_digest",
+        "injected_digest",
+        "status",
+    )
+    return {key: record[key] for key in public_keys}
+
+
+def restore_live_fault(candidate_sha: str, operation_id: str) -> dict[str, Any]:
+    path = _operation_path(operation_id)
+    if not path.is_file():
+        raise GovernanceError("G02 fault operation record is missing")
+    record = json.loads(path.read_text(encoding="utf-8"))
+    if record.get("candidate_sha") != candidate_sha or record.get("status") != "injected":
+        raise GovernanceError("G02 fault operation is not restorable on this candidate")
+    client = RemoteFlagClient(candidate_sha)
+    client.write(record["original"])
+    restored = client.read()
+    restored_digest = hashlib.sha256(canonical_json(restored).encode()).hexdigest()
+    if restored_digest != record["original_digest"]:
+        raise GovernanceError("G02 exact flag restoration failed")
+    record["status"] = "restored"
+    record["restored_at"] = datetime.now(UTC).isoformat()
+    record["restored_digest"] = restored_digest
+    _write_json(path, record)
+    return {"operation_id": operation_id, "restored_digest": restored_digest, "status": "restored"}
+
+
 def canonical_json(value: Any) -> str:
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 

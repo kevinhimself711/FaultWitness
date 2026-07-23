@@ -6,6 +6,7 @@ from typing import Any
 
 import pytest
 
+import faultwitness_dev.g02_lab as g02_lab
 from faultwitness_dev.cli import parser
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.g02_lab import (
@@ -161,3 +162,42 @@ def test_lab_start_cli_is_explicitly_private_server_scoped() -> None:
     args = parser().parse_args(["lab-g02", "start", "--profile", "private-server"])
     assert args.command == "lab-g02"
     assert args.lab_action == "start"
+
+
+def test_live_inject_and_restore_are_exact_and_external(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    document = base_flag_document()
+
+    class FakeRemoteFlagClient:
+        current = document
+
+        def __init__(self, candidate_sha: str) -> None:
+            assert candidate_sha == "1" * 40
+
+        def read(self) -> dict[str, Any]:
+            return self.current
+
+        def write(self, value: Mapping[str, Any]) -> None:
+            FakeRemoteFlagClient.current = dict(value)
+
+    monkeypatch.setattr(g02_lab, "RemoteFlagClient", FakeRemoteFlagClient)
+    monkeypatch.setattr(g02_lab, "_operation_root", lambda: tmp_path)
+    injected = g02_lab.inject_live_fault("1" * 40, "productCatalogFailure")
+    assert FakeRemoteFlagClient.current["flags"]["productCatalogFailure"][
+        "defaultVariant"
+    ] == "on"
+    restored = g02_lab.restore_live_fault("1" * 40, injected["operation_id"])
+    assert restored["restored_digest"] == injected["original_digest"]
+    assert FakeRemoteFlagClient.current == document
+
+
+def test_lab_inject_and_restore_cli_are_explicit() -> None:
+    inject = parser().parse_args(
+        ["lab-g02", "inject", "--fault-class", "productCatalogFailure"]
+    )
+    restore = parser().parse_args(
+        ["lab-g02", "restore", "--operation-id", "op-20260723T000000Z-aaaaaaaaaaaa"]
+    )
+    assert inject.lab_action == "inject"
+    assert restore.lab_action == "restore"

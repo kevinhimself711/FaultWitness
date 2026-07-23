@@ -58,7 +58,7 @@ from faultwitness_dev.g01_recovery import (
     run_postgres_restore_rehearsal,
 )
 from faultwitness_dev.g02_eval import inspect_g02_close_readiness, run_g02_eval
-from faultwitness_dev.g02_lab import deploy_g02_lab
+from faultwitness_dev.g02_lab import deploy_g02_lab, inject_live_fault, restore_live_fault
 from faultwitness_dev.infra import (
     audit_runtime_coexistence,
     capture_preinstall_baseline,
@@ -182,6 +182,10 @@ def parser() -> argparse.ArgumentParser:
     lab_g02_commands = lab_g02.add_subparsers(dest="lab_action", required=True)
     lab_g02_start = lab_g02_commands.add_parser("start")
     lab_g02_start.add_argument("--profile", required=True, choices=("private-server",))
+    lab_g02_inject = lab_g02_commands.add_parser("inject")
+    lab_g02_inject.add_argument("--fault-class", required=True)
+    lab_g02_restore = lab_g02_commands.add_parser("restore")
+    lab_g02_restore.add_argument("--operation-id", required=True)
     reconcile_g01 = subparsers.add_parser("inspect-g01-reconciliation")
     reconcile_g01.add_argument("--candidate-sha", required=True)
     restore_g01 = subparsers.add_parser("rehearse-g01-postgres-restore")
@@ -457,6 +461,21 @@ def main() -> int:
                 f"started candidate-bound G02 lab in {summary['namespace']} with "
                 f"{len(summary['ready_deployments'])} ready deployments"
             )
+        elif args.command == "lab-g02" and args.lab_action in {"inject", "restore"}:
+            candidate_sha = subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                cwd=root,
+                check=True,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+            ).stdout.strip()
+            if args.lab_action == "inject":
+                summary = inject_live_fault(candidate_sha, args.fault_class)
+                message = f"injected {summary['fault_class']} as {summary['operation_id']}"
+            else:
+                summary = restore_live_fault(candidate_sha, args.operation_id)
+                message = f"restored {summary['operation_id']} exactly"
         elif args.command == "inspect-g01-reconciliation":
             summary = inspect_g01_reconciliation(args.candidate_sha)
             message = (

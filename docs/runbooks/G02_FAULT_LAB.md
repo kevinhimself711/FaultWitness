@@ -34,6 +34,20 @@ capability exception is the digest-pinned 2.2.0 Flagd UI: G02 requires its `GET 
 The registered `docker-compose.minimal.yml` path is a pre-candidate fallback only. Selecting it
 requires a new candidate configuration; the runner never switches profiles during an incident.
 
+## Inject and restore
+
+The candidate-bound controller changes one allowlisted flag through Flagd UI and stores the exact
+original document in the repository-external I-0017 operation journal:
+
+```text
+uv run python -m faultwitness_dev lab-g02 inject --fault-class productCatalogFailure
+uv run python -m faultwitness_dev lab-g02 restore --operation-id <operation-id>
+```
+
+Injection writes the private snapshot before mutation and requires complete API readback. Restore
+accepts only an `injected` operation from the current candidate and requires the restored canonical
+digest to equal the original digest. Observation failure never skips restore.
+
 ## Failure and compatibility semantics
 
 - Source or image digest drift: blocking candidate failure; do not fetch a floating replacement.
