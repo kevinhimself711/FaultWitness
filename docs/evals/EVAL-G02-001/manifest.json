@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-001",
+  "gate": "G02",
+  "iteration": "I-0016",
+  "evaluated_revision": "not-run",
+  "status": "pending",
+  "environments": ["planned-local-deterministic"],
+  "commands": ["uv run python -m faultwitness_dev eval-iteration I-0016 --candidate-sha <full-sha>"],
+  "artifacts": [
+    "docs/evals/EVAL-G02-001/PLAN.md",
+    "docs/evals/EVAL-G02-001/artifacts/phase-contract.json"
+  ],
+  "evidence_urls": [],
+  "integrations": {},
+  "open_evidence": []
+}

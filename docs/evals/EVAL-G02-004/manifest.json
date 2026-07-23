@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-004",
+  "gate": "G02",
+  "iteration": "I-0019",
+  "evaluated_revision": "not-run",
+  "status": "pending",
+  "environments": ["planned-local-deterministic", "planned-bailian-live"],
+  "commands": ["uv run python -m faultwitness_dev eval-iteration I-0019 --candidate-sha <full-sha>"],
+  "artifacts": [
+    "docs/evals/EVAL-G02-004/PLAN.md",
+    "docs/evals/EVAL-G02-004/artifacts/scorer-contract.json",
+    "docs/evals/EVAL-G02-004/artifacts/threshold-registry.json",
+    "docs/evals/EVAL-G02-004/artifacts/deterministic-smoke.json",
+    "docs/evals/EVAL-G02-004/artifacts/live-smoke.json"
+  ],
+  "evidence_urls": [],
+  "integrations": {
+    "bailian": {
+      "status": "required",
+      "reason": "Four non-seed live trials prove both baseline runners before candidate freeze."
+    }
+  },
+  "open_evidence": []
+}

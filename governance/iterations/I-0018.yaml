@@ -1,0 +1,30 @@
+schema_version: "1.0.0"
+id: I-0018
+gate: G02
+title: Sealed Registry and Isolation Evidence
+status: planned
+scope:
+  - Implement G02 identities namespace policies MinIO prefixes and sealed build boundaries.
+  - Create only the 160-row preregistration and prove that no core-case payload is materialized.
+  - Implement access six-stage span and all-surface canary runners including G01 carry-in labels.
+non_goals:
+  - Rewriting any closed G01 report manifest claim or tag.
+  - Creating G07 case content or granting Agent access to ground truth or locked tests.
+dependencies: [I-0016, I-0017]
+tests:
+  - make verify-fast
+  - uv run python -m faultwitness_dev eval-iteration I-0018 --candidate-sha <full-sha>
+eval_id: EVAL-G02-003
+commit: null
+changed_paths:
+  - config/g02
+  - src/faultwitness_dev
+  - tests/g02
+  - tests/fixtures/g02
+  - docs/evals/EVAL-G02-003
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/I-0018.md
+  - docs/evals/EVAL-G02-003/PLAN.md
+  - docs/gates/G02/CARRY_IN.yaml
+threshold_changes: []

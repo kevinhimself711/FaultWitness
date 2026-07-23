@@ -1,7 +1,8 @@
 ---
 active_gate: G02
-active_gate_status: not_started
+active_gate_status: planned
 active_iteration: null
+next_iteration: I-0016
 last_closed_gate: G01
 ---
 
@@ -11,10 +12,10 @@ last_closed_gate: G01
 
 FaultWitness is a multi-tenant Agent Runtime for investigating microservice incidents, proposing bounded remediations, executing approved actions, and producing auditable evaluation and training assets.
 
-G00 and G01 are closed. G02 is `not_started`, no Iteration is active, and the
-G02 placeholder is not a decision-complete Master Plan. No G02 implementation,
-live evaluation, deployment mutation, or scope claim is authorized until a
-dedicated planning turn freezes the G02 Master Plan in a planning commit.
+G00 and G01 are closed. The decision-complete G02 Master Plan is frozen and G02
+is `planned`. No Iteration is active; I-0016 is the next planned Iteration. The
+planning commit does not authorize implementation, live evaluation, deployment
+mutation, credential use, or model calls outside an explicitly activated Iteration.
 
 ## Source-of-truth order
 
@@ -66,6 +67,47 @@ PROJECT_STATE.yaml is the authority for the active Gate and iteration, not for a
 - Do not commit or push unless the user explicitly requests it.
 
 Planning-only commits may create or refine future Iteration and Eval assets without activating them. They never authorize product behavior, infrastructure mutation, credential use, or live evaluation.
+
+## Validation ownership and Eval execution
+
+- Every validation item belongs to exactly one layer:
+  - L1 (Iteration-only proof) is deterministic, closed, has no external dependency, and proves a
+    correctness property introduced by its owning Iteration. Gate evaluation verifies inheritance
+    digests and does not rerun it.
+  - L2 (unified-candidate-only proof) requires the frozen candidate and complete stack, is
+    statistical, soak, stress, destructive, live-external, or cross-Iteration end to end. It does
+    not run during its owning Iteration.
+  - L3 (layered revalidation) uses the smallest sufficient Iteration sample and a strictly larger,
+    different Gate sample to prove scale or consistency on the unified candidate.
+- The same validation may not run at both layers with the same N. If equal N is the only meaningful
+  design, classify it as L2 and do not run it in the Iteration.
+- Every L2 item names an owning Iteration. That Iteration implements and unit-tests the runner,
+  negative fixture, phase interface, and candidate/environment binding before it closes. The final
+  Gate Iteration may only orchestrate frozen runners and may not add product behavior, fixtures, or
+  a test framework.
+- An Iteration that adds a persistence surface, egress surface, trace stage, identity principal, or
+  storage namespace proves the new surface's leakage, authorization, and observability properties
+  in that same Iteration.
+- An Iteration closes only with `open_evidence: []`. Evidence that cannot be completed there must be
+  reclassified before closure; it is never rolled forward from a completed Iteration.
+- Eval phases run in information-per-time order. Manifest debt, candidate binding, schemas, static
+  inheritance, and upstream debt must pass before remote, destructive, soak, or paid work.
+- Live and multi-trial matrices persist every trial atomically and resume only pending or
+  infrastructure-failed trials. A transport failure never invalidates completed trials.
+- A destructive or soak phase runs once for an unchanged candidate/artifact/config/environment key.
+  Its pass, threshold-fail, infrastructure-fail, cleanup, and attribution semantics are frozen in
+  the Master Plan before execution.
+- Every phase manifest records start and end timestamps. Only the run that produced an artifact may
+  write `evaluated_revision`; evidence synchronization must not bulk-replace it.
+- Candidate evaluation uses separate `candidate_sha` and evidence-only `evidence_head_sha` under
+  ADR-0009 and ADR-0013. Evidence-only descendants never impersonate a new runtime candidate.
+- After a failure has a verified root cause, no operator-adjudicated pass route may remain. Fix the
+  cause and rerun under the phase's normal blocking semantics.
+- The same environment compatibility obstacle stops after three attempts or 45 cumulative minutes,
+  whichever occurs first. Use only a preimplemented fallback or block; do not build a helper tool
+  during the incident.
+- Every zero-tolerance criterion has a named runner, a negative fixture, and a reviewable artifact
+  path in a machine-validated registry. A missing field invalidates the criterion.
 
 ## Architecture invariants
 

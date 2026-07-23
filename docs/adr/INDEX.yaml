@@ -1,6 +1,7 @@
 # G01 planning review: the six G00 decisions remain accepted and two deployment/model-topology decisions are added.
 # G01 closure review: all eight accepted decisions remain effective without supersession or waiver.
 # G01 retrospective: ADR-0009 separates behavior identity from evidence synchronization identity.
+# G02 planning review: ADR-0010 through ADR-0013 freeze the lab, isolation, baseline, and phase protocols.
 schema_version: "1.0.0"
 adrs:
   - {id: ADR-0001, title: "Integrate three engineering planes behind five logical responsibility planes", status: accepted, decision_date: "2026-07-22", path: docs/adr/ADR-0001.md, supersedes: null}
@@ -12,3 +13,7 @@ adrs:
   - {id: ADR-0007, title: "Deploy single-node K3s alongside existing Docker without public ingress", status: accepted, decision_date: "2026-07-22", path: docs/adr/ADR-0007.md, supersedes: null}
   - {id: ADR-0008, title: "Route three model families through Bailian and retain a NewAPI-compatible channel", status: accepted, decision_date: "2026-07-22", path: docs/adr/ADR-0008.md, supersedes: null}
   - {id: ADR-0009, title: "Separate behavior candidate and evidence head revisions", status: accepted, decision_date: "2026-07-23", path: docs/adr/ADR-0009.md, supersedes: null}
+  - {id: ADR-0010, title: "Use a four-family flagd Scenario DSL for G02", status: accepted, decision_date: "2026-07-23", path: docs/adr/ADR-0010.md, supersedes: null}
+  - {id: ADR-0011, title: "Isolate G02 ground truth and locked tests by identity and prefix", status: accepted, decision_date: "2026-07-23", path: docs/adr/ADR-0011.md, supersedes: null}
+  - {id: ADR-0012, title: "Compare three diagnosis-only baselines on shared observation packets", status: accepted, decision_date: "2026-07-23", path: docs/adr/ADR-0012.md, supersedes: null}
+  - {id: ADR-0013, title: "Bind G02 phase caches to candidate subjects and immutable trial evidence", status: accepted, decision_date: "2026-07-23", path: docs/adr/ADR-0013.md, supersedes: null}

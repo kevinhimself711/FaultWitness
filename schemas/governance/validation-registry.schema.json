@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faultwitness.local/schemas/governance/validation-registry.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "gate", "validation_items"],
+  "properties": {
+    "schema_version": {"pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "gate": {"pattern": "^G[0-9]{2}$"},
+    "validation_items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "layer",
+          "layer_reason",
+          "failure_mode",
+          "iteration_n",
+          "gate_n",
+          "n_unit",
+          "small_n_audit",
+          "owning_iteration",
+          "runner",
+          "negative_fixture",
+          "artifact_paths",
+          "zero_tolerance",
+          "enumeration_kind"
+        ],
+        "properties": {
+          "id": {"pattern": "^V-G[0-9]{2}-[0-9]{3}$"},
+          "name": {"type": "string", "minLength": 5},
+          "layer": {"enum": ["L1", "L2", "L3"]},
+          "layer_reason": {"type": "string", "minLength": 10},
+          "failure_mode": {"type": "string", "minLength": 10},
+          "iteration_n": {"type": "integer", "minimum": 0},
+          "gate_n": {"type": "integer", "minimum": 0},
+          "n_unit": {"type": "string", "minLength": 2},
+          "gate_clusters": {"type": "integer", "minimum": 1},
+          "small_n_audit": {"type": "string", "minLength": 10},
+          "owning_iteration": {"pattern": "^I-[0-9]{4}$"},
+          "runner": {"type": "string", "minLength": 3},
+          "negative_fixture": {"type": "string", "minLength": 3},
+          "artifact_paths": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 3}
+          },
+          "zero_tolerance": {"type": "boolean"},
+          "enumeration_kind": {"enum": ["none", "one_time", "category_exhaustive"]}
+        },
+        "allOf": [
+          {
+            "if": {"properties": {"layer": {"const": "L1"}}},
+            "then": {
+              "properties": {
+                "iteration_n": {"minimum": 1},
+                "gate_n": {"const": 0}
+              }
+            }
+          },
+          {
+            "if": {"properties": {"layer": {"const": "L2"}}},
+            "then": {
+              "properties": {
+                "iteration_n": {"const": 0},
+                "gate_n": {"minimum": 1}
+              }
+            }
+          },
+          {
+            "if": {"properties": {"layer": {"const": "L3"}}},
+            "then": {
+              "properties": {
+                "iteration_n": {"minimum": 1},
+                "gate_n": {"minimum": 1}
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

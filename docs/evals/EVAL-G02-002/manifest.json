@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-002",
+  "gate": "G02",
+  "iteration": "I-0017",
+  "evaluated_revision": "not-run",
+  "status": "pending",
+  "environments": ["planned-private-g02-lab"],
+  "commands": ["uv run python -m faultwitness_dev eval-iteration I-0017 --candidate-sha <full-sha>"],
+  "artifacts": [
+    "docs/evals/EVAL-G02-002/PLAN.md",
+    "docs/evals/EVAL-G02-002/artifacts/seed-registry.json",
+    "docs/evals/EVAL-G02-002/artifacts/fault-oracle-contract.json",
+    "docs/evals/EVAL-G02-002/artifacts/scenario-smoke.json"
+  ],
+  "evidence_urls": [],
+  "integrations": {},
+  "open_evidence": []
+}

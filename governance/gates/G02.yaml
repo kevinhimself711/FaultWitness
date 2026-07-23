@@ -4,12 +4,19 @@ title: Fault Laboratory and Baselines
 status: planned
 plan: docs/gates/G02/PLAN.md
 report: docs/gates/G02/REPORT.md
-iterations: []
+iterations: [I-0016, I-0017, I-0018, I-0019, I-0020]
 pass_criteria:
-  - A decision-complete G02 Master Plan is frozen before any G02 implementation Iteration starts.
-  - The G02 Master Plan remains within the authoritative fault-laboratory and baseline boundary without starting the G03 Agent vertical slice.
-  - Four Scenario DSL families 32 executable seed scenarios and the final 160-case dev validation locked split are frozen and reproducible.
-  - Deterministic Naive ReAct and no-RAG baselines are evaluated under thresholds that can only be raised after freezing.
-  - G02 closes only on one immutable candidate with no waiver open evidence or unresolved durable work.
+  - All five planned Iterations and their Iteration-layer evidence pass with no open evidence.
+  - Four Scenario DSL families six fault classes and 32 executable seeds are reproducible on one immutable candidate.
+  - The 160-row dev validation locked preregistration is exact and no corresponding case or answer is materialized before G07.
+  - Ground truth and locked-test storage identity namespace and package boundaries have zero unauthorized access or leakage.
+  - Deterministic Naive ReAct and no-RAG baselines produce complete attributable metrics and 95 percent clustered bootstrap confidence intervals.
+  - The seven authoritative quality floors and comparison semantics are exact without requiring a baseline to attain them.
+  - Every validation in docs/gates/G02/VALIDATIONS.yaml passes under its unique L1 L2 or L3 ownership.
+  - Three G01 supplemental evidence matrices are recorded forward without changing any closed G01 audit asset.
+  - The final Gate Iteration adds no product behavior runner fixture or test framework and the destructive scenario phase runs once per candidate key.
+  - Candidate and evidence SHAs phase timestamps artifact digests and final reconciliation are complete with no fallback unresolved infrastructure failure or waiver.
 waivers: []
-amendments: []
+amendments:
+  - docs/blueprint/AMENDMENTS/AMD-0001.md
+  - docs/blueprint/AMENDMENTS/AMD-0002.md

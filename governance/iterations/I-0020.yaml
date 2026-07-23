@@ -1,0 +1,28 @@
+schema_version: "1.0.0"
+id: I-0020
+gate: G02
+title: Unified Candidate Orchestration
+status: planned
+scope:
+  - Freeze one G02 candidate image config evaluator dataset and environment digest set.
+  - Orchestrate only the preimplemented Gate phases and reconcile immutable evidence.
+  - Produce Gate readiness without closing G02.
+non_goals:
+  - Adding product behavior Eval frameworks runners negative fixtures or test semantics.
+  - Repeating passed destructive or live phases for the same cache key.
+dependencies: [I-0016, I-0017, I-0018, I-0019]
+tests:
+  - make verify-fast
+  - uv run python -m faultwitness_dev eval-g02 --candidate-sha <full-sha>
+  - uv run python -m faultwitness_dev eval-g02-close --candidate-sha <full-sha> --evidence-head-sha <full-sha>
+eval_id: EVAL-G02-005
+commit: null
+changed_paths:
+  - docs/evals/EVAL-G02-005
+  - docs/gates/G02
+  - governance/iterations/I-0020.yaml
+behavior_change: false
+docs_updated:
+  - docs/roadmap/iterations/I-0020.md
+  - docs/evals/EVAL-G02-005/PLAN.md
+threshold_changes: []

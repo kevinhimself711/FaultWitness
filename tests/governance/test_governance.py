@@ -14,7 +14,14 @@ from faultwitness_dev.changes import (
     validate_g00_closure_change,
     validate_g01_closure_change,
 )
-from faultwitness_dev.checks import validate_lifecycle_documents, validate_lifecycle_records
+from faultwitness_dev.checks import (
+    validate_active_governance_state,
+    validate_g02_validation_registry,
+    validate_lifecycle_documents,
+    validate_lifecycle_records,
+    validate_manifest_revision_change,
+    validate_validation_layer_counts,
+)
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.schemas import (
     _check_adr_invariants,
@@ -233,6 +240,56 @@ def test_g01_closure_rejects_waiver_or_inexact_handoff() -> None:
 
 def test_repository_lifecycle_documents_match_project_state() -> None:
     validate_lifecycle_documents(ROOT)
+
+
+def test_active_gate_and_iteration_records_match_project_state() -> None:
+    validate_active_governance_state(ROOT)
+
+
+def test_g02_validation_registry_is_machine_valid() -> None:
+    validate_g02_validation_registry(ROOT)
+
+
+def test_l3_validation_cannot_repeat_the_same_n() -> None:
+    registry = load_data(ROOT / "docs" / "gates" / "G02" / "VALIDATIONS.yaml")
+    items = copy.deepcopy(registry["validation_items"])
+    item = next(record for record in items if record["layer"] == "L3")
+    item["gate_n"] = item["iteration_n"]
+    with pytest.raises(GovernanceError, match="overlapping N"):
+        validate_validation_layer_counts(items)
+
+
+def test_zero_tolerance_registry_fields_are_nonempty() -> None:
+    registry = load_data(ROOT / "docs" / "gates" / "G02" / "VALIDATIONS.yaml")
+    zero_tolerance = [
+        item for item in registry["validation_items"] if item["zero_tolerance"]
+    ]
+    assert zero_tolerance
+    for item in zero_tolerance:
+        assert item["runner"]
+        assert item["negative_fixture"]
+        assert item["artifact_paths"]
+
+
+def test_evaluated_revision_change_requires_artifact_change() -> None:
+    current = {
+        "evaluated_revision": "b" * 40,
+        "artifacts": ["docs/evals/EVAL-G02-001/artifacts/summary.json"],
+    }
+    previous = {"evaluated_revision": "a" * 40}
+    with pytest.raises(GovernanceError, match="corresponding artifact"):
+        validate_manifest_revision_change(
+            current,
+            previous,
+            {"docs/evals/EVAL-G02-001/manifest.json"},
+            "docs/evals/EVAL-G02-001/manifest.json",
+        )
+    validate_manifest_revision_change(
+        current,
+        previous,
+        {"docs/evals/EVAL-G02-001/artifacts/summary.json"},
+        "docs/evals/EVAL-G02-001/manifest.json",
+    )
 
 
 def test_lifecycle_state_drift_is_rejected() -> None:

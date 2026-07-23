@@ -1,0 +1,29 @@
+schema_version: "1.0.0"
+id: I-0017
+gate: G02
+title: Fault Lab and Scenario DSL
+status: planned
+scope:
+  - Implement the digest-pinned OTel Demo lab four Scenario DSL families and six flagd adapters.
+  - Implement 32 executable seed scenarios Problem Briefs ternary oracles and exact restoration.
+  - Implement and test the clean-clone lab runner before the unified candidate is frozen.
+non_goals:
+  - Materializing the 160 registered core cases.
+  - Adding a second SUT chaos framework Agent Runtime or baseline scoring.
+dependencies: [I-0016]
+tests:
+  - make verify-fast
+  - uv run python -m faultwitness_dev eval-iteration I-0017 --candidate-sha <full-sha>
+eval_id: EVAL-G02-002
+commit: null
+changed_paths:
+  - config/g02
+  - src/faultwitness_dev
+  - tests/g02
+  - tests/fixtures/g02
+  - docs/evals/EVAL-G02-002
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/I-0017.md
+  - docs/evals/EVAL-G02-002/PLAN.md
+threshold_changes: []

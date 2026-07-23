@@ -1,7 +1,7 @@
 ---
 document_id: FW-GATE-G02-REPORT
 gate: G02
-status: not_run
+status: planned
 evaluated_candidate_sha: null
 closed_on: null
 ---
@@ -10,8 +10,11 @@ closed_on: null
 
 ## Decision
 
-Current decision: `NOT_EVALUATED`.
+Current decision: `PLANNED_NOT_EVALUATED`.
 
-G02 is `not_started`. No G02 implementation, Eval, pass claim, or Gate closure is
-included in the G01 handoff commit. The first required action is to freeze a
-decision-complete G02 Master Plan.
+The decision-complete G02 Master Plan is frozen as `G02-master-plan-v1`. No G02
+implementation, deployment, model call, Eval result, pass claim, or Gate closure is recorded in
+this planning asset. I-0016 is the next planned Iteration; it is not active.
+
+Future reports must include `G01-SUPP-ACCESS-MATRIX`, `G01-SUPP-SIX-STAGE-SPANS`, and
+`G01-SUPP-ALL-SURFACE-CANARY` without modifying closed G01 evidence.

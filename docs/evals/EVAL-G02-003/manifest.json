@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-003",
+  "gate": "G02",
+  "iteration": "I-0018",
+  "evaluated_revision": "not-run",
+  "status": "pending",
+  "environments": ["planned-local-policy", "planned-private-g02-isolation"],
+  "commands": ["uv run python -m faultwitness_dev eval-iteration I-0018 --candidate-sha <full-sha>"],
+  "artifacts": [
+    "docs/evals/EVAL-G02-003/PLAN.md",
+    "docs/evals/EVAL-G02-003/artifacts/preregistry.json",
+    "docs/evals/EVAL-G02-003/artifacts/sealed-package-scan.json",
+    "docs/evals/EVAL-G02-003/artifacts/access-policy-simulation.json",
+    "docs/evals/EVAL-G02-003/artifacts/writer-canary.json"
+  ],
+  "evidence_urls": [],
+  "integrations": {},
+  "open_evidence": []
+}

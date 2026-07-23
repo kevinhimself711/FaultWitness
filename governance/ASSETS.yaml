@@ -1,4 +1,4 @@
-schema_version: "1.0.0"
+schema_version: "1.1.0"
 assets:
   - path: PROJECT_STATE.yaml
     schema: schemas/governance/project-state.schema.json
@@ -34,6 +34,10 @@ assets:
     schema: schemas/governance/eval-manifest.schema.json
   - path: docs/evals/EVAL-G00-006/WALKTHROUGHS.yaml
     schema: schemas/governance/gate-walkthroughs.schema.json
+  - path: docs/gates/G02/VALIDATIONS.yaml
+    schema: schemas/governance/validation-registry.schema.json
+  - path: docs/gates/G02/CARRY_IN.yaml
+    schema: schemas/governance/carry-in-registry.schema.json
   - path: docs/adr/INDEX.yaml
     schema: schemas/governance/adr-registry.schema.json
   - path: config/secrets/schema.yaml

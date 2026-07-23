@@ -1,0 +1,32 @@
+schema_version: "1.0.0"
+source_gate: G01
+target_gate: G02
+debts:
+  - id: DEBT-G01-001
+    description: Unauthorized schema object-prefix and observability access lacked a complete independently reviewable matrix.
+    coverage: covered_by_target_gate
+    owning_iteration: I-0018
+    validation_id: V-G02-009
+    gate_report_label: G01-SUPP-ACCESS-MATRIX
+    reason: G02 adds identities and GT/locked prefixes, so one forward matrix covers both the carry-in and the incremental surfaces.
+  - id: DEBT-G01-002
+    description: The six required API persistence Outbox checkpoint model-stub and export stages lacked a complete span matrix.
+    coverage: covered_by_target_gate
+    owning_iteration: I-0018
+    validation_id: V-G02-010
+    gate_report_label: G01-SUPP-SIX-STAGE-SPANS
+    reason: G02 observation and baseline evidence consumes the same trace foundation and therefore must verify the missing stages.
+  - id: DEBT-G01-003
+    description: Secret and PII canaries lacked complete independently reviewable evidence across every persistence and egress surface.
+    coverage: covered_by_target_gate
+    owning_iteration: I-0018
+    validation_id: V-G02-011
+    gate_report_label: G01-SUPP-ALL-SURFACE-CANARY
+    reason: G02 adds trial and evidence writers, making the full forward canary matrix directly applicable.
+  - id: DEBT-G01-004
+    description: Production stage wall-time reconciliation lacked complete independently reviewable execution evidence.
+    coverage: not_covered
+    owning_iteration: null
+    validation_id: null
+    gate_report_label: null
+    reason: G02 records baseline client wall-time and phase timestamps but does not exercise the production Agent stage waterfall; that claim must be owned by a later Agent-runtime Gate.
