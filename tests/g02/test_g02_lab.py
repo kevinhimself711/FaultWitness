@@ -134,6 +134,8 @@ def test_clean_clone_runner_is_pinned_and_candidate_bound() -> None:
         "@sha256:a72cd48ad9ef7fda7607813c57383d1ca6154d860916473976942d3ac24e473c-proxy"
     )
     assert malformed_proxy not in script
+    transform = script.split("<<'PY'\n", 1)[1].split("\nPY\n", 1)[0]
+    compile(transform, "g02-manifest-transform", "exec")
 
 
 def test_lab_start_cli_is_explicitly_private_server_scoped() -> None:

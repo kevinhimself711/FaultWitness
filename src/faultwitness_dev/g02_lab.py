@@ -305,7 +305,7 @@ with open(path, encoding="utf-8") as source_file:
             if reference in mapping:
                 line = f"{{indent}}image: {{quote}}{{mapping[reference]}}{{quote}}\\n"
         output.append(line)
-with open(path, "w", encoding="utf-8", newline="\n") as target_file:
+with open(path, "w", encoding="utf-8", newline="\\n") as target_file:
     target_file.writelines(output)
 PY
 if grep -E '^[[:space:]]*image:[[:space:]]*' "$manifest" | grep -v '@sha256:'; then
