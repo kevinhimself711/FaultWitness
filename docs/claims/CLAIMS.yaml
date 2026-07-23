@@ -84,11 +84,12 @@ claims:
       - "G01 does not claim traces for Agent reasoning tools retrieval or actions that are outside this Gate."
   - id: CLAIM-MODEL-001
     statement: "G01 will provide one typed ModelGateway for Qwen DeepSeek and GLM live model families and a compatible Bailian and NewAPI channel contract."
-    status: pending
+    status: verified
     requirements: [REQ-REL-001, REQ-SEC-003, REQ-PERF-001, REQ-OBS-001]
     evidence:
       - EVAL-G01-008
     limitations:
+      - "Candidate 21c2a96 passed 36/36 live complete, structured, forced-tool, and stream trials with attributable usage and sanitized LangSmith evidence plus the offline NewAPI wire matrix."
       - "All required live G01 evidence uses one Bailian upstream; this does not prove three independent providers or upstream failure independence."
       - "NewAPI live evidence is deferred until a token exists; G01 requires only its offline wire contract."
       - "This Gate does not evaluate incident diagnosis quality model ranking or cost optimization."

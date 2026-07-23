@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0015
 gate: G01
 title: G01 Candidate Audit and Failure Matrix
-status: planned
+status: in_progress
 scope:
   - Build one immutable candidate and bind public cross-platform and private-server evidence to its full SHA.
   - Run supply-chain publication security regression and all fourteen frozen G01 failure walkthroughs.
