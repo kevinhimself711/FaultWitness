@@ -4,7 +4,7 @@
 
 Result: pass.
 
-Final candidate `cea2e63948d86bac3a3ae5d3afa68b477f20e3c2` passed EVAL-G01-008. Qwen `qwen3.7-plus-2026-05-26`, DeepSeek `deepseek-v3.2`, and GLM `glm-5.2` each passed complete, strict structured output, named forced-tool, and streaming capabilities three times: 36/36 live Bailian trials. Every trial used its primary route with zero unplanned fallback, returned attributable usage, and exported one allowlist-only LangSmith Trace.
+Final candidate `4c843553bad7a13023259d474e8fea1b8c174d40` passed EVAL-G01-008. Qwen `qwen3.7-plus-2026-05-26`, DeepSeek `deepseek-v3.2`, and GLM `glm-5.2` each passed complete, strict structured output, named forced-tool, and streaming capabilities three times: 36/36 live Bailian trials. Every trial used its primary route with zero unplanned fallback, returned attributable usage, and exported one allowlist-only LangSmith Trace.
 
 The controlled NewAPI-compatible suite passed success, explicit missing usage, transient `408/429/5xx`, permanent authentication/configuration failures, timeout, invalid JSON, invalid tool arguments, malformed chunks, bounded retry/repair/pre-output fallback, and post-first-chunk `PARTIAL_FAILED` behavior. Publication scanning passed with no credential, prompt, response, private reasoning, user identity, or server locator committed.
 

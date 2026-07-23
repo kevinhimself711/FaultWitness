@@ -4,7 +4,7 @@
 
 Result: **PASS**.
 
-Final candidate `cea2e63948d86bac3a3ae5d3afa68b477f20e3c2` replayed the
+Final candidate `4c843553bad7a13023259d474e8fea1b8c174d40` replayed the
 publication scan and secure-bootstrap walkthrough without credential rotation,
 secret disclosure, waiver, or open evidence.
 

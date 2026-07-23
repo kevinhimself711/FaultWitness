@@ -2,7 +2,7 @@
 
 ## Result
 
-Result: **PASS** on final candidate `cea2e63948d86bac3a3ae5d3afa68b477f20e3c2`.
+Result: **PASS** on final candidate `4c843553bad7a13023259d474e8fea1b8c174d40`.
 
 Candidate `f81c7f07e4fbd0636eef669285588cbe7cceef20` passed the Windows deterministic run with artifact digest `58b7be07bec327e397c8956f46964a929a52e92ea4c243af00780f4cf706c791`. Counts were 21 core types, 12 support types, 52 states, 82 transitions, 34 Commands, 43 Events, and 10 Errors. All 82 legal transitions emitted unique deterministic decisions and 492 owner/actor/guard/version/idempotency mutations were rejected.
 

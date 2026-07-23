@@ -17,7 +17,7 @@ tests:
   - uv run python -m faultwitness_dev eval-g01 --candidate-sha <full-sha> --profile private-server
   - uv run python -m faultwitness_dev eval-g01-close --candidate-sha <full-sha>
 eval_id: EVAL-G01-009
-commit: "cea2e63948d86bac3a3ae5d3afa68b477f20e3c2"
+commit: "4c843553bad7a13023259d474e8fea1b8c174d40"
 changed_paths:
   - .github/workflows
   - src/faultwitness_dev
