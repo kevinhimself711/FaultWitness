@@ -53,6 +53,13 @@ FULL_SHA_LEN = 40
 ITERATIONS = [f"I-{number:04d}" for number in range(7, 16)]
 EVALS = [f"EVAL-G01-{number:03d}" for number in range(1, 10)]
 STABILITY_SECONDS = 900
+CLOSE_EVIDENCE_PATHS = (
+    "CHANGELOG.md",
+    "docs/claims/CLAIMS.yaml",
+    "docs/evals/",
+    "docs/roadmap/iterations/",
+    "governance/iterations/",
+)
 
 
 def _head(root: Path) -> str:
@@ -77,6 +84,46 @@ def _require_candidate(root: Path, candidate_sha: str) -> None:
     state = loaded["PROJECT_STATE.yaml"]
     if state.get("active_gate") != "G01" or state.get("active_gate_status") != "in_progress":
         raise GovernanceError("G01 must remain in progress during candidate audit")
+
+
+def _require_close_candidate(root: Path, candidate_sha: str) -> None:
+    """Allow only an asset-only evidence sync after the evaluated candidate."""
+    if len(candidate_sha) != FULL_SHA_LEN or any(
+        c not in "0123456789abcdef" for c in candidate_sha
+    ):
+        raise GovernanceError("candidate SHA must be a full lowercase 40-character SHA")
+    head = _head(root)
+    ancestor = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", candidate_sha, head],
+        cwd=root,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    if ancestor.returncode:
+        raise GovernanceError("G01 close candidate must be an ancestor of the evidence HEAD")
+    changed = subprocess.run(
+        ["git", "diff", "--name-only", candidate_sha, head],
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    ).stdout.splitlines()
+    forbidden = [
+        path
+        for path in changed
+        if not any(path == allowed or path.startswith(allowed) for allowed in CLOSE_EVIDENCE_PATHS)
+    ]
+    if forbidden:
+        raise GovernanceError(
+            "G01 close evidence HEAD contains non-evidence changes: " + ", ".join(forbidden)
+        )
+    loaded = validate_repository_schemas(root)
+    state = loaded["PROJECT_STATE.yaml"]
+    if state.get("active_gate") != "G01" or state.get("active_gate_status") != "in_progress":
+        raise GovernanceError("G01 must remain in progress during close readiness")
 
 
 def _run(root: Path, args: list[str], *, timeout: int = 180) -> str:
@@ -385,7 +432,7 @@ def evaluate_g01(root: Path, candidate_sha: str, *, profile: str) -> dict[str, A
 
 def evaluate_g01_close(root: Path, candidate_sha: str) -> dict[str, Any]:
     """Positive/negative close-readiness check; this function never closes G01."""
-    _require_candidate(root, candidate_sha)
+    _require_close_candidate(root, candidate_sha)
     manifests = []
     for number in range(1, 10):
         path = root / "docs" / "evals" / f"EVAL-G01-{number:03d}" / "manifest.json"

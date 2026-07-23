@@ -9,6 +9,7 @@ from faultwitness_dev.g01_eval import (
     _head,
     _platform_stability,
     _require_candidate,
+    _require_close_candidate,
     evaluate_g01_close,
     inspect_g01_reconciliation,
 )
@@ -32,6 +33,30 @@ def test_close_readiness_rejects_current_incomplete_gate() -> None:
     candidate = _head(ROOT)
     with pytest.raises(GovernanceError, match="incomplete evidence"):
         evaluate_g01_close(ROOT, candidate)
+
+
+def test_close_candidate_accepts_head_or_asset_only_descendant(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate = _head(ROOT)
+    _require_close_candidate(ROOT, candidate)
+
+
+def test_close_candidate_rejects_non_evidence_descendant(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    candidate = "a" * 40
+    monkeypatch.setattr("faultwitness_dev.g01_eval._head", lambda root: "b" * 40)
+
+    class Result:
+        def __init__(self, returncode: int, stdout: str = "") -> None:
+            self.returncode = returncode
+            self.stdout = stdout
+
+    calls = iter([Result(0), Result(0, "src/faultwitness/api/app.py\n")])
+    monkeypatch.setattr("faultwitness_dev.g01_eval.subprocess.run", lambda *a, **k: next(calls))
+    with pytest.raises(GovernanceError, match="non-evidence changes"):
+        _require_close_candidate(ROOT, candidate)
 
 
 def test_platform_stability_accepts_only_generic_error_after_full_window(
