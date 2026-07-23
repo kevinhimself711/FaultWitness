@@ -101,4 +101,5 @@ claims:
       - EVAL-G01-009
       - docs/gates/G01/REPORT.md
     limitations:
-      - "The G01 Master Plan is frozen, but the Gate is not started, evaluated, passed, or closed."
+      - "Candidate bc8c040a is deployed and passed the private service/runtime/network checkpoint, but the complete failure matrix, public cross-platform binding, early-Eval debt replay, reconciliation, restore, rollback, and close-readiness remain open."
+      - "Two 15-minute platform windows observed no readiness or candidate-binding failure; an operator-adjudicated generic post-window remote error is non-blocking for readiness only and is not a full EVAL-G01-009 pass."
