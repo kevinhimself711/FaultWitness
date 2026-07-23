@@ -11,7 +11,7 @@ from typing import Annotated
 from urllib.parse import quote
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request, status
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, ValidationError
 
 from faultwitness.contracts.models import TraceEnvelope
 from faultwitness.observability.buffer import (
@@ -152,6 +152,15 @@ def _status(values: dict[str, int]) -> TraceStatus:
     )
 
 
+def parse_trace_envelope(raw: bytes) -> TraceEnvelope:
+    if not raw or len(raw) > 1_048_576:
+        raise ValueError("trace request body is empty or too large")
+    try:
+        return TraceEnvelope.model_validate_json(raw)
+    except ValidationError as error:
+        raise ValueError("trace request does not match the strict contract") from error
+
+
 @app.get("/health/ready")
 async def ready(request: Request) -> dict[str, str]:
     await _service(request).store.status()
@@ -164,10 +173,11 @@ async def ready(request: Request) -> dict[str, str]:
     status_code=status.HTTP_202_ACCEPTED,
     dependencies=[Depends(_authorize)],
 )
-async def ingest_trace(envelope: TraceEnvelope, request: Request) -> TraceAccepted:
+async def ingest_trace(request: Request) -> TraceAccepted:
     try:
+        envelope = parse_trace_envelope(await request.body())
         trace, created = await _service(request).ingest(envelope)
-    except SanitizationRejected as error:
+    except (SanitizationRejected, ValueError) as error:
         raise HTTPException(status_code=422, detail="trace rejected by sanitizer") from error
     except BufferFull as error:
         raise HTTPException(status_code=503, detail="trace buffer is full") from error

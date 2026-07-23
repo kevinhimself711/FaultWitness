@@ -13,6 +13,7 @@ from faultwitness.observability.sanitizer import (
     TraceSanitizer,
     reconcile_wall_time,
 )
+from faultwitness.observability.server import parse_trace_envelope
 
 NOW = datetime(2026, 7, 22, 12, tzinfo=UTC)
 
@@ -104,3 +105,11 @@ def test_latency_uses_interval_union_instead_of_naive_child_sum() -> None:
     assert result.wall_duration_ms == pytest.approx(100)
     assert result.difference_ms == pytest.approx(0)
     assert result.passed is True
+
+
+def test_strict_trace_contract_accepts_json_transport_without_weakening_python_boundary() -> None:
+    raw = envelope()
+    parsed = parse_trace_envelope(raw.model_dump_json().encode())
+    assert parsed == raw
+    with pytest.raises(ValueError, match="strict contract"):
+        parse_trace_envelope(b'{"trace_id":"invalid"}')
