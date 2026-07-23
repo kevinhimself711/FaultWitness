@@ -7,9 +7,11 @@ import pytest
 
 from faultwitness_dev.changes import (
     G00_CLOSURE_PATHS,
+    G01_CLOSURE_PATHS,
     infer_iteration_id,
     validate_change_record,
     validate_g00_closure_change,
+    validate_g01_closure_change,
 )
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.schemas import (
@@ -102,10 +104,7 @@ def test_ruleset_requires_cross_platform_and_audit_checks() -> None:
     status_rule = next(
         rule for rule in ruleset["rules"] if rule["type"] == "required_status_checks"
     )
-    contexts = {
-        item["context"]
-        for item in status_rule["parameters"]["required_status_checks"]
-    }
+    contexts = {item["context"] for item in status_rule["parameters"]["required_status_checks"]}
     assert contexts == {
         "audit (ubuntu-latest)",
         "verify (ubuntu-latest)",
@@ -140,10 +139,14 @@ def _g00_closure_records() -> tuple[dict, dict, dict]:
         "active_gate_plan": "docs/gates/G01/PLAN.md",
         "active_gate_report": "docs/gates/G01/REPORT.md",
     }
-    return state, {"id": "G00", "status": "passed", "waivers": []}, {
-        "id": "G01",
-        "status": "planned",
-    }
+    return (
+        state,
+        {"id": "G00", "status": "passed", "waivers": []},
+        {
+            "id": "G01",
+            "status": "planned",
+        },
+    )
 
 
 def test_asset_only_g00_closure_is_accepted() -> None:
@@ -161,6 +164,47 @@ def test_g00_closure_rejects_inexact_handoff_state() -> None:
     state["active_gate_status"] = "planned"
     with pytest.raises(GovernanceError, match="project-state drift"):
         validate_g00_closure_change(state, g00, g01, sorted(G00_CLOSURE_PATHS))
+
+
+def _g01_closure_records() -> tuple[dict, dict, dict]:
+    state = {
+        "active_gate": "G02",
+        "active_gate_status": "not_started",
+        "active_iteration": None,
+        "next_iteration": None,
+        "last_closed_gate": "G01",
+        "active_gate_plan": "docs/gates/G02/PLAN.md",
+        "active_gate_report": "docs/gates/G02/REPORT.md",
+    }
+    return (
+        state,
+        {"id": "G01", "status": "passed", "waivers": []},
+        {
+            "id": "G02",
+            "status": "planned",
+        },
+    )
+
+
+def test_asset_only_g01_closure_is_accepted() -> None:
+    validate_g01_closure_change(*_g01_closure_records(), sorted(G01_CLOSURE_PATHS))
+
+
+def test_g01_closure_rejects_source_code() -> None:
+    paths = sorted(G01_CLOSURE_PATHS | {"src/faultwitness_dev/g01_eval.py"})
+    with pytest.raises(GovernanceError, match="unexpected"):
+        validate_g01_closure_change(*_g01_closure_records(), paths)
+
+
+def test_g01_closure_rejects_waiver_or_inexact_handoff() -> None:
+    state, g01, g02 = _g01_closure_records()
+    g01["waivers"] = ["not-allowed"]
+    with pytest.raises(GovernanceError, match="waiver-free"):
+        validate_g01_closure_change(state, g01, g02, sorted(G01_CLOSURE_PATHS))
+    g01["waivers"] = []
+    state["active_gate_status"] = "planned"
+    with pytest.raises(GovernanceError, match="project-state drift"):
+        validate_g01_closure_change(state, g01, g02, sorted(G01_CLOSURE_PATHS))
 
 
 def _load_evidence_assets() -> tuple[list[dict], dict, dict]:
@@ -238,9 +282,7 @@ def test_mandatory_prohibited_path_cannot_be_removed() -> None:
     architecture = _load_architecture()
     mutated = copy.deepcopy(architecture)
     mutated["prohibited_paths"] = [
-        item
-        for item in mutated["prohibited_paths"]
-        if item["id"] != "DENY-AGENT-DIRECT-ACTION"
+        item for item in mutated["prohibited_paths"] if item["id"] != "DENY-AGENT-DIRECT-ACTION"
     ]
     with pytest.raises(GovernanceError, match="mandatory prohibited path"):
         _check_architecture_invariants(mutated)
