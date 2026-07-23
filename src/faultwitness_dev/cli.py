@@ -40,6 +40,7 @@ from faultwitness_dev.control_api_deploy import (
 )
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.evals import evaluate_iteration
+from faultwitness_dev.g01_eval import evaluate_g01, evaluate_g01_close
 from faultwitness_dev.infra import (
     audit_runtime_coexistence,
     capture_preinstall_baseline,
@@ -145,6 +146,11 @@ def parser() -> argparse.ArgumentParser:
     eval_iteration = subparsers.add_parser("eval-iteration")
     eval_iteration.add_argument("iteration")
     eval_iteration.add_argument("--candidate-sha", required=True)
+    eval_g01 = subparsers.add_parser("eval-g01")
+    eval_g01.add_argument("--candidate-sha", required=True)
+    eval_g01.add_argument("--profile", required=True, choices=("private-server", "local"))
+    eval_g01_close = subparsers.add_parser("eval-g01-close")
+    eval_g01_close.add_argument("--candidate-sha", required=True)
     infra_baseline = subparsers.add_parser("capture-infra-baseline")
     infra_baseline.add_argument("--candidate-sha", required=True)
     install_core = subparsers.add_parser("install-k3s-core")
@@ -351,6 +357,20 @@ def main() -> int:
             message = (
                 f"{summary['eval_id']} passed on {summary['candidate_sha']} with "
                 f"{evidence_count} primary checks"
+            )
+        elif args.command == "eval-g01":
+            summary = evaluate_g01(root, args.candidate_sha, profile=args.profile)
+            message = (
+                f"{summary['eval_id']} {summary['status']} on {summary['candidate_sha']} "
+                f"with {summary['walkthroughs']['pass_count']}/"
+                f"{summary['walkthroughs']['count']} walkthroughs"
+            )
+        elif args.command == "eval-g01-close":
+            summary = evaluate_g01_close(root, args.candidate_sha)
+            message = (
+                f"{summary['eval_id']} {summary['status']} on {summary['candidate_sha']} "
+                f"with {summary['manifest_count']} manifests and "
+                f"{summary['iteration_count']} completed iterations"
             )
         elif args.command == "capture-infra-baseline":
             summary = capture_preinstall_baseline(root, args.candidate_sha)
