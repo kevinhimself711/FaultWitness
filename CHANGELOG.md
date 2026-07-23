@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Accept AMD-0004: prohibit preset wall-clock kill timers for normally progressing G02 and future
+  Iteration/Gate execution without changing any Eval or performance criterion.
 - Accept AMD-0003: remove G02's three-attempt/45-minute infrastructure compatibility stop while
   retaining attributable failure history, fail-closed semantics, frozen paid-trial budgets, and all
   quality and zero-tolerance criteria.

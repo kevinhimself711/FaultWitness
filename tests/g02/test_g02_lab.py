@@ -139,6 +139,8 @@ def test_clean_clone_runner_is_pinned_and_candidate_bound() -> None:
     assert "sha256sum -c" in script
     assert "namespace: fw-sut" in script
     assert "kubectl apply -n fw-sut" in script
+    assert "rollout status" in script
+    assert "--timeout" not in script
     assert "candidate_sha=" + "1" * 40 in script
     assert "base64.b64decode" in script
     malformed_proxy = (

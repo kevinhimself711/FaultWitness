@@ -20,8 +20,8 @@ The owner host downloads the generated upstream K3s manifest from exact commit
 `b74a7bc7bbe66099c61951f42b24dab8b6f02d18`, verifies its SHA-256, and stages it through the
 existing host-pinned SSH channel. Docker Hub images are pulled for `linux/amd64` by the already
 pinned crane binary and imported into K3s before apply; this is the registered path for the private
-host's Docker Hub timeout. OCI-layout archives preserve the upstream manifest digest through K3s
-import; converted tarball digests are rejected. The runner replaces complete image scalar values
+host's Docker Hub reachability failure. OCI-layout archives preserve the upstream manifest digest
+through K3s import; converted tarball digests are rejected. The runner replaces complete image scalar values
 with their registered digests, applies every namespaced resource to `fw-sut`, waits for all
 Deployments and OpenSearch, and writes `fw-g02-candidate-binding`.
 
@@ -34,11 +34,15 @@ requires a new candidate configuration; the runner never switches profiles durin
 - Cluster, DNS, TLS, registry, or SSH transport loss: `infra_failed`; retry only the affected
   bootstrap attempt.
 - Any unpinned image remaining before apply: blocking failure with `FW_G02_UNPINNED_IMAGE`.
-- A non-ready workload after the frozen rollout deadline: `infra_failed` when infrastructure is
-  unobservable, otherwise `metric_fail` attributed to that workload.
+- A workload remains under observation while rollout is progressing; elapsed wall time alone is
+  never `infra_failed` or `metric_fail`. A terminal Kubernetes error is attributed to that workload,
+  and verified loss of progress is recorded before an operator or project owner stops the run.
 - Compatibility and rollout attempts have no count or time ceiling. Record every attempt and its
   attribution; fix a deterministic root cause before retrying and retry unchanged work only for a
   classified transient infrastructure failure. Failed attempts remain evidence.
+- Fetch, transfer, import, bootstrap, readiness, Iteration Eval, and Gate phase processes have no
+  preset kill timeout. This changes orchestration only: all Eval N values, oracle windows,
+  performance metrics, quality thresholds, paid budgets, and pass criteria remain frozen.
 
 The destructive Gate scenario phase remains separately guarded and runs only once for an exact
 candidate, image, config, and environment cache key.

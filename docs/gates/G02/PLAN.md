@@ -267,8 +267,9 @@ Confidence intervals use percentile bootstrap at 95%, cluster by case ID, retain
 the sampled case, use `B=2,000`, and seed the RNG from the dataset digest.
 
 Valid but wrong, malformed, schema-invalid, or budget-exhausted outputs are scored failures and are
-not rerun. DNS, TLS, transport, timeout, 429, or 5xx after the fixed retry is `infra_failed` and only
-that trial resumes. `fallback_count != 0` is a candidate failure.
+not rerun. DNS, TLS, transport, upstream-declared deadline, 429, or 5xx after the fixed retry is
+`infra_failed` and only that trial resumes. The client does not kill a normally progressing trial
+on a preset orchestration timeout. `fallback_count != 0` is a candidate failure.
 
 ## 9. Frozen quality floors
 
@@ -311,6 +312,15 @@ Unlimited attempts do not create an operator-adjudicated pass path. Metric failu
 readback failures, authorization failures, digest drift, and zero-tolerance failures remain
 blocking until their root cause is fixed and the normal runner passes. Paid trial sample counts,
 per-attempt token ceilings, and the frozen internal transient retry are unchanged.
+
+AMD-0004 additionally removes preset wall-clock kill timers from normally progressing G02 fetch,
+transfer, import, rollout, Iteration Eval, and Gate phase execution. Elapsed time remains recorded
+for budget reconciliation but cannot itself produce `infra_failed`, `metric_fail`, or cancellation.
+A run ends only on pass, an explicit terminal failure, a verified no-progress condition with its
+last progress evidence, or project-owner cancellation. Future Iteration and Gate plans use the same
+rule. This is strictly an implementation-path change: validation N, the DSL's 90-second health
+oracle windows, performance and quality metrics, paid token/cost budgets, retry statistics, and all
+Gate pass criteria remain unchanged.
 
 - K3s fallback: same-commit official minimal Docker Compose, selected before freeze.
 - MinIO IAM fallback: digest-pinned stock `mc` job, otherwise block.
@@ -373,6 +383,8 @@ set, configuration, evaluator, dataset, and sanitized environment fingerprint.
 | `close-readiness` | reconciliation | 3m | No | Yes | New runner, fixture, source, or framework changes reject closure and reopen the owner. |
 
 The serial phase total is 153 minutes, or 2h33.
+All values in the Time column and this total are estimates for planning and wall-time reconciliation,
+not execution deadlines. Exceeding an estimate never changes a metric and never kills a phase.
 
 CLI behavior is frozen:
 

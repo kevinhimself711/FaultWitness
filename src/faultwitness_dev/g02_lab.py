@@ -318,8 +318,10 @@ fi
   --from-literal=image_set_digest={validation['image_set_digest']} \
   --from-literal=sut_commit={SUT_COMMIT} \
   --dry-run=client -o yaml | /usr/local/bin/k3s kubectl apply -f -
-/usr/local/bin/k3s kubectl -n fw-sut wait --for=condition=Available deployment --all --timeout=900s
-/usr/local/bin/k3s kubectl -n fw-sut rollout status statefulset/opensearch --timeout=900s
+for workload in $(/usr/local/bin/k3s kubectl -n fw-sut get deployment -o name); do
+  /usr/local/bin/k3s kubectl -n fw-sut rollout status "$workload"
+done
+/usr/local/bin/k3s kubectl -n fw-sut rollout status statefulset/opensearch
 binding=$(/usr/local/bin/k3s kubectl -n fw-sut \
   get configmap fw-g02-candidate-binding \
   -o jsonpath='{{.data.candidate_sha}}')
@@ -333,7 +335,7 @@ printf 'candidate_sha=%s\nimage_set_digest=%s\n%s' \
 
 def _stage_lab_manifest(config: Mapping[str, Any], candidate_sha: str) -> None:
     source = config["source"]
-    with urllib.request.urlopen(str(source["uri"]), timeout=60) as response:  # noqa: S310
+    with urllib.request.urlopen(str(source["uri"])) as response:  # noqa: S310
         payload = response.read()
     actual_digest = hashlib.sha256(payload).hexdigest()
     if actual_digest != source["sha256"]:
@@ -373,7 +375,6 @@ def _stage_lab_manifest(config: Mapping[str, Any], candidate_sha: str) -> None:
         capture_output=True,
         text=True,
         encoding="utf-8",
-        timeout=120,
     )
     if result.returncode:
         raise GovernanceError(
@@ -446,22 +447,18 @@ def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str)
     for name, archive in archives.items():
         if remote_sizes.get(name) == archive.stat().st_size:
             continue
-        try:
-            result = subprocess.run(
-                [
-                    "scp",
-                    *common,
-                    str(archive),
-                    f"{bundle.server_username}@{bundle.server_host}:{remote_root}/{name}.tar",
-                ],
-                check=False,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                timeout=3600,
-            )
-        except subprocess.TimeoutExpired as error:
-            raise GovernanceError(f"G02 offline image staging timed out: {name}") from error
+        result = subprocess.run(
+            [
+                "scp",
+                *common,
+                str(archive),
+                f"{bundle.server_username}@{bundle.server_host}:{remote_root}/{name}.tar",
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
         if result.returncode:
             raise GovernanceError(
                 "G02 offline image staging failed ("
@@ -486,7 +483,7 @@ def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str)
             f"test \"$(/usr/local/bin/k3s ctr images list | "
             f"awk -v ref={target} '$1 == ref {{print $3}}')\" = {digest}"
         )
-    run_remote_script(import_script, privileged=True, timeout=1200)
+    run_remote_script(import_script, privileged=True)
 
 
 def containerd_normalized_reference(reference: str) -> str:
@@ -537,7 +534,6 @@ def _pull_oci_image_archive(crane: Path, image: str, destination: Path) -> None:
             capture_output=True,
             text=True,
             encoding="utf-8",
-            timeout=1200,
         )
         if result.returncode:
             raise GovernanceError("pinned G02 OCI image pull failed")
@@ -579,9 +575,7 @@ def deploy_g02_lab(root: Path, candidate_sha: str) -> dict[str, Any]:
     validation = validate_lab_bootstrap(config)
     _stage_lab_manifest(config, candidate_sha)
     _stage_lab_images(root, config, candidate_sha)
-    output = run_remote_script(
-        render_k3s_bootstrap_script(config, candidate_sha), privileged=True, timeout=1200
-    )
+    output = run_remote_script(render_k3s_bootstrap_script(config, candidate_sha), privileged=True)
     ready = {
         key: int(value or "0")
         for key, value in (

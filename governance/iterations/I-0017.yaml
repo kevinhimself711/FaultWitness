@@ -25,6 +25,7 @@ changed_paths:
   - src/faultwitness_dev
   - docs/runbooks/G02_FAULT_LAB.md
   - docs/blueprint/AMENDMENTS/AMD-0003.md
+  - docs/blueprint/AMENDMENTS/AMD-0004.md
   - docs/gates/G02/PLAN.md
   - tests/g02
   - tests/fixtures/g02

@@ -65,7 +65,9 @@ def _remote_arguments(paths: BootstrapPaths) -> tuple[Any, list[str]]:
     return bundle, arguments
 
 
-def run_remote_script(script: str, *, privileged: bool, timeout: int = 120) -> str:
+def run_remote_script(
+    script: str, *, privileged: bool, timeout: float | None = None
+) -> str:
     paths = BootstrapPaths.defaults()
     bundle, arguments = _remote_arguments(paths)
     if privileged:

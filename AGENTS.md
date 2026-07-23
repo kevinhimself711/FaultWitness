@@ -108,6 +108,12 @@ Planning-only commits may create or refine future Iteration and Eval assets with
   deterministic root cause before retrying; retry unchanged work only for a classified transient
   infrastructure failure. Unlimited retries never convert metric, policy, cleanup, digest, or
   zero-tolerance failures into a pass.
+- A normally progressing infrastructure operation, Iteration Eval, Gate phase, rollout, transfer,
+  or external-tool execution must not be killed or failed by a preset wall-clock timeout. Duration
+  estimates are observability and planning data only. Stop only on an explicit terminal result, a
+  classified deterministic failure, verified loss of progress, or project-owner cancellation.
+  This orchestration rule never changes Eval samples, quality or performance thresholds, health
+  oracle windows, token/cost ceilings, retry statistics, or Gate pass criteria.
 - Every zero-tolerance criterion has a named runner, a negative fixture, and a reviewable artifact
   path in a machine-validated registry. A missing field invalidates the criterion.
 
