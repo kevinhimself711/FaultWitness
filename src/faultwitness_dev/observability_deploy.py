@@ -258,6 +258,9 @@ def relay_langsmith(candidate_sha: str, *, inject_uncertain_ack: bool = False) -
             for _ in range(100):
                 response = client.post(base + "/internal/v1/relay/langsmith/claim", headers=headers)
                 if response.status_code == 204:
+                    if uncertain_replay is not None and not exported:
+                        time.sleep(1)
+                        continue
                     break
                 if response.status_code != 200:
                     raise GovernanceError("private Trace Service rejected a relay claim")
