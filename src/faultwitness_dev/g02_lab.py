@@ -406,7 +406,7 @@ def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str)
 
     paths = BootstrapPaths.defaults()
     bundle, _ = _remote_arguments(paths)
-    remote_root = f"/tmp/faultwitness-g02-images-{candidate_sha[:12]}"
+    remote_root = f"/tmp/faultwitness-g02-images-{image_set_digest(config)[:12]}"
     owner = shlex.quote(bundle.server_username)
     run_remote_script(
         f'group=$(id -gn {owner}); install -d -m 0700 -o {owner} -g "$group" '
@@ -430,19 +430,22 @@ def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str)
         str(paths.ssh_private_key),
     ]
     for name, archive in archives.items():
-        result = subprocess.run(
-            [
-                "scp",
-                *common,
-                str(archive),
-                f"{bundle.server_username}@{bundle.server_host}:{remote_root}/{name}.tar",
-            ],
-            check=False,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            timeout=900,
-        )
+        try:
+            result = subprocess.run(
+                [
+                    "scp",
+                    *common,
+                    str(archive),
+                    f"{bundle.server_username}@{bundle.server_host}:{remote_root}/{name}.tar",
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                timeout=3600,
+            )
+        except subprocess.TimeoutExpired as error:
+            raise GovernanceError(f"G02 offline image staging timed out: {name}") from error
         if result.returncode:
             raise GovernanceError(
                 "G02 offline image staging failed ("
