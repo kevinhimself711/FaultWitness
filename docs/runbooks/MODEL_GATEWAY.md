@@ -67,7 +67,20 @@ uv run python -m faultwitness_dev eval-iteration I-0014 --candidate-sha $candida
 
 私有明细写入仓库外 `FaultWitness/evidence/I-0014/<candidate>.json`。公开 Report 只记录 candidate SHA、catalog/evidence digest、聚合计数和受控 LangSmith run ID。
 
-## 6. 故障处理
+## 6. Private service deployment
+
+ModelGateway 以独立 non-root workload 部署在 `fw-control`，只暴露 `ClusterIP:8002`。调用者必须提供真实 Keycloak OIDC token；tenant、user 和 roles 只从验证后的 token 派生，任何身份注入 header 都被拒绝。百炼 key 经 owner 主机的仓库外加密存储进入 K3s Secret，不落地 plaintext manifest，也不进入镜像或日志。
+
+```powershell
+$candidate = git rev-parse HEAD
+uv run python -m faultwitness_dev deploy-model-gateway --candidate-sha $candidate
+uv run python -m faultwitness_dev inspect-model-gateway --candidate-sha $candidate
+uv run python -m faultwitness_dev smoke-model-gateway --candidate-sha $candidate
+```
+
+部署必须满足 candidate ConfigMap 与完整 SHA 一致、Deployment `1/1 Ready`、Service 为 `ClusterIP`、ServiceAccount token 禁用、只读根文件系统、显式 Keycloak/DNS/百炼 egress，以及真实 OIDC complete smoke 返回 exact model 和 attributable usage。当前服务不提供 public ingress，也不声称 Agent worker 已实现。
+
+## 7. 故障处理
 
 - 百炼 `401/403`：停止；核对 key 地域与 endpoint，不自动换模型掩盖认证错误。
 - 模型能力 `400`：停止；保留失败候选，更新目录前先依据官方能力文档确认，不降低测试。
@@ -76,7 +89,7 @@ uv run python -m faultwitness_dev eval-iteration I-0014 --candidate-sha $candida
 - stream 中断：返回 `PARTIAL_FAILED` 及已见 chunk 数，不拼接另一模型的内容。
 - structured/tool validation 失败：不得把未校验字典交给下游。
 
-## 7. 参考接口
+## 8. 参考接口
 
 - 百炼 OpenAI-compatible endpoint 与地域说明：<https://help.aliyun.com/zh/model-studio/compatibility-of-openai-with-dashscope>
 - Function Calling 支持与 GLM `tool_stream`：<https://help.aliyun.com/en/model-studio/qwen-function-calling>

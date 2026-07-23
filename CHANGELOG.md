@@ -9,6 +9,7 @@
 
 ### Tooling
 
+- Add the private candidate-bound Model Gateway service and deployment path: strict OIDC-derived tenant context, identity-injection denial, non-root read-only ClusterIP workload, repository-external Bailian secret handoff, exact catalog packaging, authenticated live smoke, and complete runtime dependency locking.
 - Complete I-0014 and EVAL-G01-008 on candidate `21c2a96`: pass 36/36 live Bailian trials across Qwen, DeepSeek, and GLM complete/structured/forced-tool/stream capabilities, the controlled NewAPI wire matrix, attributed usage, and one sanitized LangSmith Trace per trial; retain the single-live-upstream limitation and activate I-0015.
 - Implement the I-0014 ModelGateway foundation: a versioned three-family capability and route catalog, shared Bailian/NewAPI-compatible adapter, strict structured and forced-tool validation, deterministic streaming and usage attribution, bounded retry/repair/pre-output fallback, post-first-chunk partial failure, offline wire tests, and a candidate-bound 36-trial live Eval entry point.
 - Complete the I-0013 implementation checkpoint on candidate `ae0a3be`: deploy migration `003_i0013` and the private Trace Service, pass live sanitized LangSmith/OTLP/archive delivery with zero pending traces, retain the complete outage/canary/correlation/latency matrix as Gate debt, and activate I-0014.

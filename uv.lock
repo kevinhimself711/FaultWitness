@@ -178,6 +178,7 @@ dependencies = [
     { name = "jsonschema" },
     { name = "pydantic" },
     { name = "pyjwt", extra = ["crypto"] },
+    { name = "pyyaml" },
     { name = "redis" },
     { name = "uvicorn" },
 ]
@@ -186,7 +187,6 @@ dependencies = [
 dev = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
-    { name = "pyyaml" },
     { name = "ruff" },
 ]
 
@@ -199,6 +199,7 @@ requires-dist = [
     { name = "jsonschema", specifier = ">=4.24,<5" },
     { name = "pydantic", specifier = ">=2.11,<3" },
     { name = "pyjwt", extras = ["crypto"], specifier = ">=2.10,<3" },
+    { name = "pyyaml", specifier = ">=6.0,<7" },
     { name = "redis", specifier = ">=6,<7" },
     { name = "uvicorn", specifier = ">=0.35,<1" },
 ]
@@ -207,7 +208,6 @@ requires-dist = [
 dev = [
     { name = "pytest", specifier = ">=8.4,<9" },
     { name = "pytest-asyncio", specifier = ">=1.1,<2" },
-    { name = "pyyaml", specifier = ">=6.0,<7" },
     { name = "ruff", specifier = ">=0.12,<1" },
 ]
 

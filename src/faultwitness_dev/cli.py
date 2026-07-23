@@ -59,6 +59,11 @@ from faultwitness_dev.infra import (
     run_network_matrix,
     run_runtime_smokes,
 )
+from faultwitness_dev.model_deploy import (
+    deploy_model_gateway,
+    inspect_model_gateway,
+    run_model_gateway_smoke,
+)
 from faultwitness_dev.observability_deploy import (
     deploy_trace_service,
     diagnose_trace_service,
@@ -195,6 +200,12 @@ def parser() -> argparse.ArgumentParser:
     subparsers.add_parser("diagnose-trace-service")
     smoke_trace = subparsers.add_parser("smoke-trace-service")
     smoke_trace.add_argument("--candidate-sha", required=True)
+    deploy_model = subparsers.add_parser("deploy-model-gateway")
+    deploy_model.add_argument("--candidate-sha", required=True)
+    inspect_model = subparsers.add_parser("inspect-model-gateway")
+    inspect_model.add_argument("--candidate-sha", required=True)
+    smoke_model = subparsers.add_parser("smoke-model-gateway")
+    smoke_model.add_argument("--candidate-sha", required=True)
     subparsers.add_parser("compile-contracts")
     subparsers.add_parser("check-contracts")
     subparsers.add_parser("diagnose-k3s")
@@ -506,6 +517,24 @@ def main() -> int:
             message = (
                 f"passed sanitized LangSmith/OTLP/archive trace smoke on "
                 f"{summary['candidate_sha']} with zero pending delivery"
+            )
+        elif args.command == "deploy-model-gateway":
+            summary = deploy_model_gateway(root, args.candidate_sha)
+            message = (
+                f"deployed private Model Gateway {summary['image']} with bundle "
+                f"{summary['bundle_sha256']}"
+            )
+        elif args.command == "inspect-model-gateway":
+            summary = inspect_model_gateway(args.candidate_sha)
+            message = (
+                f"observed Model Gateway {summary['ready']}/1 Ready as "
+                f"{summary['service_type']}"
+            )
+        elif args.command == "smoke-model-gateway":
+            summary = run_model_gateway_smoke(args.candidate_sha)
+            message = (
+                f"passed authenticated Model Gateway smoke for {summary['family']} "
+                f"on {summary['candidate_sha']}"
             )
         elif args.command == "compile-contracts":
             target = write_generated_resource(root)
