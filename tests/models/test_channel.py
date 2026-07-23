@@ -65,7 +65,10 @@ def route() -> RouteMetadata:
 async def test_complete_parses_usage_and_forced_tool() -> None:
     def handler(incoming: httpx.Request) -> httpx.Response:
         body = __import__("json").loads(incoming.content)
-        assert body["tool_choice"] == "required"
+        assert body["tool_choice"] == {
+            "type": "function",
+            "function": {"name": "lookup"},
+        }
         return httpx.Response(
             200,
             json={

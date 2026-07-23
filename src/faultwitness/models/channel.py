@@ -70,7 +70,14 @@ class OpenAICompatibleChannel:
             payload["response_format"] = {"type": "json_object"}
         if request.tool_schemas:
             payload["tools"] = list(request.tool_schemas)
-            payload["tool_choice"] = "required"
+            try:
+                forced_name = request.tool_schemas[0]["function"]["name"]
+            except (KeyError, TypeError) as error:
+                raise ModelFailure(ModelFailureCode.CONFIGURATION, retryable=False) from error
+            payload["tool_choice"] = {
+                "type": "function",
+                "function": {"name": forced_name},
+            }
         return payload
 
     async def _request(self, payload: dict[str, Any], *, stream: bool) -> httpx.Response:
