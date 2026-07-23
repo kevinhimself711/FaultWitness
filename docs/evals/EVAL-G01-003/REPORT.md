@@ -2,7 +2,7 @@
 
 ## Result
 
-Result: pending (implementation and private deployment checkpoint complete; full Eval not run).
+Result: **PASS** on final candidate `df644f10a4596232be24774bae209d1c1a4befa6`.
 
 Candidate `0c8b66c7fc4e781d0a44582a3c8c97ce5e543ed3` was deployed through the candidate-bound Helm command with bundle digest `affed4056efed7e2e74a5916d667e7a083e7a3528a3588e6fa22f7b17f065028`. The sanitized point-in-time inspection observed all 11 required workloads Ready. Secrets, kubeconfig, private locators, raw objects, and raw telemetry remained outside the repository.
 
@@ -16,7 +16,7 @@ This is implementation/deployment evidence only. It does not prove the 15-minute
 - Canonical command results for `verify-fast`, `eval-changed`, candidate-bound `deploy-platform` and 900-second `inspect-platform`, and the candidate-bound `eval-iteration I-0009` run.
 - Sanitized public evidence that contains no kubeconfig, credential, private locator, raw dump, IdP/object-store export, or raw telemetry.
 
-## Open evidence
+## Open evidence at implementation checkpoint
 
 The full pre-registered Eval remains open. Open items are: 15-minute readiness/recovery, paired authorized/denied boundary checks, PostgreSQL fresh-target restore digest equality, persistence after controlled restart, correlated synthetic telemetry, resource/retention bounds, deployed-image digest reconciliation, SBOM/license/provenance checks, and public-evidence secret scanning.
 

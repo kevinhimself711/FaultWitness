@@ -16,7 +16,7 @@ tests:
   - uv run python -m faultwitness_dev eval-iteration I-0011 --candidate-sha <full-sha>
   - EVAL-G01-005 database transition duplicate delivery fencing checkpoint and crash suite
 eval_id: EVAL-G01-005
-commit: "4844961"
+commit: "48449618f1aafdadfde0d4593cb9bb10b96583f6"
 changed_paths:
   - src/faultwitness/persistence
   - src/faultwitness/runtime

@@ -3,8 +3,8 @@
   "eval_id": "EVAL-G01-002",
   "gate": "G01",
   "iteration": "I-0008",
-  "evaluated_revision": "pending",
-  "status": "pending",
+  "evaluated_revision": "df644f10a4596232be24774bae209d1c1a4befa6",
+  "status": "pass",
   "environments": ["ubuntu-private-server"],
   "commands": ["uv run python -m faultwitness_dev eval-iteration I-0008 --candidate-sha <full-sha>"],
   "artifacts": ["docs/evals/EVAL-G01-002/PLAN.md", "docs/evals/EVAL-G01-002/REPORT.md"],
@@ -15,5 +15,5 @@
       "reason": "LangSmith is required by the complete G01 candidate although this Eval measures infrastructure capability."
     }
   },
-  "open_evidence": ["candidate-bound full rerun", "complete network-policy matrix", "embedded-etcd snapshot and restore", "project-only rollback", "clean idempotent reinstall"]
+  "open_evidence": []
 }

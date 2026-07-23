@@ -17,7 +17,7 @@ tests:
   - uv run python -m faultwitness_dev eval-iteration I-0008 --candidate-sha <full-sha>
   - EVAL-G01-002 coexistence network runtimeclass GPU and rollback suite
 eval_id: EVAL-G01-002
-commit: dcfb250
+commit: dcfb250bbfe2ede8576de2086f0716698b0bbc86
 changed_paths:
   - deploy/k3s
   - deploy/helm

@@ -16,7 +16,7 @@ tests:
   - uv run python -m faultwitness_dev eval-iteration I-0014 --candidate-sha <full-sha>
   - EVAL-G01-008 thirty-six-trial live model and compatible-channel failure suite
 eval_id: EVAL-G01-008
-commit: "21c2a96"
+commit: "21c2a96724018a430f3777623b279c1a8588240e"
 changed_paths:
   - src/faultwitness/models
   - config/models

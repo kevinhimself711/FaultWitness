@@ -4,6 +4,10 @@
 
 Result: **PASS**.
 
+Final candidate `df644f10a4596232be24774bae209d1c1a4befa6` replayed the
+publication scan and secure-bootstrap walkthrough without credential rotation,
+secret disclosure, waiver, or open evidence.
+
 Evaluated candidate: `7a9237c4c5b9fc0c736435e836534e72712c4169`.
 
 Private run identifier: `EVAL-G01-001-WINDOWS-20260722-01`.

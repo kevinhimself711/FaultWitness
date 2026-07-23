@@ -3,17 +3,17 @@
   "eval_id": "EVAL-G01-004",
   "gate": "G01",
   "iteration": "I-0010",
-  "evaluated_revision": "f81c7f07e4fbd0636eef669285588cbe7cceef20",
-  "status": "pending",
+  "evaluated_revision": "df644f10a4596232be24774bae209d1c1a4befa6",
+  "status": "pass",
   "environments": ["windows-local", "windows-github-hosted", "ubuntu-github-hosted"],
   "commands": ["uv run python -m faultwitness_dev eval-iteration I-0010 --candidate-sha <full-sha>"],
   "artifacts": ["docs/evals/EVAL-G01-004/PLAN.md", "docs/evals/EVAL-G01-004/REPORT.md"],
-  "evidence_urls": [],
+  "evidence_urls": ["https://github.com/kevinhimself711/FaultWitness/actions/runs/30014259936"],
   "integrations": {
     "langsmith": {
       "status": "required",
       "reason": "LangSmith remains required for G01 runtime Evals even though deterministic contract compilation has no model run."
     }
   },
-  "open_evidence": ["cross-platform deterministic generation", "public contract compatibility"]
+  "open_evidence": []
 }

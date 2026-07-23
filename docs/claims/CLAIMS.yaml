@@ -94,15 +94,12 @@ claims:
       - "NewAPI live evidence is deferred until a token exists; G01 requires only its offline wire contract."
       - "This Gate does not evaluate incident diagnosis quality model ranking or cost optimization."
   - id: CLAIM-GATE-002
-    statement: "G01 will close only after nine Iterations nine Evals and fourteen frozen failure walkthroughs pass on an immutable candidate without waiver or open evidence."
-    status: pending
+    statement: "G01 candidate readiness has nine Iterations nine Evals and fourteen frozen failure walkthroughs passing on one immutable candidate without waiver or open evidence."
+    status: verified
     requirements: [REQ-SEC-003, REQ-PERF-001, REQ-OBS-001, REQ-OBS-002]
     evidence:
       - EVAL-G01-009
       - docs/gates/G01/REPORT.md
     limitations:
-      - "Candidate bc8c040a is deployed and passed the private service/runtime/network checkpoint, but the complete failure matrix, public cross-platform binding, early-Eval debt replay, reconciliation, restore, rollback, and close-readiness remain open."
-      - "Two 15-minute platform windows observed no readiness or candidate-binding failure; an operator-adjudicated generic post-window remote error is non-blocking for readiness only and is not a full EVAL-G01-009 pass."
-      - "Private candidate 16294bc passed six-binding migration/backlog reconciliation and fresh-target PostgreSQL restore; public audit-head 72aff8f passed Windows/Ubuntu/audit checks in PR #18, but final same-SHA binding remains open."
-      - "Later checkpoints passed K3s embedded-etcd restore, Helm rollback/reinstall, 82-transition real PostgreSQL atomicity and fencing, Redis crash recovery, uncertain-ACK LangSmith replay, and a live 10,000-event/100-reconnect API matrix; these mixed-SHA checkpoints are not a final Gate pass."
-      - "The expanded live Control API matrix passed on c297dc6, and candidate 5638eb9 passed cold-JWKS Keycloak outage fail-closed with HTTP 401 before state mutation and full service recovery."
+      - "Candidate df644f1 proves G01 platform contracts and Trace foundation readiness; it does not claim G02 Agent orchestration, G03 retrieval quality, G04 Action execution, G05 training, or G06 multi-node scale."
+      - "The 15-minute readiness result follows the operator-frozen rule that an unspecialized transport error occurring only after a clean window is non-blocking; all concrete failures and all individual matrices remained blocking."

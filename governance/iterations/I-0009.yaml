@@ -16,7 +16,7 @@ tests:
   - uv run python -m faultwitness_dev eval-iteration I-0009 --candidate-sha <full-sha>
   - EVAL-G01-003 readiness isolation backup restore observability and supply-chain suite
 eval_id: EVAL-G01-003
-commit: 0c8b66c
+commit: 0c8b66c7fc4e781d0a44582a3c8c97ce5e543ed3
 changed_paths:
   - deploy/charts
   - deploy/environments

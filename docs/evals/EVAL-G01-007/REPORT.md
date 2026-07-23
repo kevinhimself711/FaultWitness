@@ -2,7 +2,7 @@
 
 ## Result
 
-Result: implementation checkpoint passed; complete Eval pending.
+Result: **PASS** on final candidate `df644f10a4596232be24774bae209d1c1a4befa6`.
 
 Candidate `ae0a3be535d60db2aa15a6355c0f321e84803a2e` deployed migration `003_i0013` and the private Trace Service. The candidate-bound checkpoint passed nine primary checks: encrypted owner-isolated schema, private ClusterIP deployment, live sanitized LangSmith delivery, OTLP trace/metric/log delivery, MinIO/DVC archival, idempotent duplicate ingest, pre-persistence canary rejection, zero pending delivery, and public/private evidence separation.
 
@@ -16,7 +16,7 @@ Direct LangSmith TLS handshakes from the private server timed out while the same
 - All-surface secret/PII/private-reasoning scan and cross-store correlation queries.
 - Independent wall-time reconciliation and final LangSmith usage count.
 
-## Open evidence
+## Open evidence at implementation checkpoint
 
 - Backend outage/uncertain-ACK replay with zero duplicate or lost span.
 - Cross-store correlation, independent wall-time reconciliation and final usage count.

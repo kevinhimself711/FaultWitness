@@ -3,8 +3,8 @@
   "eval_id": "EVAL-G01-005",
   "gate": "G01",
   "iteration": "I-0011",
-  "evaluated_revision": "48449618f1aafdadfde0d4593cb9bb10b96583f6",
-  "status": "pending",
+  "evaluated_revision": "df644f10a4596232be24774bae209d1c1a4befa6",
+  "status": "pass",
   "environments": ["ubuntu-private-server"],
   "commands": ["uv run python -m faultwitness_dev eval-iteration I-0011 --candidate-sha <full-sha>"],
   "artifacts": ["docs/evals/EVAL-G01-005/PLAN.md", "docs/evals/EVAL-G01-005/REPORT.md"],
@@ -15,5 +15,5 @@
       "reason": "G01 closure requires correlated LangSmith traces for the durable runtime paths established by this Eval."
     }
   },
-  "open_evidence": ["same-final-SHA PostgreSQL Redis and fencing replay", "correlated LangSmith runtime traces on final candidate"]
+  "open_evidence": []
 }

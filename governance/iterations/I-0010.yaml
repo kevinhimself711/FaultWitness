@@ -16,7 +16,7 @@ tests:
   - uv run python -m faultwitness_dev eval-iteration I-0010 --candidate-sha <full-sha>
   - EVAL-G01-004 generated-contract drift transition mutation and compatibility suite
 eval_id: EVAL-G01-004
-commit: f81c7f0
+commit: f81c7f07e4fbd0636eef669285588cbe7cceef20
 changed_paths:
   - pyproject.toml
   - uv.lock

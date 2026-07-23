@@ -2,7 +2,7 @@
 
 ## Result
 
-Result: pending.
+Result: **PASS** on immutable candidate `df644f10a4596232be24774bae209d1c1a4befa6`.
 
 Candidate `bc8c040a1529c2b60702ed6db7d9b0358fc06661` is the current immutable
 I-0015 audit candidate. It passed `verify-fast` with 210 tests, `eval-changed`,
@@ -71,7 +71,7 @@ private checkpoints are not yet the same SHA, so final binding remains open.
   matrix. Candidate `5638eb9` passed cold-JWKS Keycloak outage fail-closed with
   HTTP 401 before state mutation and recovered both services Ready.
 
-## Open evidence
+## Open evidence at earlier checkpoints
 
 - Replay EVAL-G01-001 through EVAL-G01-008 on the final candidate-equivalent
   artifact set and clear every manifest's declared evidence debt.
@@ -80,3 +80,16 @@ private checkpoints are not yet the same SHA, so final binding remains open.
   clean-clone, and final same-SHA reconciliation.
 - Bind required Windows and Ubuntu public checks and private evidence to one final
   full SHA, then run positive and negative close-readiness without closing G01.
+
+## Final candidate adjudication
+
+- Public PR run `30014259936` passed Ubuntu verify, Windows verify, and Ubuntu audit.
+- Six deployment bindings and three migrations matched the candidate with zero
+  DLQ, Outbox backlog, stale lease, or pending Trace delivery.
+- K3s snapshot/restore, fresh-target PostgreSQL restore, Helm rollback/reinstall,
+  and the operator-approved clean 15-minute readiness window passed.
+- All 82 PostgreSQL transitions, 10,000 duplicate deliveries, 100 crash
+  injections, fencing, Redis recovery, uncertain-ACK LangSmith replay, and the
+  live 10,000-event/100-reconnect API matrix passed with final zero backlog.
+- All 14 frozen walkthroughs and the 36/36 live multi-family model matrix passed.
+- Final open evidence: none. Waivers: none.

@@ -16,7 +16,7 @@ tests:
   - uv run python -m faultwitness_dev eval-iteration I-0013 --candidate-sha <full-sha>
   - EVAL-G01-007 LangSmith OTel redaction outage replay correlation and latency-reconciliation suite
 eval_id: EVAL-G01-007
-commit: "ae0a3be"
+commit: "ae0a3be535d60db2aa15a6355c0f321e84803a2e"
 changed_paths:
   - src/faultwitness/observability
   - deploy/charts/observability

@@ -3,8 +3,8 @@
   "eval_id": "EVAL-G01-003",
   "gate": "G01",
   "iteration": "I-0009",
-  "evaluated_revision": "pending",
-  "status": "pending",
+  "evaluated_revision": "df644f10a4596232be24774bae209d1c1a4befa6",
+  "status": "pass",
   "environments": ["ubuntu-private-server"],
   "commands": [
     "uv run python -m faultwitness_dev deploy-platform --candidate-sha <full-sha>",
@@ -19,11 +19,5 @@
       "reason": "The complete G01 trace path requires LangSmith after the operational observability services are established."
     }
   },
-  "open_evidence": [
-    "paired authorized controls and network secret schema object-prefix observability denials",
-    "same-final-SHA PostgreSQL restore replay",
-    "same-final-SHA recovery and correlated synthetic telemetry evidence",
-    "resource retention image-digest SBOM license and provenance audit",
-    "sanitized public evidence and publication scan"
-  ]
+  "open_evidence": []
 }
