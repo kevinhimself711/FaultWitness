@@ -29,8 +29,14 @@ def test_candidate_must_equal_checked_out_head(monkeypatch: pytest.MonkeyPatch) 
         _require_candidate(ROOT, "a" * 40)
 
 
-def test_close_readiness_rejects_current_incomplete_gate() -> None:
+def test_close_readiness_rejects_injected_incomplete_gate(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     candidate = _head(ROOT)
+    monkeypatch.setattr(
+        "faultwitness_dev.g01_eval._eval_manifest_debt",
+        lambda *args, **kwargs: ["EVAL-G01-009"],
+    )
     with pytest.raises(GovernanceError, match="incomplete evidence"):
         evaluate_g01_close(ROOT, candidate)
 
