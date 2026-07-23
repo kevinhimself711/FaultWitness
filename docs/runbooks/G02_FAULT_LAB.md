@@ -27,6 +27,10 @@ The runner replaces complete image scalar values
 with their registered digests, applies every namespaced resource to `fw-sut`, waits for all
 Deployments and OpenSearch, and writes `fw-g02-candidate-binding`.
 
+Service images follow the generated manifest's declared runtime contract. The sole intentional
+capability exception is the digest-pinned 2.2.0 Flagd UI: G02 requires its `GET /api/read` and
+`POST /api/write` controller, while the manifest's older Flagd UI exposes only the read endpoint.
+
 The registered `docker-compose.minimal.yml` path is a pre-candidate fallback only. Selecting it
 requires a new candidate configuration; the runner never switches profiles during an incident.
 

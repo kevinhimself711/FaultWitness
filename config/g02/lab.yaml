@@ -16,7 +16,7 @@ images:
   - {name: checkout, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:050d145998bc16faab6fae07987341ea41afdbe2852cf1c1d7b646c7b791fe8a"}
   - {name: currency, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:310946ef86fe026cc7f659742e3df2c9a82e48d7ba87cb975d0acc7481d8c36b"}
   - {name: email, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:1c898990ac21d9d12e84bc3c6f09d06f293083b3142d895423182d9797ab9603"}
-  - {name: flagd-ui, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:b484d4cb20af0c6f508fcfcce144dc52f5849668bbc8461c1bfd7869122c94af"}
+  - {name: flagd-ui, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:0738a32cecf129842d99843f470cfdb4091b9ff5b252d70b9850d5e24e82b438"}
   - {name: fraud-detection, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:13c2cfa126d50aa057f224fa2b18a7aa1085ca0eed659ccc2554a3b7494ccde5"}
   - {name: frontend, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:9a035167d9e8e5d24257a289c12767579fea9c3a48f1f64de63bab30c0fff0f0"}
   - {name: frontend-proxy, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:35b1a2f8e504aae06558afef13d02e9f817a0f976e4509a056ac2fc57307ba9d"}
