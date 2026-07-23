@@ -20,9 +20,10 @@ The owner host downloads the generated upstream K3s manifest from exact commit
 `b74a7bc7bbe66099c61951f42b24dab8b6f02d18`, verifies its SHA-256, and stages it through the
 existing host-pinned SSH channel. Docker Hub images are pulled for `linux/amd64` by the already
 pinned crane binary and imported into K3s before apply; this is the registered path for the private
-host's Docker Hub timeout. The runner replaces complete image scalar values with their registered
-digests, applies every namespaced resource to `fw-sut`, waits for all Deployments and OpenSearch,
-and writes `fw-g02-candidate-binding`.
+host's Docker Hub timeout. OCI-layout archives preserve the upstream manifest digest through K3s
+import; converted tarball digests are rejected. The runner replaces complete image scalar values
+with their registered digests, applies every namespaced resource to `fw-sut`, waits for all
+Deployments and OpenSearch, and writes `fw-g02-candidate-binding`.
 
 The registered `docker-compose.minimal.yml` path is a pre-candidate fallback only. Selecting it
 requires a new candidate configuration; the runner never switches profiles during an incident.

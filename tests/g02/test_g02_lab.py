@@ -122,6 +122,9 @@ def test_clean_clone_runner_is_pinned_and_candidate_bound() -> None:
     script = render_k3s_bootstrap_script(config, "1" * 40)
     assert summary["image_count"] == 30
     assert summary["profile"] == "k3s"
+    assert all(
+        not image["reference"].startswith("docker.io/") for image in config["images"]
+    )
     assert "sha256sum -c" in script
     assert "namespace: fw-sut" in script
     assert "kubectl apply -n fw-sut" in script

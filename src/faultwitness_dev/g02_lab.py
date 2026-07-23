@@ -7,6 +7,8 @@ import json
 import re
 import shlex
 import subprocess
+import tarfile
+import tempfile
 import urllib.request
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
@@ -22,7 +24,6 @@ from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.infra import (
     InfraPaths,
     _ensure_crane,
-    _pull_image_archive,
     _remote_arguments,
     run_remote_script,
 )
@@ -395,14 +396,14 @@ def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str)
     images = {
         str(item["name"]): str(item["reference"])
         for item in config["images"]
-        if str(item["reference"]).startswith("docker.io/")
+        if str(item["reference"]).startswith("index.docker.io/")
     }
     crane = _ensure_crane(root)
     private_root = InfraPaths.defaults().evidence_dir.parent.parent
     archive_root = private_root / "artifacts" / "I-0017" / "images"
-    archives = {name: archive_root / f"{name}.tar" for name in images}
+    archives = {name: archive_root / f"{name}.oci.tar" for name in images}
     for name, image in images.items():
-        _pull_image_archive(crane, image, archives[name])
+        _pull_oci_image_archive(crane, image, archives[name])
 
     paths = BootstrapPaths.defaults()
     bundle, _ = _remote_arguments(paths)
@@ -476,6 +477,70 @@ def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str)
         for reference in images.values()
     )
     run_remote_script(import_script, privileged=True, timeout=1200)
+
+
+def _file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        while chunk := source.read(1024 * 1024):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _pull_oci_image_archive(crane: Path, image: str, destination: Path) -> None:
+    marker = destination.with_suffix(".json")
+    if destination.is_file() and marker.is_file():
+        try:
+            metadata = json.loads(marker.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            metadata = {}
+        if (
+            metadata.get("image") == image
+            and metadata.get("format") == "oci"
+            and metadata.get("tar_sha256") == _file_sha256(destination)
+        ):
+            return
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary_archive = destination.with_suffix(".download")
+    with tempfile.TemporaryDirectory(prefix="fw-g02-oci-") as temporary:
+        layout = Path(temporary) / "layout"
+        result = subprocess.run(
+            [
+                str(crane),
+                "pull",
+                "--platform",
+                "linux/amd64",
+                "--format",
+                "oci",
+                "--annotate-ref",
+                image,
+                str(layout),
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=1200,
+        )
+        if result.returncode:
+            raise GovernanceError("pinned G02 OCI image pull failed")
+        with tarfile.open(temporary_archive, mode="w") as archive:
+            for path in sorted(layout.rglob("*")):
+                archive.add(path, arcname=path.relative_to(layout).as_posix(), recursive=False)
+    temporary_archive.replace(destination)
+    marker.write_text(
+        json.dumps(
+            {
+                "format": "oci",
+                "image": image,
+                "tar_sha256": _file_sha256(destination),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
 
 def deploy_g02_lab(root: Path, candidate_sha: str) -> dict[str, Any]:
