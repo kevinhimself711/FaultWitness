@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
 
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.g01_failure_eval import (
+    _control_api_load_manifest,
     _transition_sql,
+    run_control_api_load_matrix,
     run_postgres_failure_matrix,
     run_redis_recovery_matrix,
 )
@@ -72,3 +75,32 @@ def test_redis_recovery_matrix_rejects_counter_drift(
     )
     with pytest.raises(GovernanceError, match="Redis recovery matrix"):
         run_redis_recovery_matrix("a" * 40)
+
+
+def test_control_api_load_manifest_is_private_and_candidate_bound() -> None:
+    manifest = _control_api_load_manifest("a" * 40)
+    assert "event_count" in manifest
+    assert "range(9_999)" in manifest
+    assert "g01-api-load-egress" in manifest
+    assert "imagePullPolicy: Never" in manifest
+    assert "docker.io/faultwitness/control-api:" + "a" * 40 in manifest
+
+
+def test_control_api_load_matrix_accepts_all_frozen_counters(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    result = {
+        "candidate_sha": "a" * 40,
+        "event_count": 10_000,
+        "ordered": True,
+        "reconnects": 100,
+        "final_cursor": 10_000,
+        "retention_gap": True,
+        "slow_consumer_closed": True,
+        "remaining_rows": 0,
+    }
+    monkeypatch.setattr(
+        "faultwitness_dev.g01_failure_eval.run_remote_script",
+        lambda *args, **kwargs: json.dumps(result),
+    )
+    assert run_control_api_load_matrix("a" * 40)["status"] == "pass"

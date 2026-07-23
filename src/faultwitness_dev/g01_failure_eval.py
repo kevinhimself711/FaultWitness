@@ -1,3 +1,4 @@
+# ruff: noqa: E501 -- embedded remote programs stay literal for auditability.
 """Real private-server failure matrices for the G01 immutable candidate."""
 
 from __future__ import annotations
@@ -5,6 +6,7 @@ from __future__ import annotations
 import base64
 import gzip
 import hashlib
+import json
 import re
 from pathlib import Path
 from typing import Any
@@ -225,3 +227,171 @@ printf %s {encoded} | base64 -d | \
         "pending_after_recovery": 0,
         "temporary_stream_removed": True,
     }
+
+
+def _control_api_load_manifest(candidate_sha: str) -> str:
+    script = f'''import asyncio
+import datetime
+import json
+import os
+
+from faultwitness.api.postgres_store import PostgresIncidentStore
+from faultwitness.api.schemas import FeedbackRequest, IncidentCreate
+from faultwitness.api.server import _database_url
+from faultwitness.api.store import RetentionGap
+
+TENANT = "ten_01ARZ3NDEKTSV4RRFFQ69G5FAY"
+
+async def main():
+    store = PostgresIncidentStore(_database_url())
+    await store.connect()
+    now = datetime.datetime.now(datetime.UTC)
+    request = IncidentCreate.model_validate({{
+        "source":"g01-load","environment_id":"env_g01","service_scope":["svc_g01"],
+        "time_window":{{"start":(now-datetime.timedelta(minutes=5)).isoformat(),"end":now.isoformat()}},
+        "symptom_summary":"synthetic live SSE matrix","mode":"diagnosis_only",
+        "budget":{{"deadline":(now+datetime.timedelta(minutes=20)).isoformat(),"max_steps":10,
+        "max_model_calls":0,"max_tokens":0,"max_cost_usd":0}}
+    }})
+    feedback = FeedbackRequest(rating=5, expected_state_version=0)
+    try:
+        snapshot, _ = await store.create(TENANT, "g01-load-create", request)
+        for value in range(9_999):
+            await store.feedback(TENANT, "usr_g01", snapshot.incident_id,
+                f"g01-feedback-{{value:05d}}", feedback)
+        events = await store.replay(TENANT, snapshot.incident_id, None)
+        event_count = len(events)
+        ordered = [item.sequence for item in events] == list(range(1, 10_001))
+        cursor = 0
+        reconnects = 0
+        for _ in range(100):
+            replay = await store.replay(TENANT, snapshot.incident_id, str(cursor))
+            batch = replay[:100]
+            cursor = batch[-1].sequence
+            reconnects += 1
+        async with store._pool().acquire() as connection:
+            await connection.execute("DELETE FROM incident_owner.event_projection "
+                "WHERE tenant_id=$1 AND incident_id=$2 AND sequence<=100", TENANT, snapshot.incident_id)
+        retention_gap = False
+        try:
+            await store.replay(TENANT, snapshot.incident_id, "0")
+        except RetentionGap as gap:
+            retention_gap = gap.earliest_cursor == "101"
+        slow, _ = await store.create(TENANT, "g01-slow-create", request)
+        subscriber = await store.subscribe(TENANT, slow.incident_id, buffer_size=1)
+        await store.feedback(TENANT, "usr_g01", slow.incident_id, "g01-slow-1", feedback)
+        await store.feedback(TENANT, "usr_g01", slow.incident_id, "g01-slow-2", feedback)
+        slow_consumer_closed = subscriber.closed
+        async with store._pool().acquire() as connection, connection.transaction():
+            await connection.execute("DELETE FROM incident_owner.event_projection WHERE tenant_id=$1", TENANT)
+            await connection.execute("DELETE FROM incident_owner.feedback WHERE tenant_id=$1", TENANT)
+            await connection.execute("DELETE FROM incident_owner.api_idempotency WHERE tenant_id=$1", TENANT)
+            await connection.execute("DELETE FROM incident_owner.pending_approval WHERE tenant_id=$1", TENANT)
+            await connection.execute("DELETE FROM incident_owner.incident WHERE tenant_id=$1", TENANT)
+            remaining = await connection.fetchval("SELECT count(*) FROM incident_owner.incident WHERE tenant_id=$1", TENANT)
+        print(json.dumps({{"candidate_sha":"{candidate_sha}","event_count":event_count,
+            "ordered":ordered,"reconnects":reconnects,"final_cursor":cursor,
+            "retention_gap":retention_gap,"slow_consumer_closed":slow_consumer_closed,
+            "remaining_rows":remaining}}, sort_keys=True))
+    finally:
+        await store.close()
+
+asyncio.run(main())
+'''
+    return f"""apiVersion: v1
+kind: ConfigMap
+metadata: {{name: g01-api-load, namespace: fw-control}}
+data:
+  matrix.py: |
+{chr(10).join("    " + line for line in script.splitlines())}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {{name: g01-api-load-egress, namespace: fw-control}}
+spec:
+  podSelector: {{matchLabels: {{app.kubernetes.io/name: g01-api-load}}}}
+  policyTypes: [Egress]
+  egress:
+    - to: [{{namespaceSelector: {{matchLabels: {{kubernetes.io/metadata.name: kube-system}}}}}}]
+      ports: [{{protocol: UDP, port: 53}}, {{protocol: TCP, port: 53}}]
+    - to:
+        - namespaceSelector: {{matchLabels: {{kubernetes.io/metadata.name: fw-data}}}}
+          podSelector: {{matchLabels: {{app.kubernetes.io/name: postgres}}}}
+      ports: [{{protocol: TCP, port: 5432}}]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {{name: allow-g01-api-load-postgres, namespace: fw-data}}
+spec:
+  podSelector: {{matchLabels: {{app.kubernetes.io/name: postgres}}}}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector: {{matchLabels: {{kubernetes.io/metadata.name: fw-control}}}}
+          podSelector: {{matchLabels: {{app.kubernetes.io/name: g01-api-load}}}}
+      ports: [{{protocol: TCP, port: 5432}}]
+---
+apiVersion: batch/v1
+kind: Job
+metadata: {{name: g01-api-load, namespace: fw-control}}
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 900
+  template:
+    metadata: {{labels: {{app.kubernetes.io/name: g01-api-load}}}}
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      containers:
+        - name: matrix
+          image: docker.io/faultwitness/control-api:{candidate_sha}
+          imagePullPolicy: Never
+          command: [python, /config/matrix.py]
+          envFrom: [{{secretRef: {{name: fw-control-postgres-env}}}}]
+          volumeMounts: [{{name: script, mountPath: /config, readOnly: true}}]
+          securityContext: {{allowPrivilegeEscalation: false, runAsNonRoot: true, capabilities: {{drop: [ALL]}}}}
+      volumes: [{{name: script, configMap: {{name: g01-api-load}}}}]
+"""
+
+
+def run_control_api_load_matrix(candidate_sha: str) -> dict[str, Any]:
+    if not FULL_SHA.fullmatch(candidate_sha):
+        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+    manifest = base64.b64encode(_control_api_load_manifest(candidate_sha).encode()).decode()
+    script = f"""set -eu
+binding=$(/usr/local/bin/k3s kubectl -n fw-control get configmap \
+  fw-control-api-candidate -o jsonpath='{{.data.candidate_sha}}')
+test "$binding" = {candidate_sha}
+/usr/local/bin/k3s kubectl -n fw-control delete job g01-api-load \
+  --ignore-not-found --wait=true >/dev/null
+printf %s {manifest} | base64 -d | /usr/local/bin/k3s kubectl apply -f - >/dev/null
+for attempt in $(seq 1 450); do
+  succeeded=$(/usr/local/bin/k3s kubectl -n fw-control get job g01-api-load \
+    -o jsonpath='{{.status.succeeded}}')
+  failed=$(/usr/local/bin/k3s kubectl -n fw-control get job g01-api-load \
+    -o jsonpath='{{.status.failed}}')
+  test "$succeeded" = 1 && break
+  test "$failed" = 1 && exit 1
+  sleep 2
+done
+test "$succeeded" = 1
+/usr/local/bin/k3s kubectl -n fw-control logs job/g01-api-load
+"""
+    output = run_remote_script(script, privileged=True, timeout=960).strip()
+    try:
+        result = json.loads(output)
+    except json.JSONDecodeError as error:
+        raise GovernanceError("Control API load matrix returned invalid sanitized JSON") from error
+    expected = {
+        "candidate_sha": candidate_sha,
+        "event_count": 10_000,
+        "ordered": True,
+        "reconnects": 100,
+        "final_cursor": 10_000,
+        "retention_gap": True,
+        "slow_consumer_closed": True,
+        "remaining_rows": 0,
+    }
+    if any(result.get(key) != value for key, value in expected.items()):
+        raise GovernanceError("Control API load matrix did not meet frozen counters")
+    return {"status": "pass", **result}

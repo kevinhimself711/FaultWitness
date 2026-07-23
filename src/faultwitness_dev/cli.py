@@ -46,6 +46,7 @@ from faultwitness_dev.g01_eval import (
     inspect_g01_reconciliation,
 )
 from faultwitness_dev.g01_failure_eval import (
+    run_control_api_load_matrix,
     run_postgres_failure_matrix,
     run_redis_recovery_matrix,
 )
@@ -179,6 +180,8 @@ def parser() -> argparse.ArgumentParser:
     postgres_matrix_g01.add_argument("--candidate-sha", required=True)
     redis_matrix_g01 = subparsers.add_parser("run-g01-redis-matrix")
     redis_matrix_g01.add_argument("--candidate-sha", required=True)
+    api_matrix_g01 = subparsers.add_parser("run-g01-api-load-matrix")
+    api_matrix_g01.add_argument("--candidate-sha", required=True)
     infra_baseline = subparsers.add_parser("capture-infra-baseline")
     infra_baseline.add_argument("--candidate-sha", required=True)
     install_core = subparsers.add_parser("install-k3s-core")
@@ -448,6 +451,13 @@ def main() -> int:
             message = (
                 f"recovered and acknowledged {summary['recovered_count']} pending Redis "
                 "messages after consumer loss with zero final pending"
+            )
+        elif args.command == "run-g01-api-load-matrix":
+            summary = run_control_api_load_matrix(args.candidate_sha)
+            message = (
+                f"passed {summary['event_count']} live PostgreSQL-backed events, "
+                f"{summary['reconnects']} exact reconnects, retention gap, and "
+                "slow-consumer closure"
             )
         elif args.command == "capture-infra-baseline":
             summary = capture_preinstall_baseline(root, args.candidate_sha)
