@@ -9,10 +9,11 @@ import shlex
 import subprocess
 import tarfile
 import tempfile
+import time
 import urllib.request
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from pathlib import Path
 from typing import Any, Protocol
@@ -173,6 +174,214 @@ endpoint="http://$cluster_ip:4000"
             raise GovernanceError("flagd UI write readback was malformed") from error
         if canonical_json(readback) != canonical_json(document):
             raise GovernanceError("flagd UI write readback drifted")
+
+
+class LiveScenarioObserver:
+    def __init__(self, candidate_sha: str, fault_class: str) -> None:
+        self.candidate_sha = candidate_sha
+        self.fault_class = fault_class
+        self.baseline_cpu = 0.0
+        self.baseline_lag = 0.0
+        self.fault_started: datetime | None = None
+        self.recovery_started: datetime | None = None
+        self.fault_samples: list[dict[str, Any]] = []
+        self.recovery_samples: list[dict[str, Any]] = []
+
+    def _sample(self, since: datetime) -> dict[str, Any]:
+        payload = base64.b64encode(
+            json.dumps(
+                {
+                    "candidate_sha": self.candidate_sha,
+                    "fault_class": self.fault_class,
+                    "since_micros": int(since.timestamp() * 1_000_000),
+                    "since_rfc3339": since.isoformat().replace("+00:00", "Z"),
+                }
+            ).encode()
+        ).decode("ascii")
+        script = f"""set -eu
+python3 - <<'PY'
+import base64
+import json
+import subprocess
+import sys
+import urllib.parse
+import urllib.request
+
+request = json.loads(base64.b64decode({payload!r}))
+
+def kubectl(*args):
+    return subprocess.run(
+        ["/usr/local/bin/k3s", "kubectl", "-n", "fw-sut", *args],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+
+binding = kubectl(
+    "get", "configmap", "fw-g02-candidate-binding", "-o",
+    "jsonpath={{.data.candidate_sha}}",
+)
+if binding != request["candidate_sha"]:
+    raise SystemExit("candidate binding drift")
+
+deployments = json.loads(kubectl("get", "deployment", "-o", "json"))["items"]
+ready = all(
+    item.get("status", {{}}).get("readyReplicas", 0) == item["spec"].get("replicas", 1)
+    for item in deployments
+)
+frontend = json.loads(kubectl("get", "service", "frontend-proxy", "-o", "json"))
+frontend_url = "http://" + frontend["spec"]["clusterIP"] + ":8080/"
+try:
+    journey_status = urllib.request.urlopen(frontend_url).status
+except Exception:
+    journey_status = 0
+
+prometheus = json.loads(kubectl("get", "service", "prometheus", "-o", "json"))
+prometheus_url = "http://" + prometheus["spec"]["clusterIP"] + ":9090/api/v1/query"
+
+def promql(query):
+    url = prometheus_url + "?" + urllib.parse.urlencode({{"query": query}})
+    result = json.load(urllib.request.urlopen(url))["data"]["result"]
+    return float(result[0]["value"][1]) if result else 0.0
+
+cpu_rate = promql(
+    'sum(rate(container_cpu_usage_seconds_total{{namespace="fw-sut",pod=~"ad-.*",container="ad"}}[2m]))'
+)
+consumer_lag = promql('max(kafka_consumer_records_lag{{service_name="fraud-detection"}})')
+
+jaeger = json.loads(kubectl("get", "endpoints", "jaeger-query", "-o", "json"))
+jaeger_ip = jaeger["subsets"][0]["addresses"][0]["ip"]
+service = {{
+    "productCatalogFailure": "product-catalog",
+    "adHighCpu": "ad",
+    "paymentFailure": "payment",
+    "paymentUnreachable": "payment",
+    "kafkaQueueProblems": "fraud-detection",
+}}[request["fault_class"]]
+query = {{
+    "service": service,
+    "limit": "100",
+    "start": str(request["since_micros"]),
+    "lookback": "custom",
+}}
+url = "http://" + jaeger_ip + ":16686/jaeger/ui/api/traces?" + urllib.parse.urlencode(query)
+traces = json.load(urllib.request.urlopen(url)).get("data") or []
+descriptions = []
+error_spans = 0
+for trace in traces:
+    for span in trace.get("spans", []):
+        tags = {{tag["key"]: tag.get("value") for tag in span.get("tags", [])}}
+        if tags.get("error") is True or tags.get("otel.status_code") == "ERROR":
+            error_spans += 1
+        if tags.get("otel.status_description"):
+            descriptions.append(str(tags["otel.status_description"]))
+
+logs = kubectl(
+    "logs", "deployment/fraud-detection", "--since-time=" + request["since_rfc3339"],
+) if request["fault_class"] == "kafkaQueueProblems" else ""
+
+now = __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat()
+print(json.dumps({{
+    "recorded_at": now,
+    "ready": ready,
+    "journey_status": journey_status,
+    "cpu_rate": cpu_rate,
+    "consumer_lag": consumer_lag,
+    "trace_count": len(traces),
+    "error_spans": error_spans,
+    "descriptions": descriptions,
+    "kafka_log_error": "error" in logs.lower(),
+}}, sort_keys=True))
+PY
+"""
+        output = run_remote_script(script, privileged=True)
+        return json.loads(output)
+
+    def _active_observation(self, sample: Mapping[str, Any]) -> dict[str, Any]:
+        descriptions = "\n".join(str(item) for item in sample["descriptions"])
+        if self.fault_class == "productCatalogFailure":
+            found = "Product Catalog Fail Feature Flag Enabled" in descriptions
+            return {**sample, "journey_failed": found, "correlated_error": found}
+        if self.fault_class == "adHighCpu":
+            return {
+                **sample,
+                "cpu_rate": sample["cpu_rate"],
+                "baseline_cpu_max": self.baseline_cpu,
+                "correlated_span": sample["trace_count"] > 0,
+            }
+        if self.fault_class == "paymentFailure":
+            found = "Payment" in descriptions and sample["error_spans"] > 0
+            return {**sample, "checkout_failed": found, "payment_error": found}
+        if self.fault_class == "paymentUnreachable":
+            found = "payment" in descriptions.lower() and sample["error_spans"] > 0
+            return {**sample, "checkout_failed": found, "connection_error": found}
+        if self.fault_class == "kafkaQueueProblems":
+            return {
+                **sample,
+                "consumer_lag": sample["consumer_lag"],
+                "baseline_lag": self.baseline_lag,
+                "kafka_error": sample["kafka_log_error"] or sample["error_spans"] > 0,
+            }
+        raise GovernanceError("unsupported live fault observer")
+
+    def __call__(self, phase: str, fault_class: str) -> Observation:
+        if fault_class != self.fault_class:
+            raise GovernanceError("live observer fault class drifted")
+        if phase == "control":
+            sample = self._sample(datetime.now(UTC) - timedelta(minutes=2))
+            self.baseline_cpu = float(sample["cpu_rate"])
+            self.baseline_lag = float(sample["consumer_lag"])
+            healthy = sample["ready"] and sample["journey_status"] == 200
+            return {"state": OracleState.HEALTHY if healthy else OracleState.UNKNOWN}
+        if phase == "fault":
+            if self.fault_started is None:
+                self.fault_started = datetime.now(UTC)
+            elif self.fault_samples:
+                time.sleep(30)
+            deadline = time.monotonic() + 90
+            while True:
+                observation = self._active_observation(self._sample(self.fault_started))
+                active = (
+                    fault_state(fault_class, [observation, observation])
+                    == OracleState.FAULT_ACTIVE
+                )
+                if active:
+                    self.fault_samples.append(observation)
+                    return observation
+                if time.monotonic() >= deadline:
+                    return observation
+                time.sleep(5)
+        if phase == "recovery":
+            if self.recovery_started is None:
+                self.recovery_started = datetime.now(UTC)
+            elif self.recovery_samples:
+                time.sleep(30)
+            deadline = time.monotonic() + 90
+            while True:
+                sample = self._sample(self.recovery_started)
+                signal_ok = True
+                if self.fault_class == "adHighCpu":
+                    signal_ok = float(sample["cpu_rate"]) <= max(
+                        self.baseline_cpu, float(self.fault_samples[-1]["cpu_rate"])
+                    )
+                elif self.fault_class == "kafkaQueueProblems":
+                    signal_ok = float(sample["consumer_lag"]) <= float(
+                        self.fault_samples[-1]["consumer_lag"]
+                    )
+                observation = {
+                    **sample,
+                    "ready": bool(sample["ready"]),
+                    "journey_healthy": sample["journey_status"] == 200,
+                    "signal_not_worsening": signal_ok,
+                }
+                required = ("ready", "journey_healthy", "signal_not_worsening")
+                if all(observation[key] for key in required):
+                    self.recovery_samples.append(observation)
+                    return observation
+                if time.monotonic() >= deadline:
+                    return observation
+                time.sleep(5)
+        raise GovernanceError("unknown live observer phase")
 
 
 def _operation_root() -> Path:
@@ -428,8 +637,29 @@ with open(path, encoding="utf-8") as source_file:
             if reference in mapping:
                 line = f"{{indent}}image: {{quote}}{{mapping[reference]}}{{quote}}\\n"
         output.append(line)
+text = "".join(output)
+if '"emailMemoryLeak"' not in text:
+    needle = '      "flags": {{\\n        "productCatalogFailure": {{'
+    email_flag = '''      "flags": {{
+        "emailMemoryLeak": {{
+          "description": "Memory leak in the email service.",
+          "state": "ENABLED",
+          "variants": {{
+            "off": 0,
+            "1x": 1,
+            "10x": 10,
+            "100x": 100,
+            "1000x": 1000,
+            "10000x": 10000
+          }},
+          "defaultVariant": "off"
+        }},
+        "productCatalogFailure": {{'''
+    if text.count(needle) != 1:
+        raise SystemExit("FW_G02_EMAIL_FLAG_ANCHOR_DRIFT")
+    text = text.replace(needle, email_flag)
 with open(path, "w", encoding="utf-8", newline="\\n") as target_file:
-    target_file.writelines(output)
+    target_file.write(text)
 PY
 if grep -E '^[[:space:]]*image:[[:space:]]*' "$manifest" | grep -v '@sha256:'; then
   echo FW_G02_UNPINNED_IMAGE >&2
@@ -928,8 +1158,8 @@ def run_scenario(
         "state_sequence": ["HEALTHY", "FAULT_ACTIVE", "HEALTHY"],
         "original_digest": hashlib.sha256(canonical_json(original).encode()).hexdigest(),
         "restored_digest": hashlib.sha256(canonical_json(client.read()).encode()).hexdigest(),
-        "fault_observations": len(fault_observations),
-        "recovery_observations": len(recovery_observations),
+        "fault_observations": fault_observations,
+        "recovery_observations": recovery_observations,
     }
 
 
@@ -1048,12 +1278,16 @@ def evaluate_i0017(root: Path, candidate_sha: str) -> dict[str, Any]:
         "dependency_network": "paymentFailure",
         "runtime_data": "kafkaQueueProblems",
     }
-    smoke_results = [
-        next(result for result in adapter_results if result["fault_class"] == fault_class)
-        for fault_class in smoke_faults.values()
-    ]
-    for result in smoke_results:
-        result["scenario_id"] = "SMOKE-G02-" + result["family"].upper().replace("_", "-")
+    smoke_results: list[dict[str, Any]] = []
+    for family, fault_class in smoke_faults.items():
+        scenario = copy.deepcopy(by_fault[fault_class])
+        scenario["scenario_id"] = "SMOKE-G02-" + family.upper().replace("_", "-")
+        result = run_scenario(
+            scenario,
+            RemoteFlagClient(candidate_sha),
+            LiveScenarioObserver(candidate_sha, fault_class),
+        )
+        smoke_results.append(result)
 
     artifact_dir = root / "docs" / "evals" / "EVAL-G02-002" / "artifacts"
     _write_json(
@@ -1086,7 +1320,7 @@ def evaluate_i0017(root: Path, candidate_sha: str) -> dict[str, Any]:
             "candidate_sha": candidate_sha,
             "validation": "V-G02-006",
             "iteration_n": 4,
-            "environment": "deterministic-controller-contract",
+            "environment": "private-k3s-live",
             "scenarios": smoke_results,
             "owned_l2_ready": ["lab_bootstrap"],
             "start_time": started_at,

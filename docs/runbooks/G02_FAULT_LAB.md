@@ -27,9 +27,10 @@ The runner replaces complete image scalar values
 with their registered digests, applies every namespaced resource to `fw-sut`, waits for all
 Deployments and OpenSearch, and writes `fw-g02-candidate-binding`.
 
-Service images follow the generated manifest's declared runtime contract. The sole intentional
-capability exception is the digest-pinned 2.2.0 Flagd UI: G02 requires its `GET /api/read` and
-`POST /api/write` controller, while the manifest's older Flagd UI exposes only the read endpoint.
+Service images follow the generated manifest's declared runtime contract. Two intentional,
+digest-pinned 2.2.0 capability exceptions satisfy the frozen six-adapter scope: Flagd UI provides
+`GET /api/read` and `POST /api/write`, and Email plus the exact upstream `emailMemoryLeak` flag
+definition provides the memory-growth adapter. The generated manifest's older assets expose neither.
 
 The registered `docker-compose.minimal.yml` path is a pre-candidate fallback only. Selecting it
 requires a new candidate configuration; the runner never switches profiles during an incident.
