@@ -20,3 +20,11 @@ This checkpoint is not a complete EVAL-G01-006 pass. The full eight-path conform
 - 10,000-event ordering/projection and 100-reconnect recovery matrix.
 - Retention-gap, slow-consumer, and backpressure outcomes under sustained load.
 - Correlated sanitized LangSmith evidence for executed API and SSE paths.
+
+## I-0015 replay checkpoint
+
+The candidate audit now passes a deterministic 10,000-event ordering and
+100-reconnect exact-cursor matrix plus retention-gap and bounded slow-consumer
+tests. The real OIDC private smoke remains passing for create/read/SSE and
+cross-tenant, identity-injection, role, and false-approval denial. Sustained live
+backpressure and correlated final-candidate Trace evidence remain open.

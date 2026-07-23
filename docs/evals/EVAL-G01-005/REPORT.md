@@ -19,3 +19,14 @@ This checkpoint is not a complete EVAL-G01-005 pass. The 82-transition real-data
 - 10,000 duplicate deliveries and 100 deterministic crash schedules.
 - Stale-fence races, Redis pending recovery, poison DLQ, and final reconciliation.
 - Correlated sanitized LangSmith evidence for executed durable runtime paths.
+
+## I-0015 replay checkpoint
+
+The audit suite now executes 10,000 duplicate Inbox deliveries and 100 injected
+transaction failures against the semantic persistence adapter, proving one
+mutation per Event and zero partial state/Outbox/idempotency commit in the
+reference matrix. Private candidate `16294bc` additionally reconciled all four
+owner Outboxes, DLQ, stale leases, Trace delivery state, migrations, and six
+candidate bindings to zero drift or pending work. Real PostgreSQL execution of
+all 82 transitions, stale-fence races, Redis crash recovery, and correlated Trace
+evidence remain blocking.

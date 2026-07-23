@@ -15,5 +15,5 @@
       "reason": "G01 requires sanitized correlated traces for authenticated API state and SSE flows before closure."
     }
   },
-  "open_evidence": ["full eight-path API and identity denial matrix", "10,000-event ordering and 100-reconnect recovery", "retention and sustained backpressure matrix", "correlated LangSmith API and SSE traces"]
+  "open_evidence": ["full live eight-path API and identity denial matrix", "sustained live backpressure matrix", "correlated LangSmith API and SSE traces on final candidate"]
 }

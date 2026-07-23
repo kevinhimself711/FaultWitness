@@ -22,7 +22,7 @@
   "open_evidence": [
     "15-minute platform and observability readiness plus controlled recovery",
     "paired authorized controls and network secret schema object-prefix observability denials",
-    "fresh-target PostgreSQL restore with exact canonical digest equality",
+    "same-final-SHA PostgreSQL restore replay",
     "persistent restart and correlated synthetic telemetry evidence",
     "resource retention image-digest SBOM license and provenance audit",
     "sanitized public evidence and publication scan"

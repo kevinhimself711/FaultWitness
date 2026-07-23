@@ -36,6 +36,14 @@ five-case NetworkPolicy, and zero-Docker-regression smokes. This is now the
 manifest's evaluated private checkpoint; the remaining evidence debt still keeps
 the Eval pending.
 
+I-0015 later passed candidate-bound durable reconciliation on `16294bc`: all six
+deployment bindings and three migrations matched, while DLQ, four-owner Outbox
+backlog, stale leases, and pending Trace deliveries were zero. The same candidate
+passed fresh-target PostgreSQL restore with exact schema/data digest equality.
+Public PR `#18` then ran audit-head `72aff8f5d23acaa1141a8b30404b9512f24a11a0`;
+Ubuntu verify, Windows verify, and Ubuntu audit all passed. These public and
+private checkpoints are not yet the same SHA, so final binding remains open.
+
 ## Passing checkpoint evidence
 
 - Candidate deployment: platform, migrations `001_i0011` through `003_i0013`,
@@ -47,13 +55,16 @@ the Eval pending.
   attributable usage.
 - Runtime: runc, gVisor, Kata, and NVIDIA workload smokes; all five frozen
   NetworkPolicy cases; existing Docker baseline with zero regression.
+- Reconciliation/recovery: zero DLQ, Outbox backlog, stale lease, and pending Trace;
+  fresh-target PostgreSQL restore with matching schema/data digests.
+- Public CI: PR `#18`, run `30001508078`, passed all three protected required checks.
 
 ## Open evidence
 
 - Replay EVAL-G01-001 through EVAL-G01-008 on the final candidate-equivalent
   artifact set and clear every manifest's declared evidence debt.
 - Complete all fourteen failure walkthroughs, including persistence, queue,
-  checkpoint, SSE load, trace outage, canary, policy-outage, clean-clone, restore,
-  rollback, and reconciliation matrices.
+  checkpoint, sustained live SSE backpressure, trace outage, canary, policy-outage,
+  clean-clone, and project-only rollback matrices.
 - Bind required Windows and Ubuntu public checks and private evidence to one final
   full SHA, then run positive and negative close-readiness without closing G01.
