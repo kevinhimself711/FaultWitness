@@ -58,10 +58,10 @@ def bundle() -> SecretBundle:
     )
 
 
-def test_ssh_connection_retries_only_before_remote_session(tmp_path: Path) -> None:
+def test_ssh_connection_timeout_is_explicit(tmp_path: Path) -> None:
     arguments = _ssh_base_arguments(bundle(), BootstrapPaths.under(tmp_path / "private"))
     assert "ConnectTimeout=10" in arguments
-    assert "ConnectionAttempts=3" in arguments
+    assert not any(argument.startswith("ConnectionAttempts=") for argument in arguments)
 
 
 def capability_document() -> dict:

@@ -517,8 +517,6 @@ def _ssh_base_arguments(bundle: SecretBundle, paths: BootstrapPaths) -> list[str
         "-o",
         "ConnectTimeout=10",
         "-o",
-        "ConnectionAttempts=3",
-        "-o",
         "StrictHostKeyChecking=yes",
         "-o",
         f"UserKnownHostsFile={paths.known_hosts_file}",

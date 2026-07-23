@@ -19,7 +19,7 @@ def _verify_fresh_ssh_session() -> int:
     """Require a new SSH session after disruptive host-level recovery."""
     for attempt in range(1, 7):
         try:
-            run_remote_script("set -eu\nprintf 'fresh-session\\n'\n", privileged=False, timeout=30)
+            run_remote_script("set -eu\nprintf 'fresh-session\\n'\n", privileged=True, timeout=30)
             return attempt
         except GovernanceError as error:
             if "connection_timeout" not in str(error) or attempt == 6:

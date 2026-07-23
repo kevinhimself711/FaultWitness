@@ -85,7 +85,10 @@ def test_fresh_ssh_session_retries_only_connection_timeout(
         ]
     )
 
+    observed: list[dict[str, object]] = []
+
     def remote(*args: object, **kwargs: object) -> str:
+        observed.append(kwargs)
         result = next(attempts)
         if isinstance(result, Exception):
             raise result
@@ -94,6 +97,7 @@ def test_fresh_ssh_session_retries_only_connection_timeout(
     monkeypatch.setattr("faultwitness_dev.g01_recovery.run_remote_script", remote)
     monkeypatch.setattr("faultwitness_dev.g01_recovery.time.sleep", lambda seconds: None)
     assert _verify_fresh_ssh_session() == 2
+    assert all(call["privileged"] is True for call in observed)
 
 
 def test_fresh_ssh_session_rejects_non_timeout_error(monkeypatch: pytest.MonkeyPatch) -> None:
