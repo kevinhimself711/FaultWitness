@@ -86,6 +86,21 @@ def _test_group(root: Path, *paths: str) -> dict[str, Any]:
     return {"status": "pass", "output_sha256": hashlib.sha256(output.encode()).hexdigest()}
 
 
+def _eval_manifest_debt(root: Path, candidate_sha: str, *, include_final: bool) -> list[str]:
+    stop = 10 if include_final else 9
+    debt: list[str] = []
+    for number in range(1, stop):
+        path = root / "docs" / "evals" / f"EVAL-G01-{number:03d}" / "manifest.json"
+        document = json.loads(path.read_text(encoding="utf-8"))
+        if (
+            document.get("status") != "pass"
+            or document.get("evaluated_revision") != candidate_sha
+            or document.get("open_evidence")
+        ):
+            debt.append(document["eval_id"])
+    return debt
+
+
 def _platform_stability(root: Path, candidate_sha: str) -> dict[str, Any]:
     """Apply the operator's narrow post-window generic-error adjudication."""
     started = time.monotonic()
@@ -225,13 +240,15 @@ def evaluate_g01(root: Path, candidate_sha: str, *, profile: str) -> dict[str, A
         else {"status": "deferred_private"},
     }
     walkthroughs = _fourteen_walkthroughs(root, candidate_sha, run_private=private)
+    upstream_debt = _eval_manifest_debt(root, candidate_sha, include_final=False)
+    passed = walkthroughs["pass_count"] == 14 and private and not upstream_debt
     return {
         "schema_version": "1.0.0",
         "eval_id": "EVAL-G01-009",
         "candidate_sha": candidate_sha,
         "profile": profile,
         "evaluated_at": datetime.now(UTC).isoformat(),
-        "status": "pass" if walkthroughs["pass_count"] == 14 and private else "pending",
+        "status": "pass" if passed else "pending",
         "audit": {
             "status": "pass",
             "summary_sha256": hashlib.sha256(
@@ -242,9 +259,8 @@ def evaluate_g01(root: Path, candidate_sha: str, *, profile: str) -> dict[str, A
         "platform": platform,
         "services": services,
         "walkthroughs": walkthroughs,
-        "readiness": "private evidence remains required"
-        if not private
-        else "candidate evidence collected",
+        "upstream_eval_debt": upstream_debt,
+        "readiness": "candidate evidence complete" if passed else "blocking evidence remains",
     }
 
 
@@ -256,22 +272,24 @@ def evaluate_g01_close(root: Path, candidate_sha: str) -> dict[str, Any]:
         path = root / "docs" / "evals" / f"EVAL-G01-{number:03d}" / "manifest.json"
         document = json.loads(path.read_text(encoding="utf-8"))
         manifests.append(document)
-    incomplete = [
-        document["eval_id"]
-        for document in manifests
-        if document.get("status") != "pass"
-        or document.get("evaluated_revision") != candidate_sha
-        or document.get("open_evidence")
-    ]
+    incomplete = _eval_manifest_debt(root, candidate_sha, include_final=True)
     iterations = [
         load_data(root / "governance" / "iterations" / f"I-{number:04d}.yaml")
         for number in range(7, 16)
     ]
     incomplete_iterations = [item["id"] for item in iterations if item.get("status") != "completed"]
-    if incomplete or incomplete_iterations:
+    missing_commits = [
+        item["id"]
+        for item in iterations
+        if not isinstance(item.get("commit"), str) or len(item["commit"]) != FULL_SHA_LEN
+    ]
+    gate = load_data(root / "governance" / "gates" / "G01.yaml")
+    waivers = gate.get("waivers", [])
+    if incomplete or incomplete_iterations or missing_commits or waivers:
         raise GovernanceError(
             "G01 close readiness rejected incomplete evidence: "
-            f"evals={incomplete}, iterations={incomplete_iterations}"
+            f"evals={incomplete}, iterations={incomplete_iterations}, "
+            f"missing_commits={missing_commits}, waivers={len(waivers)}"
         )
     return {
         "eval_id": "EVAL-G01-009-CLOSE",
