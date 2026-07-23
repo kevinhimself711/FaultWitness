@@ -666,6 +666,10 @@ if grep -E '^[[:space:]]*image:[[:space:]]*' "$manifest" | grep -v '@sha256:'; t
   exit 41
 fi
 /usr/local/bin/k3s kubectl apply -n fw-sut -f "$manifest"
+if ! /usr/local/bin/k3s kubectl -n fw-sut exec deployment/flagd -c flagd-ui -- \
+  grep -q '"emailMemoryLeak"' /app/data/demo.flagd.json; then
+  /usr/local/bin/k3s kubectl -n fw-sut rollout restart deployment/flagd
+fi
 /usr/local/bin/k3s kubectl -n fw-sut create configmap fw-g02-candidate-binding \
   --from-literal=candidate_sha={candidate_sha} \
   --from-literal=image_set_digest={validation['image_set_digest']} \
