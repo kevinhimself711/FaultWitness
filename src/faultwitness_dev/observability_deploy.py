@@ -149,7 +149,9 @@ def diagnose_trace_service() -> str:
     )
 
 
-def run_trace_service_smoke(candidate_sha: str) -> dict[str, Any]:
+def run_trace_service_smoke(
+    candidate_sha: str, *, inject_uncertain_ack: bool = False
+) -> dict[str, Any]:
     if not FULL_SHA.fullmatch(candidate_sha):
         raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
     manifest = base64.b64encode(_smoke_manifest(candidate_sha).encode()).decode()
@@ -185,7 +187,7 @@ test "$succeeded" = 1
     }
     if any(result.get(key) != value for key, value in expected.items()):
         raise GovernanceError("trace service smoke did not satisfy the frozen outcome matrix")
-    relay = relay_langsmith(candidate_sha)
+    relay = relay_langsmith(candidate_sha, inject_uncertain_ack=inject_uncertain_ack)
     if relay["pending_traces"] != 0 or relay["pending_langsmith"] != 0:
         raise GovernanceError("LangSmith operator relay did not drain the candidate buffer")
     if result["langsmith_trace_id"] not in relay["langsmith_trace_ids"]:
@@ -197,7 +199,7 @@ test "$succeeded" = 1
     return {"candidate_sha": candidate_sha, **result}
 
 
-def relay_langsmith(candidate_sha: str) -> dict[str, Any]:
+def relay_langsmith(candidate_sha: str, *, inject_uncertain_ack: bool = False) -> dict[str, Any]:
     if not FULL_SHA.fullmatch(candidate_sha):
         raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
     private = run_remote_script(
@@ -238,6 +240,8 @@ def relay_langsmith(candidate_sha: str) -> dict[str, Any]:
     base = f"http://127.0.0.1:{local_port}"
     headers = {"x-faultwitness-ingest-token": token}
     exported: list[str] = []
+    export_attempts = 0
+    uncertain_replay: tuple[str, str, str] | None = None
     try:
         with httpx.Client(timeout=10) as client:
             for _ in range(30):
@@ -264,12 +268,34 @@ def relay_langsmith(candidate_sha: str) -> dict[str, Any]:
                 )
                 try:
                     summary = asyncio.run(exporter.export(trace))
+                    export_attempts += 1
                 except Exception as error:
                     client.post(
                         base + f"/internal/v1/relay/langsmith/{trace.trace_ref}/retry",
                         headers=headers,
                     )
                     raise GovernanceError("LangSmith operator relay failed") from error
+                if inject_uncertain_ack and uncertain_replay is None:
+                    retry = client.post(
+                        base + f"/internal/v1/relay/langsmith/{trace.trace_ref}/retry",
+                        headers=headers,
+                    )
+                    if retry.status_code != 204:
+                        raise GovernanceError("Trace Service rejected uncertain-ACK replay")
+                    uncertain_replay = (
+                        trace.trace_ref,
+                        trace.payload_digest,
+                        summary["remote_trace_id"],
+                    )
+                    continue
+                if uncertain_replay is not None and not exported:
+                    expected_ref, expected_digest, expected_remote = uncertain_replay
+                    if (
+                        trace.trace_ref != expected_ref
+                        or trace.payload_digest != expected_digest
+                        or summary["remote_trace_id"] != expected_remote
+                    ):
+                        raise GovernanceError("uncertain-ACK replay changed trace identity")
                 ack = client.post(
                     base + f"/internal/v1/relay/langsmith/{trace.trace_ref}/ack",
                     headers=headers,
@@ -294,6 +320,8 @@ def relay_langsmith(candidate_sha: str) -> dict[str, Any]:
         **status,
         "relayed_langsmith_traces": len(exported),
         "langsmith_trace_ids": exported,
+        "langsmith_export_attempts": export_attempts,
+        "uncertain_ack_replay_count": 1 if uncertain_replay is not None else 0,
     }
 
 

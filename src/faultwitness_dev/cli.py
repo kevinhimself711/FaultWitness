@@ -234,6 +234,8 @@ def parser() -> argparse.ArgumentParser:
     subparsers.add_parser("diagnose-trace-service")
     smoke_trace = subparsers.add_parser("smoke-trace-service")
     smoke_trace.add_argument("--candidate-sha", required=True)
+    trace_matrix = subparsers.add_parser("run-g01-trace-matrix")
+    trace_matrix.add_argument("--candidate-sha", required=True)
     deploy_model = subparsers.add_parser("deploy-model-gateway")
     deploy_model.add_argument("--candidate-sha", required=True)
     inspect_model = subparsers.add_parser("inspect-model-gateway")
@@ -612,6 +614,13 @@ def main() -> int:
             message = (
                 f"passed sanitized LangSmith/OTLP/archive trace smoke on "
                 f"{summary['candidate_sha']} with zero pending delivery"
+            )
+        elif args.command == "run-g01-trace-matrix":
+            summary = run_trace_service_smoke(args.candidate_sha, inject_uncertain_ack=True)
+            message = (
+                f"replayed {summary['uncertain_ack_replay_count']} uncertain LangSmith ACK "
+                f"across {summary['langsmith_export_attempts']} stable export attempts with "
+                "zero pending delivery"
             )
         elif args.command == "deploy-model-gateway":
             summary = deploy_model_gateway(root, args.candidate_sha)
