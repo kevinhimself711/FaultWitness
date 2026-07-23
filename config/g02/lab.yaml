@@ -34,7 +34,7 @@ images:
   - {name: otel-collector, platform: linux/amd64, reference: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib@sha256:d7c3656127e8629a0fe04e5ca18916b39de12bfc5de2f77a462e7aa9700d34ba"}
   - {name: busybox, platform: linux/amd64, reference: "index.docker.io/library/busybox@sha256:7a3ebe5bfd1a4a19797d20b0c0bb39d44393e9a03fd852c0865b0f540d868df0"}
   - {name: grafana, platform: linux/amd64, reference: "index.docker.io/grafana/grafana@sha256:7c064e627d9cb50c3485c9ded5ca0222de89a08e41403322a0c3ca6f1777a8d1"}
-  - {name: jaeger, platform: linux/amd64, reference: "index.docker.io/jaegertracing/jaeger@sha256:4c8423cd8fa8b727bd632f0acda2cc39118f21a4bdcef322a6c9ddbeb6dcd424"}
+  - {name: jaeger, platform: linux/amd64, reference: "index.docker.io/jaegertracing/jaeger@sha256:82dd44b2bc10d521da77d6f3ea1cf4616feaaf1b6294d07321815560c367af11"}
   - {name: opensearch, platform: linux/amd64, reference: "index.docker.io/opensearchproject/opensearch@sha256:61c97e6da9e307f5511793f776d3c47d5faa663ad70a432f1b9ed62767b18505"}
   - {name: postgres, platform: linux/amd64, reference: "index.docker.io/library/postgres@sha256:b86568d3e0fe1dfaeff52714f9da36f206a30e4c49131b82bf96982d78627409"}
   - {name: valkey, platform: linux/amd64, reference: "index.docker.io/valkey/valkey@sha256:78aec401a63daa9218305e7d7cb9152cbd74b1d3c8a78d86683553d3a298690f"}
