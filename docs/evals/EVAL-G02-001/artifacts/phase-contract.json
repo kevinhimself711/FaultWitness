@@ -1,0 +1,38 @@
+{
+  "candidate_sha": "a4c242bab5a289fa6e57fff3a38d004558e15794",
+  "cases": [
+    {
+      "case": "dag_and_cache",
+      "status": "pass"
+    },
+    {
+      "case": "phase_dependency",
+      "status": "pass"
+    },
+    {
+      "case": "resume_infra_failed",
+      "status": "pass"
+    },
+    {
+      "case": "from_failed",
+      "status": "pass"
+    },
+    {
+      "case": "destructive_once",
+      "status": "pass"
+    }
+  ],
+  "end_time": "2026-07-23T19:32:11.371003+00:00",
+  "eval_id": "EVAL-G02-001",
+  "iteration_n": 5,
+  "open_evidence": [],
+  "owned_l2_ready": [
+    "candidate_binding",
+    "manifest_debt",
+    "reconciliation"
+  ],
+  "schema_version": "1.0.0",
+  "start_time": "2026-07-23T19:32:11.222090+00:00",
+  "status": "pass",
+  "validation": "V-G02-001"
+}

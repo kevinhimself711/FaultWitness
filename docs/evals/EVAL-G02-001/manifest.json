@@ -1,14 +1,36 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "eval_id": "EVAL-G02-001",
   "gate": "G02",
   "iteration": "I-0016",
-  "evaluated_revision": "not-run",
-  "status": "pending",
-  "environments": ["planned-local-deterministic"],
-  "commands": ["uv run python -m faultwitness_dev eval-iteration I-0016 --candidate-sha <full-sha>"],
+  "candidate_sha": "a4c242bab5a289fa6e57fff3a38d004558e15794",
+  "evaluated_revision": "a4c242bab5a289fa6e57fff3a38d004558e15794",
+  "evidence_head_sha": "a4c242bab5a289fa6e57fff3a38d004558e15794",
+  "status": "pass",
+  "subject_digests": {
+    "src/faultwitness_dev/g02_eval.py": "0b393122469c8076010769e3d286216004d8754bcb570818f3f45a8aa9661b8c",
+    "schemas/governance/eval-manifest.schema.json": "5be101e096688f10aa25aaf3160b6bdb4af7010e0693246a3b3e542e6035be6f"
+  },
+  "environment_fingerprint": "c1fb068c76d443a3e6888e927af0bded78478f92d00d2873a032aeb27101f21e",
+  "phases": [
+    {
+      "phase_id": "iteration-contract",
+      "status": "pass",
+      "start_time": "2026-07-23T19:32:11.222090+00:00",
+      "end_time": "2026-07-23T19:32:11.371003+00:00",
+      "cache_key": "ee0993a141015fdcc728b2e2aadffa2e65d6592c5bac2c8691df9665e4d9d0a4",
+      "artifact_digest": "7515f110703c54ee53d6fc871f0132565ca441e2431150522dc40128e2d524a1",
+      "artifact_path": "docs/evals/EVAL-G02-001/artifacts/phase-contract.json",
+      "private_artifact_uri": null,
+      "execution_count": 1,
+      "inherited_from_manifest": null
+    }
+  ],
+  "environments": ["windows-local-deterministic"],
+  "commands": ["uv run python -m faultwitness_dev eval-iteration I-0016 --candidate-sha a4c242bab5a289fa6e57fff3a38d004558e15794"],
   "artifacts": [
     "docs/evals/EVAL-G02-001/PLAN.md",
+    "docs/evals/EVAL-G02-001/REPORT.md",
     "docs/evals/EVAL-G02-001/artifacts/phase-contract.json"
   ],
   "evidence_urls": [],
