@@ -21,6 +21,14 @@ This checkpoint does not complete EVAL-G01-009. Earlier Eval debt, the complete
 fourteen failure walkthroughs, public cross-platform evidence, clean-clone and
 rollback rehearsal, reconciliation, and positive close-readiness remain open.
 
+After that private checkpoint, audit-head `aad15e2f8a617386864c6232f0cf79d6ba113019`
+added the operator-approved post-window transport adjudication with fail-closed
+boundary tests, 10,000-event/100-reconnect SSE and 10,000-delivery/100-crash
+reference matrices, upstream-Eval debt blocking, and the exact nine-asset G01
+closure boundary. `verify-fast` passes 220 tests. This newer audit head is not yet
+the private deployed candidate and therefore does not replace the evaluated
+revision in the manifest.
+
 ## Passing checkpoint evidence
 
 - Candidate deployment: platform, migrations `001_i0011` through `003_i0013`,

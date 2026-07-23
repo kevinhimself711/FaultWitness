@@ -9,6 +9,7 @@
 
 ### Tooling
 
+- Extend I-0015 to 220 passing tests with 10,000-event/100-reconnect SSE coverage, 10,000-delivery/100-crash atomicity and dedupe reference matrices, fail-closed upstream-Eval debt checks, and exact G01 closure-boundary enforcement; retain private integration, replay, recovery, and public candidate binding as open.
 - Add the candidate-bound G01 audit and close-readiness commands on `bc8c040a`, pass 210 local tests and the private deployment/runtime/network/service checkpoint, and retain all unresolved failure-matrix, cross-platform, replay, reconciliation, restore, rollback, and closure evidence as explicit I-0015 debt.
 - Deploy the authenticated private Model Gateway checkpoint from candidate `18ff0c1`: observe `1/1 Ready` ClusterIP service and pass a real Keycloak OIDC-to-Bailian Qwen smoke with exact route and attributed usage; retain all EVAL-G01-009 full-candidate work as open.
 - Add the private candidate-bound Model Gateway service and deployment path: strict OIDC-derived tenant context, identity-injection denial, non-root read-only ClusterIP workload, repository-external Bailian secret handoff, exact catalog packaging, authenticated live smoke, and complete runtime dependency locking.
