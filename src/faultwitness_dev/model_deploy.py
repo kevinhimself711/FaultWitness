@@ -223,9 +223,18 @@ kind: ConfigMap
 metadata: {{name: model-gateway-smoke, namespace: fw-control}}
 data:
   smoke.py: |
-    import json, os, httpx
+    import json, os, time, httpx
     identity = "http://keycloak.fw-system.svc.cluster.local:8080/realms/faultwitness/protocol/openid-connect/token"
-    token = httpx.post(identity, data={{"grant_type":"password","client_id":"faultwitness-api","username":"tenant-a-operator","password":os.environ["TENANT_A_OPERATOR"]}}, timeout=10).json()["access_token"]
+    for attempt in range(30):
+      try:
+        token_response = httpx.post(identity, data={{"grant_type":"password","client_id":"faultwitness-api","username":"tenant-a-operator","password":os.environ["TENANT_A_OPERATOR"]}}, timeout=10)
+        token_response.raise_for_status()
+        token = token_response.json()["access_token"]
+        break
+      except httpx.TransportError:
+        if attempt == 29:
+          raise
+        time.sleep(1)
     body = {{"correlation_id":"corr_01ARZ3NDEKTSV4RRFFQ69G5FAV","model_family":"qwen","messages":[{{"role":"user","content":"Reply with exactly OK."}}],"target_json_schema":None,"tool_schemas":[]}}
     response = httpx.post("http://model-gateway.fw-control.svc.cluster.local:8002/internal/v1/models/complete", headers={{"Authorization":"Bearer "+token}}, json=body, timeout=180)
     document = response.json()
