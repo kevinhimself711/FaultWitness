@@ -4,7 +4,9 @@
 
 Result: pending.
 
-No G01 candidate exists and no walkthrough, public candidate run, private-server rehearsal, or close-readiness audit has been executed by the planning commit.
+EVAL-G01-009 remains pending. Candidate `18ff0c1302f156d84b2f8e164fa4e6a2450bcbed` completed an interim private deployment checkpoint: the candidate-bound non-root Model Gateway reached `1/1 Ready` behind a ClusterIP and passed a real Keycloak OIDC-to-Bailian Qwen completion with exact model and attributable usage. The checkpoint also corrected the synthetic Keycloak tenant claim to the frozen typed TenantId contract and locked the complete YAML/JSON-Schema runtime dependency closure.
+
+This checkpoint is not the immutable full G01 candidate and does not satisfy the fourteen walkthroughs, public cross-platform evidence, early-Eval debt, queue/Trace reconciliation, or close-readiness audit.
 
 ## Required evidence
 
