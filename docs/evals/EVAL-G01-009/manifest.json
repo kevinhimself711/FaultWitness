@@ -15,5 +15,5 @@
       "reason": "Complete sanitized LangSmith evidence is a blocking no-waiver condition for the G01 candidate audit."
     }
   },
-  "open_evidence": ["public and private final-candidate binding", "cold-JWKS policy canary and supply-chain walkthrough evidence", "early Eval debt replay on one final SHA", "clean-clone rehearsal", "complete Gate readiness and close-mode negative audit"]
+  "open_evidence": ["public and private final-candidate binding", "policy canary and supply-chain walkthrough evidence", "early Eval debt replay on one final SHA", "clean-clone rehearsal", "complete Gate readiness and close-mode negative audit"]
 }

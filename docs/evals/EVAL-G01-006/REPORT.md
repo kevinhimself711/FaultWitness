@@ -34,6 +34,8 @@ The live private API matrix on candidate
 store for 10,000 events and 100 SSE reconnects with exact ordering, no loss,
 duplicate, or out-of-order event, correct retention-gap behavior, bounded
 slow-consumer closure, and zero rows after cleanup. Candidate `c297dc6527b11c3272cee6378a270cb24f5a13af`
-also passed the expanded live API path and denial matrix. The cold-JWKS Keycloak
-outage harness remains an explicit failed orchestration experiment and blocks
-promotion to a complete Eval pass.
+also passed the expanded live API path and denial matrix. Candidate `5638eb9`
+then passed the cold-JWKS Keycloak outage matrix: a pre-issued token was denied
+with HTTP 401 after Keycloak was stopped and the Control API cache was cleared,
+before any state mutation; both services recovered Ready and the temporary token
+Secret was removed. Final same-SHA replay and correlated Trace evidence remain.

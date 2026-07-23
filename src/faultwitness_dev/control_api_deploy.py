@@ -576,13 +576,22 @@ data:
   smoke.py: |
     import json
     import os
+    import time
     import httpx
 
-    response = httpx.get(
-        "http://control-api.fw-control.svc.cluster.local:8000/v1/tools",
-        headers={{"Authorization": "Bearer " + os.environ["TOKEN"]}},
-        timeout=15,
-    )
+    for attempt in range(60):
+        try:
+            response = httpx.get(
+                "http://control-api.fw-control.svc.cluster.local:8000/v1/tools",
+                headers={{"Authorization": "Bearer " + os.environ["TOKEN"]}},
+                timeout=15,
+            )
+            break
+        except httpx.ConnectError:
+            if attempt == 59:
+                print(json.dumps({{"cold_jwks_status": 0, "state_write_attempted": False}}))
+                raise
+            time.sleep(0.5)
     result = {{"cold_jwks_status": response.status_code, "state_write_attempted": False}}
     print(json.dumps(result, sort_keys=True))
     raise SystemExit(0 if response.status_code == 401 else 1)

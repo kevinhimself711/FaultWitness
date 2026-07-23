@@ -68,15 +68,15 @@ private checkpoints are not yet the same SHA, so final binding remains open.
   and drained to zero; the production PostgreSQL API delivered 10,000 ordered
   events across 100 reconnects with retention and backpressure checks.
 - Control API: candidate `c297dc6` passed the expanded live path and denial
-  matrix. The cold-JWKS Keycloak outage orchestration failed before producing a
-  parseable application result and remains open rather than being waived.
+  matrix. Candidate `5638eb9` passed cold-JWKS Keycloak outage fail-closed with
+  HTTP 401 before state mutation and recovered both services Ready.
 
 ## Open evidence
 
 - Replay EVAL-G01-001 through EVAL-G01-008 on the final candidate-equivalent
   artifact set and clear every manifest's declared evidence debt.
-- Complete remaining failure walkthrough evidence: cold-JWKS Keycloak outage,
-  OPA unavailability/default deny, all-surface canary/correlation, supply-chain,
+- Complete remaining failure walkthrough evidence: OPA unavailability/default
+  deny, all-surface canary/correlation, supply-chain,
   clean-clone, and final same-SHA reconciliation.
 - Bind required Windows and Ubuntu public checks and private evidence to one final
   full SHA, then run positive and negative close-readiness without closing G01.

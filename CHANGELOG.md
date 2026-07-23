@@ -13,8 +13,8 @@
   project-only Helm rollback/reinstall, 82-transition PostgreSQL atomicity,
   duplicate/crash/fencing checks, Redis pending recovery, uncertain-ACK
   LangSmith replay, and production-store 10,000-event/100-reconnect API/SSE load;
-  retain final same-SHA binding, cold-JWKS orchestration, policy/canary,
-  supply-chain, and close-readiness as open.
+  pass cold-JWKS Keycloak outage fail-closed with service recovery; retain final
+  same-SHA binding, policy/canary, supply-chain, and close-readiness as open.
 - Pass private durable reconciliation with six exact candidate bindings, three migrations, and zero DLQ/Outbox/stale-lease/Trace backlog; pass fresh-target PostgreSQL restore with exact schema/data digest equality; and pass all three public required checks on PR `#18` audit-head `72aff8f` while retaining final same-SHA binding as open.
 - Redeploy audit candidate `16294bc` across every private G01 component and pass candidate-bound platform/schema, OIDC API, sanitized Trace, Model Gateway, four-runtime, five-case network, and Docker-coexistence checks; retain unresolved public and deep recovery evidence.
 - Extend I-0015 to 220 passing tests with 10,000-event/100-reconnect SSE coverage, 10,000-delivery/100-crash atomicity and dedupe reference matrices, fail-closed upstream-Eval debt checks, and exact G01 closure-boundary enforcement; retain private integration, replay, recovery, and public candidate binding as open.
