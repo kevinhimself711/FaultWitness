@@ -5,7 +5,11 @@ from pathlib import Path
 import pytest
 
 from faultwitness_dev.errors import GovernanceError
-from faultwitness_dev.g01_failure_eval import _transition_sql, run_postgres_failure_matrix
+from faultwitness_dev.g01_failure_eval import (
+    _transition_sql,
+    run_postgres_failure_matrix,
+    run_redis_recovery_matrix,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -44,3 +48,27 @@ def test_postgres_failure_matrix_rejects_counter_drift(
     )
     with pytest.raises(GovernanceError, match="counter"):
         run_postgres_failure_matrix(ROOT, "a" * 40)
+
+
+def test_redis_recovery_matrix_accepts_crash_reclaim_and_zero_pending(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "faultwitness_dev.g01_failure_eval.run_remote_script",
+        lambda *args, **kwargs: "100\n100\n0\n",
+    )
+    result = run_redis_recovery_matrix("a" * 40)
+    assert result["status"] == "pass"
+    assert result["pending_after_recovery"] == 0
+
+
+@pytest.mark.parametrize("output", ["", "99\n100\n0\n", "100\n100\n1\n"])
+def test_redis_recovery_matrix_rejects_counter_drift(
+    monkeypatch: pytest.MonkeyPatch, output: str
+) -> None:
+    monkeypatch.setattr(
+        "faultwitness_dev.g01_failure_eval.run_remote_script",
+        lambda *args, **kwargs: output,
+    )
+    with pytest.raises(GovernanceError, match="Redis recovery matrix"):
+        run_redis_recovery_matrix("a" * 40)

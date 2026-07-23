@@ -45,7 +45,10 @@ from faultwitness_dev.g01_eval import (
     evaluate_g01_close,
     inspect_g01_reconciliation,
 )
-from faultwitness_dev.g01_failure_eval import run_postgres_failure_matrix
+from faultwitness_dev.g01_failure_eval import (
+    run_postgres_failure_matrix,
+    run_redis_recovery_matrix,
+)
 from faultwitness_dev.g01_recovery import (
     run_k3s_restore_rehearsal,
     run_k3s_snapshot_rehearsal,
@@ -174,6 +177,8 @@ def parser() -> argparse.ArgumentParser:
     rollback_g01.add_argument("--candidate-sha", required=True)
     postgres_matrix_g01 = subparsers.add_parser("run-g01-postgres-matrix")
     postgres_matrix_g01.add_argument("--candidate-sha", required=True)
+    redis_matrix_g01 = subparsers.add_parser("run-g01-redis-matrix")
+    redis_matrix_g01.add_argument("--candidate-sha", required=True)
     infra_baseline = subparsers.add_parser("capture-infra-baseline")
     infra_baseline.add_argument("--candidate-sha", required=True)
     install_core = subparsers.add_parser("install-k3s-core")
@@ -435,6 +440,12 @@ def main() -> int:
                 f"passed {summary['transition_count']} real PostgreSQL transitions, "
                 f"{summary['duplicate_delivery_attempts']} duplicate deliveries, "
                 f"{summary['crash_injection_count']} crash injections, and fencing checks"
+            )
+        elif args.command == "run-g01-redis-matrix":
+            summary = run_redis_recovery_matrix(args.candidate_sha)
+            message = (
+                f"recovered and acknowledged {summary['recovered_count']} pending Redis "
+                "messages after consumer loss with zero final pending"
             )
         elif args.command == "capture-infra-baseline":
             summary = capture_preinstall_baseline(root, args.candidate_sha)

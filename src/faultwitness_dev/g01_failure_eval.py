@@ -166,3 +166,62 @@ printf %s {encoded} | base64 -d | gzip -d | \
         "current_fence_accept_count": 1,
         "persistent_rows_after_rollback": 0,
     }
+
+
+def run_redis_recovery_matrix(candidate_sha: str) -> dict[str, Any]:
+    """Leave messages pending under a crashed consumer, reclaim, ACK, and drain."""
+    if not FULL_SHA.fullmatch(candidate_sha):
+        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+    stream = f"fw:g01:recovery:{candidate_sha[:12]}"
+    inner = f"""set -eu
+cli() {{ redis-cli --no-auth-warning -a "$REDIS_PASSWORD" --raw "$@"; }}
+stream='{stream}'
+group='g01-recovery'
+cli DEL "$stream" >/dev/null
+cli XGROUP CREATE "$stream" "$group" 0 MKSTREAM >/dev/null
+for value in $(seq 1 100); do
+  cli XADD "$stream" '*' event_id "g01-event-$value" payload '{{}}' >/dev/null
+done
+cli XREADGROUP GROUP "$group" crashed-consumer COUNT 100 STREAMS "$stream" '>' >/dev/null
+pending_before=$(cli XPENDING "$stream" "$group" | head -1)
+ids=$(cli XPENDING "$stream" "$group" - + 100 | awk 'NR % 4 == 1 {{print $1}}')
+test "$(printf '%s\n' $ids | wc -l)" -eq 100
+cli XCLAIM "$stream" "$group" recovered-consumer 0 $ids JUSTID >/dev/null
+cli XACK "$stream" "$group" $ids >/dev/null
+pending_after=$(cli XPENDING "$stream" "$group" | head -1)
+length=$(cli XLEN "$stream")
+cli DEL "$stream" >/dev/null
+printf '%s\n%s\n%s\n' "$pending_before" "$length" "$pending_after"
+"""
+    encoded = base64.b64encode(inner.encode()).decode()
+    script = f"""set -eu
+binding=$(/usr/local/bin/k3s kubectl -n fw-system get configmap \
+  fw-runtime-candidate-binding -o jsonpath='{{.data.candidate_sha}}')
+test "$binding" = {candidate_sha}
+printf %s {encoded} | base64 -d | \
+  /usr/local/bin/k3s kubectl -n fw-data exec -i redis-0 -- sh -s
+"""
+    lines = [
+        line.strip()
+        for line in run_remote_script(script, privileged=True, timeout=180).splitlines()
+        if line.strip()
+    ]
+    try:
+        pending_before, stream_length, pending_after = map(int, lines)
+    except ValueError as error:
+        raise GovernanceError("Redis recovery matrix returned invalid counters") from error
+    if [pending_before, stream_length, pending_after] != [100, 100, 0]:
+        raise GovernanceError(
+            "Redis recovery matrix counter mismatch: "
+            f"pending_before={pending_before}, stream_length={stream_length}, "
+            f"pending_after={pending_after}"
+        )
+    return {
+        "candidate_sha": candidate_sha,
+        "status": "pass",
+        "published_count": 100,
+        "crashed_consumer_pending": 100,
+        "recovered_count": 100,
+        "pending_after_recovery": 0,
+        "temporary_stream_removed": True,
+    }
