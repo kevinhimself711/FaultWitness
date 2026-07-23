@@ -21,7 +21,9 @@ The owner host downloads the generated upstream K3s manifest from exact commit
 existing host-pinned SSH channel. Docker Hub images are pulled for `linux/amd64` by the already
 pinned crane binary and imported into K3s before apply; this is the registered path for the private
 host's Docker Hub reachability failure. OCI-layout archives preserve the upstream manifest digest
-through K3s import; converted tarball digests are rejected. The runner replaces complete image scalar values
+through K3s import; converted tarball digests are rejected. Remote archives are cached by their own
+OCI tar digest, so an unrelated image-set change cannot invalidate and retransmit every archive.
+The runner replaces complete image scalar values
 with their registered digests, applies every namespaced resource to `fw-sut`, waits for all
 Deployments and OpenSearch, and writes `fw-g02-candidate-binding`.
 

@@ -405,21 +405,40 @@ def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str)
     archives = {name: archive_root / f"{name}.oci.tar" for name in images}
     for name, image in images.items():
         _pull_oci_image_archive(crane, image, archives[name])
+    archive_digests = {name: _file_sha256(path) for name, path in archives.items()}
+    remote_names = {
+        name: f"{name}-{archive_digests[name]}.oci.tar" for name in archives
+    }
 
     paths = BootstrapPaths.defaults()
     bundle, _ = _remote_arguments(paths)
-    remote_root = f"/tmp/faultwitness-g02-images-{image_set_digest(config)[:12]}"
+    remote_root = "/tmp/faultwitness-g02-images"
     owner = shlex.quote(bundle.server_username)
-    run_remote_script(
+    migration_script = (
         f'group=$(id -gn {owner}); install -d -m 0700 -o {owner} -g "$group" '
-        f"{remote_root}\n",
-        privileged=True,
+        f"{remote_root}\n"
     )
+    for name, remote_name in remote_names.items():
+        expected = shlex.quote(archive_digests[name])
+        target = f"{remote_root}/{remote_name}"
+        migration_script += (
+            f"if ! test -f {target}; then\n"
+            f"  for candidate in /tmp/faultwitness-g02-images-*/{name}.tar; do\n"
+            '    test -f "$candidate" || continue\n'
+            f'    test "$(sha256sum "$candidate" | cut -d" " -f1)" = {expected} || continue\n'
+            f'    ln "$candidate" {target} 2>/dev/null || cp "$candidate" {target}\n'
+            f"    chown {owner}:\"$group\" {target}; chmod 0600 {target}; break\n"
+            "  done\n"
+            "fi\n"
+        )
+    run_remote_script(migration_script, privileged=True)
     inventory = run_remote_script(
-        f"for file in {remote_root}/*.tar; do "
-        'test -f "$file" || continue; '
-        'printf "%s=%s\\n" "$(basename "$file" .tar)" "$(stat -c %s "$file")"; '
-        "done\n",
+        "\n".join(
+            f'test -f {remote_root}/{remote_name} && printf "{name}=%s\\n" '
+            f'"$(stat -c %s {remote_root}/{remote_name})" || true'
+            for name, remote_name in remote_names.items()
+        )
+        + "\n",
         privileged=True,
     )
     remote_sizes = {
@@ -447,12 +466,13 @@ def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str)
     for name, archive in archives.items():
         if remote_sizes.get(name) == archive.stat().st_size:
             continue
+        remote_name = remote_names[name]
         result = subprocess.run(
             [
                 "scp",
                 *common,
                 str(archive),
-                f"{bundle.server_username}@{bundle.server_host}:{remote_root}/{name}.tar",
+                f"{bundle.server_username}@{bundle.server_host}:{remote_root}/{remote_name}",
             ],
             check=False,
             capture_output=True,
@@ -466,8 +486,8 @@ def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str)
                 + ")"
             )
     import_script = "set -eu\n" + "\n".join(
-        f"/usr/local/bin/k3s ctr images import {remote_root}/{name}.tar"
-        for name in archives
+        f"/usr/local/bin/k3s ctr images import {remote_root}/{remote_names[name]}"
+        for name in remote_names
     )
     for reference in images.values():
         normalized = containerd_normalized_reference(reference)

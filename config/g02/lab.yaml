@@ -10,33 +10,33 @@ fallback:
   path: docker-compose.minimal.yml
   activation: pre-candidate-only
 images:
-  - {name: accounting, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:d7ad9fee86139c287574968c587263e03ce635d1fd11b19516dd8523327f6eb4"}
-  - {name: ad, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:ebfa31866db4184316f76c426039995fe2204c81ba5c65215ea21b10270285e5"}
-  - {name: cart, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:07718d3a04e9d4baa164bfe9f431b2bc52bec1ba0187689a7ad28f71893599d4"}
-  - {name: checkout, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:51c78fa4053524b843701b868de2a6413e7ffbf69abb5f9dd6288ed899eec6b0"}
-  - {name: currency, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:9cf4c49a79d4165b6d72659b23faa222bdbbefd5908f01d893282da502656306"}
-  - {name: email, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:e7b11de1cd626f3e1117515d5775c058f9388ca367dd9c5653f977ea4840233f"}
-  - {name: flagd-ui, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:0738a32cecf129842d99843f470cfdb4091b9ff5b252d70b9850d5e24e82b438"}
-  - {name: fraud-detection, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:8dd2d74edae3e39b4b298b0a7d76710548b39227e41049e57c1fbcda9e701a1c"}
-  - {name: frontend, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:a72cd48ad9ef7fda7607813c57383d1ca6154d860916473976942d3ac24e473c"}
-  - {name: frontend-proxy, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:ca18ae559c122bd56663750cbb9bb375fdf62f8b2d64940195a6b0cccf380ace"}
-  - {name: image-provider, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:41a48e1759ef110aeccd6e89d23dd68382a1485a59cf266c05161ba8a3ea16e6"}
-  - {name: kafka, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:2df34bc41e796ea9e0fb1ed8b6229a3802625999c58813c792f9cb44ddc7a84a"}
-  - {name: load-generator, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:0b4f2ea15b16ff7b452f458524a39fbbc665454039c175c639a38ca7e63470f1"}
+  - {name: accounting, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:dcee7b4f0daef60c402ff858a534e43f502522bcc03fcd0811faee2dbbb0255f"}
+  - {name: ad, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:a748707565d9ded795c1b2e3cfa7397e6db00c2f0336ec8a77aace0db598cce8"}
+  - {name: cart, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:098efb0a6c4fd5a4ad8c078ddd2417eae027fa17700a81fc531e3105675b3bc4"}
+  - {name: checkout, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:050d145998bc16faab6fae07987341ea41afdbe2852cf1c1d7b646c7b791fe8a"}
+  - {name: currency, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:310946ef86fe026cc7f659742e3df2c9a82e48d7ba87cb975d0acc7481d8c36b"}
+  - {name: email, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:1c898990ac21d9d12e84bc3c6f09d06f293083b3142d895423182d9797ab9603"}
+  - {name: flagd-ui, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:b484d4cb20af0c6f508fcfcce144dc52f5849668bbc8461c1bfd7869122c94af"}
+  - {name: fraud-detection, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:13c2cfa126d50aa057f224fa2b18a7aa1085ca0eed659ccc2554a3b7494ccde5"}
+  - {name: frontend, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:9a035167d9e8e5d24257a289c12767579fea9c3a48f1f64de63bab30c0fff0f0"}
+  - {name: frontend-proxy, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:35b1a2f8e504aae06558afef13d02e9f817a0f976e4509a056ac2fc57307ba9d"}
+  - {name: image-provider, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:717d1ad56e998b4afc4355432eece140c7c1e7cff452991f6c7d6d6044b1d116"}
+  - {name: kafka, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:2a8f7c40a21312214fd3b48bcdc0a3f1ffce9850c27b4fb101479a9b67d701a0"}
+  - {name: load-generator, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:f5784b309a9f4ee15347dcebcffd34df44f34b6bcbd6253f338788294a7fff3f"}
   - {name: llm, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:d567f1f60f93bc67454b6c154b76c0de0e7cd516ff1acf9ab0f66806901adb5a"}
-  - {name: payment, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:797bed7a6827690f958b251e007c2c499ba7290a2392be8abaf78918fe112a5f"}
-  - {name: product-catalog, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:1280ff614e3000e898ad1a00e4c5d5275bff28a5057fc23a40b8855a61e5edbe"}
+  - {name: payment, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:c23ddf59215da70f8d33642bc93a84fae958e9ca8a7888b539f0a5f592795bd9"}
+  - {name: product-catalog, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:a5f94e62c6a84bc42f2b3e7e80742d01c868a141152a3f6f46434f03baec793a"}
   - {name: product-reviews, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:7210a6936123856116f39cf6ff9f9d4606e88c31cc3ffaab671d5f9862b36935"}
-  - {name: quote, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:c32e5bccef1fa1bbd15d43a65f60bd1855b9594f38625654f2c4e37c3df2120d"}
-  - {name: recommendation, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:7feda1d5c8f9fde5e45e5af43beb59040bd8eab4d999472f36babf1a323422fc"}
-  - {name: shipping, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:7a75fb45fde353efc2b777d23246d5f415c58b7031ebcdb95058443b3f477bb9"}
+  - {name: quote, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:38b5e0c2a389b13faa96f1733feda3f943b097555a4078ae854798b5e40e22a1"}
+  - {name: recommendation, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:848527276a9c0cadafc9ae118881b1a19adf5998de60c562e2e2d0fe705662a2"}
+  - {name: shipping, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:e0f06bd56e56fa31847e31f4bf2e582ae69f6f35a199c615405136dd3bd6efa5"}
   - {name: flagd, platform: linux/amd64, reference: "ghcr.io/open-feature/flagd@sha256:2b74aa8e839613a345c4f5d94e18434ca85813f691521ed59a3093bc33e278e6"}
   - {name: otel-collector, platform: linux/amd64, reference: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib@sha256:d7c3656127e8629a0fe04e5ca18916b39de12bfc5de2f77a462e7aa9700d34ba"}
   - {name: busybox, platform: linux/amd64, reference: "index.docker.io/library/busybox@sha256:7a3ebe5bfd1a4a19797d20b0c0bb39d44393e9a03fd852c0865b0f540d868df0"}
   - {name: grafana, platform: linux/amd64, reference: "index.docker.io/grafana/grafana@sha256:7c064e627d9cb50c3485c9ded5ca0222de89a08e41403322a0c3ca6f1777a8d1"}
-  - {name: jaeger, platform: linux/amd64, reference: "index.docker.io/jaegertracing/jaeger@sha256:82dd44b2bc10d521da77d6f3ea1cf4616feaaf1b6294d07321815560c367af11"}
+  - {name: jaeger, platform: linux/amd64, reference: "index.docker.io/jaegertracing/all-in-one@sha256:1147036b9becc1eca6006f1af7eb2f0c2fe039a8d313ce15c6aa52a6a877f9f7"}
   - {name: opensearch, platform: linux/amd64, reference: "index.docker.io/opensearchproject/opensearch@sha256:61c97e6da9e307f5511793f776d3c47d5faa663ad70a432f1b9ed62767b18505"}
-  - {name: postgres, platform: linux/amd64, reference: "index.docker.io/library/postgres@sha256:b86568d3e0fe1dfaeff52714f9da36f206a30e4c49131b82bf96982d78627409"}
+  - {name: postgres, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:316e4d86ab9079f1ba209134e3c18cac3ac5e335c2a4aaf1de70ff80c414e09c"}
   - {name: valkey, platform: linux/amd64, reference: "index.docker.io/valkey/valkey@sha256:78aec401a63daa9218305e7d7cb9152cbd74b1d3c8a78d86683553d3a298690f"}
   - {name: k8s-sidecar, platform: linux/amd64, reference: "quay.io/kiwigrid/k8s-sidecar@sha256:2248efa2bf19ab7b0ae6c10017c484ddbdbfe2de3c1b255ee12c2c606b9d91e1"}
   - {name: prometheus, platform: linux/amd64, reference: "quay.io/prometheus/prometheus@sha256:1c0c63ffcdaa26e6be82d0afaf69056f63a4288c539a22cafe427c4167c578fa"}
