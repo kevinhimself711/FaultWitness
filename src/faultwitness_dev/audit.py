@@ -35,6 +35,7 @@ OWNED_SOURCE_ROOTS = {
     "src/faultwitness/api": "CMP-CONTROL-API",
     "src/faultwitness/contracts": "CMP-CONTROL-API",
     "src/faultwitness/identity": "CMP-IDENTITY",
+    "src/faultwitness/models": "CMP-MODEL-GATEWAY",
     "src/faultwitness/observability": "CMP-OBSERVABILITY",
     "src/faultwitness/persistence": "four-state-owner-services",
     "src/faultwitness/runtime": "CMP-AGENT-WORKER",

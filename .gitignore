@@ -22,7 +22,7 @@ build/
 .dvc/cache/
 artifacts/
 data/raw/
-models/
+/models/
 
 evidence.local.yaml
 *.local.yaml

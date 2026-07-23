@@ -41,6 +41,7 @@ from faultwitness_dev.bootstrap import (
     validate_migration,
 )
 from faultwitness_dev.errors import GovernanceError
+from faultwitness_dev.model_eval import run_model_eval
 from faultwitness_dev.observability_deploy import (
     inspect_trace_service,
     run_trace_service_smoke,
@@ -437,6 +438,35 @@ def evaluate_i0013(root: Path, candidate_sha: str) -> dict[str, Any]:
     }
 
 
+def evaluate_i0014(root: Path, candidate_sha: str) -> dict[str, Any]:
+    """Run the full live capability checkpoint for EVAL-G01-008."""
+    if _head_sha(root) != candidate_sha:
+        raise GovernanceError("EVAL-G01-008 candidate SHA must equal the checked-out HEAD")
+    loaded = validate_repository_schemas(root)
+    state = loaded["PROJECT_STATE.yaml"]
+    record = loaded["governance/iterations/I-0014.yaml"]
+    if state.get("active_gate") != "G01" or state.get("active_iteration") != "I-0014":
+        raise GovernanceError("EVAL-G01-008 requires I-0014 as the sole active Iteration")
+    if state.get("active_gate_status") != "in_progress" or record.get("status") != "in_progress":
+        raise GovernanceError("EVAL-G01-008 requires G01 and I-0014 in progress")
+    tests = subprocess.run(
+        ["uv", "run", "pytest", "tests/models", "-q"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=120,
+    )
+    if tests.returncode != 0:
+        raise GovernanceError("EVAL-G01-008 offline NewAPI and failure matrix failed")
+    scan_publication_boundary(root)
+    result = run_model_eval(root, candidate_sha)
+    result["checks"]["newapi_offline_wire_matrix"] = "pass"
+    result["checks"]["publication_boundary"] = "pass"
+    return result
+
+
 def evaluate_iteration(root: Path, iteration: str, candidate_sha: str) -> dict[str, Any]:
     if iteration == "I-0007":
         if os.name != "nt":
@@ -448,4 +478,6 @@ def evaluate_iteration(root: Path, iteration: str, candidate_sha: str) -> dict[s
         return evaluate_i0010(root, candidate_sha)
     if iteration == "I-0013":
         return evaluate_i0013(root, candidate_sha)
+    if iteration == "I-0014":
+        return evaluate_i0014(root, candidate_sha)
     raise GovernanceError(f"no private Eval implementation is registered for {iteration}")

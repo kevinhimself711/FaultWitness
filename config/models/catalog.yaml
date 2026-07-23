@@ -1,0 +1,35 @@
+schema_version: "1.0.0"
+catalog_version: "1.0.0"
+profiles:
+  qwen_primary:
+    family: qwen
+    channel: bailian
+    model_id: qwen3.7-plus-2026-05-26
+    capabilities: [complete, structured, forced_tool, stream]
+    request_overrides: {enable_thinking: false}
+    input_usd_per_million: null
+    output_usd_per_million: null
+  deepseek_primary:
+    family: deepseek
+    channel: bailian
+    model_id: deepseek-v3.2
+    capabilities: [complete, structured, forced_tool, stream]
+    request_overrides: {enable_thinking: false}
+    input_usd_per_million: null
+    output_usd_per_million: null
+  glm_primary:
+    family: glm
+    channel: bailian
+    model_id: glm-5.2
+    capabilities: [complete, structured, forced_tool, stream]
+    request_overrides: {enable_thinking: false, tool_stream: true}
+    input_usd_per_million: null
+    output_usd_per_million: null
+route_policy:
+  version: "1.0.0"
+  routes:
+    qwen: [qwen_primary, deepseek_primary, glm_primary]
+    deepseek: [deepseek_primary, qwen_primary, glm_primary]
+    glm: [glm_primary, qwen_primary, deepseek_primary]
+  max_transient_retries: 1
+  max_repairs: 1

@@ -2,16 +2,18 @@
 
 ## Result
 
-Result: pending.
+Result: pending immutable candidate.
 
-No Bailian or NewAPI request has been sent and no model capability has been observed by the planning commit. The current topology is one available Bailian credential for three model families; a NewAPI token is not available and no redundancy claim is made.
+I-0014 implementation now contains the versioned three-family capability catalog, unified Bailian/NewAPI-compatible adapter, strict structured/tool validation, deterministic stream reconstruction, typed usage, bounded retry/repair/pre-output fallback, post-first-chunk `PARTIAL_FAILED` behavior, publication checks, and a candidate-bound 36-trial live Eval entry point. Offline and live results are not claimed until an immutable candidate is committed and evaluated.
 
 ## Required evidence
 
-- Full candidate SHA, frozen route/capability catalog, and exact model snapshots.
-- Thirty-six live Bailian trials, NewAPI fake-upstream matrix, schema/stream validation, and retry/repair/fallback results.
-- Sanitized LangSmith run references and zero-leak scan.
+- Full candidate SHA and catalog digest.
+- Qwen, DeepSeek, and GLM complete/structured/forced-tool/stream results repeated three times: 36/36.
+- Strict structured/tool validation, stream reconstruction, attributed usage and zero unplanned fallback.
+- Controlled NewAPI success/failure matrix and zero post-first-chunk continuation.
+- One sanitized LangSmith Trace per live trial and a final publication-boundary scan.
 
 ## Open evidence
 
-All EVAL-G01-008 evidence remains open until I-0014 is implemented and evaluated.
+All EVAL-G01-008 evidence remains open until the implementation candidate is committed and the candidate-bound command passes.
