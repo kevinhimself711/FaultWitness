@@ -282,7 +282,7 @@ test -f "$manifest"
 printf '%s  %s\n' {shlex.quote(str(source['sha256']))} "$manifest" | sha256sum -c -
 sed -i 's|namespace: otel-demo|namespace: fw-sut|g; s|name: otel-demo|name: fw-sut|g' "$manifest"
 {chr(10).join(substitutions)}
-if grep -E '^[[:space:]]*image:[[:space:]]*[^[:space:]]+:[^[:space:]]*$' "$manifest"; then
+if grep -E '^[[:space:]]*image:[[:space:]]*' "$manifest" | grep -v '@sha256:'; then
   echo FW_G02_UNPINNED_IMAGE >&2
   exit 41
 fi
