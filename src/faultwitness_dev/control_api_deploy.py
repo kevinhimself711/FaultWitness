@@ -298,12 +298,17 @@ if ! /usr/local/bin/k3s kubectl -n fw-system get secret fw-synthetic-users >/dev
   rm -f "$credentials"
 fi
 for tenant in tenant-a tenant-b; do
+  case "$tenant" in
+    tenant-a) tenant_ref=ten_01ARZ3NDEKTSV4RRFFQ69G5FAV ;;
+    tenant-b) tenant_ref=ten_01ARZ3NDEKTSV4RRFFQ69G5FAW ;;
+    *) exit 1 ;;
+  esac
   for role in viewer operator approver admin; do
     step="user-$tenant-$role"
     user="$tenant-$role"
     key=$(printf '%s_%s' "$tenant" "$role" | tr - _)
     password=$(/usr/local/bin/k3s kubectl -n fw-system get secret fw-synthetic-users -o "jsonpath={{.data.$key}}" | base64 -d)
-    printf '{{"username":"%s","enabled":true,"firstName":"Synthetic","lastName":"%s","email":"%s@faultwitness.invalid","emailVerified":true,"requiredActions":[],"attributes":{{"tenant_id":["%s"]}}}}' "$user" "$role" "$user" "$tenant" | \
+    printf '{{"username":"%s","enabled":true,"firstName":"Synthetic","lastName":"%s","email":"%s@faultwitness.invalid","emailVerified":true,"requiredActions":[],"attributes":{{"tenant_id":["%s"]}}}}' "$user" "$role" "$user" "$tenant_ref" | \
       /usr/local/bin/k3s kubectl -n fw-system exec -i "$pod" -- sh -ec '
         cat >/tmp/faultwitness-user.json
         user="$1"; role="$2"
@@ -316,7 +321,7 @@ for tenant in tenant-a tenant-b; do
         /opt/keycloak/bin/kcadm.sh update "users/$user_id" -r faultwitness -s "attributes.tenant_id=[\\\"$3\\\"]" >/dev/null
         /opt/keycloak/bin/kcadm.sh add-roles -r faultwitness --uusername "$user" --rolename "$role" >/dev/null 2>&1 || true
         rm -f /tmp/faultwitness-user.json
-      ' sh "$user" "$role" "$tenant"
+      ' sh "$user" "$role" "$tenant_ref"
     if ! password_error=$(printf '%s\n' "$password" | /usr/local/bin/k3s kubectl -n fw-system exec -i "$pod" -- sh -ec '
       IFS= read -r password
       /opt/keycloak/bin/kcadm.sh set-password -r faultwitness --username "$1" --new-password "$password" >/dev/null

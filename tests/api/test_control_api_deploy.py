@@ -44,3 +44,10 @@ def test_keycloak_realm_has_two_tenant_roles_without_credentials() -> None:
     assert all(
         "secret" not in client and "credentials" not in client for client in realm["clients"]
     )
+
+
+def test_synthetic_oidc_tenants_use_frozen_typed_ids() -> None:
+    source = Path("src/faultwitness_dev/control_api_deploy.py").read_text(encoding="utf-8")
+    assert "tenant-a) tenant_ref=ten_01ARZ3NDEKTSV4RRFFQ69G5FAV" in source
+    assert "tenant-b) tenant_ref=ten_01ARZ3NDEKTSV4RRFFQ69G5FAW" in source
+    assert 'sh "$user" "$role" "$tenant_ref"' in source
