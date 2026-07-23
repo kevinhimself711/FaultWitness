@@ -6,6 +6,7 @@ import json
 import re
 import shlex
 import subprocess
+import urllib.request
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -15,8 +16,9 @@ from typing import Any, Protocol
 
 import yaml
 
+from faultwitness_dev.bootstrap import BootstrapPaths, ssh_failure_category
 from faultwitness_dev.errors import GovernanceError
-from faultwitness_dev.infra import run_remote_script
+from faultwitness_dev.infra import _remote_arguments, run_remote_script
 from faultwitness_dev.schemas import validate_repository_schemas
 
 SUT_RELEASE = "2.2.0"
@@ -276,8 +278,7 @@ def render_k3s_bootstrap_script(config: Mapping[str, Any], candidate_sha: str) -
     return f"""set -eu
 workspace={shlex.quote(workspace)}
 manifest="$workspace/opentelemetry-demo.yaml"
-mkdir -p "$workspace"
-curl -fsSL --retry 2 --connect-timeout 15 {shlex.quote(str(source['uri']))} -o "$manifest"
+test -f "$manifest"
 printf '%s  %s\n' {shlex.quote(str(source['sha256']))} "$manifest" | sha256sum -c -
 sed -i 's|namespace: otel-demo|namespace: fw-sut|g; s|name: otel-demo|name: fw-sut|g' "$manifest"
 {chr(10).join(substitutions)}
@@ -304,6 +305,67 @@ printf 'candidate_sha=%s\nimage_set_digest=%s\n%s' \
 """
 
 
+def _stage_lab_manifest(config: Mapping[str, Any], candidate_sha: str) -> None:
+    source = config["source"]
+    with urllib.request.urlopen(str(source["uri"]), timeout=60) as response:  # noqa: S310
+        payload = response.read()
+    actual_digest = hashlib.sha256(payload).hexdigest()
+    if actual_digest != source["sha256"]:
+        raise GovernanceError("G02 upstream manifest digest drifted on the owner host")
+    appdata = Path.home() / "AppData" / "Local"
+    cache = appdata / "FaultWitness" / "artifacts" / "I-0017" / "opentelemetry-demo.yaml"
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    cache.write_bytes(payload)
+
+    paths = BootstrapPaths.defaults()
+    bundle, _ = _remote_arguments(paths)
+    remote_name = f"fw-g02-manifest-{candidate_sha[:12]}.yaml"
+    common = [
+        "-P",
+        str(bundle.server_port),
+        "-o",
+        "ConnectTimeout=10",
+        "-o",
+        "StrictHostKeyChecking=yes",
+        "-o",
+        f"UserKnownHostsFile={paths.known_hosts_file}",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        "PasswordAuthentication=no",
+        "-i",
+        str(paths.ssh_private_key),
+    ]
+    result = subprocess.run(
+        [
+            "scp",
+            *common,
+            str(cache),
+            f"{bundle.server_username}@{bundle.server_host}:{remote_name}",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=120,
+    )
+    if result.returncode:
+        raise GovernanceError(
+            "G02 manifest staging failed (" + ssh_failure_category(result.stderr) + ")"
+        )
+    workspace = f"/tmp/faultwitness-g02-{candidate_sha[:12]}"
+    owner = shlex.quote(bundle.server_username)
+    run_remote_script(
+        f"remote_home=$(getent passwd {owner} | cut -d: -f6); "
+        f"test -n \"$remote_home\"; "
+        f"install -d -m 0700 -o {owner} -g $(id -gn {owner}) {workspace}; "
+        f"install -m 0600 -o {owner} -g $(id -gn {owner}) "
+        f"\"$remote_home/{remote_name}\" {workspace}/opentelemetry-demo.yaml; "
+        f"rm -f \"$remote_home/{remote_name}\"\n",
+        privileged=True,
+    )
+
+
 def deploy_g02_lab(root: Path, candidate_sha: str) -> dict[str, Any]:
     if not FULL_SHA.fullmatch(candidate_sha):
         raise GovernanceError("G02 lab candidate must be a full Git SHA")
@@ -321,6 +383,7 @@ def deploy_g02_lab(root: Path, candidate_sha: str) -> dict[str, Any]:
         raise GovernanceError("G02 lab deployment requires a clean candidate worktree")
     config = load_lab_config(root)
     validation = validate_lab_bootstrap(config)
+    _stage_lab_manifest(config, candidate_sha)
     output = run_remote_script(
         render_k3s_bootstrap_script(config, candidate_sha), privileged=True, timeout=1200
     )
