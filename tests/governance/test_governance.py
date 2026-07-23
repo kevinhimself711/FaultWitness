@@ -8,11 +8,13 @@ import pytest
 from faultwitness_dev.changes import (
     G00_CLOSURE_PATHS,
     G01_CLOSURE_PATHS,
+    gate_closure_paths,
     infer_iteration_id,
     validate_change_record,
     validate_g00_closure_change,
     validate_g01_closure_change,
 )
+from faultwitness_dev.checks import validate_lifecycle_documents, validate_lifecycle_records
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.schemas import (
     _check_adr_invariants,
@@ -190,6 +192,28 @@ def test_asset_only_g01_closure_is_accepted() -> None:
     validate_g01_closure_change(*_g01_closure_records(), sorted(G01_CLOSURE_PATHS))
 
 
+def test_gate_closure_boundary_requires_root_and_status_documents() -> None:
+    required = {
+        "AGENTS.md",
+        "PROJECT_STATE.yaml",
+        "README.md",
+        "docs/roadmap/PHASES.md",
+    }
+    assert required <= G01_CLOSURE_PATHS
+    missing_agents = sorted(G01_CLOSURE_PATHS - {"AGENTS.md"})
+    with pytest.raises(GovernanceError, match="missing=.*AGENTS.md"):
+        validate_g01_closure_change(*_g01_closure_records(), missing_agents)
+
+
+def test_gate_closure_boundary_is_generated_for_future_consecutive_gates() -> None:
+    paths = gate_closure_paths("G02", "G03")
+    assert "docs/gates/G02/REPORT.md" in paths
+    assert "docs/gates/G03/PLAN.md" in paths
+    assert "governance/gates/G03.yaml" in paths
+    with pytest.raises(GovernanceError, match="consecutive"):
+        gate_closure_paths("G02", "G04")
+
+
 def test_g01_closure_rejects_source_code() -> None:
     paths = sorted(G01_CLOSURE_PATHS | {"src/faultwitness_dev/g01_eval.py"})
     with pytest.raises(GovernanceError, match="unexpected"):
@@ -205,6 +229,31 @@ def test_g01_closure_rejects_waiver_or_inexact_handoff() -> None:
     state["active_gate_status"] = "planned"
     with pytest.raises(GovernanceError, match="project-state drift"):
         validate_g01_closure_change(state, g01, g02, sorted(G01_CLOSURE_PATHS))
+
+
+def test_repository_lifecycle_documents_match_project_state() -> None:
+    validate_lifecycle_documents(ROOT)
+
+
+def test_lifecycle_state_drift_is_rejected() -> None:
+    state = {
+        "active_gate": "G02",
+        "active_gate_status": "not_started",
+        "active_iteration": None,
+        "last_closed_gate": "G01",
+    }
+    matching = copy.deepcopy(state)
+    drifted = copy.deepcopy(state)
+    drifted["active_iteration"] = "I-0016"
+    with pytest.raises(GovernanceError, match="lifecycle state drift in AGENTS.md"):
+        validate_lifecycle_records(
+            state,
+            {
+                "AGENTS.md": drifted,
+                "README.md": matching,
+                "docs/roadmap/PHASES.md": matching,
+            },
+        )
 
 
 def _load_evidence_assets() -> tuple[list[dict], dict, dict]:

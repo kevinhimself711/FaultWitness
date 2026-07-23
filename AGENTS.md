@@ -1,10 +1,20 @@
+---
+active_gate: G02
+active_gate_status: not_started
+active_iteration: null
+last_closed_gate: G01
+---
+
 # FaultWitness Repository Instructions
 
 ## Mission and current phase
 
 FaultWitness is a multi-tenant Agent Runtime for investigating microservice incidents, proposing bounded remediations, executing approved actions, and producing auditable evaluation and training assets.
 
-G00 is closed and G01 is in progress. I-0007 and EVAL-G01-001 are complete. I-0008/I-0009 implementation is landed with EVAL-G01-002/003 candidate debt retained. I-0010 passed its Windows deterministic conformance/mutation run on `f81c7f0`; cross-platform digest evidence remains due before Gate closure. I-0011 runtime persistence is landed and its schema is deployed from `4844961`; the full duplicate/crash/fencing matrix remains Gate debt. I-0012 is landed and its private authenticated Control API passed live OIDC create/read/SSE and isolation smoke on `5a1b607`; the full conformance/load matrix remains Gate debt. I-0013 is landed and deployed from `ae0a3be`: its private Trace Service passed a sanitized LangSmith/OTLP/archive live checkpoint with zero pending delivery; the complete failure matrix remains Gate debt. I-0014 and EVAL-G01-008 passed on `21c2a96` with 36/36 live Bailian trials across Qwen, DeepSeek, and GLM plus the offline NewAPI wire matrix and sanitized LangSmith evidence. The authenticated private Model Gateway is additionally deployed from `18ff0c1` and passed a real OIDC-to-Bailian service smoke with exact model and attributed usage. This proves three model families through one live upstream, not three-provider redundancy. I-0015 is the sole active Iteration and authorizes only the frozen G01 candidate audit, fourteen failure walkthroughs, clean-clone rehearsal, and close-readiness proof. It does not authorize Agent investigation logic, real Tool/Skill capability, external actions, Gate closure, or G02 implementation.
+G00 and G01 are closed. G02 is `not_started`, no Iteration is active, and the
+G02 placeholder is not a decision-complete Master Plan. No G02 implementation,
+live evaluation, deployment mutation, or scope claim is authorized until a
+dedicated planning turn freezes the G02 Master Plan in a planning commit.
 
 ## Source-of-truth order
 
@@ -26,6 +36,33 @@ PROJECT_STATE.yaml is the authority for the active Gate and iteration, not for a
 - Do not lower a Gate threshold, modify locked tests, or alter ground truth in an implementation commit.
 - Failed Gates, negative experiments, and rejected architectures must remain in the repository history.
 - Gate closure is a separate asset-only commit evaluated against an immutable candidate SHA.
+- A final Gate-audit Iteration may only orchestrate frozen checks, reverify one candidate,
+  and synchronize evidence. It may not add product behavior or a substantial Eval framework;
+  missing harness work returns to an owning Iteration and creates a new candidate.
+- Expensive Evals must be decomposed into attributable phases whose immutable results are
+  keyed by code candidate, runtime artifact/config digests, and environment fingerprint.
+- Eval runners that invoke destructive, long-running, or external-service work must support
+  phase selection and continuation from failed or pending work before the Gate run begins.
+- Manifest debt, candidate bindings, schemas, publication checks, and other deterministic
+  preconditions must pass before any soak, recovery rehearsal, or paid live matrix starts.
+- A stability window runs once for an unchanged runtime artifact and environment fingerprint.
+  Its stage-specific failure semantics must be frozen before execution; later unrelated checks
+  consume its evidence instead of rerunning it.
+- Gate walkthroughs aggregate immutable phase evidence and must not silently re-execute the
+  same remote smoke, load, recovery, or model trial.
+- All Eval harnesses, negative fixtures, and close-readiness fixtures must pass before the
+  business candidate is frozen.
+- Candidate-bound evaluation uses the accepted two-SHA model: `candidate_sha` identifies
+  behavior and runtime artifacts, while `evidence_head_sha` identifies an asset-only descendant.
+  Any behavior, test-semantic, threshold, workflow, or runtime-artifact change creates a new
+  candidate; evidence-only changes do not.
+- Gate closure must update the controlled root/status asset set, including `AGENTS.md`,
+  `PROJECT_STATE.yaml`, `README.md`, and `docs/roadmap/PHASES.md`, and their lifecycle fields
+  must agree before verification passes.
+- Live external-service matrices must persist each trial atomically and resume only failed or
+  pending trials. A single attributable transport failure must not discard completed trials.
+- Once a failure has a verified root cause, no generic operator-adjudicated pass path may remain;
+  the root cause is fixed and the affected phase is rerun under its normal blocking semantics.
 - Do not commit or push unless the user explicitly requests it.
 
 Planning-only commits may create or refine future Iteration and Eval assets without activating them. They never authorize product behavior, infrastructure mutation, credential use, or live evaluation.

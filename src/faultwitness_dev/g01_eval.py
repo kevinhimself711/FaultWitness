@@ -11,7 +11,6 @@ import base64
 import hashlib
 import json
 import subprocess
-import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -166,25 +165,12 @@ def _eval_manifest_debt(root: Path, candidate_sha: str, *, include_final: bool) 
 
 
 def _platform_stability(root: Path, candidate_sha: str) -> dict[str, Any]:
-    """Apply the operator's narrow post-window generic-error adjudication."""
-    started = time.monotonic()
-    try:
-        return inspect_platform_readiness(
-            root,
-            candidate_sha,
-            stability_seconds=STABILITY_SECONDS,
-        )
-    except GovernanceError as error:
-        elapsed = time.monotonic() - started
-        generic = "remote_command_or_transport_failed" in str(error)
-        if elapsed < STABILITY_SECONDS or not generic:
-            raise
-        return {
-            "status": "operator_adjudicated_pass",
-            "candidate_sha": candidate_sha,
-            "stability_seconds": STABILITY_SECONDS,
-            "reason": "generic remote error occurred only after the full clean window",
-        }
+    """Run the frozen window; every readiness or transport error remains blocking."""
+    return inspect_platform_readiness(
+        root,
+        candidate_sha,
+        stability_seconds=STABILITY_SECONDS,
+    )
 
 
 def inspect_g01_reconciliation(candidate_sha: str) -> dict[str, Any]:

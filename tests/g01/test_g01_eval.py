@@ -77,22 +77,22 @@ def test_close_candidate_rejects_non_evidence_descendant(
         _require_close_candidate(ROOT, candidate)
 
 
-def test_platform_stability_accepts_only_generic_error_after_full_window(
+def test_platform_stability_runs_the_full_frozen_window(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    def fail(*args: object, **kwargs: object) -> dict:
-        raise GovernanceError(
-            "remote infrastructure command failed (remote_command_or_transport_failed; exit=1)"
-        )
+    observed: dict[str, object] = {}
 
-    monkeypatch.setattr("faultwitness_dev.g01_eval.inspect_platform_readiness", fail)
-    ticks = iter([0.0, 901.0])
-    monkeypatch.setattr("faultwitness_dev.g01_eval.time.monotonic", lambda: next(ticks))
+    def inspect(*args: object, **kwargs: object) -> dict:
+        observed.update(kwargs)
+        return {"status": "pass"}
+
+    monkeypatch.setattr("faultwitness_dev.g01_eval.inspect_platform_readiness", inspect)
     result = _platform_stability(ROOT, "a" * 40)
-    assert result["status"] == "operator_adjudicated_pass"
+    assert result["status"] == "pass"
+    assert observed["stability_seconds"] == 900
 
 
-def test_platform_stability_rejects_generic_error_inside_window(
+def test_platform_stability_rejects_generic_transport_error_at_any_time(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     def fail(*args: object, **kwargs: object) -> dict:
@@ -101,22 +101,7 @@ def test_platform_stability_rejects_generic_error_inside_window(
         )
 
     monkeypatch.setattr("faultwitness_dev.g01_eval.inspect_platform_readiness", fail)
-    ticks = iter([0.0, 899.9])
-    monkeypatch.setattr("faultwitness_dev.g01_eval.time.monotonic", lambda: next(ticks))
     with pytest.raises(GovernanceError, match="remote_command_or_transport_failed"):
-        _platform_stability(ROOT, "a" * 40)
-
-
-def test_platform_stability_rejects_specific_error_after_window(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    def fail(*args: object, **kwargs: object) -> dict:
-        raise GovernanceError("platform workloads are not Ready")
-
-    monkeypatch.setattr("faultwitness_dev.g01_eval.inspect_platform_readiness", fail)
-    ticks = iter([0.0, 901.0])
-    monkeypatch.setattr("faultwitness_dev.g01_eval.time.monotonic", lambda: next(ticks))
-    with pytest.raises(GovernanceError, match="not Ready"):
         _platform_stability(ROOT, "a" * 40)
 
 

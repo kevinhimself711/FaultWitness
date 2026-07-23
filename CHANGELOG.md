@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Governance maintenance
+
+- Record the G01 execution retrospective, six process badcases, and ADR-0009's accepted separation
+  of behavior candidate and evidence-head revisions without rewriting any closed G01 evidence.
+- Correct stale lifecycle surfaces after G01 closure and restore the authoritative G02 “Fault
+  Laboratory and Baselines” placeholder boundary without starting G02 planning or implementation.
+- Replace copied nine-path closure constants with an exact generated lifecycle/status asset set and
+  make `verify-fast` reject AGENTS/README/PHASES drift from `PROJECT_STATE.yaml`.
+- Remove the obsolete post-window `operator_adjudicated_pass` branch after `df644f1` established the
+  fresh-session privileged-channel root cause; generic transport failures are blocking again.
+
 ### Gate closure
 
 - Close G01 without waiver on immutable candidate `4c843553bad7a13023259d474e8fea1b8c174d40` and hand off to G02 in `not_started` state.

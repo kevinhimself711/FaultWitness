@@ -1,22 +1,33 @@
+---
+active_gate: G02
+active_gate_status: not_started
+active_iteration: null
+last_closed_gate: G01
+---
+
 # FaultWitness
 
 FaultWitness 是一个面向微服务事故调查、受控修复与持续优化的多租户 Agent Runtime 项目。
 
-当前状态：G00 已完成规划冻结，尚未开始产品代码、基础设施或模型集成。
+当前状态：G00、G01 已关闭；G02 尚未开始，当前没有 active Iteration。仓库已经具备
+G01 证明的平台、契约、持久化、认证 API、Trace、Model Gateway 与恢复地基，但尚未
+实现或声称 G02 故障实验室、G03 只读 Agent 纵切及后续能力。
 
 ## 权威资产
 
 - [最终项目规划](docs/blueprint/FINAL_PLAN.md)
-- [G00 Gate Master Plan](docs/gates/G00/PLAN.md)
+- [G01 Gate Report](docs/gates/G01/REPORT.md)
+- [G02 占位计划](docs/gates/G02/PLAN.md)
 - [阶段索引](docs/roadmap/PHASES.md)
 - [项目状态](PROJECT_STATE.yaml)
 - [协作规则](AGENTS.md)
+- [AI 开发与复盘日志](docs/engineering/AI_DEVELOPMENT_LOG.md)
 
 ## 当前边界
 
-- 不将本仓库包装为已实现系统。
+- 不把 G01 平台地基包装为已经完成的 Agent 产品。
 - 不提交原始 JD、面经、密钥、私有 Trace 或受限数据。
-- 不在 G00 planning commit 中实现 API、Agent、Infra、Eval 或训练代码。
-- 下一步是按照 G00 Master Plan 执行 I-0001，而不是直接进入业务开发。
+- 不在 G02 Master Plan 冻结前实现 G02 产品行为、运行 live Eval 或修改部署。
+- 下一步是单独规划并冻结 decision-complete G02 Master Plan，而不是直接开始实现。
 
 代码、API、Schema 和标识符使用英文；设计、评测和复盘文档以中文为主。

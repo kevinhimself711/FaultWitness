@@ -17,29 +17,40 @@ GOVERNED_PREFIXES = (
     "package.json",
 )
 
-G00_CLOSURE_PATHS = {
+GATE_CLOSURE_STATUS_PATHS = {
+    "AGENTS.md",
     "CHANGELOG.md",
     "PROJECT_STATE.yaml",
+    "README.md",
     "docs/adr/INDEX.yaml",
     "docs/claims/CLAIMS.yaml",
-    "docs/gates/G00/REPORT.md",
-    "docs/gates/G01/PLAN.md",
-    "docs/gates/G01/REPORT.md",
-    "governance/gates/G00.yaml",
-    "governance/gates/G01.yaml",
+    "docs/roadmap/PHASES.md",
 }
 
-G01_CLOSURE_PATHS = {
-    "CHANGELOG.md",
-    "PROJECT_STATE.yaml",
-    "docs/adr/INDEX.yaml",
-    "docs/claims/CLAIMS.yaml",
-    "docs/gates/G01/REPORT.md",
-    "docs/gates/G02/PLAN.md",
-    "docs/gates/G02/REPORT.md",
-    "governance/gates/G01.yaml",
-    "governance/gates/G02.yaml",
-}
+
+def gate_closure_paths(closing_gate: str, next_gate: str) -> set[str]:
+    """Return the exact forward closure boundary for two consecutive Gates."""
+    if not (
+        len(closing_gate) == 3
+        and len(next_gate) == 3
+        and closing_gate.startswith("G")
+        and next_gate.startswith("G")
+        and closing_gate[1:].isdigit()
+        and next_gate[1:].isdigit()
+        and int(next_gate[1:]) == int(closing_gate[1:]) + 1
+    ):
+        raise GovernanceError("Gate closure requires consecutive Gxx identifiers")
+    return GATE_CLOSURE_STATUS_PATHS | {
+        f"docs/gates/{closing_gate}/REPORT.md",
+        f"docs/gates/{next_gate}/PLAN.md",
+        f"docs/gates/{next_gate}/REPORT.md",
+        f"governance/gates/{closing_gate}.yaml",
+        f"governance/gates/{next_gate}.yaml",
+    }
+
+
+G00_CLOSURE_PATHS = gate_closure_paths("G00", "G01")
+G01_CLOSURE_PATHS = gate_closure_paths("G01", "G02")
 
 
 def validate_change_record(record: dict[str, Any], root: Path | None = None) -> None:
@@ -95,22 +106,19 @@ def validate_changed_assets(root: Path, paths: list[str]) -> str:
     if iteration_id is None:
         iteration_id = infer_iteration_id(root, paths)
     if iteration_id is None:
-        if state.get("last_closed_gate") == "G01":
-            validate_g01_closure_change(
+        closing_gate = state.get("last_closed_gate")
+        next_gate = state.get("active_gate")
+        if isinstance(closing_gate, str) and isinstance(next_gate, str):
+            validate_gate_closure_change(
                 state,
-                load_data(root / "governance" / "gates" / "G01.yaml"),
-                load_data(root / "governance" / "gates" / "G02.yaml"),
+                load_data(root / "governance" / "gates" / f"{closing_gate}.yaml"),
+                load_data(root / "governance" / "gates" / f"{next_gate}.yaml"),
                 paths,
             )
-            return f"validated asset-only G01 closure for {len(paths)} changed files"
-        if state.get("last_closed_gate") == "G00":
-            validate_g00_closure_change(
-                state,
-                load_data(root / "governance" / "gates" / "G00.yaml"),
-                load_data(root / "governance" / "gates" / "G01.yaml"),
-                paths,
+            return (
+                f"validated asset-only {closing_gate} closure "
+                f"for {len(paths)} changed files"
             )
-            return f"validated asset-only G00 closure for {len(paths)} changed files"
         if any(path.startswith(GOVERNED_PREFIXES) for path in paths):
             raise GovernanceError("governed change is missing an Iteration record")
         return "documentation-only change without governed behavior"
@@ -139,33 +147,7 @@ def validate_g00_closure_change(
     g01: dict[str, Any],
     paths: list[str],
 ) -> None:
-    actual = set(paths)
-    if actual != G00_CLOSURE_PATHS:
-        missing = sorted(G00_CLOSURE_PATHS - actual)
-        unexpected = sorted(actual - G00_CLOSURE_PATHS)
-        raise GovernanceError(
-            f"G00 closure asset boundary drifted: missing={missing}, unexpected={unexpected}"
-        )
-    expected_state = {
-        "active_gate": "G01",
-        "active_gate_status": "not_started",
-        "active_iteration": None,
-        "next_iteration": None,
-        "last_closed_gate": "G00",
-        "active_gate_plan": "docs/gates/G01/PLAN.md",
-        "active_gate_report": "docs/gates/G01/REPORT.md",
-    }
-    drift = {
-        key: state.get(key)
-        for key, expected_value in expected_state.items()
-        if state.get(key) != expected_value
-    }
-    if drift:
-        raise GovernanceError(f"G00 closure project-state drift: {drift}")
-    if g00.get("id") != "G00" or g00.get("status") != "passed" or g00.get("waivers"):
-        raise GovernanceError("G00 closure requires a passed waiver-free G00 record")
-    if g01.get("id") != "G01" or g01.get("status") != "planned":
-        raise GovernanceError("G00 closure requires a planned G01 handoff record")
+    validate_gate_closure_change(state, g00, g01, paths)
 
 
 def validate_g01_closure_change(
@@ -174,21 +156,36 @@ def validate_g01_closure_change(
     g02: dict[str, Any],
     paths: list[str],
 ) -> None:
+    validate_gate_closure_change(state, g01, g02, paths)
+
+
+def validate_gate_closure_change(
+    state: dict[str, Any],
+    closing_gate: dict[str, Any],
+    next_gate: dict[str, Any],
+    paths: list[str],
+) -> None:
+    closing_id = closing_gate.get("id")
+    next_id = next_gate.get("id")
+    if not isinstance(closing_id, str) or not isinstance(next_id, str):
+        raise GovernanceError("Gate closure records require string identifiers")
+    expected_paths = gate_closure_paths(closing_id, next_id)
     actual = set(paths)
-    if actual != G01_CLOSURE_PATHS:
-        missing = sorted(G01_CLOSURE_PATHS - actual)
-        unexpected = sorted(actual - G01_CLOSURE_PATHS)
+    if actual != expected_paths:
+        missing = sorted(expected_paths - actual)
+        unexpected = sorted(actual - expected_paths)
         raise GovernanceError(
-            f"G01 closure asset boundary drifted: missing={missing}, unexpected={unexpected}"
+            f"{closing_id} closure asset boundary drifted: "
+            f"missing={missing}, unexpected={unexpected}"
         )
     expected_state = {
-        "active_gate": "G02",
+        "active_gate": next_id,
         "active_gate_status": "not_started",
         "active_iteration": None,
         "next_iteration": None,
-        "last_closed_gate": "G01",
-        "active_gate_plan": "docs/gates/G02/PLAN.md",
-        "active_gate_report": "docs/gates/G02/REPORT.md",
+        "last_closed_gate": closing_id,
+        "active_gate_plan": f"docs/gates/{next_id}/PLAN.md",
+        "active_gate_report": f"docs/gates/{next_id}/REPORT.md",
     }
     drift = {
         key: state.get(key)
@@ -196,8 +193,12 @@ def validate_g01_closure_change(
         if state.get(key) != expected_value
     }
     if drift:
-        raise GovernanceError(f"G01 closure project-state drift: {drift}")
-    if g01.get("id") != "G01" or g01.get("status") != "passed" or g01.get("waivers"):
-        raise GovernanceError("G01 closure requires a passed waiver-free G01 record")
-    if g02.get("id") != "G02" or g02.get("status") != "planned":
-        raise GovernanceError("G01 closure requires a planned G02 handoff record")
+        raise GovernanceError(f"{closing_id} closure project-state drift: {drift}")
+    if closing_gate.get("status") != "passed" or closing_gate.get("waivers"):
+        raise GovernanceError(
+            f"{closing_id} closure requires a passed waiver-free {closing_id} record"
+        )
+    if next_gate.get("status") != "planned":
+        raise GovernanceError(
+            f"{closing_id} closure requires a planned {next_id} handoff record"
+        )
