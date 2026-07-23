@@ -299,7 +299,15 @@ data:
     }}
     headers = {{"x-faultwitness-ingest-token":os.environ["TRACE_INGEST_TOKEN"]}}
     api = "http://trace-service.fw-control.svc.cluster.local:8001"
-    accepted = httpx.post(api + "/internal/v1/traces", headers=headers, json=base, timeout=10)
+    accepted = None
+    for _ in range(30):
+      try:
+        accepted = httpx.post(api + "/internal/v1/traces", headers=headers, json=base, timeout=10)
+        break
+      except httpx.TransportError:
+        time.sleep(1)
+    if accepted is None:
+      raise SystemExit("trace service did not become reachable")
     duplicate = httpx.post(api + "/internal/v1/traces", headers=headers, json=base, timeout=10)
     canary = copy.deepcopy(base)
     canary["trace_id"] = "trace_" + "2" * 26
