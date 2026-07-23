@@ -1,0 +1,39 @@
+# G02 Fault Lab Runbook
+
+## Boundary
+
+This runbook is owned by I-0017. It starts only the digest-pinned OpenTelemetry Demo lab in the
+private `fw-sut` namespace and binds it to the checked-out full candidate SHA, the frozen upstream
+commit, and the image-set digest. It does not create G02 identities, ground-truth or locked-test
+storage, baselines, model calls, or Gate evidence.
+
+## Start
+
+Run from a clean candidate checkout after the private host pin and dedicated SSH credential have
+already passed the G01 bootstrap contract:
+
+```text
+uv run python -m faultwitness_dev lab-g02 start --profile private-server
+```
+
+The runner downloads the generated upstream K3s manifest from exact commit
+`b74a7bc7bbe66099c61951f42b24dab8b6f02d18`, verifies its SHA-256, replaces every image before
+apply with the registered digest reference, changes the isolated namespace to `fw-sut`, waits for
+all Deployments and OpenSearch, and writes `fw-g02-candidate-binding`.
+
+The registered `docker-compose.minimal.yml` path is a pre-candidate fallback only. Selecting it
+requires a new candidate configuration; the runner never switches profiles during an incident.
+
+## Failure and compatibility semantics
+
+- Source or image digest drift: blocking candidate failure; do not fetch a floating replacement.
+- Cluster, DNS, TLS, registry, or SSH transport loss: `infra_failed`; retry only the affected
+  bootstrap attempt.
+- Any unpinned image remaining before apply: blocking failure with `FW_G02_UNPINNED_IMAGE`.
+- A non-ready workload after the frozen rollout deadline: `infra_failed` when infrastructure is
+  unobservable, otherwise `metric_fail` attributed to that workload.
+- The same compatibility obstacle stops after three attempts or 45 cumulative minutes. Use the
+  already registered fallback or report the block; do not create a helper tool during the event.
+
+The destructive Gate scenario phase remains separately guarded and runs only once for an exact
+candidate, image, config, and environment cache key.

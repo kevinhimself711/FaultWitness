@@ -21,6 +21,9 @@
 
 ### Tooling
 
+- Implement the I-0017 digest-pinned K3s lab bootstrap, deterministic 32-seed Scenario DSL,
+  six allowlisted flag adapters, ternary fault/recovery oracles, exact restoration, and registered
+  false-green, restore-noop, unknown-action, and unpinned-image negative paths.
 - Complete I-0016 on immutable implementation candidate `a4c242b`: pass five deterministic phase,
   cache, resume, continuation, and destructive run-once cases; prove readiness of the owned
   candidate-binding, manifest-debt, and reconciliation L2 runners without executing Gate L2 work.

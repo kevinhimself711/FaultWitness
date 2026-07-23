@@ -1,0 +1,3 @@
+fault_class: paymentFailure
+ignore_restore: true
+expected_rejection: cleanup must block and quarantine when exact restoration does not occur

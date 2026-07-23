@@ -1,0 +1,10 @@
+sut_release: "2.2.0"
+sut_commit: b74a7bc7bbe66099c61951f42b24dab8b6f02d18
+profile: k3s
+source:
+  uri: https://example.invalid/opentelemetry-demo.yaml
+  sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+images:
+  - name: frontend
+    platform: linux/amd64
+    reference: ghcr.io/open-telemetry/demo:2.2.0-frontend

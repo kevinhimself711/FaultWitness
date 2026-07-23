@@ -58,6 +58,7 @@ from faultwitness_dev.g01_recovery import (
     run_postgres_restore_rehearsal,
 )
 from faultwitness_dev.g02_eval import inspect_g02_close_readiness, run_g02_eval
+from faultwitness_dev.g02_lab import deploy_g02_lab
 from faultwitness_dev.infra import (
     audit_runtime_coexistence,
     capture_preinstall_baseline,
@@ -177,6 +178,10 @@ def parser() -> argparse.ArgumentParser:
     eval_g02_close = subparsers.add_parser("eval-g02-close")
     eval_g02_close.add_argument("--candidate-sha", required=True)
     eval_g02_close.add_argument("--evidence-head-sha", required=True)
+    lab_g02 = subparsers.add_parser("lab-g02")
+    lab_g02_commands = lab_g02.add_subparsers(dest="lab_action", required=True)
+    lab_g02_start = lab_g02_commands.add_parser("start")
+    lab_g02_start.add_argument("--profile", required=True, choices=("private-server",))
     reconcile_g01 = subparsers.add_parser("inspect-g01-reconciliation")
     reconcile_g01.add_argument("--candidate-sha", required=True)
     restore_g01 = subparsers.add_parser("rehearse-g01-postgres-restore")
@@ -437,6 +442,20 @@ def main() -> int:
             message = (
                 f"{summary['eval_id']} {summary['status']} on {summary['candidate_sha']} "
                 f"with {summary['phase_count']} immutable phases"
+            )
+        elif args.command == "lab-g02" and args.lab_action == "start":
+            candidate_sha = subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                cwd=root,
+                check=True,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+            ).stdout.strip()
+            summary = deploy_g02_lab(root, candidate_sha)
+            message = (
+                f"started candidate-bound G02 lab in {summary['namespace']} with "
+                f"{len(summary['ready_deployments'])} ready deployments"
             )
         elif args.command == "inspect-g01-reconciliation":
             summary = inspect_g01_reconciliation(args.candidate_sha)

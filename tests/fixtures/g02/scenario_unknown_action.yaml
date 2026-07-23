@@ -1,0 +1,8 @@
+schema_version: "1.0.0"
+scenario_id: SEED-G02-0001
+family: change_config
+difficulty: Easy
+fault_action:
+  class: arbitraryShell
+  flag_key: arbitraryShell
+  variant: on

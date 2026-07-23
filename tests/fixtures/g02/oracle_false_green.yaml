@@ -1,0 +1,7 @@
+fault_class: productCatalogFailure
+observations:
+  - journey_failed: true
+    correlated_error: false
+  - journey_failed: true
+    correlated_error: false
+expected_rejection: HEALTHY must not be accepted as FAULT_ACTIVE
