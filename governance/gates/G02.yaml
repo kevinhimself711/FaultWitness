@@ -20,3 +20,4 @@ waivers: []
 amendments:
   - docs/blueprint/AMENDMENTS/AMD-0001.md
   - docs/blueprint/AMENDMENTS/AMD-0002.md
+  - docs/blueprint/AMENDMENTS/AMD-0003.md

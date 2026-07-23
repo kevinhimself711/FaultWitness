@@ -65,4 +65,5 @@ cache key 改变，保留旧 evidence 并建立新候选记录。
 - `dependency lacks an exact-key pass`：先运行或恢复依赖，不可跳过。
 - `cannot rerun on the same candidate`：metric failure 需要修复并生成新候选。
 - candidate/subject/environment digest drift：停止，不得批量改写 manifest SHA。
-- 同一环境兼容问题达到三次或 45 分钟：使用预实现 fallback 或上报，禁止现场造工具。
+- 环境兼容、rollout、凭据传递与外部工具尝试不限次数和累计时间；每次必须绑定候选与
+  环境并记录归因。确定性根因须先修复，只有已分类的瞬时基础设施失败可原样重试。

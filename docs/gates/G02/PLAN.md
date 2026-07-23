@@ -29,8 +29,8 @@ The minimum sufficient execution plan is five Iterations. Their estimates includ
 | Total | **17h33** |
 
 If every live attempt consumes its one complete retry, the Gate Eval contingency is 3h18 and
-the total contingency is 18h18. External waiting is not converted into hidden engineering time:
-the compatibility stop rule in Section 11 applies.
+the total contingency is 18h18. These are planning estimates, not execution stop conditions.
+External waiting and every retry are reported as actual elapsed time under amended Section 11.
 
 ## 2. Scope, non-goals, and dependencies
 
@@ -299,17 +299,24 @@ Every Iteration closes with `open_evidence: []`. L2 work is recorded as `owned_l
 open Iteration evidence: its owner must already have implemented and unit-tested the runner,
 negative fixture, phase interface, and candidate/environment binding protocol.
 
-## 11. Environment compatibility stop rule
+## 11. Environment compatibility retry rule
 
-The same external-tool, platform, or credential obstacle receives at most three attempts or 45
-cumulative minutes, whichever occurs first. The owner then records a sanitized compatibility
-failure and either uses the already implemented fallback or blocks. It must not write a new helper
-tool during the incident.
+AMD-0003 removes the attempt-count and cumulative-time ceiling for external-tool, platform,
+credential-transfer, infrastructure, and rollout work. Each attempt is persisted with candidate,
+config, artifact, environment, timestamps, outcome, and attribution. A verified deterministic root
+cause is corrected before another attempt; unchanged retries are allowed only for classified
+transient infrastructure failures. Prior failures remain evidence and are never bulk-relabelled.
+
+Unlimited attempts do not create an operator-adjudicated pass path. Metric failures, cleanup or
+readback failures, authorization failures, digest drift, and zero-tolerance failures remain
+blocking until their root cause is fixed and the normal runner passes. Paid trial sample counts,
+per-attempt token ceilings, and the frozen internal transient retry are unchanged.
 
 - K3s fallback: same-commit official minimal Docker Compose, selected before freeze.
 - MinIO IAM fallback: digest-pinned stock `mc` job, otherwise block.
 - SSH fallback: existing verified privileged channel/tunnel, otherwise block.
-- Model fallback: retry only the failed trial through ModelGateway; no alternate model/channel.
+- Model fallback: retry only the failed infrastructure-failed trial through ModelGateway; no
+  alternate model/channel and no change to the trial's internal retry budget.
 
 ## 12. Validation ownership
 

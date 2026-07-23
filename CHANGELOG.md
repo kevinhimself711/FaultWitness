@@ -4,6 +4,9 @@
 
 ### Governance maintenance
 
+- Accept AMD-0003: remove G02's three-attempt/45-minute infrastructure compatibility stop while
+  retaining attributable failure history, fail-closed semantics, frozen paid-trial budgets, and all
+  quality and zero-tolerance criteria.
 - Record the G01 execution retrospective, six process badcases, and ADR-0009's accepted separation
   of behavior candidate and evidence-head revisions without rewriting any closed G01 evidence.
 - Correct stale lifecycle surfaces after G01 closure and restore the authoritative G02 “Fault

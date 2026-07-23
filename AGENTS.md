@@ -103,9 +103,11 @@ Planning-only commits may create or refine future Iteration and Eval assets with
   ADR-0009 and ADR-0013. Evidence-only descendants never impersonate a new runtime candidate.
 - After a failure has a verified root cause, no operator-adjudicated pass route may remain. Fix the
   cause and rerun under the phase's normal blocking semantics.
-- The same environment compatibility obstacle stops after three attempts or 45 cumulative minutes,
-  whichever occurs first. Use only a preimplemented fallback or block; do not build a helper tool
-  during the incident.
+- Environment compatibility, rollout, credential-transfer, and external-tool attempts have no
+  attempt-count or cumulative-time ceiling. Every attempt must remain attributable. Correct a known
+  deterministic root cause before retrying; retry unchanged work only for a classified transient
+  infrastructure failure. Unlimited retries never convert metric, policy, cleanup, digest, or
+  zero-tolerance failures into a pass.
 - Every zero-tolerance criterion has a named runner, a negative fixture, and a reviewable artifact
   path in a machine-validated registry. A missing field invalidates the criterion.
 

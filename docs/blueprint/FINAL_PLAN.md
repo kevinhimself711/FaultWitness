@@ -7,6 +7,7 @@ approved_on: 2026-07-22
 amendments:
   - docs/blueprint/AMENDMENTS/AMD-0001.md
   - docs/blueprint/AMENDMENTS/AMD-0002.md
+  - docs/blueprint/AMENDMENTS/AMD-0003.md
 ---
 
 # FaultWitness 最终项目规划

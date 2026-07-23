@@ -125,8 +125,13 @@ def test_clean_clone_runner_is_pinned_and_candidate_bound() -> None:
     assert summary["profile"] == "k3s"
     assert "sha256sum -c" in script
     assert "namespace: fw-sut" in script
+    assert "kubectl apply -n fw-sut" in script
     assert "candidate_sha=" + "1" * 40 in script
     assert script.count("@sha256:") >= len(K8S_SOURCE_IMAGES)
+    malformed_proxy = (
+        "@sha256:a72cd48ad9ef7fda7607813c57383d1ca6154d860916473976942d3ac24e473c-proxy"
+    )
+    assert malformed_proxy not in script
 
 
 def test_lab_start_cli_is_explicitly_private_server_scoped() -> None:

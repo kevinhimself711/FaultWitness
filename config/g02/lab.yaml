@@ -32,11 +32,11 @@ images:
   - {name: shipping, platform: linux/amd64, reference: "ghcr.io/open-telemetry/demo@sha256:7a75fb45fde353efc2b777d23246d5f415c58b7031ebcdb95058443b3f477bb9"}
   - {name: flagd, platform: linux/amd64, reference: "ghcr.io/open-feature/flagd@sha256:2b74aa8e839613a345c4f5d94e18434ca85813f691521ed59a3093bc33e278e6"}
   - {name: otel-collector, platform: linux/amd64, reference: "ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib@sha256:d7c3656127e8629a0fe04e5ca18916b39de12bfc5de2f77a462e7aa9700d34ba"}
-  - {name: busybox, platform: linux/amd64, reference: "docker.io/library/busybox@sha256:9532d8c39891ca2ecde4d30d7710e01fb739c87a8b9299685c63704296b16028"}
-  - {name: grafana, platform: linux/amd64, reference: "docker.io/grafana/grafana@sha256:2175aaa91c96733d86d31cf270d5310b278654b03f5718c59de12a865380a31f"}
+  - {name: busybox, platform: linux/amd64, reference: "docker.io/library/busybox@sha256:7a3ebe5bfd1a4a19797d20b0c0bb39d44393e9a03fd852c0865b0f540d868df0"}
+  - {name: grafana, platform: linux/amd64, reference: "docker.io/grafana/grafana@sha256:7c064e627d9cb50c3485c9ded5ca0222de89a08e41403322a0c3ca6f1777a8d1"}
   - {name: jaeger, platform: linux/amd64, reference: "docker.io/jaegertracing/jaeger@sha256:4c8423cd8fa8b727bd632f0acda2cc39118f21a4bdcef322a6c9ddbeb6dcd424"}
-  - {name: opensearch, platform: linux/amd64, reference: "docker.io/opensearchproject/opensearch@sha256:1647ce2e07371f1ac8bbad28890a64ef77c5a694a61f656120f0ace09e66bf48"}
-  - {name: postgres, platform: linux/amd64, reference: "docker.io/library/postgres@sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929"}
+  - {name: opensearch, platform: linux/amd64, reference: "docker.io/opensearchproject/opensearch@sha256:61c97e6da9e307f5511793f776d3c47d5faa663ad70a432f1b9ed62767b18505"}
+  - {name: postgres, platform: linux/amd64, reference: "docker.io/library/postgres@sha256:b86568d3e0fe1dfaeff52714f9da36f206a30e4c49131b82bf96982d78627409"}
   - {name: valkey, platform: linux/amd64, reference: "docker.io/valkey/valkey@sha256:78aec401a63daa9218305e7d7cb9152cbd74b1d3c8a78d86683553d3a298690f"}
-  - {name: k8s-sidecar, platform: linux/amd64, reference: "quay.io/kiwigrid/k8s-sidecar@sha256:225d675c384e08271decf7a4576fcaeaa9cf81ede23f3c0bce8d2a39a9893632"}
-  - {name: prometheus, platform: linux/amd64, reference: "quay.io/prometheus/prometheus@sha256:2b6f734e372c1b4717008f7d0a0152316aedd4d13ae17ef1e3268dbfaf68041b"}
+  - {name: k8s-sidecar, platform: linux/amd64, reference: "quay.io/kiwigrid/k8s-sidecar@sha256:2248efa2bf19ab7b0ae6c10017c484ddbdbfe2de3c1b255ee12c2c606b9d91e1"}
+  - {name: prometheus, platform: linux/amd64, reference: "quay.io/prometheus/prometheus@sha256:1c0c63ffcdaa26e6be82d0afaf69056f63a4288c539a22cafe427c4167c578fa"}

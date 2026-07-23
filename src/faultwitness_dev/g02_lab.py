@@ -265,15 +265,20 @@ def render_k3s_bootstrap_script(config: Mapping[str, Any], candidate_sha: str) -
         raise GovernanceError("K3s bootstrap runner cannot execute the fallback profile")
     source = config["source"]
     by_name = {str(item["name"]): str(item["reference"]) for item in config["images"]}
-    substitutions: list[str] = []
+    replacements: list[tuple[str, str]] = []
     for name, source_references in K8S_SOURCE_IMAGES.items():
         target = by_name[name]
         for source_reference in source_references:
-            substitutions.append(
-                "sed -i "
-                + shlex.quote(f"s|{source_reference}|{target}|g")
-                + ' "$manifest"'
-            )
+            replacements.append((source_reference, target))
+    substitutions: list[str] = []
+    for source_reference, target in sorted(
+        replacements, key=lambda item: len(item[0]), reverse=True
+    ):
+        substitutions.append(
+            "sed -i "
+            + shlex.quote(f"s|{source_reference}|{target}|g")
+            + ' "$manifest"'
+        )
     workspace = f"/tmp/faultwitness-g02-{candidate_sha[:12]}"
     return f"""set -eu
 workspace={shlex.quote(workspace)}
@@ -286,7 +291,7 @@ if grep -E '^[[:space:]]*image:[[:space:]]*' "$manifest" | grep -v '@sha256:'; t
   echo FW_G02_UNPINNED_IMAGE >&2
   exit 41
 fi
-/usr/local/bin/k3s kubectl apply -f "$manifest"
+/usr/local/bin/k3s kubectl apply -n fw-sut -f "$manifest"
 /usr/local/bin/k3s kubectl -n fw-sut create configmap fw-g02-candidate-binding \
   --from-literal=candidate_sha={candidate_sha} \
   --from-literal=image_set_digest={validation['image_set_digest']} \

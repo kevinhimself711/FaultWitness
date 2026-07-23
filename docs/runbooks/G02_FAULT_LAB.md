@@ -32,8 +32,9 @@ requires a new candidate configuration; the runner never switches profiles durin
 - Any unpinned image remaining before apply: blocking failure with `FW_G02_UNPINNED_IMAGE`.
 - A non-ready workload after the frozen rollout deadline: `infra_failed` when infrastructure is
   unobservable, otherwise `metric_fail` attributed to that workload.
-- The same compatibility obstacle stops after three attempts or 45 cumulative minutes. Use the
-  already registered fallback or report the block; do not create a helper tool during the event.
+- Compatibility and rollout attempts have no count or time ceiling. Record every attempt and its
+  attribution; fix a deterministic root cause before retrying and retry unchanged work only for a
+  classified transient infrastructure failure. Failed attempts remain evidence.
 
 The destructive Gate scenario phase remains separately guarded and runs only once for an exact
 candidate, image, config, and environment cache key.
