@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 import copy
 import hashlib
 import json
@@ -18,7 +19,13 @@ import yaml
 
 from faultwitness_dev.bootstrap import BootstrapPaths, ssh_failure_category
 from faultwitness_dev.errors import GovernanceError
-from faultwitness_dev.infra import _remote_arguments, run_remote_script
+from faultwitness_dev.infra import (
+    InfraPaths,
+    _ensure_crane,
+    _pull_image_archive,
+    _remote_arguments,
+    run_remote_script,
+)
 from faultwitness_dev.schemas import validate_repository_schemas
 
 SUT_RELEASE = "2.2.0"
@@ -270,15 +277,8 @@ def render_k3s_bootstrap_script(config: Mapping[str, Any], candidate_sha: str) -
         target = by_name[name]
         for source_reference in source_references:
             replacements.append((source_reference, target))
-    substitutions: list[str] = []
-    for source_reference, target in sorted(
-        replacements, key=lambda item: len(item[0]), reverse=True
-    ):
-        substitutions.append(
-            "sed -i "
-            + shlex.quote(f"s|{source_reference}|{target}|g")
-            + ' "$manifest"'
-        )
+    image_map = dict(replacements)
+    encoded_image_map = base64.b64encode(canonical_json(image_map).encode()).decode()
     workspace = f"/tmp/faultwitness-g02-{candidate_sha[:12]}"
     return f"""set -eu
 workspace={shlex.quote(workspace)}
@@ -286,7 +286,27 @@ manifest="$workspace/opentelemetry-demo.yaml"
 test -f "$manifest"
 printf '%s  %s\n' {shlex.quote(str(source['sha256']))} "$manifest" | sha256sum -c -
 sed -i 's|namespace: otel-demo|namespace: fw-sut|g; s|name: otel-demo|name: fw-sut|g' "$manifest"
-{chr(10).join(substitutions)}
+python3 - "$manifest" <<'PY'
+import base64
+import json
+import sys
+
+path = sys.argv[1]
+mapping = json.loads(base64.b64decode("{encoded_image_map}"))
+output = []
+with open(path, encoding="utf-8") as source_file:
+    for line in source_file:
+        if line.lstrip().startswith("image:"):
+            indent, raw = line.split("image:", 1)
+            value = raw.strip()
+            quote = value[0] if value[:1] in {{"'", '"'}} else ""
+            reference = value[1:-1] if quote and value.endswith(quote) else value
+            if reference in mapping:
+                line = f"{{indent}}image: {{quote}}{{mapping[reference]}}{{quote}}\\n"
+        output.append(line)
+with open(path, "w", encoding="utf-8", newline="\n") as target_file:
+    target_file.writelines(output)
+PY
 if grep -E '^[[:space:]]*image:[[:space:]]*' "$manifest" | grep -v '@sha256:'; then
   echo FW_G02_UNPINNED_IMAGE >&2
   exit 41
@@ -371,6 +391,75 @@ def _stage_lab_manifest(config: Mapping[str, Any], candidate_sha: str) -> None:
     )
 
 
+def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str) -> None:
+    images = {
+        str(item["name"]): str(item["reference"])
+        for item in config["images"]
+        if str(item["reference"]).startswith("docker.io/")
+    }
+    crane = _ensure_crane(root)
+    private_root = InfraPaths.defaults().evidence_dir.parent.parent
+    archive_root = private_root / "artifacts" / "I-0017" / "images"
+    archives = {name: archive_root / f"{name}.tar" for name in images}
+    for name, image in images.items():
+        _pull_image_archive(crane, image, archives[name])
+
+    paths = BootstrapPaths.defaults()
+    bundle, _ = _remote_arguments(paths)
+    remote_root = f"/tmp/faultwitness-g02-images-{candidate_sha[:12]}"
+    owner = shlex.quote(bundle.server_username)
+    run_remote_script(
+        f'group=$(id -gn {owner}); install -d -m 0700 -o {owner} -g "$group" '
+        f"{remote_root}\n",
+        privileged=True,
+    )
+    common = [
+        "-P",
+        str(bundle.server_port),
+        "-o",
+        "ConnectTimeout=10",
+        "-o",
+        "StrictHostKeyChecking=yes",
+        "-o",
+        f"UserKnownHostsFile={paths.known_hosts_file}",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        "PasswordAuthentication=no",
+        "-i",
+        str(paths.ssh_private_key),
+    ]
+    for name, archive in archives.items():
+        result = subprocess.run(
+            [
+                "scp",
+                *common,
+                str(archive),
+                f"{bundle.server_username}@{bundle.server_host}:{remote_root}/{name}.tar",
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=900,
+        )
+        if result.returncode:
+            raise GovernanceError(
+                "G02 offline image staging failed ("
+                + ssh_failure_category(result.stderr)
+                + ")"
+            )
+    import_script = "set -eu\n" + "\n".join(
+        f"/usr/local/bin/k3s ctr images import {remote_root}/{name}.tar"
+        for name in archives
+    )
+    import_script += "\n" + "\n".join(
+        f"/usr/local/bin/k3s ctr images list -q | grep -F {shlex.quote(reference)}"
+        for reference in images.values()
+    )
+    run_remote_script(import_script, privileged=True, timeout=1200)
+
+
 def deploy_g02_lab(root: Path, candidate_sha: str) -> dict[str, Any]:
     if not FULL_SHA.fullmatch(candidate_sha):
         raise GovernanceError("G02 lab candidate must be a full Git SHA")
@@ -389,6 +478,7 @@ def deploy_g02_lab(root: Path, candidate_sha: str) -> dict[str, Any]:
     config = load_lab_config(root)
     validation = validate_lab_bootstrap(config)
     _stage_lab_manifest(config, candidate_sha)
+    _stage_lab_images(root, config, candidate_sha)
     output = run_remote_script(
         render_k3s_bootstrap_script(config, candidate_sha), privileged=True, timeout=1200
     )

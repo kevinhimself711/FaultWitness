@@ -11,7 +11,6 @@ from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.g02_lab import (
     ADAPTERS,
     FAMILIES,
-    K8S_SOURCE_IMAGES,
     MemoryFlagClient,
     OracleState,
     base_flag_document,
@@ -127,7 +126,7 @@ def test_clean_clone_runner_is_pinned_and_candidate_bound() -> None:
     assert "namespace: fw-sut" in script
     assert "kubectl apply -n fw-sut" in script
     assert "candidate_sha=" + "1" * 40 in script
-    assert script.count("@sha256:") >= len(K8S_SOURCE_IMAGES)
+    assert "base64.b64decode" in script
     malformed_proxy = (
         "@sha256:a72cd48ad9ef7fda7607813c57383d1ca6154d860916473976942d3ac24e473c-proxy"
     )
