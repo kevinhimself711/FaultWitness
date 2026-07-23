@@ -139,7 +139,9 @@ def test_clean_clone_runner_is_pinned_and_candidate_bound() -> None:
     assert "sha256sum -c" in script
     assert "namespace: fw-sut" in script
     assert "kubectl apply -n fw-sut" in script
-    assert "rollout status" in script
+    assert "readyReplicas" in script
+    assert "sleep 5" in script
+    assert "rollout status" not in script
     assert "--timeout" not in script
     assert "candidate_sha=" + "1" * 40 in script
     assert "base64.b64decode" in script
@@ -149,6 +151,10 @@ def test_clean_clone_runner_is_pinned_and_candidate_bound() -> None:
     assert malformed_proxy not in script
     transform = script.split("<<'PY'\n", 1)[1].split("\nPY\n", 1)[0]
     compile(transform, "g02-manifest-transform", "exec")
+    readiness_checks = script.split("python3 -c '\n")[1:]
+    assert len(readiness_checks) == 2
+    for index, check in enumerate(readiness_checks):
+        compile(check.split("\n')", 1)[0], f"g02-readiness-{index}", "exec")
 
 
 def test_lab_start_cli_is_explicitly_private_server_scoped() -> None:

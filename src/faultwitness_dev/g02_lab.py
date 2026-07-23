@@ -318,10 +318,47 @@ fi
   --from-literal=image_set_digest={validation['image_set_digest']} \
   --from-literal=sut_commit={SUT_COMMIT} \
   --dry-run=client -o yaml | /usr/local/bin/k3s kubectl apply -f -
-for workload in $(/usr/local/bin/k3s kubectl -n fw-sut get deployment -o name); do
-  /usr/local/bin/k3s kubectl -n fw-sut rollout status "$workload"
+while true; do
+  pending=$(/usr/local/bin/k3s kubectl -n fw-sut get deployment -o json | python3 -c '
+import json
+import sys
+
+items = json.load(sys.stdin)["items"]
+for item in items:
+    desired = item["spec"].get("replicas", 1)
+    status = item.get("status", {{}})
+    if not (
+        status.get("observedGeneration", 0) >= item["metadata"]["generation"]
+        and status.get("updatedReplicas", 0) == desired
+        and status.get("readyReplicas", 0) == desired
+        and status.get("availableReplicas", 0) == desired
+    ):
+        print(item["metadata"]["name"])
+')
+  test -z "$pending" && break
+  printf 'waiting for Deployments: %s\n' "$pending" >&2
+  sleep 5
 done
-/usr/local/bin/k3s kubectl -n fw-sut rollout status statefulset/opensearch
+while true; do
+  pending=$(/usr/local/bin/k3s kubectl -n fw-sut get statefulset opensearch -o json | python3 -c '
+import json
+import sys
+
+item = json.load(sys.stdin)
+desired = item["spec"].get("replicas", 1)
+status = item.get("status", {{}})
+ready = (
+    status.get("observedGeneration", 0) >= item["metadata"]["generation"]
+    and status.get("updatedReplicas", 0) == desired
+    and status.get("readyReplicas", 0) == desired
+    and status.get("currentRevision") == status.get("updateRevision")
+)
+print("" if ready else item["metadata"]["name"])
+')
+  test -z "$pending" && break
+  printf 'waiting for StatefulSet: %s\n' "$pending" >&2
+  sleep 5
+done
 binding=$(/usr/local/bin/k3s kubectl -n fw-sut \
   get configmap fw-g02-candidate-binding \
   -o jsonpath='{{.data.candidate_sha}}')

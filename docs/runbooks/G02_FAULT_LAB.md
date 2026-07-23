@@ -45,6 +45,9 @@ requires a new candidate configuration; the runner never switches profiles durin
 - Fetch, transfer, import, bootstrap, readiness, Iteration Eval, and Gate phase processes have no
   preset kill timeout. This changes orchestration only: all Eval N values, oracle windows,
   performance metrics, quality thresholds, paid budgets, and pass criteria remain frozen.
+- Readiness waits on observed generation, desired/updated/ready/available replicas, and StatefulSet
+  revision convergence. It does not consume Deployment `ProgressDeadlineExceeded` as a terminal
+  result because that condition is itself wall-clock-derived and Pods may still converge afterward.
 
 The destructive Gate scenario phase remains separately guarded and runs only once for an exact
 candidate, image, config, and environment cache key.
