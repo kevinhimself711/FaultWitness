@@ -23,6 +23,7 @@ from faultwitness_dev.control_api_deploy import (
     run_control_api_smoke,
 )
 from faultwitness_dev.errors import GovernanceError
+from faultwitness_dev.g01_recovery import run_postgres_restore_rehearsal
 from faultwitness_dev.infra import (
     audit_runtime_coexistence,
     run_network_matrix,
@@ -324,6 +325,9 @@ def evaluate_g01(root: Path, candidate_sha: str, *, profile: str) -> dict[str, A
     reconciliation = (
         inspect_g01_reconciliation(candidate_sha) if private else {"status": "deferred_private"}
     )
+    recovery = (
+        run_postgres_restore_rehearsal(candidate_sha) if private else {"status": "deferred_private"}
+    )
     walkthroughs = _fourteen_walkthroughs(root, candidate_sha, run_private=private)
     upstream_debt = _eval_manifest_debt(root, candidate_sha, include_final=False)
     passed = walkthroughs["pass_count"] == 14 and private and not upstream_debt
@@ -344,6 +348,7 @@ def evaluate_g01(root: Path, candidate_sha: str, *, profile: str) -> dict[str, A
         "platform": platform,
         "services": services,
         "reconciliation": reconciliation,
+        "recovery": recovery,
         "walkthroughs": walkthroughs,
         "upstream_eval_debt": upstream_debt,
         "readiness": "candidate evidence complete" if passed else "blocking evidence remains",
