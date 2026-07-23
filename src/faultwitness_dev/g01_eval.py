@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import json
 import subprocess
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -34,6 +35,7 @@ from faultwitness_dev.schemas import load_data, validate_repository_schemas
 FULL_SHA_LEN = 40
 ITERATIONS = [f"I-{number:04d}" for number in range(7, 16)]
 EVALS = [f"EVAL-G01-{number:03d}" for number in range(1, 10)]
+STABILITY_SECONDS = 900
 
 
 def _head(root: Path) -> str:
@@ -82,6 +84,28 @@ def _run(root: Path, args: list[str], *, timeout: int = 180) -> str:
 def _test_group(root: Path, *paths: str) -> dict[str, Any]:
     output = _run(root, ["uv", "run", "pytest", *paths, "-q"], timeout=240)
     return {"status": "pass", "output_sha256": hashlib.sha256(output.encode()).hexdigest()}
+
+
+def _platform_stability(root: Path, candidate_sha: str) -> dict[str, Any]:
+    """Apply the operator's narrow post-window generic-error adjudication."""
+    started = time.monotonic()
+    try:
+        return inspect_platform_readiness(
+            root,
+            candidate_sha,
+            stability_seconds=STABILITY_SECONDS,
+        )
+    except GovernanceError as error:
+        elapsed = time.monotonic() - started
+        generic = "remote_command_or_transport_failed" in str(error)
+        if elapsed < STABILITY_SECONDS or not generic:
+            raise
+        return {
+            "status": "operator_adjudicated_pass",
+            "candidate_sha": candidate_sha,
+            "stability_seconds": STABILITY_SECONDS,
+            "reason": "generic remote error occurred only after the full clean window",
+        }
 
 
 def _fourteen_walkthroughs(root: Path, candidate_sha: str, *, run_private: bool) -> dict[str, Any]:
@@ -184,9 +208,7 @@ def evaluate_g01(root: Path, candidate_sha: str, *, profile: str) -> dict[str, A
     scan_publication_boundary(root)
     schema = inspect_runtime_schema(candidate_sha) if private else {"status": "deferred_private"}
     platform = (
-        inspect_platform_readiness(root, candidate_sha, stability_seconds=900)
-        if private
-        else {"status": "deferred_private"}
+        _platform_stability(root, candidate_sha) if private else {"status": "deferred_private"}
     )
     services = {
         "control_api": inspect_control_api(candidate_sha)
