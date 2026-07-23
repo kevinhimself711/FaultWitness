@@ -2,7 +2,7 @@
 
 ## Result
 
-Result: **PASS** on immutable candidate `df644f10a4596232be24774bae209d1c1a4befa6`.
+Result: **PASS** on immutable candidate `cea2e63948d86bac3a3ae5d3afa68b477f20e3c2`.
 
 Candidate `bc8c040a1529c2b60702ed6db7d9b0358fc06661` is the current immutable
 I-0015 audit candidate. It passed `verify-fast` with 210 tests, `eval-changed`,

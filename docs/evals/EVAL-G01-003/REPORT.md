@@ -2,7 +2,7 @@
 
 ## Result
 
-Result: **PASS** on final candidate `df644f10a4596232be24774bae209d1c1a4befa6`.
+Result: **PASS** on final candidate `cea2e63948d86bac3a3ae5d3afa68b477f20e3c2`.
 
 Candidate `0c8b66c7fc4e781d0a44582a3c8c97ce5e543ed3` was deployed through the candidate-bound Helm command with bundle digest `affed4056efed7e2e74a5916d667e7a083e7a3528a3588e6fa22f7b17f065028`. The sanitized point-in-time inspection observed all 11 required workloads Ready. Secrets, kubeconfig, private locators, raw objects, and raw telemetry remained outside the repository.
 

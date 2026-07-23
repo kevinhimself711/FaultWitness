@@ -2,7 +2,7 @@
 
 ## Result
 
-Result: **PASS** on final candidate `df644f10a4596232be24774bae209d1c1a4befa6`.
+Result: **PASS** on final candidate `cea2e63948d86bac3a3ae5d3afa68b477f20e3c2`.
 
 Candidate `ae0a3be535d60db2aa15a6355c0f321e84803a2e` deployed migration `003_i0013` and the private Trace Service. The candidate-bound checkpoint passed nine primary checks: encrypted owner-isolated schema, private ClusterIP deployment, live sanitized LangSmith delivery, OTLP trace/metric/log delivery, MinIO/DVC archival, idempotent duplicate ingest, pre-persistence canary rejection, zero pending delivery, and public/private evidence separation.
 

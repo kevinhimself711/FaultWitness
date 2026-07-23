@@ -2,7 +2,7 @@
 
 ## Result
 
-Result: **PASS** on final candidate `df644f10a4596232be24774bae209d1c1a4befa6`.
+Result: **PASS** on final candidate `cea2e63948d86bac3a3ae5d3afa68b477f20e3c2`.
 
 I-0008 is active. The private server currently reports an active pinned K3s service together with Helm, gVisor, NVIDIA container runtime, and a compatible Kata runtime. Repository-owned deployment manifests, command tooling, smoke definitions, coexistence checks, and unit tests have been implemented. These observations are operational progress only and do not constitute a passing EVAL-G01-002 result.
 

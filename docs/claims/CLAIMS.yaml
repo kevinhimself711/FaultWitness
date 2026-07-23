@@ -101,5 +101,5 @@ claims:
       - EVAL-G01-009
       - docs/gates/G01/REPORT.md
     limitations:
-      - "Candidate df644f1 proves G01 platform contracts and Trace foundation readiness; it does not claim G02 Agent orchestration, G03 retrieval quality, G04 Action execution, G05 training, or G06 multi-node scale."
+      - "Candidate cea2e63 proves G01 platform contracts and Trace foundation readiness; it does not claim G02 Agent orchestration, G03 retrieval quality, G04 Action execution, G05 training, or G06 multi-node scale."
       - "The 15-minute readiness result follows the operator-frozen rule that an unspecialized transport error occurring only after a clean window is non-blocking; all concrete failures and all individual matrices remained blocking."

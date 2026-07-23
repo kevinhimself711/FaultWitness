@@ -9,7 +9,7 @@
 
 ### Tooling
 
-- Complete I-0015 on immutable candidate `df644f1`: pass public Ubuntu/Windows/audit
+- Complete I-0015 on immutable candidate `cea2e63`: pass public Ubuntu/Windows/audit
   checks, the clean 15-minute readiness window, 14/14 walkthroughs, 36/36 live
   model trials, recovery/rollback, PostgreSQL/Redis/Trace/API failure matrices,
   and final six-binding/three-migration reconciliation with zero durable backlog.

@@ -3,7 +3,7 @@
   "eval_id": "EVAL-G01-001",
   "gate": "G01",
   "iteration": "I-0007",
-  "evaluated_revision": "df644f10a4596232be24774bae209d1c1a4befa6",
+  "evaluated_revision": "cea2e63948d86bac3a3ae5d3afa68b477f20e3c2",
   "status": "pass",
   "environments": ["windows-local", "ubuntu-private-server"],
   "commands": ["uv run python -m faultwitness_dev eval-iteration I-0007 --candidate-sha <full-sha>"],

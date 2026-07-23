@@ -2,7 +2,7 @@
 
 ## Result
 
-Result: **PASS** on final candidate `df644f10a4596232be24774bae209d1c1a4befa6`.
+Result: **PASS** on final candidate `cea2e63948d86bac3a3ae5d3afa68b477f20e3c2`.
 
 Candidate `5a1b607ff34e47b1f40d7dcb7e4042d0a384621d` implements the eight frozen FastAPI paths, fail-closed RS256 OIDC tenant derivation, PostgreSQL Incident/idempotency/event projection, and recoverable SSE controls. The candidate-bound private Control API and Keycloak realm were deployed with two synthetic tenants, four roles, and eight users. Live smoke passed authenticated create/read/SSE and rejected cross-tenant access, role injection, and false approval. Focused deployment tests passed (`6 passed`); the repository fast suite previously passed with 159 tests before this final identity reconciliation.
 
