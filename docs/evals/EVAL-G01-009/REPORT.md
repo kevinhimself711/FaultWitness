@@ -25,9 +25,16 @@ After that private checkpoint, audit-head `aad15e2f8a617386864c6232f0cf79d6ba113
 added the operator-approved post-window transport adjudication with fail-closed
 boundary tests, 10,000-event/100-reconnect SSE and 10,000-delivery/100-crash
 reference matrices, upstream-Eval debt blocking, and the exact nine-asset G01
-closure boundary. `verify-fast` passes 220 tests. This newer audit head is not yet
-the private deployed candidate and therefore does not replace the evaluated
-revision in the manifest.
+closure boundary. `verify-fast` passes 220 tests. That intermediate audit head was
+superseded by the deployed candidate below.
+
+Candidate `16294bc617e4dadac9591df325e57622f96b67b6` subsequently incorporated
+those audit changes and was redeployed across all private components. It passed
+the eleven-workload readiness inspection, migrations, real OIDC Control API,
+sanitized three-sink Trace, authenticated Model Gateway, four RuntimeClass,
+five-case NetworkPolicy, and zero-Docker-regression smokes. This is now the
+manifest's evaluated private checkpoint; the remaining evidence debt still keeps
+the Eval pending.
 
 ## Passing checkpoint evidence
 
