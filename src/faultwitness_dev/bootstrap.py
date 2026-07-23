@@ -125,14 +125,7 @@ def default_age_keygen_executable() -> Path:
     local_appdata = os.environ.get("LOCALAPPDATA")
     if not local_appdata:
         raise GovernanceError("LOCALAPPDATA is required for the pinned Age executable")
-    return (
-        Path(local_appdata)
-        / "FaultWitness"
-        / "tools"
-        / "age"
-        / "1.3.1"
-        / "age-keygen.exe"
-    )
+    return Path(local_appdata) / "FaultWitness" / "tools" / "age" / "1.3.1" / "age-keygen.exe"
 
 
 def default_ssh_askpass_executable() -> Path:
@@ -409,7 +402,8 @@ def accept_existing_credentials(paths: BootstrapPaths, sops: Path) -> None:
     metadata.pop("initial_server_password_policy", None)
     metadata["credential_policy"] = "operator_declared_long_lived"
     metadata["credential_acceptance"] = {
-        name: "accepted_existing" for name in (
+        name: "accepted_existing"
+        for name in (
             "server.password",
             "bailian.api_key",
             "langsmith.api_key",
@@ -523,6 +517,8 @@ def _ssh_base_arguments(bundle: SecretBundle, paths: BootstrapPaths) -> list[str
         "-o",
         "ConnectTimeout=10",
         "-o",
+        "ConnectionAttempts=3",
+        "-o",
         "StrictHostKeyChecking=yes",
         "-o",
         f"UserKnownHostsFile={paths.known_hosts_file}",
@@ -622,11 +618,7 @@ def install_and_verify_ssh_key(
         category = ssh_failure_category(preflight.stderr)
         if category == "authentication_rejected" and not askpass_invoked:
             category = "askpass_not_invoked"
-        raise GovernanceError(
-            "password-authenticated SSH preflight failed ("
-            + category
-            + ")"
-        )
+        raise GovernanceError("password-authenticated SSH preflight failed (" + category + ")")
     result = subprocess.run(
         [
             *password_arguments,
@@ -645,9 +637,7 @@ def install_and_verify_ssh_key(
         askpass_sentinel.unlink()
     if result.returncode:
         raise GovernanceError(
-            "public-key installation command failed ("
-            + ssh_failure_category(result.stderr)
-            + ")"
+            "public-key installation command failed (" + ssh_failure_category(result.stderr) + ")"
         )
     verification = subprocess.run(
         [
@@ -670,9 +660,7 @@ def install_and_verify_ssh_key(
         raise GovernanceError("dedicated SSH key verification failed")
     metadata = load_private_metadata(paths.metadata_file)
     metadata["ssh_key_verified"] = True
-    metadata.setdefault("credential_verification", {})[
-        "server.password"
-    ] = "verified_login"
+    metadata.setdefault("credential_verification", {})["server.password"] = "verified_login"
     _write_private_metadata(paths, metadata)
 
 
@@ -858,9 +846,7 @@ def assert_no_sensitive_capability_fields(document: dict[str, Any]) -> None:
 
 def remote_probe_failure_category(stderr: str) -> str:
     lowered = stderr.casefold()
-    structured = re.search(
-        r"FW_PROBE_ERROR:([a-z_]+):([A-Za-z_][A-Za-z0-9_]*)", stderr
-    )
+    structured = re.search(r"FW_PROBE_ERROR:([a-z_]+):([A-Za-z_][A-Za-z0-9_]*)", stderr)
     if structured:
         return "remote_probe_" + structured.group(1) + "_" + structured.group(2)
     if "python3" in lowered and ("not found" in lowered or "not recognized" in lowered):
@@ -868,9 +854,7 @@ def remote_probe_failure_category(stderr: str) -> str:
     if "permission denied" in lowered:
         return "remote_permission_denied"
     if "traceback (most recent call last)" in lowered:
-        exception_names = re.findall(
-            r"(?m)^([A-Za-z_][A-Za-z0-9_.]*(?:Error|Exception)):", stderr
-        )
+        exception_names = re.findall(r"(?m)^([A-Za-z_][A-Za-z0-9_.]*(?:Error|Exception)):", stderr)
         return (
             "remote_probe_exception_" + exception_names[-1]
             if exception_names

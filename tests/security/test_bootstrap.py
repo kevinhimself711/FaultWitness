@@ -10,6 +10,7 @@ import pytest
 from faultwitness_dev.bootstrap import (
     BootstrapPaths,
     SecretBundle,
+    _ssh_base_arguments,
     accept_existing_credentials,
     accept_host_key_candidate,
     assert_no_sensitive_capability_fields,
@@ -55,6 +56,12 @@ def bundle() -> SecretBundle:
         bailian_api_key=opaque,
         langsmith_api_key=opaque,
     )
+
+
+def test_ssh_connection_retries_only_before_remote_session(tmp_path: Path) -> None:
+    arguments = _ssh_base_arguments(bundle(), BootstrapPaths.under(tmp_path / "private"))
+    assert "ConnectTimeout=10" in arguments
+    assert "ConnectionAttempts=3" in arguments
 
 
 def capability_document() -> dict:
@@ -132,9 +139,7 @@ def test_migration_writes_ciphertext_and_metadata_but_retains_source(
     assert source.is_file()
     assert paths.encrypted_store.read_text(encoding="utf-8") == "sops: encrypted fixture\n"
     assert metadata["encrypted_round_trip"] == "pass"
-    assert set(metadata["credential_acceptance"].values()) == {
-        "pending_operator_confirmation"
-    }
+    assert set(metadata["credential_acceptance"].values()) == {"pending_operator_confirmation"}
     assert metadata["credential_policy"] == "operator_declared_long_lived"
     assert "x" * 20 not in paths.metadata_file.read_text(encoding="utf-8")
 
@@ -232,10 +237,7 @@ def test_capability_eval_enforces_frozen_server_floor() -> None:
     candidate = "a" * 40
     report = canonical_capability_report(capability_document(), candidate)
     schema = load_data(
-        Path(__file__).parents[2]
-        / "schemas"
-        / "bootstrap"
-        / "capability-baseline.schema.json"
+        Path(__file__).parents[2] / "schemas" / "bootstrap" / "capability-baseline.schema.json"
     )
     validate_capability_baseline(report, candidate, schema)
 
@@ -250,10 +252,7 @@ def test_capability_schema_rejects_undeclared_fields() -> None:
     report = canonical_capability_report(capability_document(), candidate)
     report["private_host"] = "must-not-be-published"
     schema = load_data(
-        Path(__file__).parents[2]
-        / "schemas"
-        / "bootstrap"
-        / "capability-baseline.schema.json"
+        Path(__file__).parents[2] / "schemas" / "bootstrap" / "capability-baseline.schema.json"
     )
     with pytest.raises(GovernanceError, match="Additional properties"):
         validate_capability_baseline(report, candidate, schema)
@@ -289,9 +288,7 @@ def test_host_key_acceptance_requires_exact_out_of_band_fingerprint(tmp_path: Pa
         ("opaque failure", "remote_command_or_transport_failed"),
     ],
 )
-def test_ssh_failure_category_never_echoes_raw_diagnostics(
-    stderr: str, expected: str
-) -> None:
+def test_ssh_failure_category_never_echoes_raw_diagnostics(stderr: str, expected: str) -> None:
     category = ssh_failure_category(stderr)
     assert category == expected
     assert stderr not in category
