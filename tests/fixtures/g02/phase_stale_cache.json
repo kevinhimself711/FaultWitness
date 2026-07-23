@@ -1,0 +1,11 @@
+{
+  "phase_id": "first",
+  "status": "pass",
+  "start_time": "2026-07-23T00:00:00+00:00",
+  "end_time": "2026-07-23T00:00:01+00:00",
+  "cache_key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "candidate_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "execution_count": 1,
+  "destructive": false,
+  "payload": {"artifact_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}
+}

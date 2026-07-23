@@ -1,8 +1,8 @@
 ---
 active_gate: G02
-active_gate_status: planned
-active_iteration: null
-next_iteration: I-0016
+active_gate_status: in_progress
+active_iteration: I-0016
+next_iteration: I-0017
 last_closed_gate: G01
 ---
 
@@ -10,8 +10,8 @@ last_closed_gate: G01
 
 FaultWitness 是一个面向微服务事故调查、受控修复与持续优化的多租户 Agent Runtime 项目。
 
-当前状态：G00、G01 已关闭；G02 Master Plan 已冻结并处于 `planned`，当前没有 active
-Iteration，下一 Iteration 为 I-0016。仓库已经具备
+当前状态：G00、G01 已关闭；G02 正在执行，当前唯一 active Iteration 为 I-0016，下一
+Iteration 为 I-0017。仓库已经具备
 G01 证明的平台、契约、持久化、认证 API、Trace、Model Gateway 与恢复地基，但尚未
 实现或声称 G02 故障实验室、G03 只读 Agent 纵切及后续能力。
 
@@ -29,7 +29,8 @@ G01 证明的平台、契约、持久化、认证 API、Trace、Model Gateway �
 
 - 不把 G01 平台地基包装为已经完成的 Agent 产品。
 - 不提交原始 JD、面经、密钥、私有 Trace 或受限数据。
-- planning commit 本身不授权 G02 产品行为、live Eval、模型调用或部署修改。
-- 下一步是在独立变更中激活并执行 I-0016，而不是跳到最终 Gate Eval。
+- I-0016 仅实现确定性 Eval phase、manifest、journal 与双 SHA 协议，不授权 live Eval、
+  模型调用、故障注入或部署修改。
+- 下一步是完成并关闭 I-0016，而不是跳到故障实验室或最终 Gate Eval。
 
 代码、API、Schema 和标识符使用英文；设计、评测和复盘文档以中文为主。

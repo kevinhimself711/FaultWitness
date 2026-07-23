@@ -1,0 +1,21 @@
+{
+  "candidate_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "open_evidence": [],
+  "waivers": [],
+  "backlog_count": 0,
+  "dlq_count": 0,
+  "fallback_count": 0,
+  "phases": [
+    {
+      "phase_id": "scenario-matrix",
+      "status": "infra_failed",
+      "start_time": "2026-07-23T00:00:00+00:00",
+      "end_time": "2026-07-23T00:00:01+00:00",
+      "destructive": true,
+      "execution_count": 1
+    }
+  ],
+  "trials": [
+    {"trial_id": "trial-pending", "status": "infra_failed"}
+  ]
+}

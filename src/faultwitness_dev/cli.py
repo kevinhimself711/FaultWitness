@@ -57,6 +57,7 @@ from faultwitness_dev.g01_recovery import (
     run_platform_rollback_rehearsal,
     run_postgres_restore_rehearsal,
 )
+from faultwitness_dev.g02_eval import inspect_g02_close_readiness, run_g02_eval
 from faultwitness_dev.infra import (
     audit_runtime_coexistence,
     capture_preinstall_baseline,
@@ -167,6 +168,15 @@ def parser() -> argparse.ArgumentParser:
     eval_g01.add_argument("--profile", required=True, choices=("private-server", "local"))
     eval_g01_close = subparsers.add_parser("eval-g01-close")
     eval_g01_close.add_argument("--candidate-sha", required=True)
+    eval_g02 = subparsers.add_parser("eval-g02")
+    eval_g02.add_argument("--candidate-sha", required=True)
+    eval_g02.add_argument("--phase")
+    continuation = eval_g02.add_mutually_exclusive_group()
+    continuation.add_argument("--resume", action="store_true")
+    continuation.add_argument("--from-failed", action="store_true")
+    eval_g02_close = subparsers.add_parser("eval-g02-close")
+    eval_g02_close.add_argument("--candidate-sha", required=True)
+    eval_g02_close.add_argument("--evidence-head-sha", required=True)
     reconcile_g01 = subparsers.add_parser("inspect-g01-reconciliation")
     reconcile_g01.add_argument("--candidate-sha", required=True)
     restore_g01 = subparsers.add_parser("rehearse-g01-postgres-restore")
@@ -407,6 +417,26 @@ def main() -> int:
                 f"{summary['eval_id']} {summary['status']} on {summary['candidate_sha']} "
                 f"with {summary['manifest_count']} manifests and "
                 f"{summary['iteration_count']} completed iterations"
+            )
+        elif args.command == "eval-g02":
+            summary = run_g02_eval(
+                root,
+                args.candidate_sha,
+                phase_id=args.phase,
+                resume=args.resume,
+                from_failed=args.from_failed,
+            )
+            message = (
+                f"{summary['eval_id']} {summary['status']} on {summary['candidate_sha']} "
+                f"through {summary['last_phase']}"
+            )
+        elif args.command == "eval-g02-close":
+            summary = inspect_g02_close_readiness(
+                root, args.candidate_sha, args.evidence_head_sha
+            )
+            message = (
+                f"{summary['eval_id']} {summary['status']} on {summary['candidate_sha']} "
+                f"with {summary['phase_count']} immutable phases"
             )
         elif args.command == "inspect-g01-reconciliation":
             summary = inspect_g01_reconciliation(args.candidate_sha)

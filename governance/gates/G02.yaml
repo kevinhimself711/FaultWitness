@@ -1,7 +1,7 @@
 schema_version: "1.0.0"
 id: G02
 title: Fault Laboratory and Baselines
-status: planned
+status: in_progress
 plan: docs/gates/G02/PLAN.md
 report: docs/gates/G02/REPORT.md
 iterations: [I-0016, I-0017, I-0018, I-0019, I-0020]

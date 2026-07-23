@@ -18,3 +18,6 @@ evidence remains EVAL-G02-005 work and is not recorded as open Iteration evidenc
 - All five L1 fixtures pass.
 - Every owned L2 runner rejects its named negative fixture and exposes the frozen phase interface.
 - `open_evidence` is empty at Iteration closure.
+
+The command writes only the registered phase-contract artifact. Gate L2 runner execution remains
+blocked by the I-0020 lifecycle guard.

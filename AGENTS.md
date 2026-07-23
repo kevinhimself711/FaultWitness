@@ -1,8 +1,8 @@
 ---
 active_gate: G02
-active_gate_status: planned
-active_iteration: null
-next_iteration: I-0016
+active_gate_status: in_progress
+active_iteration: I-0016
+next_iteration: I-0017
 last_closed_gate: G01
 ---
 
@@ -12,10 +12,11 @@ last_closed_gate: G01
 
 FaultWitness is a multi-tenant Agent Runtime for investigating microservice incidents, proposing bounded remediations, executing approved actions, and producing auditable evaluation and training assets.
 
-G00 and G01 are closed. The decision-complete G02 Master Plan is frozen and G02
-is `planned`. No Iteration is active; I-0016 is the next planned Iteration. The
-planning commit does not authorize implementation, live evaluation, deployment
-mutation, credential use, or model calls outside an explicitly activated Iteration.
+G00 and G01 are closed. G02 is `in_progress`; I-0016 is the only active
+Iteration and I-0017 is next. I-0016 authorizes only the deterministic Eval
+protocol, phase engine, manifests, fixtures, and documentation in its frozen
+scope. It does not authorize deployment mutation, credential use, live external
+services, fault scenarios, baselines, or model calls.
 
 ## Source-of-truth order
 

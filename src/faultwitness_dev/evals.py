@@ -41,6 +41,7 @@ from faultwitness_dev.bootstrap import (
     validate_migration,
 )
 from faultwitness_dev.errors import GovernanceError
+from faultwitness_dev.g02_eval import evaluate_i0016
 from faultwitness_dev.model_eval import run_model_eval
 from faultwitness_dev.observability_deploy import (
     inspect_trace_service,
@@ -480,4 +481,6 @@ def evaluate_iteration(root: Path, iteration: str, candidate_sha: str) -> dict[s
         return evaluate_i0013(root, candidate_sha)
     if iteration == "I-0014":
         return evaluate_i0014(root, candidate_sha)
+    if iteration == "I-0016":
+        return evaluate_i0016(root, candidate_sha)
     raise GovernanceError(f"no private Eval implementation is registered for {iteration}")

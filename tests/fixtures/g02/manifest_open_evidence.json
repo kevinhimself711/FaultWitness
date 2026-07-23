@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G01-001",
+  "gate": "G01",
+  "iteration": "I-0007",
+  "evaluated_revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "status": "pass",
+  "environments": ["negative-fixture"],
+  "commands": ["negative-fixture"],
+  "artifacts": ["negative-fixture"],
+  "evidence_urls": [],
+  "integrations": {},
+  "open_evidence": ["unresolved debt"]
+}

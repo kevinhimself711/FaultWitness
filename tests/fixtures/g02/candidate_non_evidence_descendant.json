@@ -1,0 +1,9 @@
+{
+  "candidate_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "evidence_head_sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "subject_digests": {
+    "runtime": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "environment_fingerprint": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "changed_paths": ["src/faultwitness_dev/runtime.py"]
+}
