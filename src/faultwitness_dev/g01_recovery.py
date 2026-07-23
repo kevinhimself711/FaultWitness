@@ -199,6 +199,7 @@ def run_platform_rollback_rehearsal(root: Path, candidate_sha: str) -> dict[str,
 binding=$(/usr/local/bin/k3s kubectl -n fw-system get configmap \
   fw-platform-candidate-binding -o jsonpath='{{.data.candidate_sha}}')
 test "$binding" = {candidate_sha}
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 history=$(/usr/local/bin/helm history fw-platform -n fw-system -o json)
 revisions=$(printf %s "$history" | python3 -c \
   'import json,sys; print(" ".join(str(x["revision"]) for x in json.load(sys.stdin)))')
