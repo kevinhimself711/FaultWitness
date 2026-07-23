@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import re
+import time
 from pathlib import Path
 from typing import Any
 
@@ -12,6 +13,19 @@ from faultwitness_dev.infra import audit_runtime_coexistence, run_remote_script
 from faultwitness_dev.platform import deploy_platform, inspect_platform_readiness
 
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
+
+
+def _verify_fresh_ssh_session() -> int:
+    """Require a new SSH session after disruptive host-level recovery."""
+    for attempt in range(1, 7):
+        try:
+            run_remote_script("set -eu\nprintf 'fresh-session\\n'\n", privileged=False, timeout=30)
+            return attempt
+        except GovernanceError as error:
+            if "connection_timeout" not in str(error) or attempt == 6:
+                raise
+            time.sleep(2)
+    raise AssertionError("unreachable")
 
 
 def run_postgres_restore_rehearsal(candidate_sha: str) -> dict[str, Any]:
@@ -181,6 +195,7 @@ printf '%s\n1\n' "$snapshot_sha"
         or lines[1] != "1"
     ):
         raise GovernanceError("K3s restore rehearsal returned invalid sanitized evidence")
+    fresh_session_attempts = _verify_fresh_ssh_session()
     return {
         "candidate_sha": candidate_sha,
         "status": "pass",
@@ -188,6 +203,7 @@ printf '%s\n1\n' "$snapshot_sha"
         "snapshot_sha256": lines[0],
         "ready_node_count": 1,
         "restore_executed": True,
+        "fresh_session_attempts": fresh_session_attempts,
     }
 
 

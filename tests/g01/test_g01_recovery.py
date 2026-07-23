@@ -6,6 +6,7 @@ import pytest
 
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.g01_recovery import (
+    _verify_fresh_ssh_session,
     run_k3s_restore_rehearsal,
     run_k3s_snapshot_rehearsal,
     run_platform_rollback_rehearsal,
@@ -71,6 +72,37 @@ def test_k3s_restore_rehearsal_accepts_exact_snapshot_and_ready_node(
     assert result["status"] == "pass"
     assert result["restore_executed"] is True
     assert result["ready_node_count"] == 1
+    assert result["fresh_session_attempts"] == 1
+
+
+def test_fresh_ssh_session_retries_only_connection_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    attempts = iter(
+        [
+            GovernanceError("remote infrastructure command failed (connection_timeout; exit=255)"),
+            "fresh-session\n",
+        ]
+    )
+
+    def remote(*args: object, **kwargs: object) -> str:
+        result = next(attempts)
+        if isinstance(result, Exception):
+            raise result
+        return result
+
+    monkeypatch.setattr("faultwitness_dev.g01_recovery.run_remote_script", remote)
+    monkeypatch.setattr("faultwitness_dev.g01_recovery.time.sleep", lambda seconds: None)
+    assert _verify_fresh_ssh_session() == 2
+
+
+def test_fresh_ssh_session_rejects_non_timeout_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    def remote(*args: object, **kwargs: object) -> str:
+        raise GovernanceError("host identity mismatch")
+
+    monkeypatch.setattr("faultwitness_dev.g01_recovery.run_remote_script", remote)
+    with pytest.raises(GovernanceError, match="identity mismatch"):
+        _verify_fresh_ssh_session()
 
 
 @pytest.mark.parametrize("output", ["", f"{'e' * 64}\n0\n", "bad\n1\n"])
