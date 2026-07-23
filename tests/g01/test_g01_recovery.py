@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.g01_recovery import (
     run_k3s_restore_rehearsal,
     run_k3s_snapshot_rehearsal,
+    run_platform_rollback_rehearsal,
     run_postgres_restore_rehearsal,
 )
 
@@ -79,3 +82,38 @@ def test_k3s_restore_rehearsal_rejects_invalid_evidence(
     )
     with pytest.raises(GovernanceError, match="restore"):
         run_k3s_restore_rehearsal("c" * 40)
+
+
+def test_platform_rollback_reinstalls_candidate_and_checks_coexistence(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        "faultwitness_dev.g01_recovery.run_remote_script", lambda *args, **kwargs: "7\n6\n"
+    )
+    monkeypatch.setattr(
+        "faultwitness_dev.g01_recovery.deploy_platform",
+        lambda *args, **kwargs: {"deployment_bundle_sha256": "a" * 64},
+    )
+    monkeypatch.setattr(
+        "faultwitness_dev.g01_recovery.inspect_platform_readiness",
+        lambda *args, **kwargs: {"workload_count": 11},
+    )
+    monkeypatch.setattr(
+        "faultwitness_dev.g01_recovery.audit_runtime_coexistence",
+        lambda *args, **kwargs: {"docker_regression_count": 0},
+    )
+    result = run_platform_rollback_rehearsal(tmp_path, "c" * 40)
+    assert result["status"] == "pass"
+    assert result["rolled_back_to_revision"] == 6
+    assert result["docker_regression_count"] == 0
+
+
+@pytest.mark.parametrize("output", ["", "7\n", "6\n7\n", "bad\n6\n"])
+def test_platform_rollback_rejects_invalid_revision_evidence(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, output: str
+) -> None:
+    monkeypatch.setattr(
+        "faultwitness_dev.g01_recovery.run_remote_script", lambda *args, **kwargs: output
+    )
+    with pytest.raises(GovernanceError, match="rollback"):
+        run_platform_rollback_rehearsal(tmp_path, "c" * 40)

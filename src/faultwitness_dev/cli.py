@@ -48,6 +48,7 @@ from faultwitness_dev.g01_eval import (
 from faultwitness_dev.g01_recovery import (
     run_k3s_restore_rehearsal,
     run_k3s_snapshot_rehearsal,
+    run_platform_rollback_rehearsal,
     run_postgres_restore_rehearsal,
 )
 from faultwitness_dev.infra import (
@@ -168,6 +169,8 @@ def parser() -> argparse.ArgumentParser:
     snapshot_g01.add_argument("--candidate-sha", required=True)
     restore_k3s_g01 = subparsers.add_parser("rehearse-g01-k3s-restore")
     restore_k3s_g01.add_argument("--candidate-sha", required=True)
+    rollback_g01 = subparsers.add_parser("rehearse-g01-platform-rollback")
+    rollback_g01.add_argument("--candidate-sha", required=True)
     infra_baseline = subparsers.add_parser("capture-infra-baseline")
     infra_baseline.add_argument("--candidate-sha", required=True)
     install_core = subparsers.add_parser("install-k3s-core")
@@ -415,6 +418,13 @@ def main() -> int:
                 f"restored {summary['snapshot_name']} with digest "
                 f"{summary['snapshot_sha256'][:12]} and recovered "
                 f"{summary['ready_node_count']} Ready node"
+            )
+        elif args.command == "rehearse-g01-platform-rollback":
+            summary = run_platform_rollback_rehearsal(root, args.candidate_sha)
+            message = (
+                f"rolled back platform revision {summary['rolled_back_from_revision']} to "
+                f"{summary['rolled_back_to_revision']}, reinstalled the candidate with "
+                f"{summary['ready_workload_count']} Ready workloads and zero Docker regression"
             )
         elif args.command == "capture-infra-baseline":
             summary = capture_preinstall_baseline(root, args.candidate_sha)

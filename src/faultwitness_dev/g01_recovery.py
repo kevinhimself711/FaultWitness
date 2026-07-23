@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import base64
 import re
+from pathlib import Path
 from typing import Any
 
 from faultwitness_dev.errors import GovernanceError
-from faultwitness_dev.infra import run_remote_script
+from faultwitness_dev.infra import audit_runtime_coexistence, run_remote_script
+from faultwitness_dev.platform import deploy_platform, inspect_platform_readiness
 
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
 
@@ -186,4 +188,51 @@ printf '%s\n1\n' "$snapshot_sha"
         "snapshot_sha256": lines[0],
         "ready_node_count": 1,
         "restore_executed": True,
+    }
+
+
+def run_platform_rollback_rehearsal(root: Path, candidate_sha: str) -> dict[str, Any]:
+    """Rollback only the FaultWitness Helm release, then idempotently reinstall HEAD."""
+    if not FULL_SHA.fullmatch(candidate_sha):
+        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+    script = f"""set -eu
+binding=$(/usr/local/bin/k3s kubectl -n fw-system get configmap \
+  fw-platform-candidate-binding -o jsonpath='{{.data.candidate_sha}}')
+test "$binding" = {candidate_sha}
+history=$(/usr/local/bin/helm history fw-platform -n fw-system -o json)
+revisions=$(printf %s "$history" | python3 -c \
+  'import json,sys; print(" ".join(str(x["revision"]) for x in json.load(sys.stdin)))')
+current=$(printf '%s\n' $revisions | tail -1)
+previous=$(printf '%s\n' $revisions | tail -2 | head -1)
+test -n "$current"
+test -n "$previous"
+test "$current" != "$previous"
+/usr/local/bin/helm rollback fw-platform "$previous" -n fw-system \
+  --wait --timeout 15m >/dev/null
+printf '%s\n%s\n' "$current" "$previous"
+"""
+    lines = [
+        line.strip()
+        for line in run_remote_script(script, privileged=True, timeout=960).splitlines()
+        if line.strip()
+    ]
+    if len(lines) != 2:
+        raise GovernanceError("platform rollback returned incomplete revision evidence")
+    try:
+        current_revision, rollback_revision = map(int, lines)
+    except ValueError as error:
+        raise GovernanceError("platform rollback returned invalid revisions") from error
+    if current_revision <= rollback_revision or rollback_revision < 1:
+        raise GovernanceError("platform rollback revision order is invalid")
+    deployment = deploy_platform(root, candidate_sha)
+    readiness = inspect_platform_readiness(root, candidate_sha, stability_seconds=0)
+    coexistence = audit_runtime_coexistence(root, candidate_sha)
+    return {
+        "candidate_sha": candidate_sha,
+        "status": "pass",
+        "rolled_back_from_revision": current_revision,
+        "rolled_back_to_revision": rollback_revision,
+        "reinstalled_bundle_sha256": deployment["deployment_bundle_sha256"],
+        "ready_workload_count": readiness["workload_count"],
+        "docker_regression_count": coexistence["docker_regression_count"],
     }
