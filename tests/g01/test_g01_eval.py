@@ -34,6 +34,12 @@ def test_close_readiness_rejects_injected_incomplete_gate(
 ) -> None:
     candidate = _head(ROOT)
     monkeypatch.setattr(
+        "faultwitness_dev.g01_eval.validate_repository_schemas",
+        lambda root: {
+            "PROJECT_STATE.yaml": {"active_gate": "G01", "active_gate_status": "in_progress"}
+        },
+    )
+    monkeypatch.setattr(
         "faultwitness_dev.g01_eval._eval_manifest_debt",
         lambda *args, **kwargs: ["EVAL-G01-009"],
     )
@@ -45,6 +51,12 @@ def test_close_candidate_accepts_head_or_asset_only_descendant(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     candidate = _head(ROOT)
+    monkeypatch.setattr(
+        "faultwitness_dev.g01_eval.validate_repository_schemas",
+        lambda root: {
+            "PROJECT_STATE.yaml": {"active_gate": "G01", "active_gate_status": "in_progress"}
+        },
+    )
     _require_close_candidate(ROOT, candidate)
 
 
