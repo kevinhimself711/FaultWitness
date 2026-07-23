@@ -16,7 +16,6 @@ import httpx
 
 from faultwitness.observability.exporters import LangSmithExporter
 from faultwitness.observability.sanitizer import SanitizedTrace
-
 from faultwitness_dev.bootstrap import (
     BootstrapPaths,
     record_live_api_verification,
