@@ -24,6 +24,7 @@ from faultwitness_dev.control_api_deploy import (
 )
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.g01_failure_eval import (
+    run_control_api_load_matrix,
     run_postgres_failure_matrix,
     run_redis_recovery_matrix,
 )
@@ -349,6 +350,7 @@ def evaluate_g01(root: Path, candidate_sha: str, *, profile: str) -> dict[str, A
             "postgres": run_postgres_failure_matrix(root, candidate_sha),
             "redis": run_redis_recovery_matrix(candidate_sha),
             "trace": run_trace_service_smoke(candidate_sha, inject_uncertain_ack=True),
+            "control_api_load": run_control_api_load_matrix(candidate_sha),
         }
         if private
         else {"status": "deferred_private"}
