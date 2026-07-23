@@ -234,16 +234,20 @@ def _control_api_load_manifest(candidate_sha: str) -> str:
 import datetime
 import json
 import os
+from urllib.parse import quote
 
 from faultwitness.api.postgres_store import PostgresIncidentStore
 from faultwitness.api.schemas import FeedbackRequest, IncidentCreate
-from faultwitness.api.server import _database_url
 from faultwitness.api.store import RetentionGap
 
 TENANT = "ten_01ARZ3NDEKTSV4RRFFQ69G5FAY"
 
 async def main():
-    store = PostgresIncidentStore(_database_url())
+    user = quote(os.environ["POSTGRES_USER"], safe="")
+    password = quote(os.environ["POSTGRES_PASSWORD"], safe="")
+    database = quote(os.environ["POSTGRES_DB"], safe="")
+    dsn = f"postgresql://{{user}}:{{password}}@postgres.fw-data.svc.cluster.local:5432/{{database}}"
+    store = PostgresIncidentStore(dsn)
     await store.connect()
     now = datetime.datetime.now(datetime.UTC)
     request = IncidentCreate.model_validate({{
