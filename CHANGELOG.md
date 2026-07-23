@@ -21,6 +21,9 @@
 
 ### Tooling
 
+- Complete I-0016 on immutable implementation candidate `a4c242b`: pass five deterministic phase,
+  cache, resume, continuation, and destructive run-once cases; prove readiness of the owned
+  candidate-binding, manifest-debt, and reconciliation L2 runners without executing Gate L2 work.
 - Complete I-0015 on immutable candidate `4c84355`: pass public Ubuntu/Windows/audit
   checks, the clean 15-minute readiness window, 14/14 walkthroughs, 36/36 live
   model trials, recovery/rollback, PostgreSQL/Redis/Trace/API failure matrices,

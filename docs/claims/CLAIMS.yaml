@@ -96,3 +96,12 @@ claims:
     limitations:
       - "Candidate 4c84355 proves G01 platform contracts and Trace foundation readiness; it does not claim G02 Agent orchestration, G03 retrieval quality, G04 Action execution, G05 training, or G06 multi-node scale."
       - "The 15-minute readiness result follows the operator-frozen rule that an unspecialized transport error occurring only after a clean window is non-blocking; all concrete failures and all individual matrices remained blocking."
+  - id: CLAIM-EVAL-001
+    statement: "G02 has a deterministic phase DAG cache journal and continuation protocol with candidate-bound manifest v2 evidence."
+    status: partially_verified
+    requirements: [REQ-EVAL-001, REQ-EVAL-002, REQ-EVAL-003]
+    evidence:
+      - EVAL-G02-001
+    limitations:
+      - "I-0016 proves the local deterministic protocol and owner readiness only; unified-candidate L2 execution remains reserved for EVAL-G02-005."
+      - "No fault scenario, deployment, external service, baseline, or live model execution is claimed."

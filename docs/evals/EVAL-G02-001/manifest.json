@@ -5,7 +5,7 @@
   "iteration": "I-0016",
   "candidate_sha": "a4c242bab5a289fa6e57fff3a38d004558e15794",
   "evaluated_revision": "a4c242bab5a289fa6e57fff3a38d004558e15794",
-  "evidence_head_sha": "a4c242bab5a289fa6e57fff3a38d004558e15794",
+  "evidence_head_sha": "5230282b980608e822d0e800683443463c56b6c9",
   "status": "pass",
   "subject_digests": {
     "src/faultwitness_dev/g02_eval.py": "0b393122469c8076010769e3d286216004d8754bcb570818f3f45a8aa9661b8c",

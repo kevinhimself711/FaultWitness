@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: I-0016
+active_iteration: null
 next_iteration: I-0017
 last_closed_gate: G01
 ---
@@ -12,11 +12,10 @@ last_closed_gate: G01
 
 FaultWitness is a multi-tenant Agent Runtime for investigating microservice incidents, proposing bounded remediations, executing approved actions, and producing auditable evaluation and training assets.
 
-G00 and G01 are closed. G02 is `in_progress`; I-0016 is the only active
-Iteration and I-0017 is next. I-0016 authorizes only the deterministic Eval
-protocol, phase engine, manifests, fixtures, and documentation in its frozen
-scope. It does not authorize deployment mutation, credential use, live external
-services, fault scenarios, baselines, or model calls.
+G00 and G01 are closed. G02 is `in_progress`; no Iteration is active and I-0017 is next. I-0016
+completed the deterministic Eval protocol and phase engine. Work must not begin on I-0017 until
+its frozen assets are reread and it is explicitly activated. Deployment mutation, credential use,
+live external services, and model calls remain unauthorized.
 
 ## Source-of-truth order
 
