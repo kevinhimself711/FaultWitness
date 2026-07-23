@@ -1,0 +1,15 @@
+schema_version: "1.0.0"
+id: G02
+title: Agent Orchestration and Diagnosis Core
+status: planned
+plan: docs/gates/G02/PLAN.md
+report: docs/gates/G02/REPORT.md
+iterations: []
+pass_criteria:
+  - A decision-complete G02 Master Plan is frozen before any G02 implementation Iteration starts.
+  - Agent orchestration preserves G01 identity state durability trace and model boundaries without bypass.
+  - Diagnosis behavior is evaluated on a pre-registered dataset with explicit quality cost latency and failure gates.
+  - Tool planning memory and human-interrupt semantics are executable deterministic at boundaries and fully traced.
+  - G02 closes only on one immutable candidate with no waiver open evidence or unresolved durable work.
+waivers: []
+amendments: []

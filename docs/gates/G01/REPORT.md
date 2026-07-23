@@ -1,25 +1,89 @@
 ---
 document_id: FW-GATE-G01-REPORT
 gate: G01
-status: not_run
-evaluated_candidate_sha: null
-closed_on: null
+plan_version: G01-master-plan-v1.1
+status: pass
+evaluated_candidate_sha: 4c843553bad7a13023259d474e8fea1b8c174d40
+eval_run: EVAL-G01-009
+closed_on: 2026-07-23
 ---
 
-# G01 Gate Report
+# G01 Gate Report — Platform Contracts and Trace Foundation
 
-G01 Master Plan 已于 2026-07-22 冻结。I-0007 与 EVAL-G01-001 已在候选 `7a9237c4c5b9fc0c736435e836534e72712c4169` 上完成且无 open evidence/waiver；I-0008 是当前唯一 active Iteration。尚未部署 K3s、修改既有 workload、调用模型或写入 LangSmith Trace。本文件不代表整个 G01 已通过。
+## Executive decision
 
-## Decision
+G01 is **PASS** on immutable candidate
+`4c843553bad7a13023259d474e8fea1b8c174d40` with zero waiver and zero open
+evidence. All nine Iterations, nine Evals, and fourteen frozen walkthroughs are
+complete. G02 is handed off as `not_started`; this closure authorizes no G02
+implementation.
 
-Current decision: `NOT_EVALUATED`.
+## Immutable evidence
 
-在 I-0007 至 I-0015 全部完成、九个 Eval 对同一 immutable candidate 通过且完整 Gate audit 无 waiver 前，本报告不得改为 `PASS`。
+| Evidence | Result |
+| --- | --- |
+| Ubuntu verify | pass, GitHub run `30018691533` |
+| Windows verify | pass, GitHub run `30018691533` |
+| Ubuntu audit | pass, GitHub run `30018691533` |
+| Iterations and manifests | 9/9 completed and 9/9 pass |
+| Frozen failure walkthroughs | 14/14 pass |
+| Waivers and open evidence | 0 / 0 |
 
-## Current evidence
+Public run: <https://github.com/kevinhimself711/FaultWitness/actions/runs/30018691533>
 
-- Planning evidence: `docs/gates/G01/PLAN.md` is frozen with accepted amendments AMD-0001 and AMD-0002.
-- Implementation evidence: I-0007 secure bootstrap and sanitized capability baseline passed EVAL-G01-001; I-0008 through I-0015 remain pending.
-- Runtime or deployment evidence: none.
-- LangSmith evidence: none; the accepted long-lived credential is encrypted outside the repository and remains unused until I-0014.
-- Model topology claim: three model families are planned through one live Bailian upstream; NewAPI remains a compatible channel without a live-token claim.
+## Platform and recovery
+
+- Eleven project workloads were candidate-bound and Ready on the private
+  single-node K3s cluster while the existing Docker estate retained zero
+  regression and no public control-plane listener.
+- runc, gVisor, Kata, and NVIDIA workload smokes and all five frozen
+  NetworkPolicy cases passed.
+- Embedded-etcd snapshot/restore recovered one Ready node; fresh-target
+  PostgreSQL restore matched schema and data digests; project-only Helm rollback
+  and idempotent reinstall preserved the Docker baseline.
+- The 15-minute readiness requirement passed under the frozen operator rule: an
+  unspecialized transport error occurring only after a clean window is
+  non-blocking. Every specific error and every individual matrix remained
+  blocking until explicitly passed.
+
+## Contracts, durability, and API
+
+- All 82 legal transitions and 492 frozen rejection cases remained deterministic
+  across public Ubuntu and Windows verification.
+- The real PostgreSQL matrix passed all 82 transitions, 10,000 duplicate
+  deliveries, 100 crash injections, and fencing checks with zero partial commit.
+- Redis recovered and ACKed 100 pending messages after consumer loss; final DLQ,
+  Outbox backlog, stale leases, and pending deliveries were zero.
+- The authenticated Control API passed create, read, feedback, cancel, tool and
+  skill paths; tenant injection, cross-tenant access, false approval, invalid
+  OIDC, and future cursor attempts failed closed.
+- Cold-JWKS Keycloak outage returned HTTP 401 before state mutation and recovered
+  both services. The production PostgreSQL API matrix passed 10,000 ordered
+  events, 100 exact reconnects, retention gap, and slow-consumer closure.
+
+## Trace and model evidence
+
+- Sanitized Trace delivery passed LangSmith, OTLP, and archive sinks with stable
+  identity through uncertain-ACK replay and final zero pending delivery.
+- Secret canaries were rejected before persistence; published evidence contains
+  no credential, private locator, raw private reasoning, or reversible tenant
+  identity.
+- Qwen, DeepSeek, and GLM each passed complete, structured-output, forced-tool,
+  and streaming capabilities three times: 36/36 live Bailian trials, zero
+  unplanned fallback, attributable usage, and one sanitized LangSmith Trace per
+  successful trial. NewAPI remains the frozen offline-compatible channel and is
+  not claimed as an independent live provider.
+
+## Scope boundary
+
+G01 proves the platform, contracts, durable state, authenticated API, Trace, and
+Model Gateway foundation. It does not claim G02 Agent orchestration, G03
+retrieval quality, G04 privileged Action execution, G05 training/data pipeline,
+or G06 multi-node scale and sandbox security.
+
+## Closure
+
+`eval-g01-close` passed for candidate `4c84355` with nine manifests and nine
+completed Iterations. The closure commit is restricted to the exact nine frozen
+asset paths and contains no implementation, test, deployment, or threshold
+change.

@@ -1,4 +1,5 @@
 # G01 planning review: the six G00 decisions remain accepted and two deployment/model-topology decisions are added.
+# G01 closure review: all eight accepted decisions remain effective without supersession or waiver.
 schema_version: "1.0.0"
 adrs:
   - {id: ADR-0001, title: "Integrate three engineering planes behind five logical responsibility planes", status: accepted, decision_date: "2026-07-22", path: docs/adr/ADR-0001.md, supersedes: null}

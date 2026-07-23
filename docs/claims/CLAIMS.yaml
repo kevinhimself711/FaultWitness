@@ -54,8 +54,8 @@ claims:
     limitations:
       - "G00 proves the planning architecture contract and governance baseline only; no product runtime is claimed."
   - id: CLAIM-PLATFORM-001
-    statement: "G01 will establish a reproducible single-node platform with executable contracts durable state transactional events authenticated APIs and recoverable SSE."
-    status: partially_verified
+    statement: "G01 establishes a reproducible single-node platform with executable contracts durable state transactional events authenticated APIs and recoverable SSE."
+    status: verified
     requirements: [REQ-REL-002, REQ-SEC-003, REQ-PERF-001, REQ-OBS-002]
     evidence:
       - EVAL-G01-001
@@ -65,23 +65,16 @@ claims:
       - EVAL-G01-005
       - EVAL-G01-006
     limitations:
-      - "EVAL-G01-001 proves secure bootstrap, pinned host identity, dedicated-key access, and the pre-deployment host capability floor only; platform deployment and runtime behavior remain unverified until EVAL-G01-002 through EVAL-G01-006 pass."
-      - "Candidate 0c8b66c deployed the eleven I-0009 platform workloads and observed point-in-time readiness, but EVAL-G01-003 remains pending until stability, recovery, restore, isolation, telemetry, and supply-chain evidence all pass."
-      - "Candidate f81c7f0 passed local executable-contract conformance for all 82 transitions and 492 rejected mutations; cross-platform generation and public compatibility evidence remain open in EVAL-G01-004."
-      - "Candidate 4844961 deployed the additive I-0011 migration and observed 17 owner-isolated runtime tables; full transition, duplicate, crash, fencing, queue-drain, and LangSmith evidence remains open in EVAL-G01-005."
-      - "Candidate 5a1b607 deployed the authenticated Control API and synthetic Keycloak realm and passed live create/read/SSE plus cross-tenant, role-injection, and false-approval denial smoke; the complete conformance, 10,000-event, 100-reconnect, backpressure, and LangSmith evidence remains open in EVAL-G01-006."
-      - "Candidate ae0a3be deployed migration 003 and the private Trace Service and passed a sanitized LangSmith/OTLP/archive live checkpoint with zero pending delivery; the complete outage/replay, canary, cross-store, wall-time, and usage matrix remains open in EVAL-G01-007."
-      - "The planned topology is single-node and does not claim high availability or G06 horizontal scaling and sandbox security."
+      - "Candidate 4c84355 proves the frozen single-node G01 topology; it does not claim high availability, G06 horizontal scaling, or sandbox escape resistance."
   - id: CLAIM-TRACE-001
-    statement: "G01 will produce complete correlated sanitized and replayable LangSmith and OTel evidence for every platform and model stage that actually executes."
-    status: partially_verified
+    statement: "G01 produces correlated sanitized and replayable LangSmith and OTel evidence for every G01 platform and model stage that actually executes."
+    status: verified
     requirements: [REQ-SEC-003, REQ-PERF-001, REQ-OBS-001, REQ-OBS-002]
     evidence:
       - EVAL-G01-007
     limitations:
-      - "Candidate ae0a3be passed the candidate-bound implementation checkpoint and a live three-sink smoke with zero pending delivery; this is not the complete EVAL-G01-007 failure-matrix pass."
-      - "Direct LangSmith TLS from the private server is unavailable; the current evidence uses a host-key-pinned operator relay that ACKs only after successful sanitized export."
-      - "G01 does not claim traces for Agent reasoning tools retrieval or actions that are outside this Gate."
+      - "Direct LangSmith TLS from the private server is unavailable; the verified path uses a host-key-pinned operator relay that ACKs only after successful sanitized export."
+      - "G01 does not claim traces for Agent reasoning, tools, retrieval, or actions that begin in later Gates."
   - id: CLAIM-MODEL-001
     statement: "G01 will provide one typed ModelGateway for Qwen DeepSeek and GLM live model families and a compatible Bailian and NewAPI channel contract."
     status: verified
@@ -89,17 +82,17 @@ claims:
     evidence:
       - EVAL-G01-008
     limitations:
-      - "Candidate 21c2a96 passed 36/36 live complete, structured, forced-tool, and stream trials with attributable usage and sanitized LangSmith evidence plus the offline NewAPI wire matrix."
+      - "Candidate 4c84355 passed 36/36 live complete, structured, forced-tool, and stream trials with attributable usage and sanitized LangSmith evidence plus the offline NewAPI wire matrix."
       - "All required live G01 evidence uses one Bailian upstream; this does not prove three independent providers or upstream failure independence."
       - "NewAPI live evidence is deferred until a token exists; G01 requires only its offline wire contract."
       - "This Gate does not evaluate incident diagnosis quality model ranking or cost optimization."
   - id: CLAIM-GATE-002
-    statement: "G01 candidate readiness has nine Iterations nine Evals and fourteen frozen failure walkthroughs passing on one immutable candidate without waiver or open evidence."
+    statement: "G01 is closed with nine Iterations nine Evals and fourteen frozen failure walkthroughs passing on one immutable candidate without waiver or open evidence."
     status: verified
     requirements: [REQ-SEC-003, REQ-PERF-001, REQ-OBS-001, REQ-OBS-002]
     evidence:
       - EVAL-G01-009
       - docs/gates/G01/REPORT.md
     limitations:
-      - "Candidate cea2e63 proves G01 platform contracts and Trace foundation readiness; it does not claim G02 Agent orchestration, G03 retrieval quality, G04 Action execution, G05 training, or G06 multi-node scale."
+      - "Candidate 4c84355 proves G01 platform contracts and Trace foundation readiness; it does not claim G02 Agent orchestration, G03 retrieval quality, G04 Action execution, G05 training, or G06 multi-node scale."
       - "The 15-minute readiness result follows the operator-frozen rule that an unspecialized transport error occurring only after a clean window is non-blocking; all concrete failures and all individual matrices remained blocking."

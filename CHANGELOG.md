@@ -4,12 +4,13 @@
 
 ### Gate closure
 
+- Close G01 without waiver on immutable candidate `4c843553bad7a13023259d474e8fea1b8c174d40` and hand off to G02 in `not_started` state.
 - Close G00 without waivers on immutable candidate `1f36a799c27dfe0709a529448e6935d0ea3103eb`.
 - Hand off to G01 in `not_started` state; no G01 implementation is authorized before its Master Plan is frozen.
 
 ### Tooling
 
-- Complete I-0015 on immutable candidate `cea2e63`: pass public Ubuntu/Windows/audit
+- Complete I-0015 on immutable candidate `4c84355`: pass public Ubuntu/Windows/audit
   checks, the clean 15-minute readiness window, 14/14 walkthroughs, 36/36 live
   model trials, recovery/rollback, PostgreSQL/Redis/Trace/API failure matrices,
   and final six-binding/three-migration reconciliation with zero durable backlog.
