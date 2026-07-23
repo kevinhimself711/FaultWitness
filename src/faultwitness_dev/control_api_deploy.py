@@ -410,6 +410,8 @@ def run_keycloak_outage_smoke(candidate_sha: str) -> dict[str, Any]:
         raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
     manifest = _keycloak_outage_manifest(candidate_sha)
     encoded = base64.b64encode(manifest.encode()).decode()
+    job = _keycloak_outage_job_manifest(candidate_sha)
+    job_encoded = base64.b64encode(job.encode()).decode()
     script = f"""set -eu
 cleanup() {{
   /usr/local/bin/k3s kubectl -n fw-system scale deployment/keycloak --replicas=1 >/dev/null 2>&1 || true
@@ -417,13 +419,16 @@ cleanup() {{
   /usr/local/bin/k3s kubectl -n fw-control rollout restart deployment/control-api >/dev/null 2>&1 || true
   /usr/local/bin/k3s kubectl -n fw-control rollout status deployment/control-api --timeout=180s >/dev/null 2>&1 || true
   /usr/local/bin/k3s kubectl -n fw-control delete job control-api-keycloak-outage --ignore-not-found --wait=true >/dev/null 2>&1 || true
+  /usr/local/bin/k3s kubectl -n fw-control delete pod control-api-token-mint --ignore-not-found --wait=true >/dev/null 2>&1 || true
   /usr/local/bin/k3s kubectl -n fw-control delete secret fw-keycloak-outage-token --ignore-not-found >/dev/null 2>&1 || true
   /usr/local/bin/k3s kubectl -n fw-control delete configmap control-api-keycloak-outage --ignore-not-found >/dev/null 2>&1 || true
 }}
 trap cleanup EXIT
 binding=$(/usr/local/bin/k3s kubectl -n fw-control get configmap fw-control-api-candidate -o jsonpath='{{.data.candidate_sha}}')
 test "$binding" = {candidate_sha}
-token=$(/usr/local/bin/k3s kubectl -n fw-control exec job/control-api-smoke -- python -c 'import httpx,os; r=httpx.post("http://keycloak.fw-system.svc.cluster.local:8080/realms/faultwitness/protocol/openid-connect/token",data={{"grant_type":"password","client_id":"faultwitness-api","username":"tenant-a-operator","password":os.environ["TENANT_A_OPERATOR"]}},timeout=10); r.raise_for_status(); print(r.json()["access_token"])')
+printf %s {encoded} | base64 -d | /usr/local/bin/k3s kubectl apply -f - >/dev/null
+/usr/local/bin/k3s kubectl -n fw-control wait --for=condition=Ready pod/control-api-token-mint --timeout=90s >/dev/null
+token=$(/usr/local/bin/k3s kubectl -n fw-control exec pod/control-api-token-mint -- python -c 'import httpx,os; r=httpx.post("http://keycloak.fw-system.svc.cluster.local:8080/realms/faultwitness/protocol/openid-connect/token",data={{"grant_type":"password","client_id":"faultwitness-api","username":"tenant-a-operator","password":os.environ["TENANT_A_OPERATOR"]}},timeout=10); r.raise_for_status(); print(r.json()["access_token"])')
 test -n "$token"
 /usr/local/bin/k3s kubectl -n fw-control create secret generic fw-keycloak-outage-token --from-literal=token="$token" --dry-run=client -o yaml | /usr/local/bin/k3s kubectl apply -f - >/dev/null
 unset token
@@ -432,7 +437,7 @@ unset token
 /usr/local/bin/k3s kubectl -n fw-control rollout restart deployment/control-api >/dev/null
 /usr/local/bin/k3s kubectl -n fw-control rollout status deployment/control-api --timeout=180s >/dev/null
 /usr/local/bin/k3s kubectl -n fw-control delete job control-api-keycloak-outage --ignore-not-found --wait=true >/dev/null
-printf %s {encoded} | base64 -d | /usr/local/bin/k3s kubectl apply -f - >/dev/null
+printf %s {job_encoded} | base64 -d | /usr/local/bin/k3s kubectl apply -f - >/dev/null
 for attempt in $(seq 1 60); do
   succeeded=$(/usr/local/bin/k3s kubectl -n fw-control get job control-api-keycloak-outage -o jsonpath='{{.status.succeeded}}')
   failed=$(/usr/local/bin/k3s kubectl -n fw-control get job control-api-keycloak-outage -o jsonpath='{{.status.failed}}')
@@ -583,7 +588,29 @@ data:
     print(json.dumps(result, sort_keys=True))
     raise SystemExit(0 if response.status_code == 401 else 1)
 ---
-apiVersion: batch/v1
+apiVersion: v1
+kind: Pod
+metadata:
+  name: control-api-token-mint
+  namespace: fw-control
+  labels: {{app.kubernetes.io/name: control-api-smoke}}
+spec:
+  restartPolicy: Never
+  automountServiceAccountToken: false
+  containers:
+    - name: mint
+      image: docker.io/faultwitness/control-api:{candidate_sha}
+      imagePullPolicy: Never
+      command: [sleep, "300"]
+      env:
+        - name: TENANT_A_OPERATOR
+          valueFrom: {{secretKeyRef: {{name: fw-control-smoke-users, key: tenant_a_operator}}}}
+      securityContext: {{allowPrivilegeEscalation: false, runAsNonRoot: true, capabilities: {{drop: [ALL]}}}}
+"""
+
+
+def _keycloak_outage_job_manifest(candidate_sha: str) -> str:
+    return f"""apiVersion: batch/v1
 kind: Job
 metadata: {{name: control-api-keycloak-outage, namespace: fw-control}}
 spec:
