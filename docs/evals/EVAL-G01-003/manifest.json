@@ -20,10 +20,9 @@
     }
   },
   "open_evidence": [
-    "15-minute platform and observability readiness plus controlled recovery",
     "paired authorized controls and network secret schema object-prefix observability denials",
     "same-final-SHA PostgreSQL restore replay",
-    "persistent restart and correlated synthetic telemetry evidence",
+    "same-final-SHA recovery and correlated synthetic telemetry evidence",
     "resource retention image-digest SBOM license and provenance audit",
     "sanitized public evidence and publication scan"
   ]

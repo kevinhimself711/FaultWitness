@@ -31,3 +31,9 @@ SHA-256 values matched exactly, and the temporary target was removed. The same
 candidate also completed two 15-minute Ready windows under the operator-approved
 post-window transport adjudication. Remaining isolation, controlled-restart,
 telemetry, supply-chain, and same-final-SHA evidence keeps this Eval pending.
+
+Later I-0015 recovery rehearsals passed real K3s embedded-etcd snapshot/restore,
+recovered the single node and all project workloads to Ready, and completed a
+project-only Helm rollback followed by idempotent reinstall with zero regression
+to the pre-existing Docker estate. Supply-chain reconciliation and final
+same-SHA replay remain open.

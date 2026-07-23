@@ -28,3 +28,12 @@ The candidate audit now passes a deterministic 10,000-event ordering and
 tests. The real OIDC private smoke remains passing for create/read/SSE and
 cross-tenant, identity-injection, role, and false-approval denial. Sustained live
 backpressure and correlated final-candidate Trace evidence remain open.
+
+The live private API matrix on candidate
+`2d05b23ab01a1eb87317b9050475ec9ece309803` used the production PostgreSQL
+store for 10,000 events and 100 SSE reconnects with exact ordering, no loss,
+duplicate, or out-of-order event, correct retention-gap behavior, bounded
+slow-consumer closure, and zero rows after cleanup. Candidate `c297dc6527b11c3272cee6378a270cb24f5a13af`
+also passed the expanded live API path and denial matrix. The cold-JWKS Keycloak
+outage harness remains an explicit failed orchestration experiment and blocks
+promotion to a complete Eval pass.

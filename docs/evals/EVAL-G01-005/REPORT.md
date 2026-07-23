@@ -30,3 +30,12 @@ owner Outboxes, DLQ, stale leases, Trace delivery state, migrations, and six
 candidate bindings to zero drift or pending work. Real PostgreSQL execution of
 all 82 transitions, stale-fence races, Redis crash recovery, and correlated Trace
 evidence remain blocking.
+
+Subsequent live private-server matrices replaced the remaining reference-only
+evidence. Candidate `98b21cbf361154d57bd28e65784ff818cecfe5a5` executed all
+82 legal transitions against PostgreSQL, accepted 5,000 unique Inbox deliveries
+from 10,000 attempts, survived 100 crash injections with zero partial commit,
+and rejected stale fencing while accepting the current fence. Candidate
+`b9be07766b25fc78c0fcb160dbfb00248ac071cf` recovered and ACKed all 100
+Redis pending messages after consumer death, leaving zero pending entries.
+Final same-SHA replay and correlated Trace binding remain open.

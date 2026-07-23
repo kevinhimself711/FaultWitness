@@ -21,3 +21,11 @@ Direct LangSmith TLS handshakes from the private server timed out while the same
 - Backend outage/uncertain-ACK replay with zero duplicate or lost span.
 - Cross-store correlation, independent wall-time reconciliation and final usage count.
 - Full persistence/egress canary scan and rejected-payload absence proof across every surface.
+
+## I-0015 replay checkpoint
+
+Candidate `9b853261c6071e33c7979da8478879952a790937` passed a live
+uncertain-ACK replay through LangSmith: the same sanitized Trace reference,
+payload digest, and remote trace identity were exported twice around a simulated
+ACK loss and the durable queue drained to zero. Final-candidate all-surface
+canary/correlation and independent wall-time/usage reconciliation remain open.

@@ -15,5 +15,5 @@
       "reason": "This Eval directly requires sanitized LangSmith runtime traces and fails if they are absent or incomplete."
     }
   },
-  "open_evidence": ["complete outage and uncertain-ACK replay matrix", "all-surface canary scan and cross-store correlation", "independent wall-time reconciliation and LangSmith usage count"]
+  "open_evidence": ["same-final-SHA uncertain-ACK replay", "all-surface canary scan and cross-store correlation", "independent wall-time reconciliation and LangSmith usage count"]
 }

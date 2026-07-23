@@ -15,5 +15,5 @@
       "reason": "G01 requires sanitized correlated traces for authenticated API state and SSE flows before closure."
     }
   },
-  "open_evidence": ["full live eight-path API and identity denial matrix", "sustained live backpressure matrix", "correlated LangSmith API and SSE traces on final candidate"]
+  "open_evidence": ["cold-JWKS Keycloak outage fail-closed evidence", "same-final-SHA live API load and backpressure replay", "correlated LangSmith API and SSE traces on final candidate"]
 }

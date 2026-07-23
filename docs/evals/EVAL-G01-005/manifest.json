@@ -15,5 +15,5 @@
       "reason": "G01 closure requires correlated LangSmith traces for the durable runtime paths established by this Eval."
     }
   },
-  "open_evidence": ["all-transition real PostgreSQL conformance", "private Redis crash and fencing race matrix", "correlated LangSmith runtime traces on final candidate"]
+  "open_evidence": ["same-final-SHA PostgreSQL Redis and fencing replay", "correlated LangSmith runtime traces on final candidate"]
 }
