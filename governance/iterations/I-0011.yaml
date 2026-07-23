@@ -1,0 +1,37 @@
+schema_version: "1.0.0"
+id: I-0011
+gate: G01
+title: Durable State Checkpoint and Transactional Events
+status: completed
+scope:
+  - Implement owner-isolated PostgreSQL schemas roles migrations versions idempotency Outbox Inbox and DLQ.
+  - Implement at-least-once Redis Streams publication and consumption with deterministic deduplication and readiness limits.
+  - Implement fenced encrypted PostgreSQL checkpoints and crash recovery semantics.
+non_goals:
+  - Exactly-once delivery claims or external action execution.
+  - Multi-worker performance certification beyond correctness fault injection.
+dependencies: [I-0009, I-0010]
+tests:
+  - make verify-fast
+  - uv run python -m faultwitness_dev eval-iteration I-0011 --candidate-sha <full-sha>
+  - EVAL-G01-005 database transition duplicate delivery fencing checkpoint and crash suite
+eval_id: EVAL-G01-005
+commit: "48449618f1aafdadfde0d4593cb9bb10b96583f6"
+changed_paths:
+  - src/faultwitness/persistence
+  - src/faultwitness/runtime
+  - migrations
+  - docs/runbooks
+  - docs/evals/EVAL-G01-005
+  - tests/integration
+  - tests/reliability
+  - tests/persistence
+  - tests/runtime
+  - src/faultwitness_dev/runtime_deploy.py
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/I-0011.md
+  - docs/evals/EVAL-G01-005/PLAN.md
+  - docs/evals/EVAL-G01-005/REPORT.md
+  - CHANGELOG.md
+threshold_changes: []

@@ -4,7 +4,7 @@
 
 FaultWitness is a multi-tenant Agent Runtime for investigating microservice incidents, proposing bounded remediations, executing approved actions, and producing auditable evaluation and training assets.
 
-The repository is currently in G00 planning state. Read PROJECT_STATE.yaml, the authoritative final plan, and the active Gate plan before doing any work. Do not start product implementation until an iteration is explicitly selected and materialized.
+G00 is closed and G01 is in progress. I-0007 and EVAL-G01-001 are complete. I-0008/I-0009 implementation is landed with EVAL-G01-002/003 candidate debt retained. I-0010 passed its Windows deterministic conformance/mutation run on `f81c7f0`; cross-platform digest evidence remains due before Gate closure. I-0011 runtime persistence is landed and its schema is deployed from `4844961`; the full duplicate/crash/fencing matrix remains Gate debt. I-0012 is landed and its private authenticated Control API passed live OIDC create/read/SSE and isolation smoke on `5a1b607`; the full conformance/load matrix remains Gate debt. I-0013 is landed and deployed from `ae0a3be`: its private Trace Service passed a sanitized LangSmith/OTLP/archive live checkpoint with zero pending delivery; the complete failure matrix remains Gate debt. I-0014 and EVAL-G01-008 passed on `21c2a96` with 36/36 live Bailian trials across Qwen, DeepSeek, and GLM plus the offline NewAPI wire matrix and sanitized LangSmith evidence. The authenticated private Model Gateway is additionally deployed from `18ff0c1` and passed a real OIDC-to-Bailian service smoke with exact model and attributed usage. This proves three model families through one live upstream, not three-provider redundancy. I-0015 is the sole active Iteration and authorizes only the frozen G01 candidate audit, fourteen failure walkthroughs, clean-clone rehearsal, and close-readiness proof. It does not authorize Agent investigation logic, real Tool/Skill capability, external actions, Gate closure, or G02 implementation.
 
 ## Source-of-truth order
 
@@ -28,7 +28,7 @@ PROJECT_STATE.yaml is the authority for the active Gate and iteration, not for a
 - Gate closure is a separate asset-only commit evaluated against an immutable candidate SHA.
 - Do not commit or push unless the user explicitly requests it.
 
-The initial planning commit is the only bootstrap exception to the iteration requirement because the iteration infrastructure does not yet exist.
+Planning-only commits may create or refine future Iteration and Eval assets without activating them. They never authorize product behavior, infrastructure mutation, credential use, or live evaluation.
 
 ## Architecture invariants
 
@@ -56,9 +56,7 @@ Changes to these invariants require an ADR, an architecture version update, migr
 
 ## Commands
 
-During the planning bootstrap, the only required checks are read-only repository and document checks such as git diff --check, local-link validation, and required-section validation.
-
-After I-0002 introduces the governance CLI, the canonical entry point becomes:
+The governance CLI is established. The canonical entry point is:
 
     uv run python -m faultwitness_dev <command>
 

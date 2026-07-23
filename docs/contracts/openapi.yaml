@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: FaultWitness Control API Design
   version: 1.0.0
-  description: Design-only G00 contract; no server implementation is included.
+  description: Frozen public contract implemented by the I-0012 Control API runtime.
 security:
   - oidc: [incidents:read]
 paths:

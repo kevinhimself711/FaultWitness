@@ -1,0 +1,10 @@
+{{- range $key, $namespace := .Values.namespaces }}
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: bounded-platform
+  namespace: {{ $namespace }}
+spec:
+  hard: {{ toYaml (index $.Values.quotas $key) | nindent 4 }}
+{{- end }}

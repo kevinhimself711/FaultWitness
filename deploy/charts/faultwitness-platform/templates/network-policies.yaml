@@ -1,0 +1,98 @@
+{{- range $key, $namespace := .Values.namespaces }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: platform-default-deny, namespace: {{ $namespace }}}
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: platform-allow-dns, namespace: {{ $namespace }}}
+spec:
+  podSelector: {}
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: kube-system}}
+      ports:
+        - {protocol: UDP, port: 53}
+        - {protocol: TCP, port: 53}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: platform-allow-same-boundary, namespace: {{ $namespace }}}
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from: [{podSelector: {}}]
+  egress:
+    - to: [{podSelector: {}}]
+{{- end }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: allow-keycloak-to-postgres, namespace: {{ .Values.namespaces.data }}}
+spec:
+  podSelector: {matchLabels: {app.kubernetes.io/name: postgres}}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: {{ .Values.namespaces.system }}}}
+          podSelector: {matchLabels: {app.kubernetes.io/name: keycloak}}
+      ports: [{protocol: TCP, port: 5432}]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: allow-runtime-clients, namespace: {{ .Values.namespaces.data }}}
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector: {matchLabels: {faultwitness.io/data-client: "true"}}
+          podSelector: {matchLabels: {faultwitness.io/platform-client: "true"}}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: allow-runtime-policy-clients, namespace: {{ .Values.namespaces.system }}}
+spec:
+  podSelector:
+    matchExpressions:
+      - {key: app.kubernetes.io/name, operator: In, values: [opa, keycloak]}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector: {matchLabels: {faultwitness.io/policy-client: "true"}}
+          podSelector: {matchLabels: {faultwitness.io/platform-client: "true"}}
+      ports:
+        - {protocol: TCP, port: 8181}
+        - {protocol: TCP, port: 8080}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: allow-keycloak-postgres-egress, namespace: {{ .Values.namespaces.system }}}
+spec:
+  podSelector: {matchLabels: {app.kubernetes.io/name: keycloak}}
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: {{ .Values.namespaces.data }}}}
+          podSelector: {matchLabels: {app.kubernetes.io/name: postgres}}
+      ports: [{protocol: TCP, port: 5432}]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: {name: allow-telemetry-clients, namespace: {{ .Values.namespaces.observability }}}
+spec:
+  podSelector: {matchLabels: {app.kubernetes.io/name: otel-collector}}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector: {matchLabels: {faultwitness.io/telemetry-client: "true"}}
+          podSelector: {matchLabels: {faultwitness.io/platform-client: "true"}}
+      ports:
+        - {protocol: TCP, port: 4317}
+        - {protocol: TCP, port: 4318}

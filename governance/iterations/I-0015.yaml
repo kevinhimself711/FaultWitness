@@ -1,0 +1,34 @@
+schema_version: "1.0.0"
+id: I-0015
+gate: G01
+title: G01 Candidate Audit and Failure Matrix
+status: completed
+scope:
+  - Build one immutable candidate and bind public cross-platform and private-server evidence to its full SHA.
+  - Run supply-chain publication security regression and all fourteen frozen G01 failure walkthroughs.
+  - Prove Gate readiness with all Iterations Evals traces queues migrations and waivers closed without closing G01.
+non_goals:
+  - Changing behavior thresholds or locked tests after candidate creation.
+  - Closing G01 or starting G02.
+dependencies: [I-0007, I-0008, I-0009, I-0010, I-0011, I-0012, I-0013, I-0014]
+tests:
+  - make verify-fast
+  - make eval-changed
+  - uv run python -m faultwitness_dev eval-g01 --candidate-sha <full-sha> --profile private-server
+  - uv run python -m faultwitness_dev eval-g01-close --candidate-sha <full-sha>
+eval_id: EVAL-G01-009
+commit: "4c843553bad7a13023259d474e8fea1b8c174d40"
+changed_paths:
+  - .github/workflows
+  - src/faultwitness_dev
+  - docs/governance
+  - docs/evals/EVAL-G01-009
+  - tests/audit
+  - tests/g01
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/I-0015.md
+  - docs/evals/EVAL-G01-009/PLAN.md
+  - docs/evals/EVAL-G01-009/REPORT.md
+  - CHANGELOG.md
+threshold_changes: []

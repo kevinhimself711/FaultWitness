@@ -1,0 +1,62 @@
+schema_version: "1.0.0"
+id: I-0007
+gate: G01
+title: Secure Bootstrap and Capability Baseline
+status: completed
+scope:
+  - Install checksum-pinned SOPS and Age outside the repository and establish schema-validated no-value public configuration.
+  - Establish project-scoped Age and SSH identities strict host verification and secret bootstrap interfaces without committing values.
+  - Migrate the operator-declared long-lived credentials without changing their values and delete the plaintext handoff only after acceptance dedicated-key login and publication checks pass.
+  - Capture two matching sanitized baselines for host Docker network kernel KVM GPU storage and dependency capabilities.
+non_goals:
+  - Installing K3s or changing server workloads.
+  - Calling model or LangSmith APIs.
+dependencies: [I-0006]
+tests:
+  - make verify-fast
+  - make eval-changed
+  - uv run pytest tests/security tests/audit -q
+  - deploy/bootstrap/install_tools.ps1 checksum and PowerShell parser checks
+  - uv run python -m faultwitness_dev eval-iteration I-0007 --candidate-sha <full-sha>
+  - EVAL-G01-001 secret canary credential migration and capability baseline suite
+eval_id: EVAL-G01-001
+commit: 7a9237c4c5b9fc0c736435e836534e72712c4169
+changed_paths:
+  - AGENTS.md
+  - PROJECT_STATE.yaml
+  - CHANGELOG.md
+  - .sops.yaml
+  - .gitignore
+  - config/secrets
+  - deploy/bootstrap
+  - schemas/bootstrap
+  - governance/ASSETS.yaml
+  - src/faultwitness_dev/bootstrap.py
+  - src/faultwitness_dev/evals.py
+  - src/faultwitness_dev/cli.py
+  - src/faultwitness_dev/audit.py
+  - docs/runbooks
+  - docs/blueprint/FINAL_PLAN.md
+  - docs/blueprint/AMENDMENTS/AMD-0002.md
+  - docs/gates/G01
+  - docs/evals/EVAL-G01-001
+  - docs/evals/EVAL-G01-009/PLAN.md
+  - governance/gates/G01.yaml
+  - tests/security
+  - tests/audit
+behavior_change: true
+docs_updated:
+  - AGENTS.md
+  - docs/blueprint/FINAL_PLAN.md
+  - docs/blueprint/AMENDMENTS/AMD-0002.md
+  - docs/gates/G01/PLAN.md
+  - docs/gates/G01/REPORT.md
+  - docs/runbooks/SECURE_BOOTSTRAP.md
+  - docs/roadmap/iterations/I-0007.md
+  - docs/evals/EVAL-G01-001/PLAN.md
+  - docs/evals/EVAL-G01-001/REPORT.md
+  - docs/evals/EVAL-G01-009/PLAN.md
+  - CHANGELOG.md
+threshold_changes:
+  - {id: SEC-PUBLIC-SECRET-COUNT, from: 0, to: 0, direction: unchanged}
+  - {id: SEC-CREDENTIAL-COMPROMISE-TRIGGER, from: 1, to: 1, direction: unchanged}

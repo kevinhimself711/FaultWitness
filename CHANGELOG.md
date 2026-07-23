@@ -4,11 +4,50 @@
 
 ### Gate closure
 
+- Close G01 without waiver on immutable candidate `4c843553bad7a13023259d474e8fea1b8c174d40` and hand off to G02 in `not_started` state.
 - Close G00 without waivers on immutable candidate `1f36a799c27dfe0709a529448e6935d0ea3103eb`.
 - Hand off to G01 in `not_started` state; no G01 implementation is authorized before its Master Plan is frozen.
 
 ### Tooling
 
+- Complete I-0015 on immutable candidate `4c84355`: pass public Ubuntu/Windows/audit
+  checks, the clean 15-minute readiness window, 14/14 walkthroughs, 36/36 live
+  model trials, recovery/rollback, PostgreSQL/Redis/Trace/API failure matrices,
+  and final six-binding/three-migration reconciliation with zero durable backlog.
+- Land real I-0015 recovery and failure evidence: embedded-etcd restore,
+  project-only Helm rollback/reinstall, 82-transition PostgreSQL atomicity,
+  duplicate/crash/fencing checks, Redis pending recovery, uncertain-ACK
+  LangSmith replay, and production-store 10,000-event/100-reconnect API/SSE load;
+  pass cold-JWKS Keycloak outage fail-closed with service recovery; retain final
+  same-SHA binding, policy/canary, supply-chain, and close-readiness as open.
+- Pass private durable reconciliation with six exact candidate bindings, three migrations, and zero DLQ/Outbox/stale-lease/Trace backlog; pass fresh-target PostgreSQL restore with exact schema/data digest equality; and pass all three public required checks on PR `#18` audit-head `72aff8f` while retaining final same-SHA binding as open.
+- Redeploy audit candidate `16294bc` across every private G01 component and pass candidate-bound platform/schema, OIDC API, sanitized Trace, Model Gateway, four-runtime, five-case network, and Docker-coexistence checks; retain unresolved public and deep recovery evidence.
+- Extend I-0015 to 220 passing tests with 10,000-event/100-reconnect SSE coverage, 10,000-delivery/100-crash atomicity and dedupe reference matrices, fail-closed upstream-Eval debt checks, and exact G01 closure-boundary enforcement; retain private integration, replay, recovery, and public candidate binding as open.
+- Add the candidate-bound G01 audit and close-readiness commands on `bc8c040a`, pass 210 local tests and the private deployment/runtime/network/service checkpoint, and retain all unresolved failure-matrix, cross-platform, replay, reconciliation, restore, rollback, and closure evidence as explicit I-0015 debt.
+- Deploy the authenticated private Model Gateway checkpoint from candidate `18ff0c1`: observe `1/1 Ready` ClusterIP service and pass a real Keycloak OIDC-to-Bailian Qwen smoke with exact route and attributed usage; retain all EVAL-G01-009 full-candidate work as open.
+- Add the private candidate-bound Model Gateway service and deployment path: strict OIDC-derived tenant context, identity-injection denial, non-root read-only ClusterIP workload, repository-external Bailian secret handoff, exact catalog packaging, authenticated live smoke, and complete runtime dependency locking.
+- Complete I-0014 and EVAL-G01-008 on candidate `21c2a96`: pass 36/36 live Bailian trials across Qwen, DeepSeek, and GLM complete/structured/forced-tool/stream capabilities, the controlled NewAPI wire matrix, attributed usage, and one sanitized LangSmith Trace per trial; retain the single-live-upstream limitation and activate I-0015.
+- Implement the I-0014 ModelGateway foundation: a versioned three-family capability and route catalog, shared Bailian/NewAPI-compatible adapter, strict structured and forced-tool validation, deterministic streaming and usage attribution, bounded retry/repair/pre-output fallback, post-first-chunk partial failure, offline wire tests, and a candidate-bound 36-trial live Eval entry point.
+- Complete the I-0013 implementation checkpoint on candidate `ae0a3be`: deploy migration `003_i0013` and the private Trace Service, pass live sanitized LangSmith/OTLP/archive delivery with zero pending traces, retain the complete outage/canary/correlation/latency matrix as Gate debt, and activate I-0014.
+- Implement the I-0013 sanitized Trace foundation: strict pre-persistence allowlisting, irreversible tenant/correlation references, encrypted bounded PostgreSQL delivery state, deterministic LangSmith/OTLP replay, correlated Tempo/Loki/Prometheus signals, private MinIO/DVC manifests, and a candidate-bound private Trace Service deployment path.
+- Complete the I-0012 implementation checkpoint on candidate `5a1b607`: deploy the private candidate-bound Control API and Keycloak realm, pass live OIDC create/read/SSE and tenant/role/approval denial smoke, retain the full EVAL-G01-006 conformance/load matrix as Gate debt, and activate I-0013.
+- Implement the I-0012 authenticated Control API foundation: eight frozen FastAPI paths, fail-closed RS256 OIDC tenant derivation, role and cross-tenant denial, PostgreSQL Incident/idempotency/event projection, exact replay cursors, typed retention/backpressure SSE controls, and truthful empty capability/approval behavior.
+- Add a candidate-bound, non-root, private-ClusterIP Control API image and K3s deployment path with locked dependencies and explicit network policy.
+- Add candidate-bound Keycloak realm provisioning for two synthetic tenants, four roles, a mapped API audience/tenant claim, and eight out-of-band credentialed users.
+- Complete the I-0011 implementation checkpoint on candidate `4844961`: add owner-isolated PostgreSQL state/idempotency/outbox/inbox/DLQ, Redis Streams recovery, fenced AES-GCM checkpoints, and deploy migration `001_i0011` with 17 observed runtime tables; retain the complete EVAL-G01-005 fault matrix as Gate debt and activate I-0012.
+- Pass the Windows EVAL-G01-004 conformance run on candidate `f81c7f0` with 82 deterministic legal transitions and 492 rejected mutations; retain cross-platform digest and public compatibility evidence for the final candidate, and activate I-0011 durable state work.
+- Compile the nine frozen G00 contract sources into a byte-stable 1.1.0 package resource; add 21 strict core models, 12 G01 support models, and a deterministic four-owner kernel that executes all 82 transitions with explicit predicates and fail-closed version, fencing, digest, idempotency, terminal-state, and private-reasoning boundaries.
+- Deploy all eleven I-0009 data, identity, policy, storage, and observability workloads from candidate `0c8b66c`, with private out-of-band Secrets, linux/amd64 digest pins, deterministic bundle binding, and sanitized Ready inventory; retain the full EVAL-G01-003 matrix as candidate debt and activate I-0010.
+- Document the I-0009 platform-services deployment, isolation, restore, observability, supply-chain, failure, and public/private evidence contract while keeping implementation, private deployment, and EVAL-G01-003 explicitly pending.
+- Hand off the landed I-0008 infrastructure implementation to I-0009 while retaining EVAL-G01-002 as explicit blocking candidate debt; activate only the frozen platform-service and operational-observability scope.
+- Land the I-0008 infrastructure checkpoint: pinned K3s/Helm deployment assets, gVisor/Kata/NVIDIA runtime integration, offline image handling, runtime and network smoke definitions, Docker coexistence auditing, diagnostics, and focused tests. The private K3s service and required runtimes are deployed; I-0008 remains open without an EVAL-G01-002 pass claim.
+- Add I-0007 SOPS/Age encrypted handoff migration, project identity bootstrap, fail-closed host pinning, operator-approved long-lived credential acceptance, read-only host probing, and private Eval commands.
+- Correct I-0007's risk premise: untracked owner-host handoff values are retained unchanged when publication/history scans show zero exposure; confirmed compromise or operator revocation remains the rotation trigger.
+- Replace the non-executable Windows SSH askpass batch helper with a repository-source-digest-locked native helper, dummy-value self-test, and redacted authentication failure categories.
+- Complete I-0007 on candidate `7a9237c4c5b9fc0c736435e836534e72712c4169` with exact handoff deletion/ignore, pinned dedicated SSH access, two matching sanitized capability probes, and waiver-free EVAL-G01-001.
+- Activate I-0008 for the frozen project-owned K3s, isolated runtime, GPU, coexistence, and rollback scope; no server mutation is included in the activation commit.
+- Pin and checksum SOPS 3.13.2 and Age 1.3.1, validate their public configuration with JSON Schema, and keep all private stores outside the repository.
+- Extend publication scanning to PowerShell/shell assets and LangSmith token shapes with negative tests.
 - Pin the Python, Node.js, uv, and pnpm repository toolchains.
 - Add locked Python and Node workspaces and cross-platform verification entry points.
 - Record the I-0001 iteration and EVAL-G00-001 evidence assets.
@@ -18,6 +57,11 @@
 
 ### Planning
 
+- Activate I-0007 as the sole G01 Iteration authorized for secure bootstrap and sanitized read-only capability evidence.
+- Freeze the decision-complete G01 Master Plan with nine implementation Iterations, nine pre-registered Evals, fourteen failure walkthroughs, and immutable no-waiver closure criteria.
+- Record a host-coexisting single-node K3s topology that protects existing Docker workloads and exposes no public control plane.
+- Correct the model topology to three live model families through Bailian plus a NewAPI-compatible channel, without claiming three independent providers.
+- Retain LangSmith as the required Agent/Eval trace backend and record its credential as available but unused until secure bootstrap I-0007.
 - Freeze the architecture-first final project blueprint.
 - Freeze the decision-complete G00 Gate Master Plan.
 - Establish the initial project state and repository collaboration rules.
@@ -40,4 +84,4 @@
 - Reopen I-0006 to enforce the exact no-Iteration G00 closure asset boundary.
 - Complete I-0006 closure-protocol enforcement on immutable candidate `c38ca79` with 51 tests.
 
-No product implementation is included in this planning baseline.
+No product implementation, deployment, secret migration, live model call, or LangSmith trace is included in this planning baseline.

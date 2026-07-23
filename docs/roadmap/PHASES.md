@@ -1,6 +1,6 @@
 ---
 document_id: FW-ROADMAP-001
-version: 1.0.0
+version: 1.1.0
 status: planned
 ---
 
@@ -8,8 +8,8 @@ status: planned
 
 | Gate | 主题 | 状态 | 权威计划 |
 |---|---|---|---|
-| G00 | 蓝图、架构与治理基线 | Planned | ../gates/G00/PLAN.md |
-| G01 | 平台、契约与 Trace 地基 | Not started | 待 G00 关闭后规划 |
+| G00 | 蓝图、架构与治理基线 | Passed | ../gates/G00/PLAN.md |
+| G01 | 平台、契约与 Trace 地基 | Planned — plan frozen | ../gates/G01/PLAN.md |
 | G02 | 故障实验室与基线 | Not started | 待 G01 关闭后规划 |
 | G03 | 只读 Agent 纵切 | Not started | 待 G02 关闭后规划 |
 | G04 | RAG、Memory、Skills 与多模态 | Not started | 待 G03 关闭后规划 |

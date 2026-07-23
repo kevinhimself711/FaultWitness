@@ -2,21 +2,21 @@ schema_version: "0.1.0"
 project_name: FaultWitness
 repository_visibility: public
 
-plan_version: "G00-master-plan-v1"
+plan_version: "G01-master-plan-v1.1"
 architecture_version: "1.0.0"
 requirements_version: "1.0.0"
 contracts_version: "1.0.0"
 governance_schema_version: "1.0.0"
 
-active_gate: G01
+active_gate: G02
 active_gate_status: not_started
 active_iteration: null
 next_iteration: null
-last_closed_gate: G00
-latest_eval_run: EVAL-G00-006
+last_closed_gate: G01
+latest_eval_run: EVAL-G01-009
 
 authoritative_plan: docs/blueprint/FINAL_PLAN.md
-active_gate_plan: docs/gates/G01/PLAN.md
-active_gate_report: docs/gates/G01/REPORT.md
+active_gate_plan: docs/gates/G02/PLAN.md
+active_gate_report: docs/gates/G02/REPORT.md
 
-updated_on: "2026-07-22"
+updated_on: "2026-07-23"

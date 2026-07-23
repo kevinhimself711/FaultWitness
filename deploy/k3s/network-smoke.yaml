@@ -1,0 +1,326 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: network-server
+  namespace: fw-control
+  labels:
+    app.kubernetes.io/part-of: faultwitness
+    faultwitness.dev/eval: EVAL-G01-002-network
+  annotations:
+    faultwitness.dev/image-digest: sha256:b7f3d86d6e84fc17718c48bcde1450807faa2d56704205c697b4bd5df7b9e29f
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      faultwitness.dev/network-role: server
+  template:
+    metadata:
+      labels:
+        faultwitness.dev/network-role: server
+        faultwitness.dev/eval: EVAL-G01-002-network
+    spec:
+      runtimeClassName: runc
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: server
+          image: docker.io/library/busybox:1.36.1
+          imagePullPolicy: Never
+          command:
+            - sh
+            - -c
+            - echo FW_NETWORK_SERVER >/www/index.html; exec httpd -f -p 8080 -h /www
+          ports:
+            - name: http
+              containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          volumeMounts:
+            - name: www
+              mountPath: /www
+      volumes:
+        - name: www
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: network-server
+  namespace: fw-control
+  labels:
+    app.kubernetes.io/part-of: faultwitness
+    faultwitness.dev/eval: EVAL-G01-002-network
+spec:
+  type: ClusterIP
+  selector:
+    faultwitness.dev/network-role: server
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: eval-allow-server-ingress
+  namespace: fw-control
+  labels:
+    faultwitness.dev/eval: EVAL-G01-002-network
+spec:
+  podSelector:
+    matchLabels:
+      faultwitness.dev/network-role: server
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              faultwitness.dev/network-client: allowed
+      ports:
+        - protocol: TCP
+          port: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: eval-allow-client-egress
+  namespace: fw-control
+  labels:
+    faultwitness.dev/eval: EVAL-G01-002-network
+spec:
+  podSelector:
+    matchLabels:
+      faultwitness.dev/network-client: allowed
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              faultwitness.dev/network-role: server
+      ports:
+        - protocol: TCP
+          port: 8080
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: network-allow
+  namespace: fw-control
+  labels:
+    faultwitness.dev/eval: EVAL-G01-002-network
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        faultwitness.dev/network-client: allowed
+        faultwitness.dev/eval: EVAL-G01-002-network
+    spec:
+      runtimeClassName: runc
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: probe
+          image: docker.io/library/busybox:1.36.1
+          imagePullPolicy: Never
+          command: [sh, -c, 'wget -qO- -T 5 http://network-server:8080 | grep -F FW_NETWORK_SERVER && echo FW_ALLOW_PASS']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: network-deny-same
+  namespace: fw-control
+  labels:
+    faultwitness.dev/eval: EVAL-G01-002-network
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        faultwitness.dev/network-client: denied
+        faultwitness.dev/eval: EVAL-G01-002-network
+    spec:
+      runtimeClassName: runc
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: probe
+          image: docker.io/library/busybox:1.36.1
+          imagePullPolicy: Never
+          command: [sh, -c, 'if wget -qO- -T 3 http://network-server:8080; then exit 1; else echo FW_DENY_PASS; fi']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: network-deny-cross
+  namespace: fw-data
+  labels:
+    faultwitness.dev/eval: EVAL-G01-002-network
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        faultwitness.dev/network-client: denied-cross
+        faultwitness.dev/eval: EVAL-G01-002-network
+    spec:
+      runtimeClassName: runc
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: probe
+          image: docker.io/library/busybox:1.36.1
+          imagePullPolicy: Never
+          command: [sh, -c, 'if wget -qO- -T 3 http://network-server.fw-control.svc.cluster.local:8080; then exit 1; else echo FW_DENY_PASS; fi']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: network-dns
+  namespace: fw-control
+  labels:
+    faultwitness.dev/eval: EVAL-G01-002-network
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        faultwitness.dev/network-client: dns
+        faultwitness.dev/eval: EVAL-G01-002-network
+    spec:
+      runtimeClassName: runc
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: probe
+          image: docker.io/library/busybox:1.36.1
+          imagePullPolicy: Never
+          command: [sh, -c, 'nslookup kubernetes.default.svc.cluster.local >/dev/null && echo FW_DNS_PASS']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: network-deny-internet
+  namespace: fw-control
+  labels:
+    faultwitness.dev/eval: EVAL-G01-002-network
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        faultwitness.dev/network-client: denied-internet
+        faultwitness.dev/eval: EVAL-G01-002-network
+    spec:
+      runtimeClassName: runc
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: probe
+          image: docker.io/library/busybox:1.36.1
+          imagePullPolicy: Never
+          command: [sh, -c, 'if wget -qO- -T 3 http://1.1.1.1; then exit 1; else echo FW_DENY_PASS; fi']
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi

@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G01-006",
+  "gate": "G01",
+  "iteration": "I-0012",
+  "evaluated_revision": "4c843553bad7a13023259d474e8fea1b8c174d40",
+  "status": "pass",
+  "environments": ["windows-github-hosted", "ubuntu-github-hosted", "ubuntu-private-server"],
+  "commands": ["uv run python -m faultwitness_dev eval-iteration I-0012 --candidate-sha <full-sha>"],
+  "artifacts": ["docs/evals/EVAL-G01-006/PLAN.md", "docs/evals/EVAL-G01-006/REPORT.md"],
+  "evidence_urls": [],
+  "integrations": {
+    "langsmith": {
+      "status": "required",
+      "reason": "G01 requires sanitized correlated traces for authenticated API state and SSE flows before closure."
+    }
+  },
+  "open_evidence": []
+}

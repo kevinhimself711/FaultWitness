@@ -1,4 +1,5 @@
-# G00 closure review: all six decisions remain accepted without amendment or supersession.
+# G01 planning review: the six G00 decisions remain accepted and two deployment/model-topology decisions are added.
+# G01 closure review: all eight accepted decisions remain effective without supersession or waiver.
 schema_version: "1.0.0"
 adrs:
   - {id: ADR-0001, title: "Integrate three engineering planes behind five logical responsibility planes", status: accepted, decision_date: "2026-07-22", path: docs/adr/ADR-0001.md, supersedes: null}
@@ -7,3 +8,5 @@ adrs:
   - {id: ADR-0004, title: "Store large artifacts and datasets locally with MinIO and DVC", status: accepted, decision_date: "2026-07-22", path: docs/adr/ADR-0004.md, supersedes: null}
   - {id: ADR-0005, title: "Adopt at-least-once delivery with idempotency and fencing", status: accepted, decision_date: "2026-07-22", path: docs/adr/ADR-0005.md, supersedes: null}
   - {id: ADR-0006, title: "Make Action Executor the sole privileged write boundary", status: accepted, decision_date: "2026-07-22", path: docs/adr/ADR-0006.md, supersedes: null}
+  - {id: ADR-0007, title: "Deploy single-node K3s alongside existing Docker without public ingress", status: accepted, decision_date: "2026-07-22", path: docs/adr/ADR-0007.md, supersedes: null}
+  - {id: ADR-0008, title: "Route three model families through Bailian and retain a NewAPI-compatible channel", status: accepted, decision_date: "2026-07-22", path: docs/adr/ADR-0008.md, supersedes: null}

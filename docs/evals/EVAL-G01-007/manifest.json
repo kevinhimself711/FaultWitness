@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G01-007",
+  "gate": "G01",
+  "iteration": "I-0013",
+  "evaluated_revision": "4c843553bad7a13023259d474e8fea1b8c174d40",
+  "status": "pass",
+  "environments": ["ubuntu-private-server", "langsmith-developer"],
+  "commands": ["uv run python -m faultwitness_dev eval-iteration I-0013 --candidate-sha <full-sha>"],
+  "artifacts": ["docs/evals/EVAL-G01-007/PLAN.md", "docs/evals/EVAL-G01-007/REPORT.md"],
+  "evidence_urls": [],
+  "integrations": {
+    "langsmith": {
+      "status": "pass",
+      "reason": "This Eval directly requires sanitized LangSmith runtime traces and fails if they are absent or incomplete."
+    }
+  },
+  "open_evidence": []
+}

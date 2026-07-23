@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G01-003",
+  "gate": "G01",
+  "iteration": "I-0009",
+  "evaluated_revision": "4c843553bad7a13023259d474e8fea1b8c174d40",
+  "status": "pass",
+  "environments": ["ubuntu-private-server"],
+  "commands": [
+    "uv run python -m faultwitness_dev deploy-platform --candidate-sha <full-sha>",
+    "uv run python -m faultwitness_dev inspect-platform --candidate-sha <full-sha> --stability-seconds 900",
+    "uv run python -m faultwitness_dev eval-iteration I-0009 --candidate-sha <full-sha>"
+  ],
+  "artifacts": ["docs/evals/EVAL-G01-003/PLAN.md", "docs/evals/EVAL-G01-003/REPORT.md"],
+  "evidence_urls": [],
+  "integrations": {
+    "langsmith": {
+      "status": "required",
+      "reason": "The complete G01 trace path requires LangSmith after the operational observability services are established."
+    }
+  },
+  "open_evidence": []
+}

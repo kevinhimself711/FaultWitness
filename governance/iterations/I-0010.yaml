@@ -1,0 +1,41 @@
+schema_version: "1.0.0"
+id: I-0010
+gate: G01
+title: Executable Contracts and Transition Kernel
+status: completed
+scope:
+  - Compile the G00 state Command Event type error and failure specifications into deterministic package resources.
+  - Implement strict Pydantic v2 core and G01 support types with explicit predicate registries.
+  - Implement owner-specific deterministic transition services and contract version 1.1.0 compatibility checks.
+non_goals:
+  - Persistent state transport or API endpoints.
+  - Agent graph nodes prompts tools or model calls.
+dependencies: [I-0009]
+tests:
+  - make verify-fast
+  - uv run python -m faultwitness_dev eval-iteration I-0010 --candidate-sha <full-sha>
+  - EVAL-G01-004 generated-contract drift transition mutation and compatibility suite
+eval_id: EVAL-G01-004
+commit: f81c7f07e4fbd0636eef669285588cbe7cceef20
+changed_paths:
+  - pyproject.toml
+  - uv.lock
+  - src/faultwitness/contracts
+  - src/faultwitness/state
+  - src/faultwitness_dev/cli.py
+  - src/faultwitness_dev/evals.py
+  - src/faultwitness_dev/audit.py
+  - docs/contracts
+  - docs/runbooks
+  - docs/evals/EVAL-G01-004
+  - tests/contracts
+  - tests/state
+  - tests/audit
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/I-0010.md
+  - docs/runbooks/EXECUTABLE_CONTRACTS.md
+  - docs/evals/EVAL-G01-004/PLAN.md
+  - docs/evals/EVAL-G01-004/REPORT.md
+  - CHANGELOG.md
+threshold_changes: []

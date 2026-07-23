@@ -29,6 +29,18 @@ G00_CLOSURE_PATHS = {
     "governance/gates/G01.yaml",
 }
 
+G01_CLOSURE_PATHS = {
+    "CHANGELOG.md",
+    "PROJECT_STATE.yaml",
+    "docs/adr/INDEX.yaml",
+    "docs/claims/CLAIMS.yaml",
+    "docs/gates/G01/REPORT.md",
+    "docs/gates/G02/PLAN.md",
+    "docs/gates/G02/REPORT.md",
+    "governance/gates/G01.yaml",
+    "governance/gates/G02.yaml",
+}
+
 
 def validate_change_record(record: dict[str, Any], root: Path | None = None) -> None:
     if record.get("behavior_change") and not record.get("docs_updated"):
@@ -83,6 +95,14 @@ def validate_changed_assets(root: Path, paths: list[str]) -> str:
     if iteration_id is None:
         iteration_id = infer_iteration_id(root, paths)
     if iteration_id is None:
+        if state.get("last_closed_gate") == "G01":
+            validate_g01_closure_change(
+                state,
+                load_data(root / "governance" / "gates" / "G01.yaml"),
+                load_data(root / "governance" / "gates" / "G02.yaml"),
+                paths,
+            )
+            return f"validated asset-only G01 closure for {len(paths)} changed files"
         if state.get("last_closed_gate") == "G00":
             validate_g00_closure_change(
                 state,
@@ -146,3 +166,38 @@ def validate_g00_closure_change(
         raise GovernanceError("G00 closure requires a passed waiver-free G00 record")
     if g01.get("id") != "G01" or g01.get("status") != "planned":
         raise GovernanceError("G00 closure requires a planned G01 handoff record")
+
+
+def validate_g01_closure_change(
+    state: dict[str, Any],
+    g01: dict[str, Any],
+    g02: dict[str, Any],
+    paths: list[str],
+) -> None:
+    actual = set(paths)
+    if actual != G01_CLOSURE_PATHS:
+        missing = sorted(G01_CLOSURE_PATHS - actual)
+        unexpected = sorted(actual - G01_CLOSURE_PATHS)
+        raise GovernanceError(
+            f"G01 closure asset boundary drifted: missing={missing}, unexpected={unexpected}"
+        )
+    expected_state = {
+        "active_gate": "G02",
+        "active_gate_status": "not_started",
+        "active_iteration": None,
+        "next_iteration": None,
+        "last_closed_gate": "G01",
+        "active_gate_plan": "docs/gates/G02/PLAN.md",
+        "active_gate_report": "docs/gates/G02/REPORT.md",
+    }
+    drift = {
+        key: state.get(key)
+        for key, expected_value in expected_state.items()
+        if state.get(key) != expected_value
+    }
+    if drift:
+        raise GovernanceError(f"G01 closure project-state drift: {drift}")
+    if g01.get("id") != "G01" or g01.get("status") != "passed" or g01.get("waivers"):
+        raise GovernanceError("G01 closure requires a passed waiver-free G01 record")
+    if g02.get("id") != "G02" or g02.get("status") != "planned":
+        raise GovernanceError("G01 closure requires a planned G02 handoff record")

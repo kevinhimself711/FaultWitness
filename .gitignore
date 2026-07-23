@@ -15,13 +15,14 @@ build/
 .env
 .env.*
 !.env.example
+/envs.txt
 *.age
-secrets/
+/secrets/
 
 .dvc/cache/
 artifacts/
 data/raw/
-models/
+/models/
 
 evidence.local.yaml
 *.local.yaml

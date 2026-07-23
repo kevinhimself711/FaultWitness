@@ -1,0 +1,29 @@
+{
+  "candidate_sha": "7a9237c4c5b9fc0c736435e836534e72712c4169",
+  "capabilities": {
+    "architecture": "x86_64",
+    "cgroup_version": 1,
+    "cidr_conflict_with_10_42_10_43": false,
+    "cpu_count": 32,
+    "docker_available": true,
+    "docker_running_count": 26,
+    "docker_unhealthy_count": 0,
+    "gpu_memory_bytes": 25757220864,
+    "gpu_model": "NVIDIA GeForce RTX 4090",
+    "gvisor_available": false,
+    "helm_available": false,
+    "k3s_available": false,
+    "kata_available": false,
+    "kernel_release": "5.15.0-139-generic",
+    "kvm_available": true,
+    "memory_bytes": 67217637376,
+    "nvidia_available": true,
+    "ports_80_443_in_use": true,
+    "root_filesystem": "ext4",
+    "root_total_bytes": 1967317549056,
+    "seccomp_available": true,
+    "user_namespace_available": true
+  },
+  "normalized_sha256": "dce82edf0149a68c3c0833f8e42c02fb4443f61f945999eb56a84d5fa00dd783",
+  "schema_version": "1.0.0"
+}

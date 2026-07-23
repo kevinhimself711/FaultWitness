@@ -21,11 +21,25 @@ TEXT_SUFFIXES = {
     ".json",
     ".md",
     ".mjs",
+    ".ps1",
     ".py",
+    ".sh",
     ".toml",
     ".txt",
     ".yaml",
     ".yml",
+}
+
+OWNED_SOURCE_ROOTS = {
+    "src/faultwitness_dev": "repository-governance",
+    "src/faultwitness/api": "CMP-CONTROL-API",
+    "src/faultwitness/contracts": "CMP-CONTROL-API",
+    "src/faultwitness/identity": "CMP-IDENTITY",
+    "src/faultwitness/models": "CMP-MODEL-GATEWAY",
+    "src/faultwitness/observability": "CMP-OBSERVABILITY",
+    "src/faultwitness/persistence": "four-state-owner-services",
+    "src/faultwitness/runtime": "CMP-AGENT-WORKER",
+    "src/faultwitness/state": "four-state-owner-services",
 }
 ALLOWED_LICENSES = {
     "0BSD",
@@ -36,6 +50,7 @@ ALLOWED_LICENSES = {
     "EPL-2.0",
     "ISC",
     "MIT",
+    "MIT-0",
     "MPL-2.0",
     "OFL-1.1",
     "PSF-2.0",
@@ -95,6 +110,7 @@ def _license_is_allowed(expression: str) -> bool:
 def _normalize_license(expression: str) -> str:
     aliases = {
         "BSD License": "BSD-3-Clause",
+        "MIT License": "MIT",
     }
     return aliases.get(expression.strip(), expression.strip())
 
@@ -196,12 +212,18 @@ def validate_action_pins(root: Path) -> None:
 
 
 def validate_source_ownership(root: Path) -> None:
+    def owned(relative: str) -> bool:
+        return any(
+            relative == source_root or relative.startswith(source_root + "/")
+            for source_root in OWNED_SOURCE_ROOTS
+        )
+
     unowned = sorted(
         path.relative_to(root).as_posix()
         for path in (root / "src").rglob("*")
         if path.is_file()
         and "__pycache__" not in path.parts
-        and "faultwitness_dev" not in path.parts
+        and not owned(path.relative_to(root).as_posix())
     )
     if unowned:
         raise GovernanceError("unowned source files: " + ", ".join(unowned))
@@ -215,6 +237,7 @@ def _secret_patterns() -> list[tuple[str, re.Pattern[str]]]:
         ),
         ("github-token", re.compile("gh" + r"[pousr]_[A-Za-z0-9]{30,}")),
         ("openai-key", re.compile("sk" + r"-(?:proj-)?[A-Za-z0-9_-]{20,}")),
+        ("langsmith-key", re.compile("lsv2_" + r"pt_[A-Za-z0-9_-]{20,}")),
         ("aws-access-key", re.compile("AKIA" + r"[A-Z0-9]{16}")),
         (
             "credential-assignment",

@@ -53,3 +53,46 @@ claims:
       - https://github.com/kevinhimself711/FaultWitness/actions/runs/29934431213
     limitations:
       - "G00 proves the planning architecture contract and governance baseline only; no product runtime is claimed."
+  - id: CLAIM-PLATFORM-001
+    statement: "G01 establishes a reproducible single-node platform with executable contracts durable state transactional events authenticated APIs and recoverable SSE."
+    status: verified
+    requirements: [REQ-REL-002, REQ-SEC-003, REQ-PERF-001, REQ-OBS-002]
+    evidence:
+      - EVAL-G01-001
+      - EVAL-G01-002
+      - EVAL-G01-003
+      - EVAL-G01-004
+      - EVAL-G01-005
+      - EVAL-G01-006
+    limitations:
+      - "Candidate 4c84355 proves the frozen single-node G01 topology; it does not claim high availability, G06 horizontal scaling, or sandbox escape resistance."
+  - id: CLAIM-TRACE-001
+    statement: "G01 produces correlated sanitized and replayable LangSmith and OTel evidence for every G01 platform and model stage that actually executes."
+    status: verified
+    requirements: [REQ-SEC-003, REQ-PERF-001, REQ-OBS-001, REQ-OBS-002]
+    evidence:
+      - EVAL-G01-007
+    limitations:
+      - "Direct LangSmith TLS from the private server is unavailable; the verified path uses a host-key-pinned operator relay that ACKs only after successful sanitized export."
+      - "G01 does not claim traces for Agent reasoning, tools, retrieval, or actions that begin in later Gates."
+  - id: CLAIM-MODEL-001
+    statement: "G01 will provide one typed ModelGateway for Qwen DeepSeek and GLM live model families and a compatible Bailian and NewAPI channel contract."
+    status: verified
+    requirements: [REQ-REL-001, REQ-SEC-003, REQ-PERF-001, REQ-OBS-001]
+    evidence:
+      - EVAL-G01-008
+    limitations:
+      - "Candidate 4c84355 passed 36/36 live complete, structured, forced-tool, and stream trials with attributable usage and sanitized LangSmith evidence plus the offline NewAPI wire matrix."
+      - "All required live G01 evidence uses one Bailian upstream; this does not prove three independent providers or upstream failure independence."
+      - "NewAPI live evidence is deferred until a token exists; G01 requires only its offline wire contract."
+      - "This Gate does not evaluate incident diagnosis quality model ranking or cost optimization."
+  - id: CLAIM-GATE-002
+    statement: "G01 is closed with nine Iterations nine Evals and fourteen frozen failure walkthroughs passing on one immutable candidate without waiver or open evidence."
+    status: verified
+    requirements: [REQ-SEC-003, REQ-PERF-001, REQ-OBS-001, REQ-OBS-002]
+    evidence:
+      - EVAL-G01-009
+      - docs/gates/G01/REPORT.md
+    limitations:
+      - "Candidate 4c84355 proves G01 platform contracts and Trace foundation readiness; it does not claim G02 Agent orchestration, G03 retrieval quality, G04 Action execution, G05 training, or G06 multi-node scale."
+      - "The 15-minute readiness result follows the operator-frozen rule that an unspecialized transport error occurring only after a clean window is non-blocking; all concrete failures and all individual matrices remained blocking."

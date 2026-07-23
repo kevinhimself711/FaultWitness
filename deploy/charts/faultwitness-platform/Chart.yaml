@@ -1,0 +1,7 @@
+apiVersion: v2
+name: faultwitness-platform
+description: Private, single-node platform dependencies for FaultWitness G01
+type: application
+version: 0.1.0
+appVersion: "g01-i0009"
+

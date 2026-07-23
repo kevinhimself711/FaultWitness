@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://faultwitness.local/schemas/bootstrap/capability-baseline.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "candidate_sha", "capabilities", "normalized_sha256"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "candidate_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "normalized_sha256": {"$ref": "#/$defs/sha256"},
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "architecture",
+        "cpu_count",
+        "memory_bytes",
+        "kernel_release",
+        "cgroup_version",
+        "kvm_available",
+        "seccomp_available",
+        "user_namespace_available",
+        "docker_available",
+        "docker_running_count",
+        "docker_unhealthy_count",
+        "ports_80_443_in_use",
+        "k3s_available",
+        "helm_available",
+        "gvisor_available",
+        "kata_available",
+        "nvidia_available",
+        "gpu_model",
+        "gpu_memory_bytes",
+        "root_filesystem",
+        "root_total_bytes",
+        "cidr_conflict_with_10_42_10_43"
+      ],
+      "properties": {
+        "architecture": {"type": "string", "minLength": 1},
+        "cpu_count": {"$ref": "#/$defs/non_negative_integer"},
+        "memory_bytes": {"$ref": "#/$defs/non_negative_integer"},
+        "kernel_release": {"type": "string", "minLength": 1},
+        "cgroup_version": {"type": "integer", "enum": [1, 2]},
+        "kvm_available": {"type": "boolean"},
+        "seccomp_available": {"type": "boolean"},
+        "user_namespace_available": {"type": "boolean"},
+        "docker_available": {"type": "boolean"},
+        "docker_running_count": {"$ref": "#/$defs/non_negative_integer"},
+        "docker_unhealthy_count": {"$ref": "#/$defs/non_negative_integer"},
+        "ports_80_443_in_use": {"type": "boolean"},
+        "k3s_available": {"type": "boolean"},
+        "helm_available": {"type": "boolean"},
+        "gvisor_available": {"type": "boolean"},
+        "kata_available": {"type": "boolean"},
+        "nvidia_available": {"type": "boolean"},
+        "gpu_model": {"type": "string", "minLength": 1},
+        "gpu_memory_bytes": {"$ref": "#/$defs/non_negative_integer"},
+        "root_filesystem": {"type": "string", "minLength": 1},
+        "root_total_bytes": {"$ref": "#/$defs/non_negative_integer"},
+        "cidr_conflict_with_10_42_10_43": {"type": "boolean"}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "non_negative_integer": {"type": "integer", "minimum": 0}
+  }
+}
