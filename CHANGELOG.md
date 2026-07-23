@@ -71,6 +71,8 @@
 
 ### Planning
 
+- Activate I-0017 as the sole G02 Iteration authorized for the pinned fault lab, Scenario DSL,
+  32-seed catalogue, oracle, exact restoration, and clean-clone runner scope.
 - Activate I-0007 as the sole G01 Iteration authorized for secure bootstrap and sanitized read-only capability evidence.
 - Freeze the decision-complete G01 Master Plan with nine implementation Iterations, nine pre-registered Evals, fourteen failure walkthroughs, and immutable no-waiver closure criteria.
 - Record a host-coexisting single-node K3s topology that protects existing Docker workloads and exposes no public control plane.
