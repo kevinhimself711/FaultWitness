@@ -348,6 +348,7 @@ def evaluate_g01(root: Path, candidate_sha: str, *, profile: str) -> dict[str, A
         {
             "postgres": run_postgres_failure_matrix(root, candidate_sha),
             "redis": run_redis_recovery_matrix(candidate_sha),
+            "trace": run_trace_service_smoke(candidate_sha, inject_uncertain_ack=True),
         }
         if private
         else {"status": "deferred_private"}
