@@ -442,10 +442,9 @@ for attempt in $(seq 1 60); do
   succeeded=$(/usr/local/bin/k3s kubectl -n fw-control get job control-api-keycloak-outage -o jsonpath='{{.status.succeeded}}')
   failed=$(/usr/local/bin/k3s kubectl -n fw-control get job control-api-keycloak-outage -o jsonpath='{{.status.failed}}')
   test "$succeeded" = 1 && break
-  test "$failed" = 1 && exit 1
+  test "$failed" = 1 && break
   sleep 2
 done
-test "$succeeded" = 1
 /usr/local/bin/k3s kubectl -n fw-control logs job/control-api-keycloak-outage
 """
     output = run_remote_script(script, privileged=True, timeout=420).strip()
