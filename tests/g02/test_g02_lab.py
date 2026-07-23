@@ -14,6 +14,7 @@ from faultwitness_dev.g02_lab import (
     MemoryFlagClient,
     OracleState,
     base_flag_document,
+    containerd_normalized_reference,
     fault_state,
     image_set_digest,
     load_lab_config,
@@ -114,6 +115,16 @@ def test_image_set_digest_is_order_independent() -> None:
     }
     reversed_config = {"images": list(reversed(config["images"]))}
     assert image_set_digest(config) == image_set_digest(reversed_config)
+
+
+def test_containerd_normalization_preserves_repository_and_digest() -> None:
+    digest = "a" * 64
+    source = f"index.docker.io/library/busybox@sha256:{digest}"
+    assert containerd_normalized_reference(source) == (
+        f"docker.io/library/busybox@sha256:{digest}"
+    )
+    quay = f"quay.io/example/image@sha256:{digest}"
+    assert containerd_normalized_reference(quay) == quay
 
 
 def test_clean_clone_runner_is_pinned_and_candidate_bound() -> None:

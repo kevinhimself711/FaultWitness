@@ -472,11 +472,28 @@ def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str)
         f"/usr/local/bin/k3s ctr images import {remote_root}/{name}.tar"
         for name in archives
     )
-    import_script += "\n" + "\n".join(
-        f"/usr/local/bin/k3s ctr images list -q | grep -F {shlex.quote(reference)}"
-        for reference in images.values()
-    )
+    for reference in images.values():
+        normalized = containerd_normalized_reference(reference)
+        expected_digest = reference.rsplit("@", 1)[1]
+        source = shlex.quote(reference)
+        target = shlex.quote(normalized)
+        digest = shlex.quote(expected_digest)
+        import_script += (
+            "\n"
+            f"test \"$(/usr/local/bin/k3s ctr images list | "
+            f"awk -v ref={source} '$1 == ref {{print $3}}')\" = {digest}\n"
+            f"/usr/local/bin/k3s ctr images tag --force {source} {target}\n"
+            f"test \"$(/usr/local/bin/k3s ctr images list | "
+            f"awk -v ref={target} '$1 == ref {{print $3}}')\" = {digest}"
+        )
     run_remote_script(import_script, privileged=True, timeout=1200)
+
+
+def containerd_normalized_reference(reference: str) -> str:
+    prefix = "index.docker.io/"
+    if not reference.startswith(prefix):
+        return reference
+    return "docker.io/" + reference.removeprefix(prefix)
 
 
 def _file_sha256(path: Path) -> str:
