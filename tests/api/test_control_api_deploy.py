@@ -1,3 +1,4 @@
+import inspect
 import json
 from pathlib import Path
 
@@ -9,6 +10,7 @@ from faultwitness_dev.control_api_deploy import (
     inspect_keycloak_realm,
     provision_keycloak_realm,
     run_control_api_smoke,
+    run_keycloak_outage_smoke,
 )
 from faultwitness_dev.errors import GovernanceError
 
@@ -25,6 +27,17 @@ def test_control_api_deploy_rejects_invalid_candidate(candidate: str) -> None:
         inspect_keycloak_realm(candidate)
     with pytest.raises(GovernanceError, match="candidate SHA"):
         run_control_api_smoke(candidate)
+    with pytest.raises(GovernanceError, match="candidate SHA"):
+        run_keycloak_outage_smoke(candidate)
+
+
+def test_keycloak_outage_smoke_is_secret_safe_and_fail_closed() -> None:
+    source = inspect.getsource(run_keycloak_outage_smoke)
+    assert "cold_jwks_status" in source
+    assert "unset token" in source
+    assert 'state_write_attempted": False' in source
+    assert 'echo "$token"' not in source
+    assert 'printf "$token"' not in source
 
 
 def test_control_api_container_is_pinned_and_non_root() -> None:

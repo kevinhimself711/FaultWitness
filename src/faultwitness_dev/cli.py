@@ -37,6 +37,7 @@ from faultwitness_dev.control_api_deploy import (
     inspect_keycloak_realm,
     provision_keycloak_realm,
     run_control_api_smoke,
+    run_keycloak_outage_smoke,
 )
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.evals import evaluate_iteration
@@ -230,6 +231,8 @@ def parser() -> argparse.ArgumentParser:
     inspect_realm.add_argument("--candidate-sha", required=True)
     smoke_api = subparsers.add_parser("smoke-control-api")
     smoke_api.add_argument("--candidate-sha", required=True)
+    smoke_keycloak_outage = subparsers.add_parser("smoke-keycloak-outage")
+    smoke_keycloak_outage.add_argument("--candidate-sha", required=True)
     deploy_trace = subparsers.add_parser("deploy-trace-service")
     deploy_trace.add_argument("--candidate-sha", required=True)
     inspect_trace = subparsers.add_parser("inspect-trace-service")
@@ -604,6 +607,12 @@ def main() -> int:
             message = (
                 f"passed live OIDC Control API smoke on {summary['candidate_sha']} with "
                 "create/read/SSE success and cross-tenant/injection/false-approval denial"
+            )
+        elif args.command == "smoke-keycloak-outage":
+            summary = run_keycloak_outage_smoke(args.candidate_sha)
+            message = (
+                f"passed cold-JWKS Keycloak outage smoke on {summary['candidate_sha']} "
+                "with fail-closed 401 before state mutation"
             )
         elif args.command == "deploy-trace-service":
             summary = deploy_trace_service(root, args.candidate_sha)
