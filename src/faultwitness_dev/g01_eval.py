@@ -23,7 +23,10 @@ from faultwitness_dev.control_api_deploy import (
     run_control_api_smoke,
 )
 from faultwitness_dev.errors import GovernanceError
-from faultwitness_dev.g01_failure_eval import run_postgres_failure_matrix
+from faultwitness_dev.g01_failure_eval import (
+    run_postgres_failure_matrix,
+    run_redis_recovery_matrix,
+)
 from faultwitness_dev.g01_recovery import (
     run_k3s_restore_rehearsal,
     run_k3s_snapshot_rehearsal,
@@ -342,7 +345,10 @@ def evaluate_g01(root: Path, candidate_sha: str, *, profile: str) -> dict[str, A
         inspect_g01_reconciliation(candidate_sha) if private else {"status": "deferred_private"}
     )
     failure_matrices = (
-        {"postgres": run_postgres_failure_matrix(root, candidate_sha)}
+        {
+            "postgres": run_postgres_failure_matrix(root, candidate_sha),
+            "redis": run_redis_recovery_matrix(candidate_sha),
+        }
         if private
         else {"status": "deferred_private"}
     )
