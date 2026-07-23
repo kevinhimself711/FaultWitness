@@ -23,7 +23,11 @@ from faultwitness_dev.control_api_deploy import (
     run_control_api_smoke,
 )
 from faultwitness_dev.errors import GovernanceError
-from faultwitness_dev.g01_recovery import run_postgres_restore_rehearsal
+from faultwitness_dev.g01_recovery import (
+    run_k3s_restore_rehearsal,
+    run_k3s_snapshot_rehearsal,
+    run_postgres_restore_rehearsal,
+)
 from faultwitness_dev.infra import (
     audit_runtime_coexistence,
     run_network_matrix,
@@ -305,6 +309,15 @@ def evaluate_g01(root: Path, candidate_sha: str, *, profile: str) -> dict[str, A
     audit = audit_repository(root)
     scan_publication_boundary(root)
     schema = inspect_runtime_schema(candidate_sha) if private else {"status": "deferred_private"}
+    recovery = (
+        {
+            "etcd_snapshot": run_k3s_snapshot_rehearsal(candidate_sha),
+            "etcd_restore": run_k3s_restore_rehearsal(candidate_sha),
+            "postgres_restore": run_postgres_restore_rehearsal(candidate_sha),
+        }
+        if private
+        else {"status": "deferred_private"}
+    )
     platform = (
         _platform_stability(root, candidate_sha) if private else {"status": "deferred_private"}
     )
@@ -324,9 +337,6 @@ def evaluate_g01(root: Path, candidate_sha: str, *, profile: str) -> dict[str, A
     }
     reconciliation = (
         inspect_g01_reconciliation(candidate_sha) if private else {"status": "deferred_private"}
-    )
-    recovery = (
-        run_postgres_restore_rehearsal(candidate_sha) if private else {"status": "deferred_private"}
     )
     walkthroughs = _fourteen_walkthroughs(root, candidate_sha, run_private=private)
     upstream_debt = _eval_manifest_debt(root, candidate_sha, include_final=False)
