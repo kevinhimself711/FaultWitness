@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import gzip
 import hashlib
 import re
 from pathlib import Path
@@ -126,12 +127,12 @@ SELECT count(*) FROM graph_owner.checkpoint
 WHERE tenant_id='{EVAL_TENANT}' AND task_id='g01-fence-task';
 ROLLBACK;
 """
-    encoded = base64.b64encode(sql.encode()).decode()
+    encoded = base64.b64encode(gzip.compress(sql.encode(), mtime=0)).decode()
     script = f"""set -eu
 binding=$(/usr/local/bin/k3s kubectl -n fw-system get configmap \
   fw-runtime-candidate-binding -o jsonpath='{{.data.candidate_sha}}')
 test "$binding" = {candidate_sha}
-printf %s {encoded} | base64 -d | \
+printf %s {encoded} | base64 -d | gzip -d | \
   /usr/local/bin/k3s kubectl -n fw-data exec -i postgres-0 -- sh -ec \
   'PGPASSWORD="$POSTGRES_PASSWORD" psql -At -v ON_ERROR_STOP=1 \
     -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
