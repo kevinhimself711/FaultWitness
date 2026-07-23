@@ -390,9 +390,13 @@ test "$succeeded" = 1
         "read": 200,
         "cross_tenant": 404,
         "identity_injection": 403,
+        "invalid_oidc": 401,
         "false_approval": 409,
+        "feedback": 202,
+        "cancel": 202,
         "tools": 200,
         "skills": 200,
+        "future_cursor": 400,
         "sse_first_sequence": 1,
     }
     if result != expected:
@@ -555,15 +559,19 @@ data:
     cross = httpx.get(api + "/v1/incidents/" + incident, headers={{"Authorization":"Bearer " + tenant_b}}, timeout=10)
     injected = httpx.get(api + "/v1/incidents/" + incident, headers={{"Authorization":"Bearer " + operator,"X-Tenant-ID":"tenant-b"}}, timeout=10)
     approval = httpx.post(api + "/v1/incidents/" + incident + "/approvals", headers={{"Authorization":"Bearer " + approver,"Idempotency-Key":"approval-" + uuid.uuid4().hex}}, json={{"action_id":"act_missing","action_digest":"a"*64,"decision":"approve","expected_state_version":0}}, timeout=10)
+    feedback = httpx.post(api + "/v1/incidents/" + incident + "/feedback", headers={{"Authorization":"Bearer " + operator,"Idempotency-Key":"feedback-" + uuid.uuid4().hex}}, json={{"rating":5,"expected_state_version":0}}, timeout=10)
     tools = httpx.get(api + "/v1/tools", headers={{"Authorization":"Bearer " + operator}}, timeout=10)
     skills = httpx.get(api + "/v1/skills", headers={{"Authorization":"Bearer " + operator}}, timeout=10)
+    invalid_oidc = httpx.get(api + "/v1/tools", headers={{"Authorization":"Bearer invalid"}}, timeout=10)
+    future_cursor = httpx.get(api + "/v1/incidents/" + incident + "/events", headers={{"Authorization":"Bearer " + operator,"Last-Event-ID":"999999"}}, timeout=10)
     sequence = 0
     with httpx.stream("GET", api + "/v1/incidents/" + incident + "/events", headers={{"Authorization":"Bearer " + operator}}, timeout=10) as stream:
         for line in stream.iter_lines():
             if line.startswith("id: "):
                 sequence = int(line[4:])
                 break
-    print(json.dumps({{"create":created.status_code,"read":read.status_code,"cross_tenant":cross.status_code,"identity_injection":injected.status_code,"false_approval":approval.status_code,"tools":tools.status_code,"skills":skills.status_code,"sse_first_sequence":sequence}}, sort_keys=True))
+    cancelled = httpx.post(api + "/v1/incidents/" + incident + "/cancel", headers={{"Authorization":"Bearer " + operator,"Idempotency-Key":"cancel-" + uuid.uuid4().hex}}, json={{"expected_state_version":0}}, timeout=10)
+    print(json.dumps({{"create":created.status_code,"read":read.status_code,"cross_tenant":cross.status_code,"identity_injection":injected.status_code,"invalid_oidc":invalid_oidc.status_code,"false_approval":approval.status_code,"feedback":feedback.status_code,"cancel":cancelled.status_code,"tools":tools.status_code,"skills":skills.status_code,"future_cursor":future_cursor.status_code,"sse_first_sequence":sequence}}, sort_keys=True))
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
