@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-012",
+  "iteration": "I-0027",
+  "candidate_sha": "a5c282cbd587202cb24cd6b1fcc1e57d9785acd6",
+  "check": "candidate-binding-environment-probe",
+  "status": "blocked",
+  "classification": "deterministic_runner_transport_failure",
+  "root_cause": "windows_text_mode_translated_lf_to_crlf_before_ssh_stdin",
+  "remote_result": {
+    "category": "remote_command_or_transport_failed",
+    "exit_code": 2,
+    "candidate_binding_created": false
+  },
+  "sanitized_environment_observation": {
+    "cluster_uid": "677d1fd3-24e6-4bcb-b5fd-eca69ba49784",
+    "k3s_version": "v1.34.9+k3s1",
+    "node_count": 1,
+    "node_set_digest": "3937d6a389e9f354aa07ab4622b42de7dce1cb728bc175506a33d840d7ae719d",
+    "host_pin_digest": "36fbb1d529da022d56a4577145104fe577a98392e60ac99925232ca3773585a0"
+  },
+  "local_real_subprocess_reproduction": {
+    "observed_at": "2026-07-24T22:26:07.637118+00:00",
+    "input_utf8_hex": "736574202d65750a7072696e7466206f6b0a",
+    "text_true_received_hex": "736574202d65750d0a7072696e7466206f6b0d0a",
+    "text_false_received_hex": "736574202d65750a7072696e7466206f6b0a",
+    "crlf_inserted_by_text_mode": true
+  },
+  "execution_counts": {
+    "gate_phases": 0,
+    "access_cells": 0,
+    "trace_stages": 0,
+    "canary_surfaces": 0,
+    "destructive_scenarios": 0,
+    "deterministic_baselines": 0,
+    "external_service_probes": 0,
+    "model_calls": 0
+  },
+  "retry_allowed_on_same_candidate": false,
+  "open_evidence": []
+}
