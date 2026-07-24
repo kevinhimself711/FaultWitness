@@ -26,8 +26,6 @@
 
 ### Tooling
 
-- Reopen owning I-0017 before I-0020 after readiness audit found lab deployment rejecting the
-  validated evidence-only descendant required by the frozen dual-SHA Gate protocol.
 - Close the corrective I-0019 owner pass on candidate `4bcc990` and evidence commit `5369c09` with
   direct Gate baseline interfaces ready, unchanged Iteration N=3/N=4, and `open_evidence: []`.
 - Pass corrective EVAL-G02-004 on candidate `4bcc990`: retain exact N=3/N=4, use the frozen model
