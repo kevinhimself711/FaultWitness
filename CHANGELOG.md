@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Activate I-0029 as the sole fourth replacement orchestration after I-0028 closed with byte-exact
+  Windows transport evidence and no open evidence; I-0029 may only execute frozen Gate phases.
 - Close I-0028 on candidate `09693ce` with EVAL-G02-013 passing 4/4 byte-exact transport cases,
   frozen validation N=4/0/4, zero remote/model execution, and no open evidence.
 - Implement I-0028 byte-exact process transport with explicit UTF-8 bytes, binary subprocess I/O,
