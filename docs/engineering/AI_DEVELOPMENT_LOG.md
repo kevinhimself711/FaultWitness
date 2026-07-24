@@ -1,5 +1,21 @@
 # AI Development Log
 
+## 2026-07-24 — G02 EVAL-G02-012 byte-integrity failure
+
+Candidate `a5c282cbd587202cb24cd6b1fcc1e57d9785acd6` failed while preparing its
+candidate-binding environment fingerprint. I-0026 had moved the privileged script off the Windows
+command line, but `_remote_process` still used `subprocess.run(..., text=True)`. Windows translated
+each LF in stdin to CRLF; remote `/bin/sh` returned exit 2. A real local child process received
+`736574202d65750d0a7072696e7466206f6b0d0a` in text mode versus the intended
+`736574202d65750a7072696e7466206f6b0a` in binary mode.
+
+This is deterministic implementation failure, not transient infrastructure. I-0027 and
+EVAL-G02-012 are terminal with `open_evidence: []`; candidate binding, all fourteen Gate phases,
+matrix cells, scenarios, external-service probes, and model calls remained zero. I-0028 must use
+binary subprocess I/O with explicit UTF-8 encode/decode and prove bytes through a real Windows child
+process; I-0029/EVAL-G02-014 is the only replacement orchestration. Mock runners remain valid for
+failure injection but can no longer be the sole evidence for cross-platform byte integrity.
+
 ## 2026-07-24 — G02 EVAL-G02-010 privileged transport failure
 
 Candidate `9e68e2622d18ffcbd63549a4fd2b9dedee37f74e` passed four fail-fast preflights and

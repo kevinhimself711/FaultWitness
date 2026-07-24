@@ -1,0 +1,49 @@
+schema_version: "1.0.0"
+id: I-0028
+gate: G02
+title: Byte-Exact Remote Process Transport Corrective
+status: planned
+iteration_type: corrective
+corrects: [I-0026, I-0027]
+scope:
+  - Make every SSH stdin channel byte-exact by encoding UTF-8 explicitly using binary subprocess mode and decoding captured output explicitly.
+  - Prove on a real local Windows child process that LF input reaches stdin unchanged and that no CRLF translation occurs.
+  - Retain bounded child-process arguments separate script and sudo credential channels deterministic cleanup and blocking failure classification.
+  - Reverify V-G02-009 and V-G02-011 at frozen Iteration N four while V-G02-010 remains Iteration N zero.
+non_goals:
+  - Running any remote Gate L2 access trace canary destructive scenario external-service or paid-model phase.
+  - Changing validation N thresholds Ground Truth locked tests model route health windows token cost or Gate failure semantics.
+  - Reopening I-0026 or I-0027 or rewriting their Eval evidence.
+dependencies: [I-0016, I-0021, I-0024, I-0026, I-0027]
+tests:
+  - uv run pytest -q tests/infra/test_infra.py tests/g02/test_g02_gate_collectors.py tests/g02/test_g02_eval_protocol.py
+  - uv run python -m faultwitness_dev eval-iteration I-0028 --candidate-sha <full-sha>
+  - uv run python -m faultwitness_dev verify-fast
+  - uv run python -m faultwitness_dev eval-changed
+eval_id: EVAL-G02-013
+commit: null
+changed_paths:
+  - AGENTS.md
+  - CHANGELOG.md
+  - PROJECT_STATE.yaml
+  - README.md
+  - docs/evals/EVAL-G02-013
+  - docs/evals/EVAL-G02-014
+  - docs/gates/G02
+  - docs/claims/CLAIMS.yaml
+  - docs/engineering/AI_DEVELOPMENT_LOG.md
+  - docs/roadmap/PHASES.md
+  - docs/roadmap/iterations
+  - docs/runbooks/G02_EVAL_PROTOCOL.md
+  - governance/iterations
+  - src/faultwitness_dev/evals.py
+  - src/faultwitness_dev/infra.py
+  - tests/infra/test_infra.py
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/I-0028.md
+  - docs/evals/EVAL-G02-013/PLAN.md
+  - docs/evals/EVAL-G02-013/REPORT.md
+  - docs/evals/EVAL-G02-013/manifest.json
+  - docs/runbooks/G02_EVAL_PROTOCOL.md
+threshold_changes: []

@@ -1,8 +1,8 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: I-0027
-next_iteration: null
+active_iteration: null
+next_iteration: I-0028
 last_closed_gate: G01
 ---
 
@@ -10,9 +10,10 @@ last_closed_gate: G01
 
 FaultWitness 是一个面向微服务事故调查、受控修复与持续优化的多租户 Agent Runtime 项目。
 
-当前状态：G00、G01 已关闭；G02 正在执行。I-0020、I-0023 与 I-0025 均已因确定性失败
-终态关闭且负面证据完整；I-0024 与 I-0026 已完成 candidate-bound collector 和 bounded
-remote transport 前向纠错。I-0027 是当前替代统一候选编排。任何终态记录都不会重开。
+当前状态：G00、G01 已关闭；G02 正在执行。I-0020、I-0023、I-0025 与 I-0027 均已因
+确定性失败终态关闭且负面证据完整；I-0024 与 I-0026 已完成前两轮 runner/transport
+纠错。I-0028 是下一项 byte-exact transport 纠错，I-0029 是计划中的替代编排。任何终态
+记录都不会重开。
 
 ## 权威资产
 
@@ -30,7 +31,8 @@ remote transport 前向纠错。I-0027 是当前替代统一候选编排。任�
 - 不提交原始 JD、面经、密钥、私有 Trace 或受限数据。
 - I-0018 已交付 locked-test/ground-truth 隔离、160 行预登记和三个验证接口；I-0024
   已前向补齐并单测 EVAL-G02-008 证明缺失的 candidate-bound provisioner/collector。
-- EVAL-G02-010 在首个访问 cell 前证明 Windows command-line transport 缺陷；没有执行
-  Gate matrix cell、破坏性实验或模型。I-0026 已以本地证据关闭；I-0027 只编排冻结 phase。
+- EVAL-G02-012 在 candidate-binding 准备时证明 Windows text-mode 将 LF 改写为 CRLF；
+  十四个 Gate phase、matrix cell、破坏性实验和模型调用均为 0。I-0028 只修复并本地证明
+  byte-exact process transport；I-0029 才可再次编排冻结 phase。
 
 代码、API、Schema 和标识符使用英文；设计、评测和复盘文档以中文为主。

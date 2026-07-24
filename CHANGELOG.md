@@ -4,6 +4,9 @@
 
 ### Governance maintenance
 
+- Preserve I-0027/EVAL-G02-012 as terminal negative evidence after a real Windows subprocess probe
+  proved text-mode LF-to-CRLF mutation before candidate binding; plan I-0028 byte-exact transport
+  correction and I-0029/EVAL-G02-014 replacement without changing any Eval criterion.
 - Activate I-0027 as the sole third replacement orchestration after I-0026 closed with bounded
   transport evidence and no open evidence; I-0027 may only execute the fourteen frozen phases.
 - Close I-0026 on candidate `b50db66` with EVAL-G02-011 passing 4/4 bounded transport cases,

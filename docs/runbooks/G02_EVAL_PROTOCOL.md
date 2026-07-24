@@ -40,7 +40,7 @@ uv run python -m faultwitness_dev eval-g02-close --candidate-sha <SHA> --evidenc
 ## Candidate-binding asset
 
 当前 standard orchestration Iteration 在 Gate Eval 前产生其 `eval_id` 对应目录下的
-`candidate-binding.json`。I-0027 对应 EVAL-G02-012；I-0020/EVAL-G02-005、
+`candidate-binding.json`。I-0029 对应 EVAL-G02-014；I-0020/EVAL-G02-005、
 I-0023/EVAL-G02-008 与 I-0025/EVAL-G02-010 是不可变失败历史。
 binding 记录：
 
@@ -52,7 +52,7 @@ binding 记录：
   root；不同 Eval 或 candidate 绝不共用或覆盖 journal。
 - zero waiver/open-evidence/backlog/DLQ/fallback counters。
 
-EVAL-G02-012 binding 不得含 `phase_inputs`。`isolation-access-matrix`、
+EVAL-G02-014 binding 不得含 `phase_inputs`。`isolation-access-matrix`、
 `trace-six-stage-matrix` 与 `all-surface-canary` 必须由 handler 直接调用 I-0024 collector；
 任何操作员预制 matrix 都会在 phase 启动前被拒绝。
 
@@ -60,14 +60,18 @@ EVAL-G02-012 binding 不得含 `phase_inputs`。`isolation-access-matrix`、
 fixture、threshold、workflow、dependency、deployment、dataset、config 或 runtime 变化不能作为
 evidence-only 继承。
 
-## Bounded privileged script transport
+## Bounded and byte-exact privileged script transport
 
 EVAL-G02-010 证明 privileged probe program/request 不能嵌入 Windows child-process command
-line。I-0026 后的冻结协议是：脚本原字节通过第一条 SSH session 的 stdin 上传至权限受限的
-远端临时文件；第二条 SSH session 只用固定长度命令通过 sudo 执行该文件，stdin 只承载
-sudo credential；最后以固定长度命令清理。脚本、credential、Secret/PII canary 均不得进入
-任何 process argument。upload、execute 或 cleanup 的确定性失败保持 blocking；协议不增加
-preset wall-clock timeout，也不改变任何 Gate N、阈值或失败语义。
+line；EVAL-G02-012 又证明 Windows text mode 会在 stdin 边界把 LF 改为 CRLF。I-0028 后的
+冻结协议是：所有 stdin 先显式 UTF-8 encode，以 binary subprocess mode 传输，再显式 UTF-8
+decode stdout/stderr。脚本 bytes 通过第一条 SSH session 上传至权限受限的远端临时文件；
+第二条 SSH session 只用固定长度命令通过 sudo 执行该文件，stdin 只承载 credential；最后
+以固定长度命令清理。脚本、credential、Secret/PII canary 均不得进入 process argument。
+
+mock runner 只用于失败注入与 channel/cleanup 断言；跨平台 byte-integrity 必须由受影响平台
+上的真实 child process 比较收到的 bytes。upload、execute 或 cleanup 的确定性失败保持
+blocking；协议不增加 preset wall-clock timeout，也不改变任何 Gate N、阈值或失败语义。
 
 ## Journals and recovery
 

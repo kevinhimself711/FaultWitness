@@ -1,8 +1,8 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: I-0027
-next_iteration: null
+active_iteration: null
+next_iteration: I-0028
 last_closed_gate: G01
 ---
 
@@ -13,11 +13,10 @@ last_closed_gate: G01
 FaultWitness is a multi-tenant Agent Runtime for investigating microservice incidents, proposing bounded remediations, executing approved actions, and producing auditable evaluation and training assets.
 
 G00 and G01 are closed. G02 is `in_progress`. I-0016 through I-0019 and forward correctives I-0021,
-I-0022, I-0024, and I-0026 are completed with no open evidence. I-0020, I-0023, and I-0025 are
-terminally failed with complete negative evidence. I-0027 is the sole active replacement
-orchestration and may only execute and reconcile the fourteen frozen Gate phases; it may not add
-implementation, fixtures, test semantics, thresholds, workflows, or a test framework. No terminal
-Iteration may be reopened.
+I-0022, I-0024, and I-0026 are completed with no open evidence. I-0020, I-0023, I-0025, and I-0027
+are terminally failed with complete negative evidence. I-0028 is the next byte-exact transport
+corrective and I-0029 is its planned replacement orchestration. No terminal Iteration may be
+reopened.
 
 ## Source-of-truth order
 
@@ -92,6 +91,10 @@ PROJECT_STATE.yaml is the authority for the active Gate and iteration, not for a
   pending trials. A single attributable transport failure must not discard completed trials.
 - Once a failure has a verified root cause, no generic operator-adjudicated pass path may remain;
   the root cause is fixed and the affected phase is rerun under its normal blocking semantics.
+- Cross-platform stdin transport for SSH, credentials, scripts, and structured payloads must use
+  explicit bytes and explicit decoding. A mock runner is insufficient for byte-integrity claims:
+  the owning corrective must exercise a real child process on the affected platform and compare
+  the received bytes before any remote Gate phase may resume.
 - Do not commit or push unless the user explicitly requests it.
 
 Planning-only commits may create or refine future Iteration and Eval assets without activating them. They never authorize product behavior, infrastructure mutation, credential use, or live evaluation.

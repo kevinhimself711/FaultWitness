@@ -111,7 +111,7 @@ claims:
     evidence:
       - EVAL-G02-001
     limitations:
-      - "I-0016 proves the local deterministic protocol only; EVAL-G02-010 preserved the Windows transport failure before the first matrix cell, and final unified-candidate L2 execution moves forward to EVAL-G02-012 after I-0026."
+      - "I-0016 proves the local deterministic protocol only; EVAL-G02-012 preserved the Windows CRLF transport failure before candidate binding, and final unified-candidate L2 execution moves forward to EVAL-G02-014 after I-0028."
       - "No fault scenario, deployment, external service, baseline, or live model execution is claimed."
   - id: CLAIM-EVAL-002
     statement: "G02 has a candidate-bound fault lab with 32 executable seed specifications, six exact-restoring adapters, and four live Iteration smoke scenarios."
@@ -120,7 +120,7 @@ claims:
     evidence:
       - EVAL-G02-002
     limitations:
-      - "Final corrective candidate 0d32648 proves Iteration N=4 live smoke, both owner Gate phase interfaces, and the dual-SHA checkout guard; replacement unified-candidate Gate N=32 remains reserved for EVAL-G02-012."
+      - "Final corrective candidate 0d32648 proves Iteration N=4 live smoke, both owner Gate phase interfaces, and the dual-SHA checkout guard; replacement unified-candidate Gate N=32 remains reserved for EVAL-G02-014."
       - "No baseline, paid model, locked-test access matrix, or 160-case materialization is claimed."
   - id: CLAIM-EVAL-003
     statement: "G02 has a metadata-only 160-row preregistry and candidate-bound identity, namespace, package, and writer isolation contracts."
@@ -132,7 +132,7 @@ claims:
       - EVAL-G02-009
       - EVAL-G02-011
     limitations:
-      - "I-0018 proves policy simulation and new-writer isolation; I-0022 proves the exact corrected observability policy; I-0024 proves candidate-bound provisioning and collectors locally; I-0026/EVAL-G02-011 proves bounded Windows-safe privileged transport. The 60-cell, six-stage, and 22-surface live matrices remain reserved for EVAL-G02-012."
+      - "I-0018 proves policy simulation and new-writer isolation; I-0022 proves the exact corrected observability policy; I-0024 proves candidate-bound provisioning and collectors locally; I-0026/EVAL-G02-011 proves bounded arguments but EVAL-G02-012 exposed text-mode byte mutation. I-0028 must prove byte-exact transport before the 60-cell, six-stage, and 22-surface live matrices run in EVAL-G02-014."
       - "No GT/locked case payload, baseline, or paid model execution is claimed."
   - id: CLAIM-EVAL-004
     statement: "G02 has three shared-packet diagnosis baselines, deterministic scoring, exact quality-floor measurement, clustered bootstrap aggregation, and trial-local paid-model resume."
@@ -141,5 +141,5 @@ claims:
     evidence:
       - EVAL-G02-004
     limitations:
-      - "I-0019 proves five scorer branches, seven threshold entries, deterministic N=3, and non-seed live N=4; its direct Gate N=32/N=192 interfaces are unit-tested, while final unified-candidate execution remains reserved for EVAL-G02-012."
+      - "I-0019 proves five scorer branches, seven threshold entries, deterministic N=3, and non-seed live N=4; its direct Gate N=32/N=192 interfaces are unit-tested, while final unified-candidate execution remains reserved for EVAL-G02-014."
       - "Baseline attainment of future Agent quality floors is not a G02 pass condition."

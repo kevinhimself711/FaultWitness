@@ -5,7 +5,7 @@
   "iteration": "I-0027",
   "candidate_sha": "a5c282cbd587202cb24cd6b1fcc1e57d9785acd6",
   "evaluated_revision": "a5c282cbd587202cb24cd6b1fcc1e57d9785acd6",
-  "evidence_head_sha": "a5c282cbd587202cb24cd6b1fcc1e57d9785acd6",
+  "evidence_head_sha": "08ad8c319f835f0293a08ec470167985dc3d760f",
   "status": "fail",
   "subject_digests": {
     "docs/evals/EVAL-G02-012/PLAN.md": "fa85535371cfa524b781e5dfff13cd57362ead3a10b244f9a626f65153f26b9b",
