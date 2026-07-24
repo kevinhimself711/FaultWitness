@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "9e68e2622d18ffcbd63549a4fd2b9dedee37f74e",
+  "environment_fingerprint": "56d5531610e18d1521130b10c8e606e53a96035976e9001e95d9fa0f5271aed6",
+  "phase_id": "isolation-access-matrix",
+  "status": "blocked",
+  "classification": "deterministic_runner_transport_failure",
+  "reason_code": "windows_createprocess_command_line_too_long",
+  "exception": "FileNotFoundError: [WinError 206] The filename or extension is too long",
+  "root_cause": "CandidateProbeBackend embedded the probe program and request as base64 inside a privileged remote script, while run_remote_script base64-wrapped that whole script into the SSH child-process command line. The resulting Windows CreateProcess command exceeded the platform command-line limit before SSH started.",
+  "failure_boundary": {
+    "lab_deploy_and_bind": "pass",
+    "probe_provisioning_started": false,
+    "access_cells_executed": 0,
+    "trace_stage_cells_executed": 0,
+    "canary_surface_cells_executed": 0,
+    "destructive_scenarios_executed": 0,
+    "model_calls": 0
+  },
+  "adjudication": {
+    "transient_infrastructure": false,
+    "same_candidate_retry_allowed": false,
+    "operator_pass_allowed": false,
+    "forward_correction_required": true,
+    "corrective_iteration": "I-0026",
+    "replacement_iteration": "I-0027"
+  },
+  "private_error_log_sha256": "979c2f17d3e12efc6fefc9efb62b2d1cfee302e7339cb2080de199cc3c568003",
+  "open_evidence": []
+}
