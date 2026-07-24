@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "585deaee6548be0940d184bee3c73dadb4511fdb",
+  "environment_fingerprint": "5839eae37df179281df869a8f3277431954f0621a7e402765a655d405b905184",
+  "phase_id": "isolation-access-matrix",
+  "validation": "V-G02-009",
+  "status": "metric_fail",
+  "classification": "deterministic_policy_failure",
+  "completed_cell_count": 4,
+  "failed_cells": [
+    {
+      "cell_id": "obs:loki|baseline-agent",
+      "expected_allow": true,
+      "actual_allow": false,
+      "artifact_ref": "k8s://fw-baseline/pod/g02-baseline-metrics-loki/log"
+    },
+    {
+      "cell_id": "obs:tempo|baseline-agent",
+      "expected_allow": true,
+      "actual_allow": false,
+      "artifact_ref": "k8s://fw-baseline/pod/g02-baseline-metrics-tempo/log"
+    }
+  ],
+  "passing_controls": [
+    {
+      "cell_id": "obs:loki|canonical-owner",
+      "actual_allow": true,
+      "artifact_ref": "k8s://fw-observability/pod/g02-owner-metrics-loki/log"
+    },
+    {
+      "cell_id": "obs:tempo|canonical-owner",
+      "actual_allow": true,
+      "artifact_ref": "k8s://fw-observability/pod/g02-owner-metrics-tempo/log"
+    }
+  ],
+  "raw_artifact": {
+    "path": "private://faultwitness/g02/I-0020/phase-inputs/isolation-access-matrix.failure.json",
+    "sha256": "3499f33c418175876b2de707c5a5308e94b40cf3cb2b23a2cfa9e89a41435bc8"
+  },
+  "root_cause": "The frozen baseline-agent policy has no egress to fw-observability and fw-observability has no ingress grant for that principal. Same-target canonical controls passed.",
+  "downstream_phases_executed": [],
+  "open_evidence": []
+}
