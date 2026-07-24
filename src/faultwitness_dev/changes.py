@@ -115,10 +115,7 @@ def validate_changed_assets(root: Path, paths: list[str]) -> str:
                 load_data(root / "governance" / "gates" / f"{next_gate}.yaml"),
                 paths,
             )
-            return (
-                f"validated asset-only {closing_gate} closure "
-                f"for {len(paths)} changed files"
-            )
+            return f"validated asset-only {closing_gate} closure for {len(paths)} changed files"
         if any(path.startswith(GOVERNED_PREFIXES) for path in paths):
             raise GovernanceError("governed change is missing an Iteration record")
         return "documentation-only change without governed behavior"
@@ -136,7 +133,9 @@ def infer_iteration_id(root: Path, paths: list[str]) -> str | None:
         if not path.startswith("governance/iterations/I-") or not path.endswith(".yaml"):
             continue
         record = load_data(root / path)
-        if record.get("status") in {"in_progress", "completed"} and record.get("docs_updated"):
+        if record.get("status") in {"in_progress", "completed", "failed"} and record.get(
+            "docs_updated"
+        ):
             candidates.append(record["id"])
     return max(candidates) if candidates else None
 
@@ -199,6 +198,4 @@ def validate_gate_closure_change(
             f"{closing_id} closure requires a passed waiver-free {closing_id} record"
         )
     if next_gate.get("status") != "planned":
-        raise GovernanceError(
-            f"{closing_id} closure requires a planned {next_id} handoff record"
-        )
+        raise GovernanceError(f"{closing_id} closure requires a planned {next_id} handoff record")

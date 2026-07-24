@@ -114,6 +114,61 @@ G02_PHASES = (
 )
 
 
+def validate_gate_orchestration_selection(
+    state: Mapping[str, Any],
+    iteration: Mapping[str, Any],
+    manifest: Mapping[str, Any],
+    plan_text: str,
+) -> tuple[str, str]:
+    iteration_id = iteration.get("id")
+    eval_id = iteration.get("eval_id")
+    if (
+        state.get("active_gate") != "G02"
+        or state.get("active_gate_status") != "in_progress"
+        or state.get("active_iteration") != iteration_id
+        or iteration.get("gate") != "G02"
+        or iteration.get("status") != "in_progress"
+        or iteration.get("iteration_type") != "standard"
+    ):
+        raise GovernanceError("G02 Gate Eval requires one active standard orchestration Iteration")
+    if not isinstance(iteration_id, str) or not isinstance(eval_id, str):
+        raise GovernanceError("G02 orchestration record lacks an Iteration or Eval ID")
+    if manifest.get("eval_id") != eval_id or manifest.get("iteration") != iteration_id:
+        raise GovernanceError("G02 orchestration Eval manifest binding drifted")
+    missing = [phase.phase_id for phase in G02_PHASES if phase.phase_id not in plan_text]
+    if missing:
+        raise GovernanceError(
+            "G02 active Iteration is not a complete Gate orchestration: " + ", ".join(missing)
+        )
+    return iteration_id, eval_id
+
+
+def resolve_active_gate_eval(root: Path) -> tuple[str, str]:
+    loaded = validate_repository_schemas(root)
+    state = loaded["PROJECT_STATE.yaml"]
+    iteration_id = state.get("active_iteration")
+    if not isinstance(iteration_id, str):
+        raise GovernanceError("G02 Gate Eval requires an active orchestration Iteration")
+    iteration_path = root / "governance" / "iterations" / f"{iteration_id}.yaml"
+    if not iteration_path.is_file():
+        raise GovernanceError("G02 active Iteration record is missing")
+    iteration = load_data(iteration_path)
+    eval_id = iteration.get("eval_id")
+    if not isinstance(eval_id, str):
+        raise GovernanceError("G02 active Iteration lacks an Eval ID")
+    eval_root = root / "docs" / "evals" / eval_id
+    manifest_path = eval_root / "manifest.json"
+    plan_path = eval_root / "PLAN.md"
+    if not manifest_path.is_file() or not plan_path.is_file():
+        raise GovernanceError("G02 active orchestration Eval assets are missing")
+    return validate_gate_orchestration_selection(
+        state,
+        iteration,
+        load_data(manifest_path),
+        plan_path.read_text(encoding="utf-8"),
+    )
+
+
 class TrialJournal:
     def __init__(self, root: Path) -> None:
         self.root = root
@@ -412,23 +467,16 @@ def inspect_reconciliation(document: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _load_gate_binding(root: Path, candidate_sha: str) -> dict[str, Any]:
-    loaded = validate_repository_schemas(root)
-    state = loaded["PROJECT_STATE.yaml"]
-    iteration = loaded["governance/iterations/I-0020.yaml"]
-    if (
-        state.get("active_gate") != "G02"
-        or state.get("active_gate_status") != "in_progress"
-        or state.get("active_iteration") != "I-0020"
-        or iteration.get("status") != "in_progress"
-    ):
-        raise GovernanceError("G02 Gate Eval requires I-0020 as the sole active Iteration")
-    binding_path = root / "docs" / "evals" / "EVAL-G02-005" / "candidate-binding.json"
+    iteration_id, eval_id = resolve_active_gate_eval(root)
+    binding_path = root / "docs" / "evals" / eval_id / "candidate-binding.json"
     if not binding_path.is_file():
         raise GovernanceError("G02 candidate-binding asset is missing")
-    binding = load_data(binding_path)
+    binding = dict(load_data(binding_path))
     if binding.get("candidate_sha") != candidate_sha:
         raise GovernanceError("G02 candidate-binding SHA drifted")
     validate_candidate_binding_document(binding)
+    binding["_iteration_id"] = iteration_id
+    binding["_eval_id"] = eval_id
     return binding
 
 
@@ -468,6 +516,12 @@ def _owned_phase_handlers(
     binding: Mapping[str, Any],
     engine: PhaseEngine,
 ) -> dict[str, PhaseHandler]:
+    def phase_output(phase_id: str, filename: str) -> Path:
+        eval_id = binding.get("_eval_id")
+        if not isinstance(eval_id, str):
+            raise GovernanceError("G02 phase handler lacks an active Eval binding")
+        return root / "docs" / "evals" / eval_id / "artifacts" / "phases" / phase_id / filename
+
     def manifests(_context: PhaseContext, _journal: TrialJournal) -> Mapping[str, Any]:
         return inspect_manifest_debt(root, binding["manifest_paths"])
 
@@ -502,7 +556,7 @@ def _owned_phase_handlers(
         )
         if document.get("image_set_digest") != context.sut_image_set_digest:
             raise GovernanceError("G02 deployed lab image-set binding drifted")
-        output = root / "docs/evals/EVAL-G02-005/artifacts/phases/lab-deploy-and-bind/summary.json"
+        output = phase_output("lab-deploy-and-bind", "summary.json")
         _atomic_json(output, document)
         return {
             "status": "pass",
@@ -513,16 +567,10 @@ def _owned_phase_handlers(
 
     def isolation_input(phase_id: str) -> tuple[dict[str, Any], Path]:
         inputs = binding.get("phase_inputs")
-        relative_outputs = {
-            "isolation-access-matrix": (
-                "docs/evals/EVAL-G02-005/artifacts/phases/isolation-access-matrix/matrix.json"
-            ),
-            "trace-six-stage-matrix": (
-                "docs/evals/EVAL-G02-005/artifacts/phases/trace-six-stage-matrix/matrix.json"
-            ),
-            "all-surface-canary": (
-                "docs/evals/EVAL-G02-005/artifacts/phases/all-surface-canary/matrix.json"
-            ),
+        output_names = {
+            "isolation-access-matrix": "matrix.json",
+            "trace-six-stage-matrix": "matrix.json",
+            "all-surface-canary": "matrix.json",
         }
         source_value = inputs.get(phase_id) if isinstance(inputs, dict) else None
         source = Path(str(source_value)) if source_value else Path()
@@ -531,7 +579,7 @@ def _owned_phase_handlers(
         document = load_data(source)
         if not isinstance(document, dict):
             raise GovernanceError(f"G02 phase input must be an object: {phase_id}")
-        return document, root / relative_outputs[phase_id]
+        return document, phase_output(phase_id, output_names[phase_id])
 
     def access(context: PhaseContext, _journal: TrialJournal) -> Mapping[str, Any]:
         document, output = isolation_input("isolation-access-matrix")
@@ -573,7 +621,7 @@ def _owned_phase_handlers(
         from faultwitness_dev.g02_lab import run_gate_scenario_matrix
 
         document = run_gate_scenario_matrix(root, context.candidate_sha, journal)
-        output = root / "docs/evals/EVAL-G02-005/artifacts/phases/scenario-matrix/summary.json"
+        output = phase_output("scenario-matrix", "summary.json")
         _atomic_json(output, document)
         return {
             "status": document["status"],
@@ -583,7 +631,7 @@ def _owned_phase_handlers(
         }
 
     def scenario_document() -> dict[str, Any]:
-        path = root / "docs/evals/EVAL-G02-005/artifacts/phases/scenario-matrix/summary.json"
+        path = phase_output("scenario-matrix", "summary.json")
         if not path.is_file():
             raise GovernanceError("G02 baseline phase lacks scenario-matrix output")
         document = load_data(path)
@@ -597,9 +645,7 @@ def _owned_phase_handlers(
         from faultwitness_dev.g02_baselines import run_gate_deterministic_matrix
 
         document = run_gate_deterministic_matrix(context.candidate_sha, scenario_document())
-        output = (
-            root / "docs/evals/EVAL-G02-005/artifacts/phases/baseline-deterministic/results.json"
-        )
+        output = phase_output("baseline-deterministic", "results.json")
         _atomic_json(output, document)
         return {
             "status": "pass",
@@ -619,7 +665,7 @@ def _owned_phase_handlers(
             scenario_document(),
             journal.root,
         )
-        output = root / "docs/evals/EVAL-G02-005/artifacts/phases/baseline-live/journal-index.json"
+        output = phase_output("baseline-live", "journal-index.json")
         _atomic_json(output, document)
         return {
             "status": document["status"],
@@ -634,16 +680,12 @@ def _owned_phase_handlers(
     ) -> Mapping[str, Any]:
         from faultwitness_dev.g02_baselines import aggregate_gate_baselines
 
-        deterministic = load_data(
-            root / "docs/evals/EVAL-G02-005/artifacts/phases/baseline-deterministic/results.json"
-        )
-        live = load_data(
-            root / "docs/evals/EVAL-G02-005/artifacts/phases/baseline-live/journal-index.json"
-        )
+        deterministic = load_data(phase_output("baseline-deterministic", "results.json"))
+        live = load_data(phase_output("baseline-live", "journal-index.json"))
         metrics = aggregate_gate_baselines(
             scenario_document(), deterministic, live, context.dataset_digest
         )
-        output = root / "docs/evals/EVAL-G02-005/artifacts/phases/baseline-aggregate/metrics.json"
+        output = phase_output("baseline-aggregate", "metrics.json")
         _atomic_json(output, metrics)
         return {
             "status": "pass",
@@ -718,7 +760,7 @@ def run_g02_eval(
         from_failed=from_failed,
     )
     return {
-        "eval_id": "EVAL-G02-005",
+        "eval_id": binding["_eval_id"],
         "candidate_sha": candidate_sha,
         "status": "pass" if results and results[-1]["status"] == "pass" else "pending",
         "phase_count": len(results),
@@ -740,7 +782,7 @@ def inspect_g02_close_readiness(
     if any(record.get("status") != "pass" for record in records if record is not None):
         raise GovernanceError("G02 close readiness has a non-passing phase")
     return {
-        "eval_id": "EVAL-G02-005",
+        "eval_id": binding["_eval_id"],
         "candidate_sha": candidate_sha,
         "evidence_head_sha": evidence_head_sha,
         "status": "ready",

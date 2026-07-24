@@ -8,6 +8,7 @@ corrects: [I-0016, I-0018, I-0020]
 scope:
   - Permit the baseline principal to read only the frozen Prometheus Loki Tempo and LangSmith observability targets while preserving every unauthorized deny.
   - Parameterize the G02 Gate runner by the active orchestration record and Eval ID so a failed terminal orchestration is never reactivated.
+  - Attribute an active-to-failed transition to its terminal Iteration instead of misclassifying it as a prior Gate closure.
   - Redirect Gate artifact paths from failed EVAL-G02-005 to replacement EVAL-G02-008 without changing any validation sample or pass criterion.
 non_goals:
   - Running any Gate L2 matrix destructive scenario or paid model trial.
@@ -31,7 +32,10 @@ changed_paths:
   - governance/iterations
   - src/faultwitness_dev/g02_eval.py
   - src/faultwitness_dev/g02_isolation.py
+  - src/faultwitness_dev/changes.py
+  - src/faultwitness_dev/evals.py
   - tests/g02
+  - tests/governance
   - tests/fixtures/g02
 behavior_change: true
 docs_updated:

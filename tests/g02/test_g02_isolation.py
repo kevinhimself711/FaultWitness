@@ -34,6 +34,7 @@ from faultwitness_dev.g02_isolation import (
     validate_namespace_isolation_manifest,
     validate_policy_observation,
     validate_preregistry,
+    validate_public_https_egress,
     validate_stage_matrix,
     validate_writer_payload,
 )
@@ -53,14 +54,18 @@ def test_preregistry_is_exact_160_rows_without_payloads() -> None:
     assert {row["difficulty"] for row in rows} == set(DIFFICULTIES)
     counts = Counter(row["split"] for row in rows)
     assert counts == {"dev": 80, "validation": 40, "locked": 40}
-    assert all(set(row) == {
-        "schema_version",
-        "case_id",
-        "family",
-        "split",
-        "difficulty",
-        "ground_truth_placeholder",
-    } for row in rows)
+    assert all(
+        set(row)
+        == {
+            "schema_version",
+            "case_id",
+            "family",
+            "split",
+            "difficulty",
+            "ground_truth_placeholder",
+        }
+        for row in rows
+    )
 
 
 def test_preregistry_rejects_materialized_case_fixture() -> None:
@@ -89,16 +94,26 @@ def test_four_identity_policies_include_named_denials() -> None:
     controller = results[0]["checks"]
     developer = results[3]["checks"]
     assert any(
-        "ground-truth" in check["resource"] and check["actual"] is False
-        for check in controller
+        "ground-truth" in check["resource"] and check["actual"] is False for check in controller
     )
     assert any(
-        "locked-tests" in check["resource"] and check["actual"] is False
-        for check in developer
+        "locked-tests" in check["resource"] and check["actual"] is False for check in developer
     )
     namespace_result = validate_namespace_isolation_manifest(ROOT)
     assert namespace_result["credential_objects"] == 0
     assert namespace_result["service_accounts"] == list(PRINCIPALS[:3])
+    assert namespace_result["network_policy_count"] == 7
+    assert namespace_result["baseline_observability_namespaces"] == [
+        "fw-observability",
+        "fw-sut",
+    ]
+    assert namespace_result["observability_ingress"] == "exact-baseline-principal"
+
+
+def test_public_https_egress_rejects_private_network_fixture() -> None:
+    fixture = load_data(ROOT / "tests/fixtures/g02/isolation_broad_private_egress.yaml")
+    with pytest.raises(GovernanceError, match="private range"):
+        validate_public_https_egress(fixture)
 
 
 def test_access_wrong_allow_fixture_is_rejected() -> None:
@@ -219,7 +234,11 @@ def test_three_gate_phase_interfaces_write_candidate_bound_artifacts(tmp_path: P
         environment_fingerprint=ENVIRONMENT,
     )
     engine = PhaseEngine(G02_PHASES, context, tmp_path / "journal")
-    handlers = _owned_phase_handlers(tmp_path, {"phase_inputs": paths}, engine)
+    handlers = _owned_phase_handlers(
+        tmp_path,
+        {"_eval_id": "EVAL-G02-008", "phase_inputs": paths},
+        engine,
+    )
     journal = TrialJournal(tmp_path / "journal")
     for phase_id in inputs:
         result = handlers[phase_id](context, journal)

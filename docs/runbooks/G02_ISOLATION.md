@@ -29,6 +29,15 @@ default-deny NetworkPolicies, baseline-to-observability egress, and evaluator-to
 contains no Secret. MinIO credentials and policies are provisioned out of band only when the unified
 Gate candidate is frozen.
 
+I-0022 adds only the reachability that EVAL-G02-005 proved missing. `baseline-agent` may reach
+Prometheus `9090`, Loki `3100`, and Tempo `3200` in `fw-observability`; the matching ingress requires
+both the `fw-baseline` namespace and the `baseline-agent` principal label. Public LangSmith access is
+TCP `443` only and excludes private, loopback, link-local, metadata, carrier-grade NAT, documentation,
+benchmark, multicast, and reserved IPv4 ranges. The policy still has no route to `fw-eval`, GT,
+locked-test, or private evidence storage. The I-0022 negative fixture
+`tests/fixtures/g02/isolation_broad_private_egress.yaml` proves that a broad private-network rule is
+rejected before any live Gate phase runs.
+
 ## Preregistration and sealed packages
 
 The preregistry is exactly 160 rows: four families by five difficulties, with four `dev`, two
@@ -53,8 +62,13 @@ I-0018 owns three candidate/environment-bound Gate phase interfaces:
 Raw live probe documents remain repository-external and are named by `phase_inputs` in the frozen
 candidate binding. Each Gate phase validates candidate SHA, environment fingerprint, exact cell
 enumeration, expected result, and an artifact reference before atomically writing its reviewable
-matrix under `EVAL-G02-005`. A wrong allow, missing stage, leaked canary, missing artifact reference,
-or binding mismatch is a blocking failure with no operator pass path.
+matrix under the active standard orchestration's Eval asset. A wrong allow, missing stage, leaked
+canary, missing artifact reference, or binding mismatch is a blocking failure with no operator pass
+path.
+
+EVAL-G02-005 is immutable failed history. Replacement orchestration writes new Gate artifacts only
+under `EVAL-G02-008`; no runner may select EVAL-G02-005 from terminal I-0020 or overwrite its phase
+records.
 
 These phases have no preset orchestration timeout. The rule changes only process supervision:
 matrix N, zero-tolerance semantics, quality/performance thresholds, and all Gate criteria remain

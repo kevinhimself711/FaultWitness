@@ -136,10 +136,30 @@ def test_iteration_inference_selects_current_in_progress_record() -> None:
     eligible = [
         load_data(ROOT / path)["id"]
         for path in paths
-        if load_data(ROOT / path)["status"] in {"in_progress", "completed"}
+        if load_data(ROOT / path)["status"] in {"in_progress", "completed", "failed"}
         and load_data(ROOT / path)["docs_updated"]
     ]
     assert infer_iteration_id(ROOT, paths) == max(eligible)
+
+
+def test_iteration_inference_attributes_a_terminal_failure_transition(tmp_path: Path) -> None:
+    records = tmp_path / "governance" / "iterations"
+    records.mkdir(parents=True)
+    failed_path = records / "I-0020.yaml"
+    planned_path = records / "I-0022.yaml"
+    failed_path.write_text(
+        "id: I-0020\nstatus: failed\ndocs_updated: [docs/evals/EVAL-G02-005/REPORT.md]\n",
+        encoding="utf-8",
+    )
+    planned_path.write_text(
+        "id: I-0022\nstatus: planned\ndocs_updated: [docs/evals/EVAL-G02-007/PLAN.md]\n",
+        encoding="utf-8",
+    )
+    paths = [
+        "governance/iterations/I-0020.yaml",
+        "governance/iterations/I-0022.yaml",
+    ]
+    assert infer_iteration_id(tmp_path, paths) == "I-0020"
 
 
 def _g00_closure_records() -> tuple[dict, dict, dict]:

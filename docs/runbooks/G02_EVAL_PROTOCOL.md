@@ -3,8 +3,9 @@
 ## Purpose
 
 本 Runbook 说明 I-0016 冻结的 phase、cache、trial、resume 与双 SHA 操作协议。它不授权
-部署、故障注入、live service 或模型调用。只有 I-0020 active 且 candidate-binding 资产完整
-时，`eval-g02` 才能运行 Gate phase。
+部署、故障注入、live service 或模型调用。只有一个 `in_progress` 的 G02 standard
+orchestration Iteration、其 `eval_id`、完整十四-phase PLAN 和 candidate-binding 资产彼此一致
+时，`eval-g02` 才能运行 Gate phase。终态 Iteration 永远不能再次选择其 Eval 资产。
 
 ## Iteration Eval
 
@@ -37,7 +38,9 @@ uv run python -m faultwitness_dev eval-g02-close --candidate-sha <SHA> --evidenc
 
 ## Candidate-binding asset
 
-I-0020 在 Gate Eval 前产生 repository evidence path 下的 `candidate-binding.json`。它记录：
+当前 standard orchestration Iteration 在 Gate Eval 前产生其 `eval_id` 对应目录下的
+`candidate-binding.json`。I-0023 对应 EVAL-G02-008；I-0020/EVAL-G02-005 是不可变失败历史。
+binding 记录：
 
 - `candidate_sha` 与 `evidence_head_sha`。
 - runtime image、SUT image set、config、evaluator、dataset 和 environment digests。
@@ -71,13 +74,20 @@ cache key 改变，保留旧 evidence 并建立新候选记录。
   commit is verified through ancestry/tag, so the protocol has no SHA self-reference.
 - A runner defect discovered after an Iteration closed creates a new forward corrective Iteration.
   Do not reactivate a completed Iteration or move `PROJECT_STATE.yaml` backward.
+- A deterministic implementation, policy, zero-tolerance, cleanup, metric, quality, performance,
+  reconciliation, or close-readiness failure makes the current orchestration Iteration terminal.
+  Correction uses a higher-numbered corrective Iteration, and full Gate orchestration resumes only
+  through a higher-numbered replacement standard Iteration.
+- A classified transient infrastructure or transport failure remains in the same phase/trial and
+  resumes only pending or `infra_failed` work; it does not create a corrective Iteration.
 - These rules change only provenance and orchestration. All frozen samples, thresholds, locked-test
   and Ground Truth isolation, health windows, token/cost ceilings, and failure semantics remain
   unchanged.
 
 ## Fail-closed diagnostics
 
-- `phase handler is not implemented`：返回 owning Iteration，禁止在 I-0020 补写。
+- `phase handler is not implemented`：终止当前 orchestration，创建前向 corrective Iteration；
+  禁止在任何 Gate orchestration Iteration 现场补写。
 - `dependency lacks an exact-key pass`：先运行或恢复依赖，不可跳过。
 - `cannot rerun on the same candidate`：metric failure 需要修复并生成新候选。
 - candidate/subject/environment digest drift：停止，不得批量改写 manifest SHA。

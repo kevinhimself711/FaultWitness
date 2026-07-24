@@ -7,6 +7,7 @@ import subprocess
 from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import Any
 
 from pydantic import ValidationError
@@ -41,6 +42,7 @@ from faultwitness_dev.bootstrap import (
     derive_age_recipient,
     validate_migration,
 )
+from faultwitness_dev.changes import infer_iteration_id
 from faultwitness_dev.checks import (
     validate_iteration_lifecycle_history,
     validate_iteration_status_sequence,
@@ -56,8 +58,14 @@ from faultwitness_dev.g02_baselines import (
     run_live_trials,
     score_result,
 )
-from faultwitness_dev.g02_eval import evaluate_i0016
-from faultwitness_dev.g02_isolation import evaluate_i0018
+from faultwitness_dev.g02_eval import evaluate_i0016, validate_gate_orchestration_selection
+from faultwitness_dev.g02_isolation import (
+    evaluate_i0018,
+    load_isolation_config,
+    simulate_identity_policies,
+    validate_namespace_isolation_manifest,
+    validate_public_https_egress,
+)
 from faultwitness_dev.g02_lab import evaluate_i0017
 from faultwitness_dev.model_eval import run_model_eval
 from faultwitness_dev.observability_deploy import (
@@ -501,7 +509,130 @@ def evaluate_iteration(root: Path, iteration: str, candidate_sha: str) -> dict[s
         return evaluate_i0019(root, candidate_sha)
     if iteration == "I-0021":
         return evaluate_i0021(root, candidate_sha)
+    if iteration == "I-0022":
+        return evaluate_i0022(root, candidate_sha)
     raise GovernanceError(f"no private Eval implementation is registered for {iteration}")
+
+
+def evaluate_i0022(root: Path, candidate_sha: str) -> dict[str, Any]:
+    if _head_sha(root) != candidate_sha:
+        raise GovernanceError("EVAL-G02-007 candidate SHA must equal checked-out HEAD")
+    if subprocess.run(
+        ["git", "status", "--porcelain"], cwd=root, capture_output=True, text=True
+    ).stdout:
+        raise GovernanceError("EVAL-G02-007 requires a clean candidate worktree")
+    loaded = validate_repository_schemas(root)
+    state = loaded["PROJECT_STATE.yaml"]
+    iteration = loaded["governance/iterations/I-0022.yaml"]
+    if (
+        state.get("active_gate") != "G02"
+        or state.get("active_iteration") != "I-0022"
+        or iteration.get("status") != "in_progress"
+    ):
+        raise GovernanceError("EVAL-G02-007 requires I-0022 as the sole active Iteration")
+
+    started_at = datetime.now(UTC).isoformat()
+    cases: list[dict[str, str]] = []
+    namespace = validate_namespace_isolation_manifest(root)
+    if namespace["baseline_observability_namespaces"] != ["fw-observability", "fw-sut"]:
+        raise GovernanceError("I-0022 baseline observability egress did not converge")
+    cases.append({"case_id": "exact-observability-egress", "status": "pass"})
+
+    if namespace["observability_ingress"] != "exact-baseline-principal":
+        raise GovernanceError("I-0022 observability ingress exceeded the baseline principal")
+    cases.append({"case_id": "exact-observability-ingress", "status": "pass"})
+
+    broad = load_data(root / "tests/fixtures/g02/isolation_broad_private_egress.yaml")
+    try:
+        validate_public_https_egress(broad)
+    except GovernanceError:
+        cases.append({"case_id": "reject-private-public-https-egress", "status": "pass"})
+    else:
+        raise GovernanceError("I-0022 broad public HTTPS negative fixture was accepted")
+
+    policies = simulate_identity_policies(load_isolation_config(root))
+    if len(policies) != 4 or any(item["status"] != "pass" for item in policies):
+        raise GovernanceError("I-0022 changed an unauthorized identity path")
+    cases.append({"case_id": "preserve-unauthorized-denies", "status": "pass"})
+
+    replacement_state = {
+        "active_gate": "G02",
+        "active_gate_status": "in_progress",
+        "active_iteration": "I-0023",
+    }
+    replacement = dict(load_data(root / "governance/iterations/I-0023.yaml"))
+    replacement["status"] = "in_progress"
+    replacement_manifest = load_data(root / "docs/evals/EVAL-G02-008/manifest.json")
+    replacement_plan = (root / "docs/evals/EVAL-G02-008/PLAN.md").read_text(encoding="utf-8")
+    if validate_gate_orchestration_selection(
+        replacement_state,
+        replacement,
+        replacement_manifest,
+        replacement_plan,
+    ) != ("I-0023", "EVAL-G02-008"):
+        raise GovernanceError("I-0022 replacement orchestration selected the wrong Eval")
+    terminal = load_data(root / "governance/iterations/I-0020.yaml")
+    terminal_state = {**replacement_state, "active_iteration": "I-0020"}
+    terminal_manifest = load_data(root / "docs/evals/EVAL-G02-005/manifest.json")
+    terminal_plan = (root / "docs/evals/EVAL-G02-005/PLAN.md").read_text(encoding="utf-8")
+    try:
+        validate_gate_orchestration_selection(
+            terminal_state,
+            terminal,
+            terminal_manifest,
+            terminal_plan,
+        )
+    except GovernanceError:
+        pass
+    else:
+        raise GovernanceError("I-0022 allowed terminal EVAL-G02-005 to run again")
+
+    with TemporaryDirectory() as temporary:
+        fixture_root = Path(temporary)
+        records = fixture_root / "governance" / "iterations"
+        records.mkdir(parents=True)
+        (records / "I-0020.yaml").write_text(
+            "id: I-0020\nstatus: failed\ndocs_updated: [docs/evals/EVAL-G02-005/REPORT.md]\n",
+            encoding="utf-8",
+        )
+        (records / "I-0022.yaml").write_text(
+            "id: I-0022\nstatus: planned\ndocs_updated: [docs/evals/EVAL-G02-007/PLAN.md]\n",
+            encoding="utf-8",
+        )
+        changed_records = [
+            "governance/iterations/I-0020.yaml",
+            "governance/iterations/I-0022.yaml",
+        ]
+        if infer_iteration_id(fixture_root, changed_records) != "I-0020":
+            raise GovernanceError("I-0022 terminal failure attribution drifted")
+    cases.append({"case_id": "forward-eval-selection", "status": "pass"})
+
+    artifact = {
+        "schema_version": "1.0.0",
+        "candidate_sha": candidate_sha,
+        "validation": "I-0022-live-isolation-forward-routing",
+        "iteration_n": 5,
+        "cases": cases,
+        "external_execution": 0,
+        "gate_phase_execution": 0,
+        "model_calls": 0,
+        "start_time": started_at,
+        "end_time": datetime.now(UTC).isoformat(),
+        "status": "pass",
+        "open_evidence": [],
+    }
+    artifact_path = root / "docs/evals/EVAL-G02-007/artifacts/live-isolation-forward-routing.json"
+    artifact_path.parent.mkdir(parents=True, exist_ok=True)
+    artifact_path.write_text(
+        json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    return {
+        "eval_id": "EVAL-G02-007",
+        "candidate_sha": candidate_sha,
+        "status": "pass",
+        "checks": {case["case_id"]: case["status"] for case in cases},
+        "open_evidence": [],
+    }
 
 
 def evaluate_i0021(root: Path, candidate_sha: str) -> dict[str, Any]:

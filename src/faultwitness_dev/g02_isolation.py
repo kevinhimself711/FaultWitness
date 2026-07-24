@@ -77,6 +77,22 @@ CANARY_SURFACES = (
 )
 G02_WRITERS = CANARY_SURFACES[-4:]
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
+PUBLIC_HTTPS_EXCLUSIONS = (
+    "0.0.0.0/8",
+    "10.0.0.0/8",
+    "100.64.0.0/10",
+    "127.0.0.0/8",
+    "169.254.0.0/16",
+    "172.16.0.0/12",
+    "192.0.0.0/24",
+    "192.0.2.0/24",
+    "192.168.0.0/16",
+    "198.18.0.0/15",
+    "198.51.100.0/24",
+    "203.0.113.0/24",
+    "224.0.0.0/4",
+    "240.0.0.0/4",
+)
 
 
 def _digest(value: Any) -> str:
@@ -139,15 +155,24 @@ def validate_namespace_isolation_manifest(root: Path) -> dict[str, Any]:
     evaluator = policies.get("sealed-evaluator-allow-object-store", {})
     baseline_namespaces = _network_policy_namespaces(baseline)
     evaluator_namespaces = _network_policy_namespaces(evaluator)
-    if baseline_namespaces != {"kube-system", "fw-sut"} or "fw-eval" in baseline_namespaces:
+    if baseline_namespaces != {"kube-system", "fw-sut", "fw-observability"} or (
+        "fw-eval" in baseline_namespaces
+    ):
         raise GovernanceError("G02 baseline network policy exceeds its observability boundary")
     if evaluator_namespaces != {"kube-system", "fw-data"} or "fw-sut" in evaluator_namespaces:
         raise GovernanceError("G02 evaluator network policy can reach the SUT")
+    validate_public_https_egress(baseline)
+    validate_baseline_observability_ingress(
+        policies.get("allow-baseline-agent-read-observability", {})
+    )
     return {
         "status": "pass",
         "service_accounts": list(expected_accounts),
         "network_policy_count": len(policies),
         "credential_objects": 0,
+        "baseline_observability_namespaces": ["fw-observability", "fw-sut"],
+        "public_https_private_exclusions": len(PUBLIC_HTTPS_EXCLUSIONS),
+        "observability_ingress": "exact-baseline-principal",
     }
 
 
@@ -160,6 +185,53 @@ def _network_policy_namespaces(document: Mapping[str, Any]) -> set[str]:
             if namespace:
                 result.add(str(namespace))
     return result
+
+
+def validate_public_https_egress(document: Mapping[str, Any]) -> None:
+    rules = document.get("spec", {}).get("egress", [])
+    public_rules = []
+    for rule in rules:
+        targets = rule.get("to", [])
+        if any(target.get("ipBlock", {}).get("cidr") == "0.0.0.0/0" for target in targets):
+            public_rules.append(rule)
+    if len(public_rules) != 1:
+        raise GovernanceError("G02 baseline policy must contain one public HTTPS egress rule")
+    rule = public_rules[0]
+    blocks = [target["ipBlock"] for target in rule["to"] if "ipBlock" in target]
+    if len(blocks) != 1 or tuple(blocks[0].get("except", ())) != PUBLIC_HTTPS_EXCLUSIONS:
+        raise GovernanceError("G02 public HTTPS egress does not exclude every private range")
+    if rule.get("ports") != [{"protocol": "TCP", "port": 443}]:
+        raise GovernanceError("G02 public egress must be restricted to HTTPS")
+
+
+def validate_baseline_observability_ingress(document: Mapping[str, Any]) -> None:
+    spec = document.get("spec", {})
+    expressions = spec.get("podSelector", {}).get("matchExpressions", [])
+    if expressions != [
+        {
+            "key": "app.kubernetes.io/name",
+            "operator": "In",
+            "values": ["prometheus", "loki", "tempo"],
+        }
+    ]:
+        raise GovernanceError("G02 observability ingress target selector drifted")
+    ingress = spec.get("ingress")
+    if not isinstance(ingress, list) or len(ingress) != 1:
+        raise GovernanceError("G02 observability ingress must contain one exact rule")
+    sources = ingress[0].get("from")
+    expected_source = {
+        "namespaceSelector": {"matchLabels": {"kubernetes.io/metadata.name": "fw-baseline"}},
+        "podSelector": {"matchLabels": {"faultwitness.dev/principal": "baseline-agent"}},
+    }
+    if sources != [expected_source]:
+        raise GovernanceError("G02 observability ingress exceeds the baseline principal")
+    ports = ingress[0].get("ports")
+    if ports != [
+        {"protocol": "TCP", "port": 9090},
+        {"protocol": "TCP", "port": 3100},
+        {"protocol": "TCP", "port": 3200},
+    ]:
+        raise GovernanceError("G02 observability ingress port registry drifted")
 
 
 def build_preregistry() -> list[dict[str, str]]:
@@ -200,8 +272,7 @@ def validate_preregistry(
         if row.get("ground_truth_placeholder") != expected_uri:
             raise GovernanceError("G02 preregistry placeholder drifted")
     counts = Counter(
-        (str(row["family"]), str(row["difficulty"]), str(row["split"]))
-        for row in rows
+        (str(row["family"]), str(row["difficulty"]), str(row["split"])) for row in rows
     )
     for family in FAMILIES:
         for difficulty in DIFFICULTIES:
@@ -406,9 +477,11 @@ def access_cell_contract() -> list[dict[str, Any]]:
     for target in targets:
         target_type = target.split(":", 1)[0]
         for probe in ("canonical-owner", "baseline-agent", "ordinary-developer", "cross-boundary"):
-            expected = probe == "canonical-owner" or (
-                probe == "baseline-agent" and target_type == "obs"
-            ) or (probe == "cross-boundary" and target == "s3:g02/trials/")
+            expected = (
+                probe == "canonical-owner"
+                or (probe == "baseline-agent" and target_type == "obs")
+                or (probe == "cross-boundary" and target == "s3:g02/trials/")
+            )
             cells.append(
                 {
                     "cell_id": f"{target}|{probe}",

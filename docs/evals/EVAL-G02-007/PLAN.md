@@ -16,7 +16,8 @@ phase, access cell, destructive scenario, external service, or model call.
 4. Scenario-controller, sealed-evaluator, and ordinary-developer negative paths retain their frozen
    denies.
 5. Gate orchestration resolves the active Iteration record's `eval_id`; terminal I-0020 cannot
-   select or overwrite EVAL-G02-005, while planned I-0023 resolves EVAL-G02-008.
+   select or overwrite EVAL-G02-005, planned I-0023 resolves EVAL-G02-008, and `eval-changed`
+   attributes an active-to-failed transition to the terminal Iteration rather than G01 closure.
 
 ## Pass criteria
 
