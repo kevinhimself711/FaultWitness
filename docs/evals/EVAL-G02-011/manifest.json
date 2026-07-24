@@ -1,20 +1,53 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "eval_id": "EVAL-G02-011",
   "gate": "G02",
   "iteration": "I-0026",
-  "evaluated_revision": "not-run",
-  "status": "pending",
-  "environments": ["planned-windows-local-deterministic"],
-  "commands": [
-    "uv run python -m faultwitness_dev eval-iteration I-0026 --candidate-sha <full-sha>"
+  "candidate_sha": "b50db666c4d73f42197bdc7136fbc0895ea26287",
+  "evaluated_revision": "b50db666c4d73f42197bdc7136fbc0895ea26287",
+  "evidence_head_sha": "b50db666c4d73f42197bdc7136fbc0895ea26287",
+  "status": "pass",
+  "subject_digests": {
+    "docs/evals/EVAL-G02-011/PLAN.md": "ef2ca1c9785ca39496430fa4799c60ef3697c41bb5a6a62f08387892334056bd",
+    "governance/iterations/I-0026.yaml": "b9a284dd525eba688d16c2f461112354f0ca87749d4a2174728c3cdf2ace10df",
+    "src/faultwitness_dev/evals.py": "90ebd2586ea488e424d35d0e8430d357b373b620c5b1c4150c49a384346839e4",
+    "src/faultwitness_dev/infra.py": "574f88be9e4efd84aa80dda29a4bc61b1614819c92a809bc58c4dc7e455cc565",
+    "tests/g02/test_g02_eval_protocol.py": "b78c709434e30ff7150948d26c7b5ba7d7f8301f9778114888cbed05f4c34c03",
+    "tests/g02/test_g02_gate_collectors.py": "6bd81fc104a989f54deb8ea153ed1279daf0e2728e74f553c8cb0ca4e5ee2cda",
+    "tests/infra/test_infra.py": "ce637d35ed14cbe75fdd6f5523615fbd6d22b047166701d377ba613ebde82aa1"
+  },
+  "environment_fingerprint": "cb8d746650a2ff394921d439073a73602a9cc4098b7b99b8e7932ba8b35f9889",
+  "phases": [
+    {
+      "phase_id": "bounded-remote-transport",
+      "status": "pass",
+      "start_time": "2026-07-24T22:15:08.521384+00:00",
+      "end_time": "2026-07-24T22:15:08.527974+00:00",
+      "cache_key": "ec9f3c4a10e1af6798dde842a0f1e32e7ded1f7da7f2a7bece568fab925f5b42",
+      "artifact_digest": "1347b83a1876a5dfed80fff265088be15cd567e08dce453df05e3875b6ed2a71",
+      "artifact_path": "docs/evals/EVAL-G02-011/artifacts/bounded-remote-transport.json",
+      "private_artifact_uri": null,
+      "execution_count": 1,
+      "inherited_from_manifest": null
+    }
   ],
-  "artifacts": ["docs/evals/EVAL-G02-011/PLAN.md"],
+  "environments": ["windows-local-deterministic"],
+  "commands": [
+    "uv run pytest -q tests/infra/test_infra.py tests/g02/test_g02_gate_collectors.py tests/g02/test_g02_eval_protocol.py",
+    "uv run python -m faultwitness_dev eval-iteration I-0026 --candidate-sha b50db666c4d73f42197bdc7136fbc0895ea26287",
+    "uv run python -m faultwitness_dev verify-fast",
+    "uv run python -m faultwitness_dev eval-changed"
+  ],
+  "artifacts": [
+    "docs/evals/EVAL-G02-011/PLAN.md",
+    "docs/evals/EVAL-G02-011/REPORT.md",
+    "docs/evals/EVAL-G02-011/artifacts/bounded-remote-transport.json"
+  ],
   "evidence_urls": [],
   "integrations": {
-    "private_server": {"status": "not_applicable", "reason": "Local deterministic transport contract only."},
-    "bailian": {"status": "not_applicable", "reason": "No model call is allowed in I-0026."},
-    "langsmith": {"status": "not_applicable", "reason": "No external-service phase is allowed in I-0026."}
+    "private_server": {"status": "not_applicable", "reason": "I-0026 is a local deterministic transport contract Eval."},
+    "bailian": {"status": "not_applicable", "reason": "I-0026 performed no model call."},
+    "langsmith": {"status": "not_applicable", "reason": "I-0026 performed no external-service phase."}
   },
   "open_evidence": []
 }

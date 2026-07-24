@@ -1,0 +1,38 @@
+{
+  "candidate_sha": "b50db666c4d73f42197bdc7136fbc0895ea26287",
+  "cases": [
+    {
+      "case_id": "oversized-bounded-transport",
+      "status": "pass"
+    },
+    {
+      "case_id": "execute-failure-cleanup",
+      "status": "pass"
+    },
+    {
+      "case_id": "cleanup-failure-blocks",
+      "status": "pass"
+    },
+    {
+      "case_id": "invalid-path-blocks",
+      "status": "pass"
+    }
+  ],
+  "destructive_scenarios": 0,
+  "end_time": "2026-07-24T22:15:08.527974+00:00",
+  "external_service_calls": 0,
+  "frozen_validation_n": {
+    "V-G02-009": 4,
+    "V-G02-010": 0,
+    "V-G02-011": 4
+  },
+  "gate_l2_execution": 0,
+  "model_calls": 0,
+  "open_evidence": [],
+  "remote_execution": 0,
+  "schema_version": "1.0.0",
+  "start_time": "2026-07-24T22:15:08.521384+00:00",
+  "status": "pass",
+  "transport_case_count": 4,
+  "validation": "I-0026-bounded-remote-transport"
+}
