@@ -131,8 +131,9 @@ claims:
       - EVAL-G02-007
       - EVAL-G02-009
       - EVAL-G02-011
+      - EVAL-G02-013
     limitations:
-      - "I-0018 proves policy simulation and new-writer isolation; I-0022 proves the exact corrected observability policy; I-0024 proves candidate-bound provisioning and collectors locally; I-0026/EVAL-G02-011 proves bounded arguments but EVAL-G02-012 exposed text-mode byte mutation. I-0028 must prove byte-exact transport before the 60-cell, six-stage, and 22-surface live matrices run in EVAL-G02-014."
+      - "I-0018 proves policy simulation and new-writer isolation; I-0022 proves the exact corrected observability policy; I-0024 proves candidate-bound provisioning and collectors locally; I-0026/EVAL-G02-011 proves bounded arguments, EVAL-G02-012 exposes text-mode mutation, and I-0028/EVAL-G02-013 proves byte-exact Windows transport. The 60-cell, six-stage, and 22-surface live matrices remain reserved for EVAL-G02-014."
       - "No GT/locked case payload, baseline, or paid model execution is claimed."
   - id: CLAIM-EVAL-004
     statement: "G02 has three shared-packet diagnosis baselines, deterministic scoring, exact quality-floor measurement, clustered bootstrap aggregation, and trial-local paid-model resume."

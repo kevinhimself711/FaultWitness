@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Close I-0028 on candidate `09693ce` with EVAL-G02-013 passing 4/4 byte-exact transport cases,
+  frozen validation N=4/0/4, zero remote/model execution, and no open evidence.
 - Implement I-0028 byte-exact process transport with explicit UTF-8 bytes, binary subprocess I/O,
   explicit output decoding, and a real child-process LF-preservation regression.
 - Activate I-0028 as the sole byte-exact transport corrective; I-0029 remains planned and no

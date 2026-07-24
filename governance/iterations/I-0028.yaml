@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0028
 gate: G02
 title: Byte-Exact Remote Process Transport Corrective
-status: in_progress
+status: completed
 iteration_type: corrective
 corrects: [I-0026, I-0027]
 scope:
@@ -21,7 +21,7 @@ tests:
   - uv run python -m faultwitness_dev verify-fast
   - uv run python -m faultwitness_dev eval-changed
 eval_id: EVAL-G02-013
-commit: null
+commit: 09693ceb52a883113c82ac1a7be489e826bad04f
 changed_paths:
   - AGENTS.md
   - CHANGELOG.md

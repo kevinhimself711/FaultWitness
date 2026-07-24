@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: I-0028
+active_iteration: null
 next_iteration: I-0029
 last_closed_gate: G01
 ---
@@ -12,8 +12,8 @@ FaultWitness 是一个面向微服务事故调查、受控修复与持续优化�
 
 当前状态：G00、G01 已关闭；G02 正在执行。I-0020、I-0023、I-0025 与 I-0027 均已因
 确定性失败终态关闭且负面证据完整；I-0024 与 I-0026 已完成前两轮 runner/transport
-纠错。I-0028 是当前 byte-exact transport 纠错，I-0029 是计划中的替代编排。任何终态
-记录都不会重开。
+纠错。I-0028 已用真实 Windows child process 证明 byte-exact transport 并关闭；I-0029 是
+下一项替代编排。任何终态记录都不会重开。
 
 ## 权威资产
 
@@ -32,7 +32,7 @@ FaultWitness 是一个面向微服务事故调查、受控修复与持续优化�
 - I-0018 已交付 locked-test/ground-truth 隔离、160 行预登记和三个验证接口；I-0024
   已前向补齐并单测 EVAL-G02-008 证明缺失的 candidate-bound provisioner/collector。
 - EVAL-G02-012 在 candidate-binding 准备时证明 Windows text-mode 将 LF 改写为 CRLF；
-  十四个 Gate phase、matrix cell、破坏性实验和模型调用均为 0。I-0028 只修复并本地证明
-  byte-exact process transport；I-0029 才可再次编排冻结 phase。
+  十四个 Gate phase、matrix cell、破坏性实验和模型调用均为 0。EVAL-G02-013 已通过 4/4
+  本地 byte-exact cases；I-0029 才可再次编排冻结 phase。
 
 代码、API、Schema 和标识符使用英文；设计、评测和复盘文档以中文为主。

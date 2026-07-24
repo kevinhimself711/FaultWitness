@@ -16,6 +16,12 @@ binary subprocess I/O with explicit UTF-8 encode/decode and prove bytes through 
 process; I-0029/EVAL-G02-014 is the only replacement orchestration. Mock runners remain valid for
 failure injection but can no longer be the sole evidence for cross-platform byte integrity.
 
+I-0028 candidate `09693ceb52a883113c82ac1a7be489e826bad04f` then passed EVAL-G02-013:
+the real Windows child received exact LF bytes, all four transport cases passed, frozen
+V-G02-009/010/011 Iteration N remained 4/0/4, and remote, Gate L2, destructive, external-service,
+and model execution remained zero. The Iteration closed with `open_evidence: []`; I-0029 is the
+sole forward replacement path.
+
 ## 2026-07-24 — G02 EVAL-G02-010 privileged transport failure
 
 Candidate `9e68e2622d18ffcbd63549a4fd2b9dedee37f74e` passed four fail-fast preflights and
