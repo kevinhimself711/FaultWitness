@@ -1,0 +1,946 @@
+{
+  "candidate_sha": "ca9de48d68a2ecf0f52b9c9532c05a1dce37d6fc",
+  "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+  "iteration_n": 32,
+  "schema_version": "1.0.0",
+  "seeds": [
+    {
+      "catalog_slot": "hard-2",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Hard",
+      "family": "runtime_data",
+      "fault_action": {
+        "class": "kafkaQueueProblems",
+        "flag_key": "kafkaQueueProblems",
+        "variant": "on"
+      },
+      "fault_oracle": "kafkaQueueProblems",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0001.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "consumer_lag",
+          "baseline_lag",
+          "kafka_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the hard service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0001",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "hard-2",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Hard",
+      "family": "dependency_network",
+      "fault_action": {
+        "class": "paymentUnreachable",
+        "flag_key": "paymentUnreachable",
+        "variant": "on"
+      },
+      "fault_oracle": "paymentUnreachable",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0002.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "checkout_failed",
+          "connection_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the hard service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0002",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "hard-1",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Hard",
+      "family": "resource_capacity",
+      "fault_action": {
+        "class": "adHighCpu",
+        "flag_key": "adHighCpu",
+        "variant": "on"
+      },
+      "fault_oracle": "adHighCpu",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0003.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "cpu_rate",
+          "baseline_cpu_max",
+          "correlated_span"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the hard service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0003",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "medium-1",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Medium",
+      "family": "change_config",
+      "fault_action": {
+        "class": "productCatalogFailure",
+        "flag_key": "productCatalogFailure",
+        "variant": "on"
+      },
+      "fault_oracle": "productCatalogFailure",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0004.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "journey_failed",
+          "correlated_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the medium service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0004",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "ood",
+      "control_journey": "frontend-checkout",
+      "difficulty": "OOD",
+      "family": "dependency_network",
+      "fault_action": {
+        "class": "paymentFailure",
+        "flag_key": "paymentFailure",
+        "variant": "100%"
+      },
+      "fault_oracle": "paymentFailure",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0005.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "checkout_failed",
+          "payment_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the ood service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0005",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "adversarial",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Adversarial",
+      "family": "dependency_network",
+      "fault_action": {
+        "class": "paymentUnreachable",
+        "flag_key": "paymentUnreachable",
+        "variant": "on"
+      },
+      "fault_oracle": "paymentUnreachable",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0006.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "checkout_failed",
+          "connection_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the adversarial service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0006",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "medium-1",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Medium",
+      "family": "dependency_network",
+      "fault_action": {
+        "class": "paymentFailure",
+        "flag_key": "paymentFailure",
+        "variant": "100%"
+      },
+      "fault_oracle": "paymentFailure",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0007.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "checkout_failed",
+          "payment_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the medium service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0007",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "medium-2",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Medium",
+      "family": "resource_capacity",
+      "fault_action": {
+        "class": "emailMemoryLeak",
+        "flag_key": "emailMemoryLeak",
+        "variant": "100x"
+      },
+      "fault_oracle": "emailMemoryLeak",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0008.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "working_set"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the medium service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0008",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "easy-2",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Easy",
+      "family": "change_config",
+      "fault_action": {
+        "class": "productCatalogFailure",
+        "flag_key": "productCatalogFailure",
+        "variant": "on"
+      },
+      "fault_oracle": "productCatalogFailure",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0009.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "journey_failed",
+          "correlated_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the easy service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0009",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "hard-1",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Hard",
+      "family": "runtime_data",
+      "fault_action": {
+        "class": "kafkaQueueProblems",
+        "flag_key": "kafkaQueueProblems",
+        "variant": "on"
+      },
+      "fault_oracle": "kafkaQueueProblems",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0010.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "consumer_lag",
+          "baseline_lag",
+          "kafka_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the hard service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0010",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "easy-1",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Easy",
+      "family": "resource_capacity",
+      "fault_action": {
+        "class": "adHighCpu",
+        "flag_key": "adHighCpu",
+        "variant": "on"
+      },
+      "fault_oracle": "adHighCpu",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0011.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "cpu_rate",
+          "baseline_cpu_max",
+          "correlated_span"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the easy service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0011",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "hard-2",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Hard",
+      "family": "resource_capacity",
+      "fault_action": {
+        "class": "emailMemoryLeak",
+        "flag_key": "emailMemoryLeak",
+        "variant": "100x"
+      },
+      "fault_oracle": "emailMemoryLeak",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0012.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "working_set"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the hard service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0012",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "easy-1",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Easy",
+      "family": "runtime_data",
+      "fault_action": {
+        "class": "kafkaQueueProblems",
+        "flag_key": "kafkaQueueProblems",
+        "variant": "on"
+      },
+      "fault_oracle": "kafkaQueueProblems",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0013.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "consumer_lag",
+          "baseline_lag",
+          "kafka_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the easy service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0013",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "medium-1",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Medium",
+      "family": "resource_capacity",
+      "fault_action": {
+        "class": "adHighCpu",
+        "flag_key": "adHighCpu",
+        "variant": "on"
+      },
+      "fault_oracle": "adHighCpu",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0014.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "cpu_rate",
+          "baseline_cpu_max",
+          "correlated_span"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the medium service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0014",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "ood",
+      "control_journey": "frontend-checkout",
+      "difficulty": "OOD",
+      "family": "resource_capacity",
+      "fault_action": {
+        "class": "adHighCpu",
+        "flag_key": "adHighCpu",
+        "variant": "on"
+      },
+      "fault_oracle": "adHighCpu",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0015.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "cpu_rate",
+          "baseline_cpu_max",
+          "correlated_span"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the ood service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0015",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "ood",
+      "control_journey": "frontend-checkout",
+      "difficulty": "OOD",
+      "family": "change_config",
+      "fault_action": {
+        "class": "productCatalogFailure",
+        "flag_key": "productCatalogFailure",
+        "variant": "on"
+      },
+      "fault_oracle": "productCatalogFailure",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0016.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "journey_failed",
+          "correlated_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the ood service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0016",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "adversarial",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Adversarial",
+      "family": "runtime_data",
+      "fault_action": {
+        "class": "kafkaQueueProblems",
+        "flag_key": "kafkaQueueProblems",
+        "variant": "on"
+      },
+      "fault_oracle": "kafkaQueueProblems",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0017.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "consumer_lag",
+          "baseline_lag",
+          "kafka_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the adversarial service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0017",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "medium-2",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Medium",
+      "family": "change_config",
+      "fault_action": {
+        "class": "productCatalogFailure",
+        "flag_key": "productCatalogFailure",
+        "variant": "on"
+      },
+      "fault_oracle": "productCatalogFailure",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0018.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "journey_failed",
+          "correlated_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the medium service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0018",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "adversarial",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Adversarial",
+      "family": "resource_capacity",
+      "fault_action": {
+        "class": "emailMemoryLeak",
+        "flag_key": "emailMemoryLeak",
+        "variant": "100x"
+      },
+      "fault_oracle": "emailMemoryLeak",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0019.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "working_set"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the adversarial service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0019",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "medium-2",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Medium",
+      "family": "runtime_data",
+      "fault_action": {
+        "class": "kafkaQueueProblems",
+        "flag_key": "kafkaQueueProblems",
+        "variant": "on"
+      },
+      "fault_oracle": "kafkaQueueProblems",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0020.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "consumer_lag",
+          "baseline_lag",
+          "kafka_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the medium service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0020",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "easy-2",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Easy",
+      "family": "resource_capacity",
+      "fault_action": {
+        "class": "emailMemoryLeak",
+        "flag_key": "emailMemoryLeak",
+        "variant": "100x"
+      },
+      "fault_oracle": "emailMemoryLeak",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0021.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "working_set"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the easy service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0021",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "easy-1",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Easy",
+      "family": "change_config",
+      "fault_action": {
+        "class": "productCatalogFailure",
+        "flag_key": "productCatalogFailure",
+        "variant": "on"
+      },
+      "fault_oracle": "productCatalogFailure",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0022.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "journey_failed",
+          "correlated_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the easy service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0022",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "hard-1",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Hard",
+      "family": "change_config",
+      "fault_action": {
+        "class": "productCatalogFailure",
+        "flag_key": "productCatalogFailure",
+        "variant": "on"
+      },
+      "fault_oracle": "productCatalogFailure",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0023.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "journey_failed",
+          "correlated_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the hard service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0023",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "adversarial",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Adversarial",
+      "family": "change_config",
+      "fault_action": {
+        "class": "productCatalogFailure",
+        "flag_key": "productCatalogFailure",
+        "variant": "on"
+      },
+      "fault_oracle": "productCatalogFailure",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0024.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "journey_failed",
+          "correlated_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the adversarial service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0024",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "easy-2",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Easy",
+      "family": "dependency_network",
+      "fault_action": {
+        "class": "paymentUnreachable",
+        "flag_key": "paymentUnreachable",
+        "variant": "on"
+      },
+      "fault_oracle": "paymentUnreachable",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0025.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "checkout_failed",
+          "connection_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the easy service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0025",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "hard-1",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Hard",
+      "family": "dependency_network",
+      "fault_action": {
+        "class": "paymentFailure",
+        "flag_key": "paymentFailure",
+        "variant": "100%"
+      },
+      "fault_oracle": "paymentFailure",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0026.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "checkout_failed",
+          "payment_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the hard service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0026",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "medium-2",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Medium",
+      "family": "dependency_network",
+      "fault_action": {
+        "class": "paymentUnreachable",
+        "flag_key": "paymentUnreachable",
+        "variant": "on"
+      },
+      "fault_oracle": "paymentUnreachable",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0027.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "checkout_failed",
+          "connection_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the medium service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0027",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "ood",
+      "control_journey": "frontend-checkout",
+      "difficulty": "OOD",
+      "family": "runtime_data",
+      "fault_action": {
+        "class": "kafkaQueueProblems",
+        "flag_key": "kafkaQueueProblems",
+        "variant": "on"
+      },
+      "fault_oracle": "kafkaQueueProblems",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0028.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "consumer_lag",
+          "baseline_lag",
+          "kafka_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the ood service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0028",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "easy-2",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Easy",
+      "family": "runtime_data",
+      "fault_action": {
+        "class": "kafkaQueueProblems",
+        "flag_key": "kafkaQueueProblems",
+        "variant": "on"
+      },
+      "fault_oracle": "kafkaQueueProblems",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0029.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "consumer_lag",
+          "baseline_lag",
+          "kafka_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the easy service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0029",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "hard-2",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Hard",
+      "family": "change_config",
+      "fault_action": {
+        "class": "productCatalogFailure",
+        "flag_key": "productCatalogFailure",
+        "variant": "on"
+      },
+      "fault_oracle": "productCatalogFailure",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0030.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "journey_failed",
+          "correlated_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the hard service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0030",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "medium-1",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Medium",
+      "family": "runtime_data",
+      "fault_action": {
+        "class": "kafkaQueueProblems",
+        "flag_key": "kafkaQueueProblems",
+        "variant": "on"
+      },
+      "fault_oracle": "kafkaQueueProblems",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0031.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "consumer_lag",
+          "baseline_lag",
+          "kafka_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the medium service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0031",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    },
+    {
+      "catalog_slot": "easy-1",
+      "control_journey": "frontend-checkout",
+      "difficulty": "Easy",
+      "family": "dependency_network",
+      "fault_action": {
+        "class": "paymentFailure",
+        "flag_key": "paymentFailure",
+        "variant": "100%"
+      },
+      "fault_oracle": "paymentFailure",
+      "ground_truth_ref": "s3://faultwitness-eval/g02/ground-truth/SEED-G02-0032.json",
+      "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+      "observation_contract": {
+        "deadline_seconds": 90,
+        "required": [
+          "checkout_failed",
+          "payment_error"
+        ],
+        "sample_count": 2,
+        "sample_interval_seconds": 30
+      },
+      "problem_brief": "Investigate the easy service incident using only the provided canonical observation packet.",
+      "recovery_oracle": "exact-flag-readback-and-healthy-journey",
+      "scenario_id": "SEED-G02-0032",
+      "schema_version": "1.0.0",
+      "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+      "sut_release": "2.2.0"
+    }
+  ],
+  "status": "pass",
+  "validation": "V-G02-004"
+}

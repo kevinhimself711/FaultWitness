@@ -1,0 +1,356 @@
+{
+  "candidate_sha": "ca9de48d68a2ecf0f52b9c9532c05a1dce37d6fc",
+  "end_time": "2026-07-24T00:30:39.038603+00:00",
+  "environment": "private-k3s-live",
+  "iteration_n": 4,
+  "open_evidence": [],
+  "owned_l2_ready": [
+    "lab_bootstrap"
+  ],
+  "scenarios": [
+    {
+      "family": "change_config",
+      "fault_class": "productCatalogFailure",
+      "fault_observations": [
+        {
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "correlated_error": true,
+          "cpu_rate": 0.0035323527233738754,
+          "descriptions": [
+            "Error: Product Catalog Fail Feature Flag Enabled",
+            "Error: Product Catalog Fail Feature Flag Enabled"
+          ],
+          "error_spans": 18,
+          "journey_failed": true,
+          "journey_status": 200,
+          "kafka_fault_log": false,
+          "kafka_log_error": false,
+          "ready": true,
+          "recorded_at": "2026-07-24T00:23:30.740754+00:00",
+          "trace_count": 15
+        },
+        {
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "correlated_error": true,
+          "cpu_rate": 0.0035323527233738754,
+          "descriptions": [
+            "Error: Product Catalog Fail Feature Flag Enabled",
+            "Error: Product Catalog Fail Feature Flag Enabled",
+            "Error: Product Catalog Fail Feature Flag Enabled",
+            "Error: Product Catalog Fail Feature Flag Enabled"
+          ],
+          "error_spans": 34,
+          "journey_failed": true,
+          "journey_status": 200,
+          "kafka_fault_log": false,
+          "kafka_log_error": false,
+          "ready": true,
+          "recorded_at": "2026-07-24T00:24:02.023039+00:00",
+          "trace_count": 33
+        }
+      ],
+      "original_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+      "recovery_observations": [
+        {
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "cpu_rate": 0.0025866830267812996,
+          "descriptions": [],
+          "error_spans": 0,
+          "journey_healthy": true,
+          "journey_status": 200,
+          "kafka_fault_log": false,
+          "kafka_log_error": false,
+          "ready": true,
+          "recorded_at": "2026-07-24T00:24:06.161915+00:00",
+          "signal_not_worsening": true,
+          "trace_count": 0
+        },
+        {
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "cpu_rate": 0.0029669821454141386,
+          "descriptions": [],
+          "error_spans": 4,
+          "journey_healthy": true,
+          "journey_status": 200,
+          "kafka_fault_log": false,
+          "kafka_log_error": false,
+          "ready": true,
+          "recorded_at": "2026-07-24T00:24:37.422252+00:00",
+          "signal_not_worsening": true,
+          "trace_count": 18
+        }
+      ],
+      "restored_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+      "scenario_id": "SMOKE-G02-CHANGE-CONFIG",
+      "state_sequence": [
+        "HEALTHY",
+        "FAULT_ACTIVE",
+        "HEALTHY"
+      ]
+    },
+    {
+      "family": "resource_capacity",
+      "fault_class": "adHighCpu",
+      "fault_observations": [
+        {
+          "baseline_cpu_max": 0.0029669821454141386,
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "correlated_span": true,
+          "cpu_rate": 1.993020874502354,
+          "descriptions": [],
+          "error_spans": 0,
+          "journey_status": 200,
+          "kafka_fault_log": false,
+          "kafka_log_error": false,
+          "ready": true,
+          "recorded_at": "2026-07-24T00:25:28.243024+00:00",
+          "trace_count": 7
+        },
+        {
+          "baseline_cpu_max": 0.0029669821454141386,
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "correlated_span": true,
+          "cpu_rate": 1.9930208745023545,
+          "descriptions": [],
+          "error_spans": 0,
+          "journey_status": 200,
+          "kafka_fault_log": false,
+          "kafka_log_error": false,
+          "ready": true,
+          "recorded_at": "2026-07-24T00:25:59.483008+00:00",
+          "trace_count": 11
+        }
+      ],
+      "original_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+      "recovery_observations": [
+        {
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "cpu_rate": 1.9930208745023545,
+          "descriptions": [],
+          "error_spans": 0,
+          "journey_healthy": true,
+          "journey_status": 200,
+          "kafka_fault_log": false,
+          "kafka_log_error": false,
+          "ready": true,
+          "recorded_at": "2026-07-24T00:26:03.570910+00:00",
+          "signal_not_worsening": true,
+          "trace_count": 0
+        },
+        {
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "cpu_rate": 0.0,
+          "descriptions": [],
+          "error_spans": 0,
+          "journey_healthy": true,
+          "journey_status": 200,
+          "kafka_fault_log": false,
+          "kafka_log_error": false,
+          "ready": true,
+          "recorded_at": "2026-07-24T00:27:12.726630+00:00",
+          "signal_not_worsening": true,
+          "trace_count": 6
+        }
+      ],
+      "restored_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+      "scenario_id": "SMOKE-G02-RESOURCE-CAPACITY",
+      "state_sequence": [
+        "HEALTHY",
+        "FAULT_ACTIVE",
+        "HEALTHY"
+      ]
+    },
+    {
+      "family": "dependency_network",
+      "fault_class": "paymentFailure",
+      "fault_observations": [
+        {
+          "checkout_failed": true,
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "cpu_rate": 0.0032970778018285942,
+          "descriptions": [
+            "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold",
+            "Payment request failed. Invalid token. app.loyalty.level=gold",
+            "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold",
+            "Payment request failed. Invalid token. app.loyalty.level=gold"
+          ],
+          "error_spans": 20,
+          "journey_status": 200,
+          "kafka_fault_log": false,
+          "kafka_log_error": false,
+          "payment_error": true,
+          "ready": true,
+          "recorded_at": "2026-07-24T00:27:51.757470+00:00",
+          "trace_count": 2
+        },
+        {
+          "checkout_failed": true,
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "cpu_rate": 0.0,
+          "descriptions": [
+            "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold",
+            "Payment request failed. Invalid token. app.loyalty.level=gold",
+            "Payment request failed. Invalid token. app.loyalty.level=gold",
+            "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold",
+            "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold",
+            "Payment request failed. Invalid token. app.loyalty.level=gold"
+          ],
+          "error_spans": 30,
+          "journey_status": 200,
+          "kafka_fault_log": false,
+          "kafka_log_error": false,
+          "payment_error": true,
+          "ready": true,
+          "recorded_at": "2026-07-24T00:28:23.091745+00:00",
+          "trace_count": 3
+        }
+      ],
+      "original_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+      "recovery_observations": [
+        {
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "cpu_rate": 0.0030908452334304543,
+          "descriptions": [],
+          "error_spans": 0,
+          "journey_healthy": true,
+          "journey_status": 200,
+          "kafka_fault_log": false,
+          "kafka_log_error": false,
+          "ready": true,
+          "recorded_at": "2026-07-24T00:28:27.303587+00:00",
+          "signal_not_worsening": true,
+          "trace_count": 0
+        },
+        {
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "cpu_rate": 0.0030908452334304543,
+          "descriptions": [],
+          "error_spans": 2,
+          "journey_healthy": true,
+          "journey_status": 200,
+          "kafka_fault_log": false,
+          "kafka_log_error": false,
+          "ready": true,
+          "recorded_at": "2026-07-24T00:28:58.590135+00:00",
+          "signal_not_worsening": true,
+          "trace_count": 2
+        }
+      ],
+      "restored_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+      "scenario_id": "SMOKE-G02-DEPENDENCY-NETWORK",
+      "state_sequence": [
+        "HEALTHY",
+        "FAULT_ACTIVE",
+        "HEALTHY"
+      ]
+    },
+    {
+      "family": "runtime_data",
+      "fault_class": "kafkaQueueProblems",
+      "fault_observations": [
+        {
+          "baseline_lag": 0.0,
+          "consumer_lag": 11.0,
+          "consumer_poll_lag_seconds": 11.0,
+          "consumer_record_lag": 0.0,
+          "cpu_rate": 0.002878206772499155,
+          "descriptions": [],
+          "error_spans": 0,
+          "journey_status": 200,
+          "kafka_error": true,
+          "kafka_fault_log": true,
+          "kafka_log_error": false,
+          "ready": false,
+          "recorded_at": "2026-07-24T00:29:31.653805+00:00",
+          "trace_count": 3
+        },
+        {
+          "baseline_lag": 0.0,
+          "consumer_lag": 11.0,
+          "consumer_poll_lag_seconds": 11.0,
+          "consumer_record_lag": 0.0,
+          "cpu_rate": 0.002878206772499155,
+          "descriptions": [],
+          "error_spans": 0,
+          "journey_status": 200,
+          "kafka_error": true,
+          "kafka_fault_log": true,
+          "kafka_log_error": true,
+          "ready": true,
+          "recorded_at": "2026-07-24T00:30:03.081173+00:00",
+          "trace_count": 3
+        }
+      ],
+      "original_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+      "recovery_observations": [
+        {
+          "consumer_lag": 11.0,
+          "consumer_poll_lag_seconds": 11.0,
+          "consumer_record_lag": 0.0,
+          "cpu_rate": 0.0021048805828415068,
+          "descriptions": [],
+          "error_spans": 0,
+          "journey_healthy": true,
+          "journey_status": 200,
+          "kafka_fault_log": false,
+          "kafka_log_error": false,
+          "ready": true,
+          "recorded_at": "2026-07-24T00:30:07.273347+00:00",
+          "signal_not_worsening": true,
+          "trace_count": 0
+        },
+        {
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "cpu_rate": 0.002758305688542452,
+          "descriptions": [],
+          "error_spans": 0,
+          "journey_healthy": true,
+          "journey_status": 200,
+          "kafka_fault_log": false,
+          "kafka_log_error": false,
+          "ready": true,
+          "recorded_at": "2026-07-24T00:30:38.631232+00:00",
+          "signal_not_worsening": true,
+          "trace_count": 3
+        }
+      ],
+      "restored_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+      "scenario_id": "SMOKE-G02-RUNTIME-DATA",
+      "state_sequence": [
+        "HEALTHY",
+        "FAULT_ACTIVE",
+        "HEALTHY"
+      ]
+    }
+  ],
+  "schema_version": "1.0.0",
+  "start_time": "2026-07-24T00:22:58.525940+00:00",
+  "status": "pass",
+  "validation": "V-G02-006"
+}

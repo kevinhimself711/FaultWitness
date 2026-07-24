@@ -1,0 +1,215 @@
+{
+  "adapters": [
+    {
+      "family": "change_config",
+      "fault_class": "productCatalogFailure",
+      "fault_observations": [
+        {
+          "correlated_error": true,
+          "journey_failed": true
+        },
+        {
+          "correlated_error": true,
+          "journey_failed": true
+        }
+      ],
+      "original_digest": "0322560a9d8dad2cc0231fab7df570038495fe359e15cb2bdeed1d7bbbed001e",
+      "recovery_observations": [
+        {
+          "journey_healthy": true,
+          "ready": true,
+          "signal_not_worsening": true
+        },
+        {
+          "journey_healthy": true,
+          "ready": true,
+          "signal_not_worsening": true
+        }
+      ],
+      "restored_digest": "0322560a9d8dad2cc0231fab7df570038495fe359e15cb2bdeed1d7bbbed001e",
+      "scenario_id": "SEED-G02-0030",
+      "state_sequence": [
+        "HEALTHY",
+        "FAULT_ACTIVE",
+        "HEALTHY"
+      ]
+    },
+    {
+      "family": "resource_capacity",
+      "fault_class": "adHighCpu",
+      "fault_observations": [
+        {
+          "baseline_cpu_max": 1.0,
+          "correlated_span": true,
+          "cpu_rate": 2.0
+        },
+        {
+          "baseline_cpu_max": 1.0,
+          "correlated_span": true,
+          "cpu_rate": 2.0
+        }
+      ],
+      "original_digest": "0322560a9d8dad2cc0231fab7df570038495fe359e15cb2bdeed1d7bbbed001e",
+      "recovery_observations": [
+        {
+          "journey_healthy": true,
+          "ready": true,
+          "signal_not_worsening": true
+        },
+        {
+          "journey_healthy": true,
+          "ready": true,
+          "signal_not_worsening": true
+        }
+      ],
+      "restored_digest": "0322560a9d8dad2cc0231fab7df570038495fe359e15cb2bdeed1d7bbbed001e",
+      "scenario_id": "SEED-G02-0015",
+      "state_sequence": [
+        "HEALTHY",
+        "FAULT_ACTIVE",
+        "HEALTHY"
+      ]
+    },
+    {
+      "family": "resource_capacity",
+      "fault_class": "emailMemoryLeak",
+      "fault_observations": [
+        {
+          "working_set": 2.0
+        },
+        {
+          "working_set": 3.0
+        }
+      ],
+      "original_digest": "0322560a9d8dad2cc0231fab7df570038495fe359e15cb2bdeed1d7bbbed001e",
+      "recovery_observations": [
+        {
+          "journey_healthy": true,
+          "ready": true,
+          "signal_not_worsening": true
+        },
+        {
+          "journey_healthy": true,
+          "ready": true,
+          "signal_not_worsening": true
+        }
+      ],
+      "restored_digest": "0322560a9d8dad2cc0231fab7df570038495fe359e15cb2bdeed1d7bbbed001e",
+      "scenario_id": "SEED-G02-0021",
+      "state_sequence": [
+        "HEALTHY",
+        "FAULT_ACTIVE",
+        "HEALTHY"
+      ]
+    },
+    {
+      "family": "dependency_network",
+      "fault_class": "paymentFailure",
+      "fault_observations": [
+        {
+          "checkout_failed": true,
+          "payment_error": true
+        },
+        {
+          "checkout_failed": true,
+          "payment_error": true
+        }
+      ],
+      "original_digest": "0322560a9d8dad2cc0231fab7df570038495fe359e15cb2bdeed1d7bbbed001e",
+      "recovery_observations": [
+        {
+          "journey_healthy": true,
+          "ready": true,
+          "signal_not_worsening": true
+        },
+        {
+          "journey_healthy": true,
+          "ready": true,
+          "signal_not_worsening": true
+        }
+      ],
+      "restored_digest": "0322560a9d8dad2cc0231fab7df570038495fe359e15cb2bdeed1d7bbbed001e",
+      "scenario_id": "SEED-G02-0032",
+      "state_sequence": [
+        "HEALTHY",
+        "FAULT_ACTIVE",
+        "HEALTHY"
+      ]
+    },
+    {
+      "family": "dependency_network",
+      "fault_class": "paymentUnreachable",
+      "fault_observations": [
+        {
+          "checkout_failed": true,
+          "connection_error": true
+        },
+        {
+          "checkout_failed": true,
+          "connection_error": true
+        }
+      ],
+      "original_digest": "0322560a9d8dad2cc0231fab7df570038495fe359e15cb2bdeed1d7bbbed001e",
+      "recovery_observations": [
+        {
+          "journey_healthy": true,
+          "ready": true,
+          "signal_not_worsening": true
+        },
+        {
+          "journey_healthy": true,
+          "ready": true,
+          "signal_not_worsening": true
+        }
+      ],
+      "restored_digest": "0322560a9d8dad2cc0231fab7df570038495fe359e15cb2bdeed1d7bbbed001e",
+      "scenario_id": "SEED-G02-0027",
+      "state_sequence": [
+        "HEALTHY",
+        "FAULT_ACTIVE",
+        "HEALTHY"
+      ]
+    },
+    {
+      "family": "runtime_data",
+      "fault_class": "kafkaQueueProblems",
+      "fault_observations": [
+        {
+          "baseline_lag": 1.0,
+          "consumer_lag": 2.0,
+          "kafka_error": true
+        },
+        {
+          "baseline_lag": 1.0,
+          "consumer_lag": 2.0,
+          "kafka_error": true
+        }
+      ],
+      "original_digest": "0322560a9d8dad2cc0231fab7df570038495fe359e15cb2bdeed1d7bbbed001e",
+      "recovery_observations": [
+        {
+          "journey_healthy": true,
+          "ready": true,
+          "signal_not_worsening": true
+        },
+        {
+          "journey_healthy": true,
+          "ready": true,
+          "signal_not_worsening": true
+        }
+      ],
+      "restored_digest": "0322560a9d8dad2cc0231fab7df570038495fe359e15cb2bdeed1d7bbbed001e",
+      "scenario_id": "SEED-G02-0031",
+      "state_sequence": [
+        "HEALTHY",
+        "FAULT_ACTIVE",
+        "HEALTHY"
+      ]
+    }
+  ],
+  "candidate_sha": "ca9de48d68a2ecf0f52b9c9532c05a1dce37d6fc",
+  "iteration_n": 6,
+  "schema_version": "1.0.0",
+  "status": "pass",
+  "validation": "V-G02-005"
+}
