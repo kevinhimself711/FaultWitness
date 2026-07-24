@@ -1,20 +1,62 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "eval_id": "EVAL-G02-015",
   "gate": "G02",
   "iteration": "I-0030",
-  "evaluated_revision": "not-run",
-  "status": "pending",
-  "environments": ["planned-managed-python-3.8-local-deterministic"],
-  "commands": [
-    "uv run python -m faultwitness_dev eval-iteration I-0030 --candidate-sha <full-sha>"
+  "candidate_sha": "89cf5917c9b63b5f706da012f4e4366f6ff6a8b8",
+  "evaluated_revision": "89cf5917c9b63b5f706da012f4e4366f6ff6a8b8",
+  "evidence_head_sha": "89cf5917c9b63b5f706da012f4e4366f6ff6a8b8",
+  "status": "pass",
+  "subject_digests": {
+    "deploy/g02/gate_probe.py": "808a35b9256d85ef50a73cfa02768efacfc0a7e9a8a835ceedb46e1cd875dfc7",
+    "docs/evals/EVAL-G02-015/PLAN.md": "0e62445613bbe98afa1c0254635568dac7c8514dc092cda886666f252e968031",
+    "docs/runbooks/G02_EVAL_PROTOCOL.md": "0ac20a9c6d7f9a941fc3d263599c1bc7b694fd830970157caaaa3a60fc17cf3d",
+    "governance/iterations/I-0030.yaml": "47a78b67300dc8e221d39d61a9988ea6f12729c41553c3e0cb2c4843840a1532",
+    "src/faultwitness_dev/evals.py": "53302200f8b3272ea76f5ba57a6d544a1a8003e431bdb4dbc4103930c84a677f",
+    "tests/g02/test_g02_gate_collectors.py": "f6e2da24c6d460562ebc3d18356e5e6ebf2a65d0a3a8957708df04819d8b6613"
+  },
+  "environment_fingerprint": "96db34425988509168e8becdae5e84e14cb8ecc53c71e13ba1051bc3c39e1851",
+  "phases": [
+    {
+      "phase_id": "python38-probe-compatibility",
+      "status": "pass",
+      "start_time": "2026-07-24T23:27:43.170339+00:00",
+      "end_time": "2026-07-24T23:27:43.345159+00:00",
+      "cache_key": "841a69bc3cb987379f756e5d6e8a9c2953e1eda7d15c53a5258f639947bab608",
+      "artifact_digest": "85f5473eb876940417fb252e80935f51c36851cae1a098dfc02f15c80f08e676",
+      "artifact_path": "docs/evals/EVAL-G02-015/artifacts/python38-probe-compatibility.json",
+      "private_artifact_uri": null,
+      "execution_count": 1,
+      "inherited_from_manifest": null
+    }
   ],
-  "artifacts": ["docs/evals/EVAL-G02-015/PLAN.md"],
+  "environments": ["windows-11-uv-managed-cpython-3.8.20-local-deterministic"],
+  "commands": [
+    "uv run pytest -q tests/g02/test_g02_gate_collectors.py tests/g02/test_g02_isolation.py",
+    "uv run --isolated --no-project --python 3.8 python -c <frozen-probe-import-check> deploy/g02/gate_probe.py",
+    "uv run python -m faultwitness_dev eval-iteration I-0030 --candidate-sha 89cf5917c9b63b5f706da012f4e4366f6ff6a8b8",
+    "uv run python -m faultwitness_dev verify-fast",
+    "uv run python -m faultwitness_dev eval-changed"
+  ],
+  "artifacts": [
+    "docs/evals/EVAL-G02-015/PLAN.md",
+    "docs/evals/EVAL-G02-015/REPORT.md",
+    "docs/evals/EVAL-G02-015/artifacts/python38-probe-compatibility.json"
+  ],
   "evidence_urls": [],
   "integrations": {
-    "private_server": {"status": "not_applicable", "reason": "I-0030 is a local Python compatibility corrective."},
-    "bailian": {"status": "not_applicable", "reason": "I-0030 performs no model call."},
-    "langsmith": {"status": "not_applicable", "reason": "I-0030 performs no external-service phase."}
+    "private_server": {
+      "status": "not_applicable",
+      "reason": "I-0030 is a local deterministic Python compatibility corrective."
+    },
+    "bailian": {
+      "status": "not_applicable",
+      "reason": "I-0030 performed no model call."
+    },
+    "langsmith": {
+      "status": "not_applicable",
+      "reason": "I-0030 performed no external-service phase."
+    }
   },
   "open_evidence": []
 }

@@ -1,0 +1,37 @@
+{
+  "candidate_sha": "89cf5917c9b63b5f706da012f4e4366f6ff6a8b8",
+  "cases": [
+    {
+      "case_id": "actual-managed-python38-import",
+      "python_version": [
+        3,
+        8
+      ],
+      "status": "pass"
+    },
+    {
+      "case_id": "python38-utc-aware-timestamp",
+      "status": "pass",
+      "timestamp": "2026-07-24T23:27:43.329388+00:00",
+      "utc_offset_seconds": 0.0
+    }
+  ],
+  "compatibility_case_count": 2,
+  "destructive_scenarios": 0,
+  "end_time": "2026-07-24T23:27:43.345159+00:00",
+  "external_service_calls": 0,
+  "frozen_validation_n": {
+    "V-G02-009": 4,
+    "V-G02-010": 0,
+    "V-G02-011": 4
+  },
+  "gate_l2_execution": 0,
+  "model_calls": 0,
+  "open_evidence": [],
+  "probe_source_digest": "808a35b9256d85ef50a73cfa02768efacfc0a7e9a8a835ceedb46e1cd875dfc7",
+  "remote_execution": 0,
+  "schema_version": "1.0.0",
+  "start_time": "2026-07-24T23:27:43.170339+00:00",
+  "status": "pass",
+  "validation": "I-0030-python38-probe-compatibility"
+}
