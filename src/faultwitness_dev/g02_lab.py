@@ -123,6 +123,12 @@ class FlagDocumentClient(Protocol):
     def write(self, document: Mapping[str, Any]) -> None: ...
 
 
+class TrialJournalProtocol(Protocol):
+    def read(self, trial_id: str) -> dict[str, Any] | None: ...
+
+    def write(self, trial_id: str, status: str, payload: Mapping[str, Any]) -> dict[str, Any]: ...
+
+
 Observation = Mapping[str, Any]
 Observer = Callable[[str, str], Observation]
 
@@ -247,6 +253,9 @@ def promql(query):
 cpu_rate = promql(
     'sum(rate(container_cpu_usage_seconds_total{{namespace="fw-sut",pod=~"ad-.*",container="ad"}}[2m]))'
 )
+working_set = promql(
+    'max(container_memory_working_set_bytes{{namespace="fw-sut",pod=~"email-.*",container="email"}})'
+)
 consumer_record_lag = promql(
     'max(kafka_consumer_records_lag{{service_name="fraud-detection"}})'
 )
@@ -260,6 +269,7 @@ jaeger_ip = jaeger["subsets"][0]["addresses"][0]["ip"]
 service = {{
     "productCatalogFailure": "product-catalog",
     "adHighCpu": "ad",
+    "emailMemoryLeak": "email",
     "paymentFailure": "payment",
     "paymentUnreachable": "payment",
     "kafkaQueueProblems": "fraud-detection",
@@ -292,6 +302,7 @@ print(json.dumps({{
     "ready": ready,
     "journey_status": journey_status,
     "cpu_rate": cpu_rate,
+    "working_set": working_set,
     "consumer_lag": consumer_lag,
     "consumer_record_lag": consumer_record_lag,
     "consumer_poll_lag_seconds": consumer_poll_lag_seconds,
@@ -318,6 +329,8 @@ PY
                 "baseline_cpu_max": self.baseline_cpu,
                 "correlated_span": sample["trace_count"] > 0,
             }
+        if self.fault_class == "emailMemoryLeak":
+            return {**sample, "working_set": sample["working_set"]}
         if self.fault_class == "paymentFailure":
             found = "Payment" in descriptions and sample["error_spans"] > 0
             return {**sample, "checkout_failed": found, "payment_error": found}
@@ -355,8 +368,7 @@ PY
             while True:
                 observation = self._active_observation(self._sample(self.fault_started))
                 active = (
-                    fault_state(fault_class, [observation, observation])
-                    == OracleState.FAULT_ACTIVE
+                    fault_state(fault_class, [observation, observation]) == OracleState.FAULT_ACTIVE
                 )
                 if active:
                     self.fault_samples.append(observation)
@@ -376,6 +388,10 @@ PY
                 if self.fault_class == "adHighCpu":
                     signal_ok = float(sample["cpu_rate"]) <= max(
                         self.baseline_cpu, float(self.fault_samples[-1]["cpu_rate"])
+                    )
+                elif self.fault_class == "emailMemoryLeak":
+                    signal_ok = float(sample["working_set"]) <= float(
+                        self.fault_samples[-1]["working_set"]
                     )
                 elif self.fault_class == "kafkaQueueProblems":
                     signal_ok = float(sample["consumer_lag"]) <= float(
@@ -422,9 +438,13 @@ def inject_live_fault(candidate_sha: str, fault_class: str) -> dict[str, Any]:
     if changed != [adapter.flag_key]:
         raise GovernanceError("G02 live injection must change exactly one allowlisted flag")
     timestamp = datetime.now(UTC)
-    operation_id = "op-" + timestamp.strftime("%Y%m%dT%H%M%SZ-") + hashlib.sha256(
-        (candidate_sha + fault_class + canonical_json(original)).encode()
-    ).hexdigest()[:12]
+    operation_id = (
+        "op-"
+        + timestamp.strftime("%Y%m%dT%H%M%SZ-")
+        + hashlib.sha256(
+            (candidate_sha + fault_class + canonical_json(original)).encode()
+        ).hexdigest()[:12]
+    )
     record = {
         "operation_id": operation_id,
         "candidate_sha": candidate_sha,
@@ -630,7 +650,7 @@ def render_k3s_bootstrap_script(config: Mapping[str, Any], candidate_sha: str) -
 workspace={shlex.quote(workspace)}
 manifest="$workspace/opentelemetry-demo.yaml"
 test -f "$manifest"
-printf '%s  %s\n' {shlex.quote(str(source['sha256']))} "$manifest" | sha256sum -c -
+printf '%s  %s\n' {shlex.quote(str(source["sha256"]))} "$manifest" | sha256sum -c -
 sed -i 's|namespace: otel-demo|namespace: fw-sut|g; s|name: otel-demo|name: fw-sut|g' "$manifest"
 python3 - "$manifest" <<'PY'
 import base64
@@ -685,7 +705,7 @@ if ! /usr/local/bin/k3s kubectl -n fw-sut exec deployment/flagd -c flagd-ui -- \
 fi
 /usr/local/bin/k3s kubectl -n fw-sut create configmap fw-g02-candidate-binding \
   --from-literal=candidate_sha={candidate_sha} \
-  --from-literal=image_set_digest={validation['image_set_digest']} \
+  --from-literal=image_set_digest={validation["image_set_digest"]} \
   --from-literal=sut_commit={SUT_COMMIT} \
   --dry-run=client -o yaml | /usr/local/bin/k3s kubectl apply -f -
 while true; do
@@ -736,7 +756,7 @@ test "$binding" = {candidate_sha}
 ready=$(/usr/local/bin/k3s kubectl -n fw-sut get deployment \
   -o jsonpath='{{range .items[*]}}{{.metadata.name}}={{.status.readyReplicas}}{{"\\n"}}{{end}}')
 printf 'candidate_sha=%s\nimage_set_digest=%s\n%s' \
-  "$binding" {validation['image_set_digest']} "$ready"
+  "$binding" {validation["image_set_digest"]} "$ready"
 """
 
 
@@ -791,11 +811,11 @@ def _stage_lab_manifest(config: Mapping[str, Any], candidate_sha: str) -> None:
     owner = shlex.quote(bundle.server_username)
     run_remote_script(
         f"remote_home=$(getent passwd {owner} | cut -d: -f6); "
-        f"test -n \"$remote_home\"; "
+        f'test -n "$remote_home"; '
         f"install -d -m 0700 -o {owner} -g $(id -gn {owner}) {workspace}; "
         f"install -m 0600 -o {owner} -g $(id -gn {owner}) "
-        f"\"$remote_home/{remote_name}\" {workspace}/opentelemetry-demo.yaml; "
-        f"rm -f \"$remote_home/{remote_name}\"\n",
+        f'"$remote_home/{remote_name}" {workspace}/opentelemetry-demo.yaml; '
+        f'rm -f "$remote_home/{remote_name}"\n',
         privileged=True,
     )
 
@@ -813,17 +833,14 @@ def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str)
     for name, image in images.items():
         _pull_oci_image_archive(crane, image, archives[name])
     archive_digests = {name: _file_sha256(path) for name, path in archives.items()}
-    remote_names = {
-        name: f"{name}-{archive_digests[name]}.oci.tar" for name in archives
-    }
+    remote_names = {name: f"{name}-{archive_digests[name]}.oci.tar" for name in archives}
 
     paths = BootstrapPaths.defaults()
     bundle, _ = _remote_arguments(paths)
     remote_root = "/tmp/faultwitness-g02-images"
     owner = shlex.quote(bundle.server_username)
     migration_script = (
-        f'group=$(id -gn {owner}); install -d -m 0700 -o {owner} -g "$group" '
-        f"{remote_root}\n"
+        f'group=$(id -gn {owner}); install -d -m 0700 -o {owner} -g "$group" {remote_root}\n'
     )
     for name, remote_name in remote_names.items():
         expected = shlex.quote(archive_digests[name])
@@ -834,7 +851,7 @@ def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str)
             '    test -f "$candidate" || continue\n'
             f'    test "$(sha256sum "$candidate" | cut -d" " -f1)" = {expected} || continue\n'
             f'    ln "$candidate" {target} 2>/dev/null || cp "$candidate" {target}\n'
-            f"    chown {owner}:\"$group\" {target}; chmod 0600 {target}; break\n"
+            f'    chown {owner}:"$group" {target}; chmod 0600 {target}; break\n'
             "  done\n"
             "fi\n"
         )
@@ -850,9 +867,7 @@ def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str)
     )
     remote_sizes = {
         name: int(size)
-        for name, size in (
-            line.split("=", 1) for line in inventory.splitlines() if "=" in line
-        )
+        for name, size in (line.split("=", 1) for line in inventory.splitlines() if "=" in line)
     }
     common = [
         "-P",
@@ -888,9 +903,7 @@ def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str)
         )
         if result.returncode:
             raise GovernanceError(
-                "G02 offline image staging failed ("
-                + ssh_failure_category(result.stderr)
-                + ")"
+                "G02 offline image staging failed (" + ssh_failure_category(result.stderr) + ")"
             )
     import_script = "set -eu\n" + "\n".join(
         f"/usr/local/bin/k3s ctr images import {remote_root}/{remote_names[name]}"
@@ -904,10 +917,10 @@ def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str)
         digest = shlex.quote(expected_digest)
         import_script += (
             "\n"
-            f"test \"$(/usr/local/bin/k3s ctr images list | "
+            f'test "$(/usr/local/bin/k3s ctr images list | '
             f"awk -v ref={source} '$1 == ref {{print $3}}')\" = {digest}\n"
             f"/usr/local/bin/k3s ctr images tag --force {source} {target}\n"
-            f"test \"$(/usr/local/bin/k3s ctr images list | "
+            f'test "$(/usr/local/bin/k3s ctr images list | '
             f"awk -v ref={target} '$1 == ref {{print $3}}')\" = {digest}"
         )
     run_remote_script(import_script, privileged=True)
@@ -1180,6 +1193,86 @@ def run_scenario(
     }
 
 
+def run_gate_scenario_matrix(
+    root: Path,
+    candidate_sha: str,
+    journal: TrialJournalProtocol,
+    *,
+    client_factory: Callable[[str], FlagDocumentClient] = RemoteFlagClient,
+    observer_factory: Callable[[str, str], Observer] = LiveScenarioObserver,
+) -> dict[str, Any]:
+    """Execute the frozen 32-seed Gate matrix with trial-local continuation."""
+    config = load_lab_config(root)
+    bootstrap = validate_lab_bootstrap(config)
+    seeds = seed_catalog(bootstrap["image_set_digest"])
+    validate_seed_catalog(seeds, bootstrap["image_set_digest"])
+    completed: list[dict[str, Any]] = []
+    packets: list[dict[str, Any]] = []
+    from faultwitness_dev.g02_baselines import build_observation_packet
+
+    for scenario in seeds:
+        trial_id = f"g02-scenario-{candidate_sha}-{scenario['scenario_id'].casefold()}"
+        previous = journal.read(trial_id)
+        if previous and previous.get("status") == "pass":
+            payload = dict(previous["payload"])
+            completed.append(previous)
+            packets.append(dict(payload["observation_packet"]))
+            continue
+        journal.write(
+            trial_id,
+            "running",
+            {
+                "scenario_id": scenario["scenario_id"],
+                "fault_class": scenario["fault_action"]["class"],
+            },
+        )
+        try:
+            result = run_scenario(
+                scenario,
+                client_factory(candidate_sha),
+                observer_factory(candidate_sha, str(scenario["fault_action"]["class"])),
+            )
+            packet = build_observation_packet(scenario, result["fault_observations"])
+            record = journal.write(
+                trial_id,
+                "pass",
+                {
+                    "scenario_id": scenario["scenario_id"],
+                    "fault_class": scenario["fault_action"]["class"],
+                    "result": result,
+                    "observation_packet": packet,
+                },
+            )
+        except GovernanceError as exc:
+            record = journal.write(
+                trial_id,
+                "metric_fail",
+                {
+                    "scenario_id": scenario["scenario_id"],
+                    "fault_class": scenario["fault_action"]["class"],
+                    "reason": str(exc),
+                },
+            )
+            return {
+                "status": "metric_fail",
+                "validation": "V-G02-006",
+                "scenario_count": len(completed),
+                "failed_trial": trial_id,
+                "trials": [*completed, record],
+            }
+        completed.append(record)
+        packets.append(packet)
+    if len(completed) != 32 or len(packets) != 32:
+        raise GovernanceError("G02 Gate scenario matrix did not complete exactly 32 seeds")
+    return {
+        "status": "pass",
+        "validation": "V-G02-006",
+        "scenario_count": 32,
+        "trials": completed,
+        "observation_packets": packets,
+    }
+
+
 class MemoryFlagClient:
     def __init__(self, document: Mapping[str, Any], *, ignore_restore: bool = False) -> None:
         self.document = copy.deepcopy(dict(document))
@@ -1339,7 +1432,7 @@ def evaluate_i0017(root: Path, candidate_sha: str) -> dict[str, Any]:
             "iteration_n": 4,
             "environment": "private-k3s-live",
             "scenarios": smoke_results,
-            "owned_l2_ready": ["lab_bootstrap"],
+            "owned_gate_runners": ["g02.lab_bootstrap", "g02.scenario_matrix"],
             "start_time": started_at,
             "end_time": datetime.now(UTC).isoformat(),
             "status": "pass",

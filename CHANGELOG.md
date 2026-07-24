@@ -26,6 +26,9 @@
 
 ### Tooling
 
+- Reopen owning I-0017 before I-0020 after readiness audit found registered but unmapped
+  `lab-deploy-and-bind` and `scenario-matrix` phases; add candidate/image-bound deployment and
+  atomic 32-seed continuation interfaces without executing Gate-layer N=32 work.
 - Complete I-0019 live evidence on candidate `c4fa561`: pass five scorer branches, seven exact
   quality floors, deterministic N=3, and four exact-model non-seed live trials with zero fallback,
   atomic trial-local resume, 652/447 tokens, 0.00488 CNY, and no open evidence.

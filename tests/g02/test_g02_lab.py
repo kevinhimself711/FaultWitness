@@ -21,6 +21,7 @@ from faultwitness_dev.g02_lab import (
     image_set_digest,
     load_lab_config,
     render_k3s_bootstrap_script,
+    run_gate_scenario_matrix,
     run_scenario,
     seed_catalog,
     validate_lab_bootstrap,
@@ -105,6 +106,14 @@ def test_kafka_observer_uses_exported_poll_lag_and_exact_fault_log() -> None:
     assert observation["kafka_error"] is True
 
 
+def test_memory_observer_uses_working_set_signal() -> None:
+    observer = LiveScenarioObserver("1" * 40, "emailMemoryLeak")
+    observation = observer._active_observation(
+        {"working_set": 42.0, "descriptions": [], "trace_count": 0}
+    )
+    assert observation["working_set"] == 42.0
+
+
 def test_restore_noop_fixture_blocks_and_quarantines() -> None:
     fixture = load_data(ROOT / "tests/fixtures/g02/fault_restore_noop.yaml")
     scenario = next(
@@ -123,6 +132,40 @@ def test_lab_bootstrap_rejects_unpinned_image_fixture() -> None:
         validate_lab_bootstrap(fixture)
 
 
+def test_gate_scenario_runner_executes_and_reuses_exact_32_trials(tmp_path: Path) -> None:
+    from faultwitness_dev.g02_eval import TrialJournal
+
+    journal = TrialJournal(tmp_path)
+
+    def client_factory(_candidate_sha: str) -> MemoryFlagClient:
+        return MemoryFlagClient(base_flag_document())
+
+    def observer_factory(_candidate_sha: str, _fault_class: str) -> Any:
+        return g02_lab.scripted_sequence_observer()
+
+    first = run_gate_scenario_matrix(
+        ROOT,
+        "1" * 40,
+        journal,
+        client_factory=client_factory,
+        observer_factory=observer_factory,
+    )
+    second = run_gate_scenario_matrix(
+        ROOT,
+        "1" * 40,
+        journal,
+        client_factory=client_factory,
+        observer_factory=observer_factory,
+    )
+    assert first["status"] == "pass"
+    assert first["scenario_count"] == 32
+    assert len(first["observation_packets"]) == 32
+    assert [item["trial_id"] for item in second["trials"]] == [
+        item["trial_id"] for item in first["trials"]
+    ]
+    assert all(item["attempt"] == 2 for item in second["trials"])
+
+
 def test_image_set_digest_is_order_independent() -> None:
     config = {
         "images": [
@@ -137,9 +180,7 @@ def test_image_set_digest_is_order_independent() -> None:
 def test_containerd_normalization_preserves_repository_and_digest() -> None:
     digest = "a" * 64
     source = f"index.docker.io/library/busybox@sha256:{digest}"
-    assert containerd_normalized_reference(source) == (
-        f"docker.io/library/busybox@sha256:{digest}"
-    )
+    assert containerd_normalized_reference(source) == (f"docker.io/library/busybox@sha256:{digest}")
     quay = f"quay.io/example/image@sha256:{digest}"
     assert containerd_normalized_reference(quay) == quay
 
@@ -150,14 +191,12 @@ def test_clean_clone_runner_is_pinned_and_candidate_bound() -> None:
     script = render_k3s_bootstrap_script(config, "1" * 40)
     assert summary["image_count"] == 30
     assert summary["profile"] == "k3s"
-    assert all(
-        not image["reference"].startswith("docker.io/") for image in config["images"]
-    )
+    assert all(not image["reference"].startswith("docker.io/") for image in config["images"])
     assert "sha256sum -c" in script
     assert "namespace: fw-sut" in script
     assert "kubectl apply -n fw-sut" in script
     assert "readyReplicas" in script
-    assert 'grep -q \'"emailMemoryLeak"\'' in script
+    assert "grep -q '\"emailMemoryLeak\"'" in script
     assert "rollout restart deployment/flagd" in script
     assert "sleep 5" in script
     assert "rollout status" not in script
@@ -202,18 +241,14 @@ def test_live_inject_and_restore_are_exact_and_external(
     monkeypatch.setattr(g02_lab, "RemoteFlagClient", FakeRemoteFlagClient)
     monkeypatch.setattr(g02_lab, "_operation_root", lambda: tmp_path)
     injected = g02_lab.inject_live_fault("1" * 40, "productCatalogFailure")
-    assert FakeRemoteFlagClient.current["flags"]["productCatalogFailure"][
-        "defaultVariant"
-    ] == "on"
+    assert FakeRemoteFlagClient.current["flags"]["productCatalogFailure"]["defaultVariant"] == "on"
     restored = g02_lab.restore_live_fault("1" * 40, injected["operation_id"])
     assert restored["restored_digest"] == injected["original_digest"]
     assert FakeRemoteFlagClient.current == document
 
 
 def test_lab_inject_and_restore_cli_are_explicit() -> None:
-    inject = parser().parse_args(
-        ["lab-g02", "inject", "--fault-class", "productCatalogFailure"]
-    )
+    inject = parser().parse_args(["lab-g02", "inject", "--fault-class", "productCatalogFailure"])
     restore = parser().parse_args(
         ["lab-g02", "restore", "--operation-id", "op-20260723T000000Z-aaaaaaaaaaaa"]
     )

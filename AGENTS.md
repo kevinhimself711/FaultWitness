@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: null
+active_iteration: I-0017
 next_iteration: I-0020
 last_closed_gate: G01
 ---
@@ -12,9 +12,9 @@ last_closed_gate: G01
 
 FaultWitness is a multi-tenant Agent Runtime for investigating microservice incidents, proposing bounded remediations, executing approved actions, and producing auditable evaluation and training assets.
 
-G00 and G01 are closed. G02 is `in_progress`; I-0019 is complete with no open evidence and there is
-no active Iteration. I-0020 remains planned; Gate-scale evaluation is prohibited until it is
-activated.
+G00 and G01 are closed. G02 is `in_progress`; the pre-I-0020 readiness audit found missing
+`lab-deploy-and-bind` and `scenario-matrix` phase handlers, so owning I-0017 is reopened as the sole
+active Iteration. I-0020 remains planned and Gate evaluation is prohibited.
 
 ## Source-of-truth order
 

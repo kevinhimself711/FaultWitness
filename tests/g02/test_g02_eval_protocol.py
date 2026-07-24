@@ -14,6 +14,7 @@ from faultwitness_dev.g02_eval import (
     PhaseDefinition,
     PhaseEngine,
     TrialJournal,
+    _owned_phase_handlers,
     inspect_reconciliation,
     run_phase_contract_suite,
     validate_candidate_binding_document,
@@ -55,9 +56,7 @@ def test_stale_cache_fixture_is_not_reused(tmp_path: Path) -> None:
     engine = PhaseEngine((definition,), _context(), tmp_path)
     path = engine.record_path("first")
     path.parent.mkdir(parents=True)
-    path.write_text(
-        json.dumps(load_data(FIXTURES / "phase_stale_cache.json")), encoding="utf-8"
-    )
+    path.write_text(json.dumps(load_data(FIXTURES / "phase_stale_cache.json")), encoding="utf-8")
     calls: list[str] = []
 
     def handler(_context: PhaseContext, _journal: TrialJournal) -> dict[str, str]:
@@ -89,9 +88,7 @@ def test_owned_l2_negative_fixtures_fail_closed() -> None:
             {"negative": load_data(FIXTURES / "manifest_open_evidence.json")}
         )
     with pytest.raises(GovernanceError, match="unresolved phase"):
-        validate_reconciliation_document(
-            load_data(FIXTURES / "reconciliation_pending.json")
-        )
+        validate_reconciliation_document(load_data(FIXTURES / "reconciliation_pending.json"))
 
 
 def test_reconciliation_accepts_only_complete_timestamped_evidence() -> None:
@@ -128,9 +125,13 @@ def test_frozen_phase_registry_has_fail_fast_order_and_one_destructive_phase() -
         "preflight-static-inheritance",
         "preflight-upstream-g01",
     ]
-    assert [phase.phase_id for phase in G02_PHASES if phase.destructive] == [
-        "scenario-matrix"
-    ]
+    assert [phase.phase_id for phase in G02_PHASES if phase.destructive] == ["scenario-matrix"]
+
+
+def test_every_frozen_phase_has_an_owner_implemented_handler(tmp_path: Path) -> None:
+    engine = PhaseEngine(G02_PHASES, _context(), tmp_path)
+    handlers = _owned_phase_handlers(tmp_path, {}, engine)
+    assert set(handlers) == {phase.phase_id for phase in G02_PHASES}
 
 
 def test_manifest_schema_accepts_legacy_v1_and_requires_complete_v2() -> None:
@@ -186,6 +187,4 @@ def test_cli_freezes_g02_phase_and_continuation_interfaces() -> None:
     resumed = parser().parse_args(["eval-g02", "--candidate-sha", "1" * 40, "--resume"])
     assert resumed.resume
     with pytest.raises(SystemExit):
-        parser().parse_args(
-            ["eval-g02", "--candidate-sha", "1" * 40, "--resume", "--from-failed"]
-        )
+        parser().parse_args(["eval-g02", "--candidate-sha", "1" * 40, "--resume", "--from-failed"])

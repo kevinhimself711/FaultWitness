@@ -492,6 +492,21 @@ def _owned_phase_handlers(
             raise GovernanceError("G02 upstream preflight requires exactly nine G01 manifests")
         return inspect_manifest_debt(root, paths)
 
+    def lab(context: PhaseContext, _journal: TrialJournal) -> Mapping[str, Any]:
+        from faultwitness_dev.g02_lab import deploy_g02_lab
+
+        document = deploy_g02_lab(root, context.candidate_sha)
+        if document.get("image_set_digest") != context.sut_image_set_digest:
+            raise GovernanceError("G02 deployed lab image-set binding drifted")
+        output = root / "docs/evals/EVAL-G02-005/artifacts/phases/lab-deploy-and-bind/summary.json"
+        _atomic_json(output, document)
+        return {
+            "status": "pass",
+            "ready_deployment_count": len(document["ready_deployments"]),
+            "artifact_digest": _canonical_digest(document),
+            "artifact_path": output.relative_to(root).as_posix(),
+        }
+
     def isolation_input(phase_id: str) -> tuple[dict[str, Any], Path]:
         inputs = binding.get("phase_inputs")
         relative_outputs = {
@@ -546,6 +561,19 @@ def _owned_phase_handlers(
         _atomic_json(output, document)
         return {
             **summary,
+            "artifact_digest": _canonical_digest(document),
+            "artifact_path": output.relative_to(root).as_posix(),
+        }
+
+    def scenarios(context: PhaseContext, journal: TrialJournal) -> Mapping[str, Any]:
+        from faultwitness_dev.g02_lab import run_gate_scenario_matrix
+
+        document = run_gate_scenario_matrix(root, context.candidate_sha, journal)
+        output = root / "docs/evals/EVAL-G02-005/artifacts/phases/scenario-matrix/summary.json"
+        _atomic_json(output, document)
+        return {
+            "status": document["status"],
+            "scenario_count": document["scenario_count"],
             "artifact_digest": _canonical_digest(document),
             "artifact_path": output.relative_to(root).as_posix(),
         }
@@ -653,9 +681,11 @@ def _owned_phase_handlers(
         "preflight-candidate-binding": candidate,
         "preflight-static-inheritance": static,
         "preflight-upstream-g01": upstream,
+        "lab-deploy-and-bind": lab,
         "isolation-access-matrix": access,
         "trace-six-stage-matrix": stages,
         "all-surface-canary": canary,
+        "scenario-matrix": scenarios,
         "baseline-deterministic": deterministic_baseline_phase,
         "baseline-live": live_baseline_phase,
         "baseline-aggregate": baseline_aggregate_phase,

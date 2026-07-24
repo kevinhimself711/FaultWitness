@@ -79,3 +79,15 @@ spacing, the 90-second oracle window, or any performance or Gate threshold.
 
 The destructive Gate scenario phase remains separately guarded and runs only once for an exact
 candidate, image, config, and environment cache key.
+
+## Gate phase interfaces
+
+I-0017 owns executable handlers for both `lab-deploy-and-bind` and `scenario-matrix` before I-0020
+starts. The deployment handler performs the existing digest-pinned clean-clone deployment, verifies
+the candidate and SUT image-set binding, and writes its phase summary. The scenario handler executes
+exactly the 32 registered seeds against that bound lab, restores the exact flag document after every
+seed, and writes one candidate-bound atomic trial record plus one sealed observation packet per seed.
+
+Passed scenario trial IDs are reused for the same phase key. Only pending or infrastructure-failed
+work may continue; a metric/oracle/cleanup failure requires a new candidate. The phase itself is
+destructive and can pass only once for one candidate/artifact/config/environment cache key.
