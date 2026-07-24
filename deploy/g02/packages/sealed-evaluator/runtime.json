@@ -1,0 +1,7 @@
+{
+  "schema_version": "1.0.0",
+  "principal": "sealed-evaluator",
+  "entrypoint": "faultwitness.g02.sealed_evaluator",
+  "credential_mount": "runtime-only",
+  "sealed_inputs": ["trial-reader", "answer-reader", "evidence-sink"]
+}

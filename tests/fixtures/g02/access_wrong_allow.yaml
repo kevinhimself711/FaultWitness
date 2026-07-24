@@ -1,0 +1,4 @@
+principal: scenario-controller
+action: read
+resource: s3:g02/ground-truth/deny-sentinel
+observed_allow: true

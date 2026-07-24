@@ -1,0 +1,74 @@
+schema_version: "1.0.0"
+bucket: faultwitness-eval
+trust_zones: [fw-sut, fw-baseline, fw-eval]
+prefixes:
+  - g02/scenarios/
+  - g02/trials/
+  - g02/ground-truth/
+  - g02/locked-tests/
+  - g02/evidence/
+flag_keys:
+  - productCatalogFailure
+  - adHighCpu
+  - emailMemoryLeak
+  - paymentFailure
+  - paymentUnreachable
+  - kafkaQueueProblems
+principals:
+  scenario-controller:
+    zone: fw-sut
+    allow:
+      - {action: read, resource: "s3:g02/scenarios/*"}
+      - {action: write, resource: "s3:g02/trials/*"}
+      - {action: mutate, resource: "sut:flag/*"}
+    deny:
+      - {action: read, resource: "s3:g02/ground-truth/*"}
+      - {action: read, resource: "s3:g02/locked-tests/*"}
+      - {action: read, resource: "schema:*"}
+      - {action: mutate, resource: "sut:other/*"}
+  baseline-agent:
+    zone: fw-baseline
+    allow:
+      - {action: read, resource: "observation:own"}
+      - {action: write, resource: "trial-sink:own"}
+      - {action: read, resource: "obs:*"}
+    deny:
+      - {action: read, resource: "s3:g02/scenarios/*"}
+      - {action: read, resource: "s3:g02/ground-truth/*"}
+      - {action: read, resource: "s3:g02/locked-tests/*"}
+      - {action: read, resource: "s3:g02/evidence/*"}
+      - {action: connect, resource: "network:fw-eval"}
+  sealed-evaluator:
+    zone: fw-eval
+    allow:
+      - {action: read, resource: "s3:g02/trials/*"}
+      - {action: read, resource: "s3:g02/ground-truth/*"}
+      - {action: read, resource: "s3:g02/locked-tests/*"}
+      - {action: write, resource: "s3:g02/evidence/*"}
+    deny:
+      - {action: mutate, resource: "sut:*"}
+      - {action: use, resource: "credential:baseline-execution"}
+      - {action: read, resource: "schema:*"}
+  ordinary-developer:
+    zone: external
+    allow:
+      - {action: read, resource: "public:documentation"}
+      - {action: read, resource: "public:preregistry"}
+    deny:
+      - {action: read, resource: "s3:g02/ground-truth/*"}
+      - {action: read, resource: "s3:g02/locked-tests/*"}
+      - {action: read, resource: "s3:g02/trials/*"}
+      - {action: read, resource: "s3:g02/evidence/*"}
+      - {action: read, resource: "schema:*"}
+runtime_packages:
+  scenario-controller:
+    - deploy/g02/packages/scenario-controller/runtime.json
+  baseline-agent:
+    - deploy/g02/packages/baseline-agent/runtime.json
+  sealed-evaluator:
+    - deploy/g02/packages/sealed-evaluator/runtime.json
+writers:
+  - g02-scenario-object
+  - g02-trial-object
+  - g02-evidence-object
+  - g02-preregistry-publication

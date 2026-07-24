@@ -1,0 +1,7 @@
+{
+  "schema_version": "1.0.0",
+  "principal": "scenario-controller",
+  "entrypoint": "faultwitness.g02.scenario_controller",
+  "credential_mount": "runtime-only",
+  "sealed_inputs": ["scenario-spec", "observation-sink", "flagd-api"]
+}

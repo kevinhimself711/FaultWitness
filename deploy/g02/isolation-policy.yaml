@@ -1,0 +1,149 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: fw-baseline
+  labels:
+    faultwitness.dev/trust-zone: baseline
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: fw-eval
+  labels:
+    faultwitness.dev/trust-zone: sealed-eval
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: scenario-controller
+  namespace: fw-sut
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: baseline-agent
+  namespace: fw-baseline
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sealed-evaluator
+  namespace: fw-eval
+automountServiceAccountToken: false
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: scenario-controller-default-deny
+  namespace: fw-sut
+spec:
+  podSelector:
+    matchLabels:
+      faultwitness.dev/principal: scenario-controller
+  policyTypes: [Ingress, Egress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: scenario-controller-allow-required
+  namespace: fw-sut
+spec:
+  podSelector:
+    matchLabels:
+      faultwitness.dev/principal: scenario-controller
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - {protocol: UDP, port: 53}
+        - {protocol: TCP, port: 53}
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: flagd
+      ports:
+        - {protocol: TCP, port: 4000}
+        - {protocol: TCP, port: 8013}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: baseline-agent-default-deny
+  namespace: fw-baseline
+spec:
+  podSelector:
+    matchLabels:
+      faultwitness.dev/principal: baseline-agent
+  policyTypes: [Ingress, Egress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: baseline-agent-allow-observability
+  namespace: fw-baseline
+spec:
+  podSelector:
+    matchLabels:
+      faultwitness.dev/principal: baseline-agent
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - {protocol: UDP, port: 53}
+        - {protocol: TCP, port: 53}
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: fw-sut
+      ports:
+        - {protocol: TCP, port: 8080}
+        - {protocol: TCP, port: 9090}
+        - {protocol: TCP, port: 16686}
+        - {protocol: TCP, port: 4318}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: sealed-evaluator-default-deny
+  namespace: fw-eval
+spec:
+  podSelector:
+    matchLabels:
+      faultwitness.dev/principal: sealed-evaluator
+  policyTypes: [Ingress, Egress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: sealed-evaluator-allow-object-store
+  namespace: fw-eval
+spec:
+  podSelector:
+    matchLabels:
+      faultwitness.dev/principal: sealed-evaluator
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - {protocol: UDP, port: 53}
+        - {protocol: TCP, port: 53}
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: fw-data
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: minio
+      ports:
+        - {protocol: TCP, port: 9000}

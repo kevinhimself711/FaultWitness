@@ -1,0 +1,7 @@
+{
+  "schema_version": "1.0.0",
+  "principal": "baseline-agent",
+  "entrypoint": "faultwitness.g02.baseline_runner",
+  "credential_mount": "runtime-only",
+  "sealed_inputs": ["observation-packet", "trial-sink", "read-only-observability"]
+}

@@ -18,13 +18,16 @@ eval_id: EVAL-G02-003
 commit: null
 changed_paths:
   - config/g02
+  - deploy/g02
   - src/faultwitness_dev
   - tests/g02
   - tests/fixtures/g02
   - docs/evals/EVAL-G02-003
+  - docs/runbooks/G02_ISOLATION.md
 behavior_change: true
 docs_updated:
   - docs/roadmap/iterations/I-0018.md
   - docs/evals/EVAL-G02-003/PLAN.md
   - docs/gates/G02/CARRY_IN.yaml
+  - docs/runbooks/G02_ISOLATION.md
 threshold_changes: []

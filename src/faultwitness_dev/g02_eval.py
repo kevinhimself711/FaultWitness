@@ -11,6 +11,11 @@ from pathlib import Path
 from typing import Any
 
 from faultwitness_dev.errors import GovernanceError
+from faultwitness_dev.g02_isolation import (
+    validate_all_surface_canary,
+    validate_live_access_matrix,
+    validate_stage_matrix,
+)
 from faultwitness_dev.schemas import load_data, validate_repository_schemas
 
 PHASE_TERMINAL_STATUSES = {"pass", "metric_fail", "infra_failed", "blocked"}
@@ -492,6 +497,67 @@ def _owned_phase_handlers(
             raise GovernanceError("G02 upstream preflight requires exactly nine G01 manifests")
         return inspect_manifest_debt(root, paths)
 
+    def isolation_input(phase_id: str) -> tuple[dict[str, Any], Path]:
+        inputs = binding.get("phase_inputs")
+        relative_outputs = {
+            "isolation-access-matrix": (
+                "docs/evals/EVAL-G02-005/artifacts/phases/"
+                "isolation-access-matrix/matrix.json"
+            ),
+            "trace-six-stage-matrix": (
+                "docs/evals/EVAL-G02-005/artifacts/phases/"
+                "trace-six-stage-matrix/matrix.json"
+            ),
+            "all-surface-canary": (
+                "docs/evals/EVAL-G02-005/artifacts/phases/"
+                "all-surface-canary/matrix.json"
+            ),
+        }
+        source_value = inputs.get(phase_id) if isinstance(inputs, dict) else None
+        source = Path(str(source_value)) if source_value else Path()
+        if not source.is_absolute() or not source.is_file():
+            raise GovernanceError(f"G02 phase input must be a repository-external file: {phase_id}")
+        document = load_data(source)
+        if not isinstance(document, dict):
+            raise GovernanceError(f"G02 phase input must be an object: {phase_id}")
+        return document, root / relative_outputs[phase_id]
+
+    def access(context: PhaseContext, _journal: TrialJournal) -> Mapping[str, Any]:
+        document, output = isolation_input("isolation-access-matrix")
+        summary = validate_live_access_matrix(
+            document, context.candidate_sha, context.environment_fingerprint
+        )
+        _atomic_json(output, document)
+        return {
+            **summary,
+            "artifact_digest": _canonical_digest(document),
+            "artifact_path": output.relative_to(root).as_posix(),
+        }
+
+    def stages(context: PhaseContext, _journal: TrialJournal) -> Mapping[str, Any]:
+        document, output = isolation_input("trace-six-stage-matrix")
+        summary = validate_stage_matrix(
+            document, context.candidate_sha, context.environment_fingerprint
+        )
+        _atomic_json(output, document)
+        return {
+            **summary,
+            "artifact_digest": _canonical_digest(document),
+            "artifact_path": output.relative_to(root).as_posix(),
+        }
+
+    def canary(context: PhaseContext, _journal: TrialJournal) -> Mapping[str, Any]:
+        document, output = isolation_input("all-surface-canary")
+        summary = validate_all_surface_canary(
+            document, context.candidate_sha, context.environment_fingerprint
+        )
+        _atomic_json(output, document)
+        return {
+            **summary,
+            "artifact_digest": _canonical_digest(document),
+            "artifact_path": output.relative_to(root).as_posix(),
+        }
+
     def reconciliation(_context: PhaseContext, journal: TrialJournal) -> Mapping[str, Any]:
         document = {
             "open_evidence": binding.get("open_evidence", []),
@@ -524,6 +590,9 @@ def _owned_phase_handlers(
         "preflight-candidate-binding": candidate,
         "preflight-static-inheritance": static,
         "preflight-upstream-g01": upstream,
+        "isolation-access-matrix": access,
+        "trace-six-stage-matrix": stages,
+        "all-surface-canary": canary,
         "candidate-reconciliation": reconciliation,
         "close-readiness": close,
     }
