@@ -18,8 +18,10 @@ Windows command-line transport failure before the first access cell. I-0025 is t
 with complete negative evidence; no matrix cell, destructive scenario, external-service probe, or
 model call ran.
 
-I-0026 is the next planned bounded-transport corrective and I-0027/EVAL-G02-012 is the replacement
-orchestration. G02 has not passed, no waiver is present, and no closure or tag is authorized.
+I-0026/EVAL-G02-011 has now completed the bounded-transport corrective with 4/4 deterministic
+transport cases, frozen Iteration N=4/0/4, no remote or model execution, and no open evidence.
+I-0027/EVAL-G02-012 is the next replacement orchestration. G02 has not passed, no waiver is present,
+and no closure or tag is authorized.
 I-0020/EVAL-G02-005, I-0023/EVAL-G02-008, and I-0025/EVAL-G02-010 remain immutable failed history.
 
 Future reports must include `G01-SUPP-ACCESS-MATRIX`, `G01-SUPP-SIX-STAGE-SPANS`, and

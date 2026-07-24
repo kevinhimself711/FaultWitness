@@ -5,7 +5,7 @@
   "iteration": "I-0026",
   "candidate_sha": "b50db666c4d73f42197bdc7136fbc0895ea26287",
   "evaluated_revision": "b50db666c4d73f42197bdc7136fbc0895ea26287",
-  "evidence_head_sha": "b50db666c4d73f42197bdc7136fbc0895ea26287",
+  "evidence_head_sha": "a6d0d0c3b81a571eb33c6568ddb972ab515a9b95",
   "status": "pass",
   "subject_digests": {
     "docs/evals/EVAL-G02-011/PLAN.md": "ef2ca1c9785ca39496430fa4799c60ef3697c41bb5a6a62f08387892334056bd",

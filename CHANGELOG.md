@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Close I-0026 on candidate `b50db66` with EVAL-G02-011 passing 4/4 bounded transport cases,
+  frozen validation N=4/0/4, zero remote/model execution, and no open evidence.
 - Implement I-0026 bounded privileged remote-script transport: upload script bytes through SSH
   stdin, execute through a short sudo path command, clean up deterministically, and ignore legacy
   wall-clock kill arguments without changing Eval criteria.

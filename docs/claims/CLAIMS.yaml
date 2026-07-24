@@ -130,8 +130,9 @@ claims:
       - EVAL-G02-003
       - EVAL-G02-007
       - EVAL-G02-009
+      - EVAL-G02-011
     limitations:
-      - "I-0018 proves policy simulation and new-writer isolation; I-0022 proves the exact corrected observability policy; I-0024 proves candidate-bound provisioning and collectors locally. EVAL-G02-010 exposed their Windows command transport defect before any cell; I-0026 corrects that path and the 60-cell, six-stage, and 22-surface live matrices remain reserved for EVAL-G02-012."
+      - "I-0018 proves policy simulation and new-writer isolation; I-0022 proves the exact corrected observability policy; I-0024 proves candidate-bound provisioning and collectors locally; I-0026/EVAL-G02-011 proves bounded Windows-safe privileged transport. The 60-cell, six-stage, and 22-surface live matrices remain reserved for EVAL-G02-012."
       - "No GT/locked case payload, baseline, or paid model execution is claimed."
   - id: CLAIM-EVAL-004
     statement: "G02 has three shared-packet diagnosis baselines, deterministic scoring, exact quality-floor measurement, clustered bootstrap aggregation, and trial-local paid-model resume."

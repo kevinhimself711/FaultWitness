@@ -15,6 +15,12 @@ deterministic tests, and I-0027/EVAL-G02-012 performs replacement orchestration.
 thresholds, Ground Truth, locked tests, health windows, model route, token/cost ceilings, and Gate
 failure semantics remain unchanged.
 
+I-0026 candidate `b50db666c4d73f42197bdc7136fbc0895ea26287` then passed EVAL-G02-011:
+four deterministic transport cases, frozen V-G02-009/010/011 Iteration N=4/0/4, and zero remote,
+Gate L2, destructive, external-service, or model execution. The legacy timeout parameter remains
+source-compatible but is no longer passed to remote child processes. The Iteration closed with
+`open_evidence: []`; I-0027 is the sole forward replacement path.
+
 ## 2026-07-24 — I-0024 candidate-bound collector correction
 
 Candidate `a2797037d1a3aa5c7f7264c2c3b122712b6d1677` replaces the three
