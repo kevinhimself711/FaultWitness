@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0024
 gate: G02
 title: Candidate-Bound L2 Collector and Provisioning Corrective
-status: planned
+status: in_progress
 iteration_type: corrective
 corrects: [I-0018, I-0023]
 scope:

@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Activate I-0024 as the sole forward collector corrective; I-0025 remains planned and no Gate L2,
+  destructive scenario, or model call is authorized during I-0024.
 - Preserve terminal I-0023/EVAL-G02-008 after a deterministic runner-readiness failure; plan
   corrective I-0024 and replacement orchestration I-0025 without reopening I-0018/I-0023 or
   changing any validation N, threshold, locked asset, destructive rule, or model budget.
