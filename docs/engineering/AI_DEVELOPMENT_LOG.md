@@ -1,5 +1,21 @@
 # AI Development Log
 
+## 2026-07-24 — I-0022 forward isolation correction
+
+Candidate `7d6e07bc142bdd5cb0bcd1a465ae3b04931b799c` corrected only the deterministic
+V-G02-009 reachability root cause and the hard-coded terminal Eval route. EVAL-G02-007 passed five
+local deterministic cases: exact baseline observability egress, exact ingress principal, rejection
+of broad/private HTTPS egress, preservation of all four identity-deny contracts, and forward
+orchestration/terminal-transition selection. It ran no Gate phase, destructive scenario, external
+service, or model call and closed with `open_evidence: []`.
+
+One launch wrapper first wrote its logs inside the repository, so the runner's clean-tree guard
+rejected the command before any Eval case ran. The attempt was retained outside Git, the known
+cause was corrected by moving wrapper logs to the external evidence root, and the unchanged
+candidate then passed. This reinforces that supervision artifacts must never mutate the subject
+checkout; it does not alter N, thresholds, retry semantics, or the classification of genuine
+policy/metric failures.
+
 ## 2026-07-24 — G02 EVAL-G02-005 forward failure handling
 
 Candidate `585deaee6548be0940d184bee3c73dadb4511fdb` passed four fail-fast preflights and

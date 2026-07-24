@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Complete I-0022 without reopening I-0018 or I-0020; EVAL-G02-007 proves the exact observability
+  correction and active-Iteration Eval routing with five deterministic cases and no Gate/model run.
 - Activate I-0022 as the sole forward corrective; I-0020 stays terminal `failed` and I-0023 stays
   planned as the replacement orchestration.
 - Preserve terminal EVAL-G02-005 after V-G02-009 proved two deterministic baseline observability
@@ -31,6 +33,12 @@
 
 ### Tooling
 
+- Close I-0022 on candidate `7d6e07b` and evidence commit `7a42198`; retain EVAL-G02-005 as
+  immutable failed history, redirect replacement Gate artifacts to EVAL-G02-008, and leave
+  `open_evidence: []`.
+- Pass EVAL-G02-007 with exact Prometheus/Loki/Tempo reachability, public-HTTPS private-range
+  exclusion, four preserved identity denies, terminal-Eval rejection, and correct failed-transition
+  attribution; external execution, Gate phases, and model calls remain zero.
 - Close I-0021 on candidate `826453b` and evidence commit `fd4e1a0`; the machine policy now makes
   all post-epoch terminal Iteration records irreversible and leaves `open_evidence: []`.
 - Pass EVAL-G02-006 on candidate `826453b`: all five forward-lifecycle cases, repository history

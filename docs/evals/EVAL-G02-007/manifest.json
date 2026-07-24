@@ -5,7 +5,7 @@
   "iteration": "I-0022",
   "candidate_sha": "7d6e07bc142bdd5cb0bcd1a465ae3b04931b799c",
   "evaluated_revision": "7d6e07bc142bdd5cb0bcd1a465ae3b04931b799c",
-  "evidence_head_sha": "7d6e07bc142bdd5cb0bcd1a465ae3b04931b799c",
+  "evidence_head_sha": "7a42198b5bc12e391df3e32b95ac391b3f797e94",
   "status": "pass",
   "subject_digests": {
     "deploy/g02/isolation-policy.yaml": "68b9479ec1376fa8e03601cef0d6f7a383a7c592c67c90fb2a7406d56f46b3b0",

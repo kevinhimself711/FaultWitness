@@ -25,3 +25,6 @@ guard rejected it before any case ran. Its logs are retained under
 `private://faultwitness/g02/EVAL-G02-007/wrapper-attempt-1/`. The corrected wrapper wrote logs
 outside the repository and the unchanged candidate passed; this was a local launch-precondition
 error, not a retry of a metric, policy, or zero-tolerance failure.
+
+Repository verification completed with 328 tests and zero Markdown issues. Evidence commit
+`7a42198b5bc12e391df3e32b95ac391b3f797e94` preserves the candidate-bound artifact.
