@@ -1,8 +1,8 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: null
-next_iteration: I-0023
+active_iteration: I-0023
+next_iteration: null
 last_closed_gate: G01
 ---
 
@@ -14,8 +14,9 @@ FaultWitness is a multi-tenant Agent Runtime for investigating microservice inci
 
 G00 and G01 are closed. G02 is `in_progress`. I-0016 through I-0019 and forward governance
 corrective I-0021 and I-0022 are completed with no open evidence. I-0020 is terminally failed with
-complete V-G02-009 policy evidence. No Iteration is active; I-0023 is the next planned replacement
-orchestration and is the only record eligible for activation.
+complete V-G02-009 policy evidence. I-0023 is the sole active replacement orchestration and may
+only bind one corrected candidate, execute the fourteen frozen Gate phases, and synchronize
+evidence. It may not add behavior, runners, fixtures, test semantics, thresholds, or samples.
 
 ## Source-of-truth order
 

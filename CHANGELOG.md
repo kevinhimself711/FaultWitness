@@ -141,6 +141,8 @@
 
 ### Planning
 
+- Activate I-0023 as the sole replacement unified-candidate orchestration after I-0022 closed; it
+  may only bind and execute the fourteen frozen phases under EVAL-G02-008.
 - Activate I-0020 as the sole unified-candidate orchestration Iteration after I-0021 closed; no new
   runner, fixture, product behavior, test framework, threshold, or Gate phase is authorized.
 - Activate I-0021 as the sole forward governance corrective before I-0020; it may change only
