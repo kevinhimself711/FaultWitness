@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0021
 gate: G02
 title: Lifecycle Monotonicity Governance
-status: in_progress
+status: completed
 iteration_type: corrective
 corrects: [I-0017, I-0018, I-0019]
 scope:
@@ -18,7 +18,7 @@ tests:
   - uv run python -m faultwitness_dev verify-fast
   - uv run python -m faultwitness_dev eval-changed
 eval_id: EVAL-G02-006
-commit: null
+commit: 826453b3cf1256e105cc32a0f0aef6fd38931258
 changed_paths:
   - AGENTS.md
   - CHANGELOG.md

@@ -5,7 +5,7 @@
   "iteration": "I-0021",
   "candidate_sha": "826453b3cf1256e105cc32a0f0aef6fd38931258",
   "evaluated_revision": "826453b3cf1256e105cc32a0f0aef6fd38931258",
-  "evidence_head_sha": "826453b3cf1256e105cc32a0f0aef6fd38931258",
+  "evidence_head_sha": "fd4e1a0396b78a6a324c0b5e2f97c7f9927c852f",
   "status": "pass",
   "subject_digests": {
     "governance/policies/iteration-lifecycle-v1.yaml": "408bd7c76e98d39494d7dd97e3b4568cae771087f6a91f8b9171f4976149ef6c",

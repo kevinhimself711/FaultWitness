@@ -26,6 +26,8 @@
 
 ### Tooling
 
+- Close I-0021 on candidate `826453b` and evidence commit `fd4e1a0`; the machine policy now makes
+  all post-epoch terminal Iteration records irreversible and leaves `open_evidence: []`.
 - Pass EVAL-G02-006 on candidate `826453b`: all five forward-lifecycle cases, repository history
   scan, typed corrective links, and I-0020 owner-reopen absence pass with `open_evidence: []`.
 - Enforce the I-0021 forward-only lifecycle policy in `verify-fast`: scan committed history and the
