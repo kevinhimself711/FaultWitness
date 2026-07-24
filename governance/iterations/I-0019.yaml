@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0019
 gate: G02
 title: Baselines and Scoring
-status: in_progress
+status: completed
 scope:
   - Implement deterministic Naive ReAct and no-RAG diagnosis-only baselines over shared packets.
   - Implement deterministic scoring exact threshold registry clustered bootstrap CI and usage cost reporting.
@@ -15,7 +15,7 @@ tests:
   - make verify-fast
   - uv run python -m faultwitness_dev eval-iteration I-0019 --candidate-sha <full-sha>
 eval_id: EVAL-G02-004
-commit: null
+commit: "4bcc990c6b51d39736c81768199844b95f1a8c69"
 changed_paths:
   - config/models
   - config/g02

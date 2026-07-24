@@ -26,6 +26,8 @@
 
 ### Tooling
 
+- Close the corrective I-0019 owner pass on candidate `4bcc990` and evidence commit `5369c09` with
+  direct Gate baseline interfaces ready, unchanged Iteration N=3/N=4, and `open_evidence: []`.
 - Pass corrective EVAL-G02-004 on candidate `4bcc990`: retain exact N=3/N=4, use the frozen model
   with zero fallback, demonstrate trial-local interruption recovery, and close with 652/460 tokens,
   0.004984 CNY, and no open evidence.
