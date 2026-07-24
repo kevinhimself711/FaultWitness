@@ -1,5 +1,20 @@
 # AI Development Log
 
+## 2026-07-24 — G02 EVAL-G02-010 privileged transport failure
+
+Candidate `9e68e2622d18ffcbd63549a4fd2b9dedee37f74e` passed four fail-fast preflights and
+`lab-deploy-and-bind`. Before provisioning or the first access cell, Windows `CreateProcess`
+rejected the privileged SSH invocation with `WinError 206`: the candidate probe program/request
+were embedded in a remote script that the shared privileged transport then embedded again in the
+child-process command line. No SSH attempt, matrix cell, destructive scenario, external-service
+probe, or model call occurred.
+
+The failure is deterministic runner transport behavior, not `infra_failed`; I-0025 is terminal and
+the same candidate is not retried. I-0026 forward-corrects bounded script transport with local
+deterministic tests, and I-0027/EVAL-G02-012 performs replacement orchestration. Validation N,
+thresholds, Ground Truth, locked tests, health windows, model route, token/cost ceilings, and Gate
+failure semantics remain unchanged.
+
 ## 2026-07-24 — I-0024 candidate-bound collector correction
 
 Candidate `a2797037d1a3aa5c7f7264c2c3b122712b6d1677` replaces the three

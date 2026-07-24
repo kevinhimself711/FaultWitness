@@ -1,0 +1,47 @@
+schema_version: "1.0.0"
+id: I-0026
+gate: G02
+title: Bounded Privileged Remote Script Transport Corrective
+status: planned
+iteration_type: corrective
+corrects: [I-0024, I-0025]
+scope:
+  - Replace inline privileged remote-script command transport with bounded child-process arguments while keeping the script and sudo credential on separate channels.
+  - Upload the exact script over SSH standard input to a permission-restricted remote temporary file execute it through a short sudo command and remove it after every terminal outcome.
+  - Add deterministic Windows-length regression cleanup and failure-classification tests without executing a Gate L2 phase.
+  - Reverify the affected V-G02-009 and V-G02-011 Iteration-layer contracts at their frozen N while retaining V-G02-010 Iteration N zero.
+non_goals:
+  - Running any live access trace canary destructive scenario external-service or paid-model phase.
+  - Changing validation N thresholds Ground Truth locked tests model route health windows token cost or Gate failure semantics.
+  - Reopening I-0024 or I-0025 or rewriting EVAL-G02-009 or EVAL-G02-010 evidence.
+dependencies: [I-0016, I-0021, I-0024, I-0025]
+tests:
+  - uv run pytest -q tests/test_infra.py tests/g02/test_g02_gate_collectors.py tests/g02/test_g02_eval_protocol.py
+  - uv run python -m faultwitness_dev eval-iteration I-0026 --candidate-sha <full-sha>
+  - uv run python -m faultwitness_dev verify-fast
+  - uv run python -m faultwitness_dev eval-changed
+eval_id: EVAL-G02-011
+commit: null
+changed_paths:
+  - AGENTS.md
+  - CHANGELOG.md
+  - PROJECT_STATE.yaml
+  - README.md
+  - docs/evals/EVAL-G02-011
+  - docs/evals/EVAL-G02-012
+  - docs/gates/G02
+  - docs/claims/CLAIMS.yaml
+  - docs/engineering/AI_DEVELOPMENT_LOG.md
+  - docs/roadmap/PHASES.md
+  - docs/roadmap/iterations
+  - docs/runbooks/G02_EVAL_PROTOCOL.md
+  - governance/iterations
+  - src/faultwitness_dev/evals.py
+  - src/faultwitness_dev/infra.py
+  - tests
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/I-0026.md
+  - docs/evals/EVAL-G02-011/PLAN.md
+  - docs/runbooks/G02_EVAL_PROTOCOL.md
+threshold_changes: []

@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Record I-0025/EVAL-G02-010 as terminal failed after a deterministic Windows command-line length
+  defect blocked the first access cell; plan I-0026 bounded transport correction and I-0027 replacement.
 - Activate I-0025 as the sole replacement unified-candidate orchestration after I-0024 closed with
   executable frozen runners and no open evidence; I-0025 may not add implementation or framework.
 - Activate I-0024 as the sole forward collector corrective; I-0025 remains planned and no Gate L2,

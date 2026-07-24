@@ -1,39 +1,37 @@
 schema_version: "1.0.0"
-id: I-0025
+id: I-0027
 gate: G02
-title: Second Replacement Unified Candidate Orchestration
-status: failed
+title: Third Replacement Unified Candidate Orchestration
+status: planned
 iteration_type: standard
 scope:
-  - Freeze the post-I-0024 candidate and execute the fourteen unchanged Gate phases under EVAL-G02-010.
+  - Freeze the post-I-0026 candidate and execute the fourteen unchanged Gate phases under EVAL-G02-012.
   - Reconcile immutable evidence and prove close readiness without adding implementation during orchestration.
 non_goals:
   - Adding product behavior runners fixtures test semantics thresholds workflows or samples.
   - Reactivating or overwriting any terminal Iteration or failed Eval asset.
-dependencies: [I-0016, I-0017, I-0018, I-0019, I-0021, I-0022, I-0024]
+dependencies: [I-0016, I-0017, I-0018, I-0019, I-0021, I-0022, I-0024, I-0026]
 tests:
   - uv run python -m faultwitness_dev verify-fast
   - uv run python -m faultwitness_dev eval-g02 --candidate-sha <full-sha>
   - uv run python -m faultwitness_dev eval-g02-close --candidate-sha <full-sha> --evidence-head-sha <full-sha>
-eval_id: EVAL-G02-010
-commit: "9e68e2622d18ffcbd63549a4fd2b9dedee37f74e"
+eval_id: EVAL-G02-012
+commit: null
 changed_paths:
   - AGENTS.md
   - CHANGELOG.md
   - PROJECT_STATE.yaml
   - README.md
-  - docs/evals/EVAL-G02-010
+  - docs/evals/EVAL-G02-012
   - docs/gates/G02
   - docs/claims/CLAIMS.yaml
   - docs/engineering/AI_DEVELOPMENT_LOG.md
   - docs/roadmap/PHASES.md
-  - docs/roadmap/iterations/I-0025.md
-  - governance/iterations/I-0025.yaml
+  - docs/roadmap/iterations/I-0027.md
+  - governance/iterations/I-0027.yaml
 behavior_change: false
 docs_updated:
-  - docs/roadmap/iterations/I-0025.md
+  - docs/roadmap/iterations/I-0027.md
   - docs/roadmap/PHASES.md
-  - docs/evals/EVAL-G02-010/PLAN.md
-  - docs/evals/EVAL-G02-010/REPORT.md
-  - docs/evals/EVAL-G02-010/manifest.json
+  - docs/evals/EVAL-G02-012/PLAN.md
 threshold_changes: []
