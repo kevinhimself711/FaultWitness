@@ -23,11 +23,17 @@ tests:
 eval_id: EVAL-G02-009
 commit: null
 changed_paths:
+  - AGENTS.md
+  - CHANGELOG.md
+  - PROJECT_STATE.yaml
+  - README.md
   - config/g02
   - deploy/g02
   - docs/evals/EVAL-G02-009
   - docs/evals/EVAL-G02-010
   - docs/gates/G02
+  - docs/claims/CLAIMS.yaml
+  - docs/engineering/AI_DEVELOPMENT_LOG.md
   - docs/roadmap/iterations
   - docs/runbooks/G02_EVAL_PROTOCOL.md
   - docs/runbooks/G02_ISOLATION.md
@@ -42,6 +48,10 @@ behavior_change: true
 docs_updated:
   - docs/roadmap/iterations/I-0024.md
   - docs/evals/EVAL-G02-009/PLAN.md
+  - docs/evals/EVAL-G02-009/REPORT.md
+  - docs/evals/EVAL-G02-009/manifest.json
   - docs/runbooks/G02_EVAL_PROTOCOL.md
   - docs/runbooks/G02_ISOLATION.md
+  - docs/claims/CLAIMS.yaml
+  - docs/engineering/AI_DEVELOPMENT_LOG.md
 threshold_changes: []

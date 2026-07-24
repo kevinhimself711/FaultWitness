@@ -129,8 +129,9 @@ claims:
     evidence:
       - EVAL-G02-003
       - EVAL-G02-007
+      - EVAL-G02-009
     limitations:
-      - "I-0018 proves policy simulation and new-writer isolation; I-0022 proves the exact corrected observability policy. EVAL-G02-008 exposed missing candidate-bound collectors, so I-0024 must implement them before the 60-cell, six-stage, and 22-surface live matrices run under EVAL-G02-010."
+      - "I-0018 proves policy simulation and new-writer isolation; I-0022 proves the exact corrected observability policy; I-0024 proves candidate-bound provisioning, collectors, negative fixtures, phase interfaces, and resume/fail-closed behavior locally. The 60-cell, six-stage, and 22-surface live matrices remain reserved for EVAL-G02-010."
       - "No GT/locked case payload, baseline, or paid model execution is claimed."
   - id: CLAIM-EVAL-004
     statement: "G02 has three shared-packet diagnosis baselines, deterministic scoring, exact quality-floor measurement, clustered bootstrap aggregation, and trial-local paid-model resume."

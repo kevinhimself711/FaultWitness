@@ -1,16 +1,66 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "eval_id": "EVAL-G02-009",
   "gate": "G02",
   "iteration": "I-0024",
-  "evaluated_revision": "not-run",
-  "status": "pending",
-  "environments": ["planned-local-deterministic"],
-  "commands": [
-    "uv run python -m faultwitness_dev eval-iteration I-0024 --candidate-sha <full-sha>"
+  "candidate_sha": "a2797037d1a3aa5c7f7264c2c3b122712b6d1677",
+  "evaluated_revision": "a2797037d1a3aa5c7f7264c2c3b122712b6d1677",
+  "evidence_head_sha": "a2797037d1a3aa5c7f7264c2c3b122712b6d1677",
+  "status": "pass",
+  "subject_digests": {
+    "config/g02/gate-probes.yaml": "6fb0aec3a8a7122e34564ffaf1dc13612296576f2eb12f160da877cebb99332d",
+    "deploy/g02/gate_probe.py": "9089aa4a1cb7f3268e09b2b629181a9024b6f5bd70803c9e9574a450aef79df8",
+    "docs/gates/G02/VALIDATIONS.yaml": "fea63e5fe647c9f54b30bbcddccc2982df327c61ea34f1bf96b7498ff1b29cf8",
+    "src/faultwitness_dev/evals.py": "7bce8a5ee4f7953e519172cecb272882c07f6278c250d8c7dc0d35fffa49f431",
+    "src/faultwitness_dev/g02_collectors.py": "211a46af8bfe6dfdcdf2f7d0b9c6f75e06a6d56dfa92f2b1811af6c9856c794d",
+    "src/faultwitness_dev/g02_eval.py": "2197dfe47da06f4ef7ec8fd296d1452f87687cd23900b242a58fccdd99f728ba",
+    "src/faultwitness_dev/g02_isolation.py": "faf620aa7f0e0ef4f5cc25a728044c19f1a465e6444317c5d00eac412a2d09ae",
+    "tests/fixtures/g02/access_wrong_allow.yaml": "245272b2cb43437664dd3dffe6185c88655ba5cf0d94f67afde50d96a4222425",
+    "tests/fixtures/g02/canary_leaked_artifact.json": "cdcb4dfe25dacc5e4e413146e20df251b4ee6cee5cc5c8c68486d08a125c1b9d",
+    "tests/fixtures/g02/provisioning_identity_drift.json": "93b8b0f868845ea5d9e404261164ba976969baccde5bd3e2edc9af20e1e31ce9",
+    "tests/fixtures/g02/trace_missing_stage.json": "2584199ecada4027dd312e16120f2217679804945218f8637c76fb05c8fec7f1"
+  },
+  "environment_fingerprint": "294f9f55f865710447ff3d66f20626ad5fb76cc344c424a0c8bf79cebc43910e",
+  "phases": [
+    {
+      "phase_id": "collector-readiness",
+      "status": "pass",
+      "start_time": "2026-07-24T21:21:37.528369+00:00",
+      "end_time": "2026-07-24T21:21:37.772387+00:00",
+      "cache_key": "1ee32d3cc7218e906a6a5f9f4cfcdd783e9a04dad40ad02399c52edc2ad16917",
+      "artifact_digest": "45424ffbd0deabbedc8a2d56003cdf50302c58eaa43a3b5238130c68c3f0d751",
+      "artifact_path": "docs/evals/EVAL-G02-009/artifacts/collector-readiness.json",
+      "private_artifact_uri": null,
+      "execution_count": 1,
+      "inherited_from_manifest": null
+    }
   ],
-  "artifacts": ["docs/evals/EVAL-G02-009/PLAN.md"],
+  "environments": ["windows-local-deterministic"],
+  "commands": [
+    "uv run pytest -q tests/g02/test_g02_gate_collectors.py tests/g02/test_g02_isolation.py tests/g02/test_g02_eval_protocol.py",
+    "uv run python -m faultwitness_dev eval-iteration I-0024 --candidate-sha a2797037d1a3aa5c7f7264c2c3b122712b6d1677",
+    "uv run python -m faultwitness_dev verify-fast",
+    "uv run python -m faultwitness_dev eval-changed"
+  ],
+  "artifacts": [
+    "docs/evals/EVAL-G02-009/PLAN.md",
+    "docs/evals/EVAL-G02-009/REPORT.md",
+    "docs/evals/EVAL-G02-009/artifacts/collector-readiness.json"
+  ],
   "evidence_urls": [],
-  "integrations": {},
+  "integrations": {
+    "private_server": {
+      "status": "not_applicable",
+      "reason": "I-0024 is a local deterministic runner-readiness Eval."
+    },
+    "langsmith": {
+      "status": "not_applicable",
+      "reason": "The LangSmith Gate collector is unit-tested but not executed in I-0024."
+    },
+    "bailian": {
+      "status": "not_applicable",
+      "reason": "I-0024 performs no paid model or external-service call."
+    }
+  },
   "open_evidence": []
 }

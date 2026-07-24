@@ -1,5 +1,22 @@
 # AI Development Log
 
+## 2026-07-24 — I-0024 candidate-bound collector correction
+
+Candidate `a2797037d1a3aa5c7f7264c2c3b122712b6d1677` replaces the three
+operator-precomputed isolation inputs exposed by EVAL-G02-008 with candidate/environment-bound
+provisioning and executable collectors. Credentials are generated only on the private host,
+stale candidate credentials are disabled before rotation, images are digest pinned, and the
+repository receives only named Secret references. Access evidence persists per cell; trace and
+canary evidence persists per collection and per stage/surface. Only classified infrastructure
+failures resume, while policy, metric, leakage, binding, capability, or artifact failures remain
+terminal for that candidate.
+
+EVAL-G02-009 passed exactly five local deterministic cases. It reran V-G02-009 and V-G02-011 at
+their frozen Iteration N=4 and kept V-G02-010 Iteration N=0. Its fake 60/6/22 enumerations prove
+runner shape only: private-server execution, Gate L2 cells, destructive scenarios, LangSmith,
+Bailian, and model calls all remained zero. This corrective work occurs before replacement
+orchestration; I-0025 is still forbidden to add implementation or a test framework.
+
 ## 2026-07-24 — G02 EVAL-G02-008 runner-readiness failure
 
 Candidate `7d6648850108129c81fe98260aff8342683b5622` passed four fail-fast preflights and

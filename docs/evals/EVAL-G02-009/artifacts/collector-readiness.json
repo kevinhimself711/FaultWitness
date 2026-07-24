@@ -1,0 +1,53 @@
+{
+  "candidate_sha": "a2797037d1a3aa5c7f7264c2c3b122712b6d1677",
+  "case_count": 5,
+  "cases": [
+    {
+      "case_id": "candidate-bound-provisioning",
+      "credential_value_count": 0,
+      "prefix_count": 5,
+      "principal_count": 4,
+      "status": "pass"
+    },
+    {
+      "case_id": "access-collector",
+      "fake_contract_cell_count": 60,
+      "iteration_n": 4,
+      "status": "pass"
+    },
+    {
+      "case_id": "trace-collector",
+      "fake_contract_stage_count": 6,
+      "iteration_n": 0,
+      "status": "pass"
+    },
+    {
+      "case_id": "canary-collector",
+      "fake_contract_surface_count": 22,
+      "iteration_n": 4,
+      "status": "pass"
+    },
+    {
+      "case_id": "phase-interface-and-binding",
+      "operator_adjudication_paths": 0,
+      "phase_count": 3,
+      "status": "pass"
+    }
+  ],
+  "destructive_execution_count": 0,
+  "end_time": "2026-07-24T21:21:37.772387+00:00",
+  "environment_fingerprint": "294f9f55f865710447ff3d66f20626ad5fb76cc344c424a0c8bf79cebc43910e",
+  "eval_id": "EVAL-G02-009",
+  "external_call_count": 0,
+  "gate_l2_execution_count": 0,
+  "iteration_n": {
+    "V-G02-009": 4,
+    "V-G02-010": 0,
+    "V-G02-011": 4
+  },
+  "model_call_count": 0,
+  "open_evidence": [],
+  "schema_version": "1.0.0",
+  "start_time": "2026-07-24T21:21:37.528369+00:00",
+  "status": "pass"
+}

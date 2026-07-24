@@ -38,6 +38,12 @@
 
 ### Tooling
 
+- Pass EVAL-G02-009 on candidate `a279703`: five deterministic collector-readiness cases preserve
+  Iteration N=4/0/4, reject all named negatives, and execute zero Gate L2 cells, destructive work,
+  external calls, or model calls.
+- Add candidate/environment-bound G02 provisioning plus atomic resumable 60-cell, six-stage, and
+  22-surface collectors; remove operator-precomputed phase inputs without changing any Gate N,
+  threshold, isolation requirement, performance criterion, token budget, or failure semantics.
 - Close I-0022 on candidate `7d6e07b` and evidence commit `7a42198`; retain EVAL-G02-005 as
   immutable failed history, redirect replacement Gate artifacts to EVAL-G02-008, and leave
   `open_evidence: []`.
