@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Activate I-0031 as the sole fifth replacement orchestration after I-0030 closed with actual
+  Python 3.8 compatibility evidence and no open evidence; I-0031 may only run frozen Gate phases.
 - Close I-0030 on candidate `89cf591` with EVAL-G02-015 passing both actual Python 3.8
   compatibility cases, frozen validation N=4/0/4, zero remote/model execution, and no open evidence.
 - Replace the Python 3.11-only G02 remote-probe UTC import with Python 3.8-compatible

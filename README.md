@@ -1,8 +1,8 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: null
-next_iteration: I-0031
+active_iteration: I-0031
+next_iteration: null
 last_closed_gate: G01
 ---
 
@@ -14,7 +14,7 @@ FaultWitness 是一个面向微服务事故调查、受控修复与持续优化�
 确定性失败终态关闭且负面证据完整；I-0024 与 I-0026 已完成前两轮 runner/transport
 纠错。I-0028 已用真实 Windows child process 证明 byte-exact transport 并关闭；I-0029 因
 远端 Python 3.8 compatibility 缺陷终态失败。I-0030 已用实际受管 Python 3.8.20 完成
-兼容性纠错并关闭；I-0031 是下一项替代编排。任何终态记录都不会重开。
+兼容性纠错并关闭；I-0031 是当前替代编排。任何终态记录都不会重开。
 
 ## 权威资产
 
