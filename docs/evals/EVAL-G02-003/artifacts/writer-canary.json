@@ -1,0 +1,52 @@
+{
+  "candidate_sha": "bcc643774c4d8577f6181664b3bf19aa12a5f281",
+  "end_time": "2026-07-24T00:54:32.155592+00:00",
+  "iteration_n": 4,
+  "open_evidence": [],
+  "schema_version": "1.0.0",
+  "start_time": "2026-07-24T00:54:32.133892+00:00",
+  "status": "pass",
+  "validation": "V-G02-011",
+  "writers": [
+    {
+      "canary_digest": "c04283b7fa6370ba26fb526d709997b931ca1855beba8d896d4086ab5462f853",
+      "rejected_canary_classes": [
+        "secret",
+        "pii"
+      ],
+      "safe_control": "pass",
+      "status": "pass",
+      "writer": "g02-scenario-object"
+    },
+    {
+      "canary_digest": "70a1624e7d8d954cae12e05737703d9c0104ae71ca9ed8921f34f5e35c24a73e",
+      "rejected_canary_classes": [
+        "secret",
+        "pii"
+      ],
+      "safe_control": "pass",
+      "status": "pass",
+      "writer": "g02-trial-object"
+    },
+    {
+      "canary_digest": "69d70f08f3257e35b97d198c9a3d6dee2c3a5bff80e659e0a2f8e3ef5defb586",
+      "rejected_canary_classes": [
+        "secret",
+        "pii"
+      ],
+      "safe_control": "pass",
+      "status": "pass",
+      "writer": "g02-evidence-object"
+    },
+    {
+      "canary_digest": "f77019bf41f1224fa4dccb4583346bed094faccaae0881f17aae8e544d8f35ef",
+      "rejected_canary_classes": [
+        "secret",
+        "pii"
+      ],
+      "safe_control": "pass",
+      "status": "pass",
+      "writer": "g02-preregistry-publication"
+    }
+  ]
+}

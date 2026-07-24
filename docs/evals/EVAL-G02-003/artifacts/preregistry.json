@@ -1,0 +1,1290 @@
+{
+  "candidate_sha": "bcc643774c4d8577f6181664b3bf19aa12a5f281",
+  "iteration_n": 160,
+  "materialized_object_count": 0,
+  "rows": [
+    {
+      "case_id": "CORE-0001",
+      "difficulty": "Easy",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0001.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0002",
+      "difficulty": "Easy",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0002.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0003",
+      "difficulty": "Easy",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0003.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0004",
+      "difficulty": "Easy",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0004.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0005",
+      "difficulty": "Easy",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0005.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0006",
+      "difficulty": "Easy",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0006.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0007",
+      "difficulty": "Easy",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0007.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0008",
+      "difficulty": "Easy",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0008.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0009",
+      "difficulty": "Medium",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0009.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0010",
+      "difficulty": "Medium",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0010.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0011",
+      "difficulty": "Medium",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0011.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0012",
+      "difficulty": "Medium",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0012.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0013",
+      "difficulty": "Medium",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0013.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0014",
+      "difficulty": "Medium",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0014.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0015",
+      "difficulty": "Medium",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0015.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0016",
+      "difficulty": "Medium",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0016.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0017",
+      "difficulty": "Hard",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0017.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0018",
+      "difficulty": "Hard",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0018.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0019",
+      "difficulty": "Hard",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0019.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0020",
+      "difficulty": "Hard",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0020.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0021",
+      "difficulty": "Hard",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0021.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0022",
+      "difficulty": "Hard",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0022.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0023",
+      "difficulty": "Hard",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0023.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0024",
+      "difficulty": "Hard",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0024.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0025",
+      "difficulty": "OOD",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0025.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0026",
+      "difficulty": "OOD",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0026.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0027",
+      "difficulty": "OOD",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0027.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0028",
+      "difficulty": "OOD",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0028.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0029",
+      "difficulty": "OOD",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0029.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0030",
+      "difficulty": "OOD",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0030.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0031",
+      "difficulty": "OOD",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0031.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0032",
+      "difficulty": "OOD",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0032.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0033",
+      "difficulty": "Adversarial",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0033.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0034",
+      "difficulty": "Adversarial",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0034.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0035",
+      "difficulty": "Adversarial",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0035.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0036",
+      "difficulty": "Adversarial",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0036.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0037",
+      "difficulty": "Adversarial",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0037.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0038",
+      "difficulty": "Adversarial",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0038.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0039",
+      "difficulty": "Adversarial",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0039.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0040",
+      "difficulty": "Adversarial",
+      "family": "change_config",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0040.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0041",
+      "difficulty": "Easy",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0041.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0042",
+      "difficulty": "Easy",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0042.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0043",
+      "difficulty": "Easy",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0043.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0044",
+      "difficulty": "Easy",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0044.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0045",
+      "difficulty": "Easy",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0045.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0046",
+      "difficulty": "Easy",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0046.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0047",
+      "difficulty": "Easy",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0047.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0048",
+      "difficulty": "Easy",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0048.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0049",
+      "difficulty": "Medium",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0049.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0050",
+      "difficulty": "Medium",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0050.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0051",
+      "difficulty": "Medium",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0051.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0052",
+      "difficulty": "Medium",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0052.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0053",
+      "difficulty": "Medium",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0053.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0054",
+      "difficulty": "Medium",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0054.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0055",
+      "difficulty": "Medium",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0055.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0056",
+      "difficulty": "Medium",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0056.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0057",
+      "difficulty": "Hard",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0057.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0058",
+      "difficulty": "Hard",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0058.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0059",
+      "difficulty": "Hard",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0059.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0060",
+      "difficulty": "Hard",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0060.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0061",
+      "difficulty": "Hard",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0061.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0062",
+      "difficulty": "Hard",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0062.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0063",
+      "difficulty": "Hard",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0063.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0064",
+      "difficulty": "Hard",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0064.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0065",
+      "difficulty": "OOD",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0065.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0066",
+      "difficulty": "OOD",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0066.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0067",
+      "difficulty": "OOD",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0067.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0068",
+      "difficulty": "OOD",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0068.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0069",
+      "difficulty": "OOD",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0069.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0070",
+      "difficulty": "OOD",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0070.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0071",
+      "difficulty": "OOD",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0071.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0072",
+      "difficulty": "OOD",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0072.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0073",
+      "difficulty": "Adversarial",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0073.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0074",
+      "difficulty": "Adversarial",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0074.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0075",
+      "difficulty": "Adversarial",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0075.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0076",
+      "difficulty": "Adversarial",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0076.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0077",
+      "difficulty": "Adversarial",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0077.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0078",
+      "difficulty": "Adversarial",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0078.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0079",
+      "difficulty": "Adversarial",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0079.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0080",
+      "difficulty": "Adversarial",
+      "family": "resource_capacity",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0080.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0081",
+      "difficulty": "Easy",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0081.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0082",
+      "difficulty": "Easy",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0082.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0083",
+      "difficulty": "Easy",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0083.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0084",
+      "difficulty": "Easy",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0084.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0085",
+      "difficulty": "Easy",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0085.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0086",
+      "difficulty": "Easy",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0086.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0087",
+      "difficulty": "Easy",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0087.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0088",
+      "difficulty": "Easy",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0088.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0089",
+      "difficulty": "Medium",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0089.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0090",
+      "difficulty": "Medium",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0090.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0091",
+      "difficulty": "Medium",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0091.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0092",
+      "difficulty": "Medium",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0092.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0093",
+      "difficulty": "Medium",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0093.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0094",
+      "difficulty": "Medium",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0094.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0095",
+      "difficulty": "Medium",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0095.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0096",
+      "difficulty": "Medium",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0096.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0097",
+      "difficulty": "Hard",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0097.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0098",
+      "difficulty": "Hard",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0098.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0099",
+      "difficulty": "Hard",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0099.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0100",
+      "difficulty": "Hard",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0100.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0101",
+      "difficulty": "Hard",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0101.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0102",
+      "difficulty": "Hard",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0102.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0103",
+      "difficulty": "Hard",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0103.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0104",
+      "difficulty": "Hard",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0104.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0105",
+      "difficulty": "OOD",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0105.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0106",
+      "difficulty": "OOD",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0106.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0107",
+      "difficulty": "OOD",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0107.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0108",
+      "difficulty": "OOD",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0108.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0109",
+      "difficulty": "OOD",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0109.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0110",
+      "difficulty": "OOD",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0110.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0111",
+      "difficulty": "OOD",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0111.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0112",
+      "difficulty": "OOD",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0112.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0113",
+      "difficulty": "Adversarial",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0113.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0114",
+      "difficulty": "Adversarial",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0114.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0115",
+      "difficulty": "Adversarial",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0115.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0116",
+      "difficulty": "Adversarial",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0116.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0117",
+      "difficulty": "Adversarial",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0117.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0118",
+      "difficulty": "Adversarial",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0118.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0119",
+      "difficulty": "Adversarial",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0119.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0120",
+      "difficulty": "Adversarial",
+      "family": "dependency_network",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0120.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0121",
+      "difficulty": "Easy",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0121.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0122",
+      "difficulty": "Easy",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0122.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0123",
+      "difficulty": "Easy",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0123.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0124",
+      "difficulty": "Easy",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0124.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0125",
+      "difficulty": "Easy",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0125.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0126",
+      "difficulty": "Easy",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0126.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0127",
+      "difficulty": "Easy",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0127.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0128",
+      "difficulty": "Easy",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0128.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0129",
+      "difficulty": "Medium",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0129.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0130",
+      "difficulty": "Medium",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0130.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0131",
+      "difficulty": "Medium",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0131.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0132",
+      "difficulty": "Medium",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0132.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0133",
+      "difficulty": "Medium",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0133.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0134",
+      "difficulty": "Medium",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0134.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0135",
+      "difficulty": "Medium",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0135.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0136",
+      "difficulty": "Medium",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0136.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0137",
+      "difficulty": "Hard",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0137.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0138",
+      "difficulty": "Hard",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0138.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0139",
+      "difficulty": "Hard",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0139.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0140",
+      "difficulty": "Hard",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0140.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0141",
+      "difficulty": "Hard",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0141.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0142",
+      "difficulty": "Hard",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0142.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0143",
+      "difficulty": "Hard",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0143.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0144",
+      "difficulty": "Hard",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0144.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0145",
+      "difficulty": "OOD",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0145.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0146",
+      "difficulty": "OOD",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0146.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0147",
+      "difficulty": "OOD",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0147.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0148",
+      "difficulty": "OOD",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0148.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0149",
+      "difficulty": "OOD",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0149.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0150",
+      "difficulty": "OOD",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0150.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0151",
+      "difficulty": "OOD",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0151.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0152",
+      "difficulty": "OOD",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0152.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0153",
+      "difficulty": "Adversarial",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0153.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0154",
+      "difficulty": "Adversarial",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0154.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0155",
+      "difficulty": "Adversarial",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0155.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0156",
+      "difficulty": "Adversarial",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0156.json",
+      "schema_version": "1.0.0",
+      "split": "dev"
+    },
+    {
+      "case_id": "CORE-0157",
+      "difficulty": "Adversarial",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0157.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0158",
+      "difficulty": "Adversarial",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0158.json",
+      "schema_version": "1.0.0",
+      "split": "validation"
+    },
+    {
+      "case_id": "CORE-0159",
+      "difficulty": "Adversarial",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0159.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    },
+    {
+      "case_id": "CORE-0160",
+      "difficulty": "Adversarial",
+      "family": "runtime_data",
+      "ground_truth_placeholder": "s3://faultwitness-eval/g07/ground-truth/CORE-0160.json",
+      "schema_version": "1.0.0",
+      "split": "locked"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "status": "pass",
+  "validation": "V-G02-007"
+}

@@ -1,0 +1,42 @@
+{
+  "candidate_sha": "bcc643774c4d8577f6181664b3bf19aa12a5f281",
+  "iteration_n": 3,
+  "packages": [
+    {
+      "files": [
+        {
+          "path": "deploy/g02/packages/scenario-controller/runtime.json",
+          "sha256": "cf72a99c0cbc22c394876da67ab0e5083342937945526827f88f1dc10ae071f3"
+        }
+      ],
+      "package_digest": "b4e80a195c335878a6aebc4d114e83a43b3f39bfd924f51a0ab1d0b30041eb51",
+      "role": "scenario-controller",
+      "status": "pass"
+    },
+    {
+      "files": [
+        {
+          "path": "deploy/g02/packages/baseline-agent/runtime.json",
+          "sha256": "f5e3896c64a8d579cea212b78c663f1a3ca6ac873ebe7623756d0dd77371aa10"
+        }
+      ],
+      "package_digest": "65b817cb1cb33bbe9451c458832b21fbcbc27939c1b9b40f1729c8b07417660d",
+      "role": "baseline-agent",
+      "status": "pass"
+    },
+    {
+      "files": [
+        {
+          "path": "deploy/g02/packages/sealed-evaluator/runtime.json",
+          "sha256": "72cd9939382e041be416177f41c8dccca0a64762883f9f473cf1c5ee514a4cb5"
+        }
+      ],
+      "package_digest": "5684492e972e3c84754d0b6d4249fcaa9c5eb81731405be37845844b1a7e4854",
+      "role": "sealed-evaluator",
+      "status": "pass"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "status": "pass",
+  "validation": "V-G02-008"
+}

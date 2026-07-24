@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "bcc643774c4d8577f6181664b3bf19aa12a5f281",
+  "source_gate": "G01",
+  "target_gate": "G02",
+  "debts": [
+    {
+      "id": "DEBT-G01-001",
+      "iteration_result": "policy_simulation_pass",
+      "gate_execution": "reserved_for_V-G02-009_60_cell_live_matrix",
+      "artifact": "docs/evals/EVAL-G02-003/artifacts/access-policy-simulation.json"
+    },
+    {
+      "id": "DEBT-G01-002",
+      "iteration_result": "runner_fixture_phase_binding_ready",
+      "gate_execution": "reserved_for_V-G02-010_six_stage_live_matrix",
+      "artifact": "tests/fixtures/g02/trace_missing_stage.json"
+    },
+    {
+      "id": "DEBT-G01-003",
+      "iteration_result": "four_new_writer_paths_pass",
+      "gate_execution": "reserved_for_V-G02-011_22_surface_live_matrix",
+      "artifact": "docs/evals/EVAL-G02-003/artifacts/writer-canary.json"
+    },
+    {
+      "id": "DEBT-G01-004",
+      "iteration_result": "not_covered",
+      "gate_execution": "not_in_G02_scope",
+      "artifact": null
+    }
+  ],
+  "closed_g01_assets_modified": false,
+  "open_evidence": [],
+  "status": "pass"
+}

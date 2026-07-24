@@ -1,0 +1,174 @@
+{
+  "candidate_sha": "bcc643774c4d8577f6181664b3bf19aa12a5f281",
+  "identities": [
+    {
+      "checks": [
+        {
+          "action": "read",
+          "actual": true,
+          "expected": true,
+          "resource": "s3:g02/scenarios/SEED-G02-0001.json"
+        },
+        {
+          "action": "write",
+          "actual": true,
+          "expected": true,
+          "resource": "s3:g02/trials/trial.json"
+        },
+        {
+          "action": "read",
+          "actual": false,
+          "expected": false,
+          "resource": "s3:g02/ground-truth/deny-sentinel"
+        },
+        {
+          "action": "read",
+          "actual": false,
+          "expected": false,
+          "resource": "s3:g02/locked-tests/deny-sentinel"
+        },
+        {
+          "action": "read",
+          "actual": false,
+          "expected": false,
+          "resource": "schema:incident"
+        }
+      ],
+      "principal": "scenario-controller",
+      "status": "pass"
+    },
+    {
+      "checks": [
+        {
+          "action": "read",
+          "actual": true,
+          "expected": true,
+          "resource": "observation:own"
+        },
+        {
+          "action": "write",
+          "actual": true,
+          "expected": true,
+          "resource": "trial-sink:own"
+        },
+        {
+          "action": "read",
+          "actual": true,
+          "expected": true,
+          "resource": "obs:prometheus"
+        },
+        {
+          "action": "read",
+          "actual": false,
+          "expected": false,
+          "resource": "s3:g02/ground-truth/deny-sentinel"
+        },
+        {
+          "action": "connect",
+          "actual": false,
+          "expected": false,
+          "resource": "network:fw-eval"
+        }
+      ],
+      "principal": "baseline-agent",
+      "status": "pass"
+    },
+    {
+      "checks": [
+        {
+          "action": "read",
+          "actual": true,
+          "expected": true,
+          "resource": "s3:g02/trials/trial.json"
+        },
+        {
+          "action": "read",
+          "actual": true,
+          "expected": true,
+          "resource": "s3:g02/ground-truth/deny-sentinel"
+        },
+        {
+          "action": "read",
+          "actual": true,
+          "expected": true,
+          "resource": "s3:g02/locked-tests/deny-sentinel"
+        },
+        {
+          "action": "write",
+          "actual": true,
+          "expected": true,
+          "resource": "s3:g02/evidence/result.json"
+        },
+        {
+          "action": "mutate",
+          "actual": false,
+          "expected": false,
+          "resource": "sut:flag/productCatalogFailure"
+        },
+        {
+          "action": "use",
+          "actual": false,
+          "expected": false,
+          "resource": "credential:baseline-execution"
+        }
+      ],
+      "principal": "sealed-evaluator",
+      "status": "pass"
+    },
+    {
+      "checks": [
+        {
+          "action": "read",
+          "actual": true,
+          "expected": true,
+          "resource": "public:preregistry"
+        },
+        {
+          "action": "read",
+          "actual": false,
+          "expected": false,
+          "resource": "s3:g02/ground-truth/deny-sentinel"
+        },
+        {
+          "action": "read",
+          "actual": false,
+          "expected": false,
+          "resource": "s3:g02/locked-tests/deny-sentinel"
+        },
+        {
+          "action": "read",
+          "actual": false,
+          "expected": false,
+          "resource": "s3:g02/trials/trial.json"
+        },
+        {
+          "action": "read",
+          "actual": false,
+          "expected": false,
+          "resource": "schema:incident"
+        }
+      ],
+      "principal": "ordinary-developer",
+      "status": "pass"
+    }
+  ],
+  "iteration_n": 4,
+  "namespace_isolation": {
+    "credential_objects": 0,
+    "network_policy_count": 6,
+    "service_accounts": [
+      "scenario-controller",
+      "baseline-agent",
+      "sealed-evaluator"
+    ],
+    "status": "pass"
+  },
+  "owned_l2_ready": [
+    "g02.access_matrix",
+    "g02.stage_matrix",
+    "g02.canary_matrix"
+  ],
+  "schema_version": "1.0.0",
+  "status": "pass",
+  "validation": "V-G02-009"
+}

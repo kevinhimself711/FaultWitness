@@ -1,18 +1,44 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "eval_id": "EVAL-G02-003",
   "gate": "G02",
   "iteration": "I-0018",
-  "evaluated_revision": "not-run",
-  "status": "pending",
-  "environments": ["planned-local-policy", "planned-private-g02-isolation"],
-  "commands": ["uv run python -m faultwitness_dev eval-iteration I-0018 --candidate-sha <full-sha>"],
+  "candidate_sha": "bcc643774c4d8577f6181664b3bf19aa12a5f281",
+  "evaluated_revision": "bcc643774c4d8577f6181664b3bf19aa12a5f281",
+  "evidence_head_sha": "bcc643774c4d8577f6181664b3bf19aa12a5f281",
+  "status": "pass",
+  "subject_digests": {
+    "config/g02/isolation.yaml": "24be7ecfe207da9180412e94b2718467550b8706310ce4c6322c05b0bbf12b0e",
+    "deploy/g02/isolation-policy.yaml": "2c03fad86ec550323a392ce299d2238ba533a4fd74447554593f0a4ff60f581f",
+    "src/faultwitness_dev/g02_isolation.py": "7ab5ac6d0976fc20f923d5f2e2ea536e9822371c69f145caa5507c2423d021d6"
+  },
+  "environment_fingerprint": "ac61924688574665867ed1eb96eec09326ee3c06eee98eb6859daeca1468dce1",
+  "phases": [
+    {
+      "phase_id": "iteration-policy-isolation",
+      "status": "pass",
+      "start_time": "2026-07-24T00:54:32.133892+00:00",
+      "end_time": "2026-07-24T00:54:32.155592+00:00",
+      "cache_key": "2f50913e5f99a88762d8a411ef17d6f0bec68c4759d709343a3e5c5b5366a796",
+      "artifact_digest": "59fd7da39c158839b8e391692260f587ac0a8a277e42d54d6120cc41f5ae4f5a",
+      "artifact_path": "docs/evals/EVAL-G02-003/artifacts/access-policy-simulation.json",
+      "private_artifact_uri": null,
+      "execution_count": 1,
+      "inherited_from_manifest": null
+    }
+  ],
+  "environments": ["local-policy", "sealed-package-scan"],
+  "commands": [
+    "uv run python -m faultwitness_dev eval-iteration I-0018 --candidate-sha bcc643774c4d8577f6181664b3bf19aa12a5f281"
+  ],
   "artifacts": [
     "docs/evals/EVAL-G02-003/PLAN.md",
+    "docs/evals/EVAL-G02-003/REPORT.md",
     "docs/evals/EVAL-G02-003/artifacts/preregistry.json",
     "docs/evals/EVAL-G02-003/artifacts/sealed-package-scan.json",
     "docs/evals/EVAL-G02-003/artifacts/access-policy-simulation.json",
-    "docs/evals/EVAL-G02-003/artifacts/writer-canary.json"
+    "docs/evals/EVAL-G02-003/artifacts/writer-canary.json",
+    "docs/evals/EVAL-G02-003/artifacts/carry-in-readiness.json"
   ],
   "evidence_urls": [],
   "integrations": {},
