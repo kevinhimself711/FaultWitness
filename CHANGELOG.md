@@ -26,6 +26,8 @@
 
 ### Tooling
 
+- Reopen owning I-0018 before I-0020 after readiness audit found the 60-cell access, six-stage
+  trace, and 22-surface canary phases lacking repository-owned live evidence production probes.
 - Close the corrective I-0019 owner pass on candidate `4bcc990` and evidence commit `5369c09` with
   direct Gate baseline interfaces ready, unchanged Iteration N=3/N=4, and `open_evidence: []`.
 - Pass corrective EVAL-G02-004 on candidate `4bcc990`: retain exact N=3/N=4, use the frozen model

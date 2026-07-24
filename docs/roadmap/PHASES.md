@@ -4,7 +4,7 @@ version: 1.3.0
 status: planned
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: null
+active_iteration: I-0018
 next_iteration: I-0020
 last_closed_gate: G01
 ---
@@ -15,7 +15,7 @@ last_closed_gate: G01
 |---|---|---|---|
 | G00 | 蓝图、架构与治理基线 | Passed | ../gates/G00/PLAN.md |
 | G01 | 平台、契约与 Trace 地基 | Passed | ../gates/G01/PLAN.md |
-| G02 | 故障实验室与基线 | In progress (corrective owner passes complete; I-0020 planned) | ../gates/G02/PLAN.md（Master Plan v1） |
+| G02 | 故障实验室与基线 | In progress (I-0018 live-runner corrective pass active) | ../gates/G02/PLAN.md（Master Plan v1） |
 | G03 | 只读 Agent 纵切 | Not started | 待 G02 关闭后规划 |
 | G04 | RAG、Memory、Skills 与多模态 | Not started | 待 G03 关闭后规划 |
 | G05 | 受控修复与动作事务 | Not started | 待 G04 关闭后规划 |

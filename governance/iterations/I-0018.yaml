@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0018
 gate: G02
 title: Sealed Registry and Isolation Evidence
-status: completed
+status: in_progress
 scope:
   - Implement G02 identities namespace policies MinIO prefixes and sealed build boundaries.
   - Create only the 160-row preregistration and prove that no core-case payload is materialized.
@@ -15,7 +15,7 @@ tests:
   - make verify-fast
   - uv run python -m faultwitness_dev eval-iteration I-0018 --candidate-sha <full-sha>
 eval_id: EVAL-G02-003
-commit: "bcc643774c4d8577f6181664b3bf19aa12a5f281"
+commit: null
 changed_paths:
   - config/g02
   - deploy/g02
