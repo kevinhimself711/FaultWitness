@@ -521,6 +521,8 @@ def evaluate_iteration(root: Path, iteration: str, candidate_sha: str) -> dict[s
         return evaluate_i0026(root, candidate_sha)
     if iteration == "I-0028":
         return evaluate_i0028(root, candidate_sha)
+    if iteration == "I-0030":
+        return evaluate_i0030(root, candidate_sha)
     raise GovernanceError(f"no private Eval implementation is registered for {iteration}")
 
 
@@ -915,6 +917,149 @@ def evaluate_i0028(root: Path, candidate_sha: str) -> dict[str, Any]:
     )
     return {
         "eval_id": "EVAL-G02-013",
+        "candidate_sha": candidate_sha,
+        "status": "pass",
+        "checks": {case["case_id"]: case["status"] for case in cases},
+        "open_evidence": [],
+    }
+
+
+def evaluate_i0030(root: Path, candidate_sha: str) -> dict[str, Any]:
+    if _head_sha(root) != candidate_sha:
+        raise GovernanceError("EVAL-G02-015 candidate SHA must equal checked-out HEAD")
+    if subprocess.run(
+        ["git", "status", "--porcelain"], cwd=root, capture_output=True, text=True
+    ).stdout:
+        raise GovernanceError("EVAL-G02-015 requires a clean candidate worktree")
+    loaded = validate_repository_schemas(root)
+    state = loaded["PROJECT_STATE.yaml"]
+    iteration = loaded["governance/iterations/I-0030.yaml"]
+    if (
+        state.get("active_gate") != "G02"
+        or state.get("active_gate_status") != "in_progress"
+        or state.get("active_iteration") != "I-0030"
+        or iteration.get("status") != "in_progress"
+    ):
+        raise GovernanceError("EVAL-G02-015 requires I-0030 as the sole active Iteration")
+
+    started_at = datetime.now(UTC).isoformat()
+    probe_path = root / "deploy/g02/gate_probe.py"
+    probe_source = probe_path.read_text(encoding="utf-8")
+    if "from datetime import UTC" in probe_source:
+        raise GovernanceError("I-0030 probe retains the Python 3.11-only UTC import")
+
+    compatibility_program = """
+import json
+import runpy
+import sys
+
+namespace = runpy.run_path(sys.argv[1], run_name="faultwitness_g02_probe_compat")
+timestamp = namespace["datetime"].now(namespace["UTC"])
+print(json.dumps({
+    "imported": True,
+    "python_version": list(sys.version_info[:2]),
+    "timestamp": timestamp.isoformat(),
+    "utc_identity": namespace["UTC"] is namespace["timezone"].utc,
+    "utc_offset_seconds": timestamp.utcoffset().total_seconds(),
+}, sort_keys=True))
+""".strip()
+    command = [
+        "uv",
+        "run",
+        "--isolated",
+        "--no-project",
+        "--python",
+        "3.8",
+        "python",
+        "-c",
+        compatibility_program,
+        str(probe_path),
+    ]
+    result = subprocess.run(
+        command,
+        cwd=root,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+    if result.returncode != 0:
+        raise GovernanceError(
+            "I-0030 managed Python 3.8 probe failed: "
+            + (result.stderr.strip() or "no diagnostic")
+        )
+    try:
+        compatibility = json.loads(result.stdout.strip().splitlines()[-1])
+    except (IndexError, json.JSONDecodeError) as error:
+        raise GovernanceError(
+            "I-0030 managed Python 3.8 probe returned invalid evidence"
+        ) from error
+
+    cases: list[dict[str, Any]] = []
+    if compatibility.get("python_version") != [3, 8] or not compatibility.get("imported"):
+        raise GovernanceError("I-0030 did not import the probe under actual Python 3.8")
+    cases.append(
+        {
+            "case_id": "actual-managed-python38-import",
+            "status": "pass",
+            "python_version": compatibility["python_version"],
+        }
+    )
+    if (
+        not compatibility.get("utc_identity")
+        or compatibility.get("utc_offset_seconds") != 0.0
+        or not str(compatibility.get("timestamp", "")).endswith("+00:00")
+    ):
+        raise GovernanceError("I-0030 UTC-aware timestamp semantics changed")
+    cases.append(
+        {
+            "case_id": "python38-utc-aware-timestamp",
+            "status": "pass",
+            "timestamp": compatibility["timestamp"],
+            "utc_offset_seconds": compatibility["utc_offset_seconds"],
+        }
+    )
+
+    isolation = load_isolation_config(root)
+    identities = simulate_identity_policies(isolation)
+    writers = prove_writer_canaries(isolation)
+    if len(identities) != 4 or any(item.get("status") != "pass" for item in identities):
+        raise GovernanceError("V-G02-009 Iteration N must remain exactly four")
+    if len(writers) != 4 or any(item.get("status") != "pass" for item in writers):
+        raise GovernanceError("V-G02-011 Iteration N must remain exactly four")
+
+    artifact = {
+        "schema_version": "1.0.0",
+        "candidate_sha": candidate_sha,
+        "validation": "I-0030-python38-probe-compatibility",
+        "compatibility_case_count": len(cases),
+        "cases": cases,
+        "probe_source_digest": hashlib.sha256(probe_path.read_bytes()).hexdigest(),
+        "frozen_validation_n": {
+            "V-G02-009": 4,
+            "V-G02-010": 0,
+            "V-G02-011": 4,
+        },
+        "gate_l2_execution": 0,
+        "remote_execution": 0,
+        "destructive_scenarios": 0,
+        "external_service_calls": 0,
+        "model_calls": 0,
+        "start_time": started_at,
+        "end_time": datetime.now(UTC).isoformat(),
+        "status": "pass",
+        "open_evidence": [],
+    }
+    artifact_path = (
+        root / "docs/evals/EVAL-G02-015/artifacts/python38-probe-compatibility.json"
+    )
+    artifact_path.parent.mkdir(parents=True, exist_ok=True)
+    artifact_path.write_text(
+        json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    return {
+        "eval_id": "EVAL-G02-015",
         "candidate_sha": candidate_sha,
         "status": "pass",
         "checks": {case["case_id"]: case["status"] for case in cases},

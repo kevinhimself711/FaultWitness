@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Replace the Python 3.11-only G02 remote-probe UTC import with Python 3.8-compatible
+  `timezone.utc`, and add an actual managed-Python import/timestamp Iteration Eval path.
 - Activate I-0030 as the sole Python 3.8 probe compatibility corrective; I-0031 remains planned,
   and no remote Gate L2, destructive, external-service, or model work is authorized in I-0030.
 - Preserve I-0029/EVAL-G02-014 as terminal negative evidence after the private host's Python 3.8

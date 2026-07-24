@@ -86,6 +86,17 @@ def test_remote_provisioning_contract_matches_local_digest_and_cross_boundary_po
     )
 
 
+def test_remote_probe_uses_python38_compatible_utc_semantics() -> None:
+    source = (ROOT / "deploy/g02/gate_probe.py").read_text(encoding="utf-8")
+    assert "from datetime import UTC" not in source
+    remote = _remote_probe_module()
+    timestamp = remote.datetime.now(remote.UTC)
+    assert remote.UTC is remote.timezone.utc
+    assert timestamp.utcoffset() is not None
+    assert timestamp.utcoffset().total_seconds() == 0
+    assert timestamp.isoformat().endswith("+00:00")
+
+
 def test_access_collector_is_exactly_60_cells_and_terminal_failure_is_not_retried(
     tmp_path: Path,
 ) -> None:

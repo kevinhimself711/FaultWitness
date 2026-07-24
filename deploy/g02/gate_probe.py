@@ -17,10 +17,12 @@ import shlex
 import subprocess
 import sys
 import time
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote
+
+UTC = timezone.utc
 
 KUBECTL = "/usr/local/bin/k3s kubectl"
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")

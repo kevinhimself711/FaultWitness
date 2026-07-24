@@ -79,6 +79,9 @@ EVAL-G02-014 证明 current-version local import 不能替代目标 interpreter 
 私有 host 或 sealed runtime 的 Python runner，必须在 owning Iteration 内以目标实际 major/minor
 版本执行 import 与最小 runtime path。I-0030 对 `gate_probe.py` 的冻结目标是 Python 3.8；
 syntax-only parse、mock import 或 Python 3.11+ 执行均不能单独证明 compatibility。
+冻结实现以 `timezone.utc` 保持原 UTC-aware 语义；Iteration Eval 使用 managed Python 3.8
+在隔离、无项目依赖环境中实际加载 probe，并执行 `datetime.now(UTC).isoformat()`。该证明只含
+import 与 timestamp 两个本地 deterministic cases，不连接私有服务器，也不执行任何 Gate L2。
 
 ## Journals and recovery
 
