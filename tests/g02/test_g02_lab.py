@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -219,6 +220,40 @@ def test_lab_start_cli_is_explicitly_private_server_scoped() -> None:
     args = parser().parse_args(["lab-g02", "start", "--profile", "private-server"])
     assert args.command == "lab-g02"
     assert args.lab_action == "start"
+
+
+def test_lab_checkout_accepts_only_exact_candidate_or_validated_evidence_descendant(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    candidate = "1" * 40
+    evidence_head = "2" * 40
+
+    def descendant_run(arguments: list[str], **_kwargs: Any) -> SimpleNamespace:
+        if arguments[1:3] == ["rev-parse", "HEAD"]:
+            return SimpleNamespace(stdout=evidence_head, returncode=0)
+        assert arguments[1:3] == ["merge-base", "--is-ancestor"]
+        assert arguments[3:] == [candidate, evidence_head]
+        return SimpleNamespace(stdout="", returncode=0)
+
+    monkeypatch.setattr(g02_lab.subprocess, "run", descendant_run)
+    assert g02_lab._validate_lab_checkout(tmp_path, candidate, evidence_head) == evidence_head
+
+    def non_descendant_run(arguments: list[str], **_kwargs: Any) -> SimpleNamespace:
+        if arguments[1:3] == ["rev-parse", "HEAD"]:
+            return SimpleNamespace(stdout=evidence_head, returncode=0)
+        return SimpleNamespace(stdout="", returncode=1)
+
+    monkeypatch.setattr(g02_lab.subprocess, "run", non_descendant_run)
+    with pytest.raises(GovernanceError, match="not a candidate descendant"):
+        g02_lab._validate_lab_checkout(tmp_path, candidate, evidence_head)
+
+    monkeypatch.setattr(
+        g02_lab.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(stdout="3" * 40, returncode=0),
+    )
+    with pytest.raises(GovernanceError, match="validated evidence head"):
+        g02_lab._validate_lab_checkout(tmp_path, candidate, evidence_head)
 
 
 def test_live_inject_and_restore_are_exact_and_external(

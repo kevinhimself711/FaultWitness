@@ -22,3 +22,7 @@ four-family non-seed live smoke without executing the 32 Gate seeds.
 The corrective owner pass also requires all fourteen frozen Gate phase IDs to have preimplemented
 handlers, including I-0017's `lab-deploy-and-bind` and `scenario-matrix`. It unit-tests the phase
 interfaces but does not execute their Gate N=1/N=32 work during the Iteration.
+
+The second corrective owner pass proves the dual-SHA checkout guard with focused deterministic
+tests. It does not rerun unaffected N=32/N=6/N=4 evidence or any Gate sample, and changes no image,
+oracle, metric, performance criterion, or threshold.

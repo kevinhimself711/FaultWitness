@@ -996,9 +996,14 @@ def _pull_oci_image_archive(crane: Path, image: str, destination: Path) -> None:
     )
 
 
-def deploy_g02_lab(root: Path, candidate_sha: str) -> dict[str, Any]:
+def _validate_lab_checkout(
+    root: Path, candidate_sha: str, evidence_head_sha: str | None = None
+) -> str:
     if not FULL_SHA.fullmatch(candidate_sha):
         raise GovernanceError("G02 lab candidate must be a full Git SHA")
+    expected_head = evidence_head_sha or candidate_sha
+    if not FULL_SHA.fullmatch(expected_head):
+        raise GovernanceError("G02 lab evidence head must be a full Git SHA")
     head = subprocess.run(
         ["git", "rev-parse", "HEAD"],
         cwd=root,
@@ -1007,8 +1012,23 @@ def deploy_g02_lab(root: Path, candidate_sha: str) -> dict[str, Any]:
         text=True,
         encoding="utf-8",
     ).stdout.strip()
-    if head != candidate_sha:
-        raise GovernanceError("G02 lab candidate must equal checked-out HEAD")
+    if head != expected_head:
+        raise GovernanceError("G02 lab checkout must equal the validated evidence head")
+    ancestry = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", candidate_sha, expected_head],
+        cwd=root,
+        check=False,
+        capture_output=True,
+    )
+    if ancestry.returncode != 0:
+        raise GovernanceError("G02 lab evidence head is not a candidate descendant")
+    return expected_head
+
+
+def deploy_g02_lab(
+    root: Path, candidate_sha: str, evidence_head_sha: str | None = None
+) -> dict[str, Any]:
+    _validate_lab_checkout(root, candidate_sha, evidence_head_sha)
     if subprocess.run(["git", "status", "--porcelain"], cwd=root, capture_output=True).stdout:
         raise GovernanceError("G02 lab deployment requires a clean candidate worktree")
     config = load_lab_config(root)

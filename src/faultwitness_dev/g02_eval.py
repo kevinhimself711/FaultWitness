@@ -495,7 +495,11 @@ def _owned_phase_handlers(
     def lab(context: PhaseContext, _journal: TrialJournal) -> Mapping[str, Any]:
         from faultwitness_dev.g02_lab import deploy_g02_lab
 
-        document = deploy_g02_lab(root, context.candidate_sha)
+        document = deploy_g02_lab(
+            root,
+            context.candidate_sha,
+            evidence_head_sha=str(binding["evidence_head_sha"]),
+        )
         if document.get("image_set_digest") != context.sut_image_set_digest:
             raise GovernanceError("G02 deployed lab image-set binding drifted")
         output = root / "docs/evals/EVAL-G02-005/artifacts/phases/lab-deploy-and-bind/summary.json"

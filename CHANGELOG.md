@@ -26,6 +26,8 @@
 
 ### Tooling
 
+- Make I-0017's lab deployment accept only the exact candidate or its binding-validated
+  evidence-only descendant, resolving the post-candidate binding cycle without redeployment drift.
 - Reopen owning I-0017 before I-0020 after readiness audit found lab deployment rejecting the
   validated evidence-only descendant required by the frozen dual-SHA Gate protocol.
 - Close the corrective I-0019 owner pass on candidate `4bcc990` and evidence commit `5369c09` with

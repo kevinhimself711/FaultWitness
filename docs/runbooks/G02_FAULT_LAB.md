@@ -3,9 +3,10 @@
 ## Boundary
 
 This runbook is owned by I-0017. It starts only the digest-pinned OpenTelemetry Demo lab in the
-private `fw-sut` namespace and binds it to the checked-out full candidate SHA, the frozen upstream
-commit, and the image-set digest. It does not create G02 identities, ground-truth or locked-test
-storage, baselines, model calls, or Gate evidence.
+private `fw-sut` namespace and binds it to the full business candidate SHA, the frozen upstream
+commit, and the image-set digest. The checkout may be that candidate or its exact validated
+evidence-only descendant under the dual-SHA protocol. It does not create G02 identities,
+ground-truth or locked-test storage, baselines, model calls, or Gate evidence.
 
 ## Start
 
@@ -87,6 +88,11 @@ starts. The deployment handler performs the existing digest-pinned clean-clone d
 the candidate and SUT image-set binding, and writes its phase summary. The scenario handler executes
 exactly the 32 registered seeds against that bound lab, restores the exact flag document after every
 seed, and writes one candidate-bound atomic trial record plus one sealed observation packet per seed.
+
+The deployment handler receives both `candidate_sha` and the binding's `evidence_head_sha`. It
+requires checked-out HEAD to equal that evidence head and proves the business candidate is its Git
+ancestor. The earlier candidate-binding phase separately verifies the exact changed-path allowlist
+and subject digests. Thus the post-candidate binding asset cannot impersonate a new runtime candidate.
 
 Passed scenario trial IDs are reused for the same phase key. Only pending or infrastructure-failed
 work may continue; a metric/oracle/cleanup failure requires a new candidate. The phase itself is
