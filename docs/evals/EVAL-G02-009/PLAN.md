@@ -16,6 +16,10 @@ private server、MinIO、PostgreSQL、Redis、LangSmith 或模型服务，也不
 5. 三个 Gate handler 直接调用 runner、逐项原子落盘并绑定 phase cache；缺失/漂移的
    candidate、environment、artifact reference 或 collector capability 不可由操作员裁定通过。
 
+Fake collector 的 60/6/22 枚举只证明 runner contract，不是 Gate L2 样本。验证项的
+Iteration N 仍严格为 V-G02-009 的四个 identity policy、V-G02-010 的零次 live stage、
+V-G02-011 的四个 writer path；artifact 必须明确记录 Gate L2 execution count 为零。
+
 ## Pass criteria
 
 - 五个确定性 case 全部通过；V-G02-009 与 V-G02-011 的 Iteration N 仍分别为 4 和 4。

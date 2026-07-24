@@ -127,6 +127,12 @@ def test_frozen_phase_registry_has_fail_fast_order_and_one_destructive_phase() -
         "preflight-upstream-g01",
     ]
     assert [phase.phase_id for phase in G02_PHASES if phase.destructive] == ["scenario-matrix"]
+    assert {
+        phase.owner_iteration
+        for phase in G02_PHASES
+        if phase.phase_id
+        in {"isolation-access-matrix", "trace-six-stage-matrix", "all-surface-canary"}
+    } == {"I-0024"}
 
 
 def test_forward_orchestration_selects_e008_and_rejects_terminal_i0020() -> None:

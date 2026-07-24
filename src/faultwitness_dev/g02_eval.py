@@ -11,6 +11,13 @@ from pathlib import Path
 from typing import Any
 
 from faultwitness_dev.errors import GovernanceError
+from faultwitness_dev.g02_collectors import (
+    CandidateProbeBackend,
+    ProbeBackend,
+    run_access_matrix,
+    run_canary_matrix,
+    run_trace_matrix,
+)
 from faultwitness_dev.g02_isolation import (
     validate_all_surface_canary,
     validate_live_access_matrix,
@@ -98,12 +105,12 @@ G02_PHASES = (
     PhaseDefinition("preflight-static-inheritance", ("preflight-candidate-binding",), "I-0016"),
     PhaseDefinition("preflight-upstream-g01", ("preflight-static-inheritance",), "I-0016"),
     PhaseDefinition("lab-deploy-and-bind", ("preflight-upstream-g01",), "I-0017"),
-    PhaseDefinition("isolation-access-matrix", ("lab-deploy-and-bind",), "I-0018"),
-    PhaseDefinition("trace-six-stage-matrix", ("lab-deploy-and-bind",), "I-0018"),
+    PhaseDefinition("isolation-access-matrix", ("lab-deploy-and-bind",), "I-0024"),
+    PhaseDefinition("trace-six-stage-matrix", ("lab-deploy-and-bind",), "I-0024"),
     PhaseDefinition(
         "all-surface-canary",
         ("isolation-access-matrix", "trace-six-stage-matrix"),
-        "I-0018",
+        "I-0024",
     ),
     PhaseDefinition("scenario-matrix", ("all-surface-canary",), "I-0017", destructive=True),
     PhaseDefinition("baseline-deterministic", ("scenario-matrix",), "I-0019"),
@@ -475,6 +482,15 @@ def _load_gate_binding(root: Path, candidate_sha: str) -> dict[str, Any]:
     if binding.get("candidate_sha") != candidate_sha:
         raise GovernanceError("G02 candidate-binding SHA drifted")
     validate_candidate_binding_document(binding)
+    if "phase_inputs" in binding:
+        raise GovernanceError("G02 operator-precomputed phase inputs are forbidden")
+    journal_root = Path(str(binding.get("journal_root", "")))
+    if (
+        not journal_root.is_absolute()
+        or candidate_sha not in journal_root.parts
+        or eval_id not in journal_root.parts
+    ):
+        raise GovernanceError("G02 journal root is not candidate and Eval scoped")
     binding["_iteration_id"] = iteration_id
     binding["_eval_id"] = eval_id
     return binding
@@ -515,6 +531,7 @@ def _owned_phase_handlers(
     root: Path,
     binding: Mapping[str, Any],
     engine: PhaseEngine,
+    probe_backend: ProbeBackend | None = None,
 ) -> dict[str, PhaseHandler]:
     def phase_output(phase_id: str, filename: str) -> Path:
         eval_id = binding.get("_eval_id")
@@ -565,57 +582,63 @@ def _owned_phase_handlers(
             "artifact_path": output.relative_to(root).as_posix(),
         }
 
-    def isolation_input(phase_id: str) -> tuple[dict[str, Any], Path]:
-        inputs = binding.get("phase_inputs")
-        output_names = {
-            "isolation-access-matrix": "matrix.json",
-            "trace-six-stage-matrix": "matrix.json",
-            "all-surface-canary": "matrix.json",
-        }
-        source_value = inputs.get(phase_id) if isinstance(inputs, dict) else None
-        source = Path(str(source_value)) if source_value else Path()
-        if not source.is_absolute() or not source.is_file():
-            raise GovernanceError(f"G02 phase input must be a repository-external file: {phase_id}")
-        document = load_data(source)
-        if not isinstance(document, dict):
-            raise GovernanceError(f"G02 phase input must be an object: {phase_id}")
-        return document, phase_output(phase_id, output_names[phase_id])
+    def backend() -> ProbeBackend:
+        nonlocal probe_backend
+        if probe_backend is None:
+            probe_backend = CandidateProbeBackend(root, binding)
+        return probe_backend
 
-    def access(context: PhaseContext, _journal: TrialJournal) -> Mapping[str, Any]:
-        document, output = isolation_input("isolation-access-matrix")
-        summary = validate_live_access_matrix(
-            document, context.candidate_sha, context.environment_fingerprint
-        )
+    def collector_result(
+        phase_id: str,
+        document: Mapping[str, Any],
+        output: Path,
+        validator: Callable[[Mapping[str, Any], str, str], Mapping[str, Any]],
+        context: PhaseContext,
+    ) -> Mapping[str, Any]:
         _atomic_json(output, document)
+        status = str(document.get("status", "blocked"))
+        summary: Mapping[str, Any] = {}
+        if status == "pass":
+            summary = validator(
+                document, context.candidate_sha, context.environment_fingerprint
+            )
         return {
             **summary,
+            "status": status,
+            "phase_id": phase_id,
             "artifact_digest": _canonical_digest(document),
             "artifact_path": output.relative_to(root).as_posix(),
         }
 
-    def stages(context: PhaseContext, _journal: TrialJournal) -> Mapping[str, Any]:
-        document, output = isolation_input("trace-six-stage-matrix")
-        summary = validate_stage_matrix(
-            document, context.candidate_sha, context.environment_fingerprint
+    def access(context: PhaseContext, journal: TrialJournal) -> Mapping[str, Any]:
+        phase_id = "isolation-access-matrix"
+        return collector_result(
+            phase_id,
+            run_access_matrix(context, journal, backend()),
+            phase_output(phase_id, "matrix.json"),
+            validate_live_access_matrix,
+            context,
         )
-        _atomic_json(output, document)
-        return {
-            **summary,
-            "artifact_digest": _canonical_digest(document),
-            "artifact_path": output.relative_to(root).as_posix(),
-        }
 
-    def canary(context: PhaseContext, _journal: TrialJournal) -> Mapping[str, Any]:
-        document, output = isolation_input("all-surface-canary")
-        summary = validate_all_surface_canary(
-            document, context.candidate_sha, context.environment_fingerprint
+    def stages(context: PhaseContext, journal: TrialJournal) -> Mapping[str, Any]:
+        phase_id = "trace-six-stage-matrix"
+        return collector_result(
+            phase_id,
+            run_trace_matrix(context, journal, backend()),
+            phase_output(phase_id, "matrix.json"),
+            validate_stage_matrix,
+            context,
         )
-        _atomic_json(output, document)
-        return {
-            **summary,
-            "artifact_digest": _canonical_digest(document),
-            "artifact_path": output.relative_to(root).as_posix(),
-        }
+
+    def canary(context: PhaseContext, journal: TrialJournal) -> Mapping[str, Any]:
+        phase_id = "all-surface-canary"
+        return collector_result(
+            phase_id,
+            run_canary_matrix(context, journal, backend()),
+            phase_output(phase_id, "matrix.json"),
+            validate_all_surface_canary,
+            context,
+        )
 
     def scenarios(context: PhaseContext, journal: TrialJournal) -> Mapping[str, Any]:
         from faultwitness_dev.g02_lab import run_gate_scenario_matrix

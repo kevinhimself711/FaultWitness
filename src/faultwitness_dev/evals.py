@@ -58,6 +58,7 @@ from faultwitness_dev.g02_baselines import (
     run_live_trials,
     score_result,
 )
+from faultwitness_dev.g02_collectors import evaluate_i0024
 from faultwitness_dev.g02_eval import evaluate_i0016, validate_gate_orchestration_selection
 from faultwitness_dev.g02_isolation import (
     evaluate_i0018,
@@ -511,6 +512,8 @@ def evaluate_iteration(root: Path, iteration: str, candidate_sha: str) -> dict[s
         return evaluate_i0021(root, candidate_sha)
     if iteration == "I-0022":
         return evaluate_i0022(root, candidate_sha)
+    if iteration == "I-0024":
+        return evaluate_i0024(root, candidate_sha)
     raise GovernanceError(f"no private Eval implementation is registered for {iteration}")
 
 

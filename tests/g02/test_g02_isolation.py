@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import copy
-import json
 from collections import Counter
 from pathlib import Path
 
 import pytest
 
 from faultwitness_dev.errors import GovernanceError
+from faultwitness_dev.g02_collectors import MemoryProbeBackend
 from faultwitness_dev.g02_eval import (
     G02_PHASES,
     PhaseContext,
@@ -213,17 +213,6 @@ def test_all_surface_runner_contract_rejects_leaked_fixture() -> None:
 
 
 def test_three_gate_phase_interfaces_write_candidate_bound_artifacts(tmp_path: Path) -> None:
-    inputs = {
-        "isolation-access-matrix": _passing_access_matrix(),
-        "trace-six-stage-matrix": _passing_stage_matrix(),
-        "all-surface-canary": _passing_canary_matrix(),
-    }
-    paths: dict[str, str] = {}
-    for phase_id, document in inputs.items():
-        path = tmp_path / "raw" / f"{phase_id}.json"
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(document), encoding="utf-8")
-        paths[phase_id] = str(path.resolve())
     context = PhaseContext(
         candidate_sha=CANDIDATE,
         runtime_image_digests=("3" * 64,),
@@ -236,11 +225,16 @@ def test_three_gate_phase_interfaces_write_candidate_bound_artifacts(tmp_path: P
     engine = PhaseEngine(G02_PHASES, context, tmp_path / "journal")
     handlers = _owned_phase_handlers(
         tmp_path,
-        {"_eval_id": "EVAL-G02-008", "phase_inputs": paths},
+        {"_eval_id": "EVAL-G02-010"},
         engine,
+        MemoryProbeBackend(ROOT),
     )
     journal = TrialJournal(tmp_path / "journal")
-    for phase_id in inputs:
+    for phase_id in (
+        "isolation-access-matrix",
+        "trace-six-stage-matrix",
+        "all-surface-canary",
+    ):
         result = handlers[phase_id](context, journal)
         assert result["status"] == "pass"
         assert (tmp_path / result["artifact_path"]).is_file()

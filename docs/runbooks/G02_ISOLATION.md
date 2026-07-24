@@ -73,6 +73,29 @@ EVAL-G02-005 and EVAL-G02-008 are immutable failed history. Replacement orchestr
 Gate artifacts only under `EVAL-G02-010`; no runner may select either terminal Eval or overwrite
 its phase records.
 
+Provisioning is derived from `config/g02/gate-probes.yaml` and is checked by one identical local and
+remote plan digest before any credential is created. The two probe images are digest pinned.
+Credential values are generated on the private host, stored only in four candidate/environment-
+bound Kubernetes Secrets, and never returned to the operator or written to Git. A stale candidate
+binding disables the old MinIO user and PostgreSQL login before rotating it. Reprovisioning the
+same binding is idempotent and resets each MinIO user before attaching only its exact policy;
+`ordinary-developer` remains policy-free.
+
+The 60 access cells execute live PostgreSQL, MinIO, Prometheus, Loki, Tempo, and LangSmith
+operations. LangSmith keeps its API key on the operator: the baseline path proves public HTTPS
+reachability from the `baseline-agent` pod, then the operator proves the existing credential;
+negative pods never receive that credential. The trace collector submits one candidate-bound
+six-span envelope, verifies all six correlated names in Tempo, and drains the existing operator
+LangSmith relay. The canary collector injects both deterministic Secret and PII canaries into the
+sanitizer rejection path, proves no queue delta, then scans current process output, HTTP/SSE/log
+surfaces, PostgreSQL, Redis, MinIO, decoded Kubernetes objects, OTLP storage, Git, Eval assets, and
+the public preregistry. Only canary digests and hit counts enter the matrix.
+
+Access trials persist one cell at a time. Trace and canary collections persist the collection plus
+each stage or surface. A classified transport failure resumes only the failed/pending unit; an
+allow mismatch, missing stage, canary hit, binding drift, missing artifact, or provisioning defect
+is terminal for that candidate and has no retry or operator-pass route.
+
 These phases have no preset orchestration timeout. The rule changes only process supervision:
 matrix N, zero-tolerance semantics, quality/performance thresholds, and all Gate criteria remain
 unchanged.

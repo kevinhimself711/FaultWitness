@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0.0",
+  "principals": [
+    "scenario-controller",
+    "baseline-agent",
+    "sealed-evaluator"
+  ],
+  "prefixes": [
+    "g02/scenarios/",
+    "g02/trials/",
+    "g02/ground-truth/",
+    "g02/locked-tests/",
+    "g02/evidence/"
+  ]
+}

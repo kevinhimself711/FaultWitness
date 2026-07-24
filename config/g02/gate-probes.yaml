@@ -1,0 +1,24 @@
+schema_version: "1.0.0"
+images:
+  busybox: docker.io/rancher/mirrored-library-busybox@sha256:101b4afd76732482eff9b95cae5f94bcf295e521fbec4e01b69c5421f3f3f3e5
+  minio_mc: docker.io/minio/mc@sha256:eb4ea9884b77704230e2423e9004d2fa738dc272876b9cc41a297d29443b8780
+object_store:
+  endpoint: http://minio.fw-data.svc.cluster.local:9000
+  bucket: faultwitness-eval
+schema_targets:
+  incident: {schema: incident_owner, relation: incident, owner_role: fw_incident_owner}
+  runtime: {schema: runtime_shared, relation: schema_version, owner_role: __database_owner__}
+  checkpoint: {schema: graph_owner, relation: checkpoint, owner_role: fw_graph_owner}
+  action: {schema: action_owner, relation: aggregate_state, owner_role: fw_action_owner}
+  delivery: {schema: trace_buffer_owner, relation: delivery, owner_role: fw_trace_owner}
+  trace_buffer: {schema: trace_buffer_owner, relation: trace_payload, owner_role: fw_trace_owner}
+observability_targets:
+  prometheus: {url: http://prometheus.fw-observability.svc.cluster.local:9090/metrics, port: 9090}
+  loki: {url: http://loki.fw-observability.svc.cluster.local:3100/metrics, port: 3100}
+  tempo: {url: http://tempo.fw-observability.svc.cluster.local:3200/metrics, port: 3200}
+  langsmith: {url: https://api.smith.langchain.com/info, port: 443}
+probe_pods:
+  canonical-owner: {namespace: fw-observability, service_account: default}
+  baseline-agent: {namespace: fw-baseline, service_account: baseline-agent}
+  ordinary-developer: {namespace: fw-eval, service_account: sealed-evaluator}
+  cross-boundary: {namespace: fw-eval, service_account: sealed-evaluator}

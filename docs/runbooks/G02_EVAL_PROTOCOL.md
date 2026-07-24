@@ -33,21 +33,28 @@ uv run python -m faultwitness_dev eval-g02-close --candidate-sha <SHA> --evidenc
 - 默认执行 DAG 并复用 exact-key pass。
 - `--resume` 只继续 pending 或 `infra_failed`。
 - `--from-failed` 从最早 pending 或 `infra_failed` phase 开始。
-- `metric_fail` 需要新 candidate；`blocked` 需要解除外部阻塞。
+- `metric_fail` 或确定性 `blocked` 使当前 orchestration terminal；修复只能产生前向
+  corrective Iteration 和新 candidate。只有 `infra_failed` 可在原 trial 续跑。
 - `scenario-matrix` 对同一 candidate/artifact/config/environment key 只执行一次。
 
 ## Candidate-binding asset
 
 当前 standard orchestration Iteration 在 Gate Eval 前产生其 `eval_id` 对应目录下的
-`candidate-binding.json`。I-0023 对应 EVAL-G02-008；I-0020/EVAL-G02-005 是不可变失败历史。
+`candidate-binding.json`。I-0025 对应 EVAL-G02-010；I-0020/EVAL-G02-005 与
+I-0023/EVAL-G02-008 是不可变失败历史。
 binding 记录：
 
 - `candidate_sha` 与 `evidence_head_sha`。
 - runtime image、SUT image set、config、evaluator、dataset 和 environment digests。
 - subject path 到 SHA-256 的映射。
 - 13 个 upstream/Iteration manifest 路径。
-- repository-external absolute journal root。
+- 同时含 `eval_id` 与完整 `candidate_sha` 路径段的 repository-external absolute journal
+  root；不同 Eval 或 candidate 绝不共用或覆盖 journal。
 - zero waiver/open-evidence/backlog/DLQ/fallback counters。
+
+EVAL-G02-010 binding 不得含 `phase_inputs`。`isolation-access-matrix`、
+`trace-six-stage-matrix` 与 `all-surface-canary` 必须由 handler 直接调用 I-0024 collector；
+任何操作员预制 matrix 都会在 phase 启动前被拒绝。
 
 `evidence_head_sha` 必须是 candidate 或仅修改 allowlisted evidence/status 路径的后代。Source、
 fixture、threshold、workflow、dependency、deployment、dataset、config 或 runtime 变化不能作为
@@ -59,8 +66,10 @@ Phase record 位于 journal root 的 `phases/<phase>.json`；trial 位于
 `trials/<trial-id>.json`。写入使用同目录临时文件和 atomic replace。每条记录包含 status、
 attempt/execution count、UTC 时间与 cache key。
 
-发生传输故障时保留已经通过的 trial，只续跑失败 trial。不得删除 journal 以强制重跑；若
-cache key 改变，保留旧 evidence 并建立新候选记录。
+60-cell access matrix 逐 cell 写入；六阶段 trace 与 22-surface canary 分别先写 collection
+record，再逐 stage/surface 写入。发生传输故障时保留已经通过的 unit，只续跑失败或待运行
+unit。`metric_fail`/`blocked` unit 在同一 candidate 上不可重试。不得删除 journal 以强制
+重跑；若 cache key 改变，保留旧 evidence，并在新 Eval/candidate journal root 建立记录。
 
 ## Revision-identity guardrail (2026-07-24)
 
