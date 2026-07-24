@@ -1,21 +1,23 @@
 {
-  "candidate_sha": "c4fa561ad58c5d8da0127fae8f0d0720eec15f76",
+  "candidate_sha": "4bcc990c6b51d39736c81768199844b95f1a8c69",
   "validation": "V-G02-015",
   "N": 4,
   "records": [
     {
-      "trial_id": "i0019-c4fa561ad58c5d8da0127fae8f0d0720eec15f76-naive_react-synthetic-live-a",
+      "trial_id": "i0019-4bcc990c6b51d39736c81768199844b95f1a8c69-naive_react-synthetic-live-a",
       "status": "pass",
       "attempt": 2,
-      "recorded_at": "2026-07-24T07:18:45.367429+00:00",
+      "recorded_at": "2026-07-24T09:39:29.178977+00:00",
       "payload": {
         "case_id": "synthetic-live-a",
+        "baseline": "naive_react",
+        "repetition": null,
         "result": {
-          "root_cause": "Catalog service error causing journey failure",
+          "root_cause": "Catalog service failure",
           "root_cause_candidates": [
+            "Catalog database connectivity issue",
             "Catalog service internal error",
-            "Catalog dependency timeout or unavailability",
-            "Invalid catalog request payload"
+            "Upstream dependency timeout affecting catalog"
           ],
           "evidence": [
             "catalog-error"
@@ -26,7 +28,7 @@
               "supported": true
             },
             {
-              "claim": "The catalog error is correlated with the failure.",
+              "claim": "The error is correlated with the catalog service.",
               "supported": true
             }
           ],
@@ -37,38 +39,40 @@
           "model_id": "qwen3.7-plus-2026-05-26",
           "fallback_count": 0,
           "input_tokens": 169,
-          "output_tokens": 136,
-          "latency_ms": 5433.072
+          "output_tokens": 133,
+          "latency_ms": 5902.456
         },
         "input_tokens": 169,
-        "output_tokens": 136,
-        "cost_cny": 0.001426
+        "output_tokens": 133,
+        "cost_cny": 0.001402
       }
     },
     {
-      "trial_id": "i0019-c4fa561ad58c5d8da0127fae8f0d0720eec15f76-naive_react-synthetic-live-b",
+      "trial_id": "i0019-4bcc990c6b51d39736c81768199844b95f1a8c69-naive_react-synthetic-live-b",
       "status": "pass",
       "attempt": 2,
-      "recorded_at": "2026-07-24T07:18:52.033653+00:00",
+      "recorded_at": "2026-07-24T09:39:34.957997+00:00",
       "payload": {
         "case_id": "synthetic-live-b",
+        "baseline": "naive_react",
+        "repetition": null,
         "result": {
           "root_cause": "Catalog service error causing journey failure",
           "root_cause_candidates": [
-            "Catalog service internal failure",
-            "Catalog dependency timeout or unavailability",
-            "Invalid catalog request payload"
+            "Catalog service internal error or outage",
+            "Data corruption in catalog database",
+            "Network connectivity issue to catalog service"
           ],
           "evidence": [
             "catalog-error"
           ],
           "claims": [
             {
-              "claim": "The journey failed due to a catalog-related error.",
+              "claim": "The catalog-error observation indicates a failure in the catalog component.",
               "supported": true
             },
             {
-              "claim": "The catalog error is correlated with the journey failure.",
+              "claim": "The journey_failed flag confirms the error impacted the user journey.",
               "supported": true
             }
           ],
@@ -79,21 +83,23 @@
           "model_id": "qwen3.7-plus-2026-05-26",
           "fallback_count": 0,
           "input_tokens": 169,
-          "output_tokens": 137,
-          "latency_ms": 6662.204
+          "output_tokens": 144,
+          "latency_ms": 5776.469
         },
         "input_tokens": 169,
-        "output_tokens": 137,
-        "cost_cny": 0.001434
+        "output_tokens": 144,
+        "cost_cny": 0.00149
       }
     },
     {
-      "trial_id": "i0019-c4fa561ad58c5d8da0127fae8f0d0720eec15f76-no_rag-synthetic-live-a",
+      "trial_id": "i0019-4bcc990c6b51d39736c81768199844b95f1a8c69-no_rag-synthetic-live-a",
       "status": "pass",
       "attempt": 4,
-      "recorded_at": "2026-07-24T07:19:09.235962+00:00",
+      "recorded_at": "2026-07-24T09:39:45.785599+00:00",
       "payload": {
         "case_id": "synthetic-live-a",
+        "baseline": "no_rag",
+        "repetition": null,
         "result": {
           "root_cause": "catalog-error",
           "root_cause_candidates": [
@@ -104,7 +110,7 @@
           ],
           "claims": [
             {
-              "claim": "The root cause is identified as catalog-error based on the correlated error observation.",
+              "claim": "The root cause is catalog-error because it is the only observation, is correlated with an error, and the journey failed.",
               "supported": true
             }
           ],
@@ -115,21 +121,23 @@
           "model_id": "qwen3.7-plus-2026-05-26",
           "fallback_count": 0,
           "input_tokens": 157,
-          "output_tokens": 90,
-          "latency_ms": 6354.497
+          "output_tokens": 99,
+          "latency_ms": 6369.848
         },
         "input_tokens": 157,
-        "output_tokens": 90,
-        "cost_cny": 0.001034
+        "output_tokens": 99,
+        "cost_cny": 0.001106
       }
     },
     {
       "attempt": 2,
       "payload": {
+        "baseline": "no_rag",
         "case_id": "synthetic-live-b",
         "cost_cny": 0.000986,
         "input_tokens": 157,
         "output_tokens": 84,
+        "repetition": null,
         "result": {
           "baseline": "no_rag",
           "case_id": "synthetic-live-b",
@@ -144,7 +152,7 @@
           ],
           "fallback_count": 0,
           "input_tokens": 157,
-          "latency_ms": 5241.811,
+          "latency_ms": 4429.776,
           "model_id": "qwen3.7-plus-2026-05-26",
           "output_tokens": 84,
           "root_cause": "catalog-error",
@@ -155,15 +163,15 @@
           "status": "ok"
         }
       },
-      "recorded_at": "2026-07-24T07:18:57.300723+00:00",
+      "recorded_at": "2026-07-24T09:39:39.412509+00:00",
       "status": "pass",
-      "trial_id": "i0019-c4fa561ad58c5d8da0127fae8f0d0720eec15f76-no_rag-synthetic-live-b"
+      "trial_id": "i0019-4bcc990c6b51d39736c81768199844b95f1a8c69-no_rag-synthetic-live-b"
     }
   ],
   "fallback_count": 0,
   "resume_demonstrated": true,
   "input_tokens": 652,
-  "output_tokens": 447,
-  "cost_cny": 0.00488,
+  "output_tokens": 460,
+  "cost_cny": 0.004984,
   "status": "pass"
 }

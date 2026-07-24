@@ -13,7 +13,7 @@ active_gate_status: in_progress
 active_iteration: I-0019
 next_iteration: I-0020
 last_closed_gate: G01
-latest_eval_run: EVAL-G02-002
+latest_eval_run: EVAL-G02-004
 
 authoritative_plan: docs/blueprint/FINAL_PLAN.md
 active_gate_plan: docs/gates/G02/PLAN.md

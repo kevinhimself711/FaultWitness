@@ -130,5 +130,5 @@ claims:
     evidence:
       - EVAL-G02-004
     limitations:
-      - "I-0019 proves five scorer branches, seven threshold entries, deterministic N=3, and non-seed live N=4; unified-candidate Gate N=32/N=192 remains reserved for EVAL-G02-005."
+      - "I-0019 proves five scorer branches, seven threshold entries, deterministic N=3, and non-seed live N=4; its direct Gate N=32/N=192 interfaces are unit-tested, while unified-candidate execution remains reserved for EVAL-G02-005."
       - "Baseline attainment of future Agent quality floors is not a G02 pass condition."

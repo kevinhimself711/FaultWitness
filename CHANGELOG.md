@@ -26,6 +26,9 @@
 
 ### Tooling
 
+- Pass corrective EVAL-G02-004 on candidate `4bcc990`: retain exact N=3/N=4, use the frozen model
+  with zero fallback, demonstrate trial-local interruption recovery, and close with 652/460 tokens,
+  0.004984 CNY, and no open evidence.
 - Reopen owning I-0019 before I-0020 after readiness audit found the three Gate baseline handlers
   importing precomputed JSON; replace that path with direct candidate-bound N=32/N=192 execution,
   atomic resumable live journals, sealed scoring, and the frozen clustered bootstrap interface.

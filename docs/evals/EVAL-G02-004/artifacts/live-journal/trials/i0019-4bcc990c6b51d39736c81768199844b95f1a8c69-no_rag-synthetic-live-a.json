@@ -1,0 +1,38 @@
+{
+  "attempt": 4,
+  "payload": {
+    "baseline": "no_rag",
+    "case_id": "synthetic-live-a",
+    "cost_cny": 0.001106,
+    "input_tokens": 157,
+    "output_tokens": 99,
+    "repetition": null,
+    "result": {
+      "baseline": "no_rag",
+      "case_id": "synthetic-live-a",
+      "claims": [
+        {
+          "claim": "The root cause is catalog-error because it is the only observation, is correlated with an error, and the journey failed.",
+          "supported": true
+        }
+      ],
+      "evidence": [
+        "catalog-error"
+      ],
+      "fallback_count": 0,
+      "input_tokens": 157,
+      "latency_ms": 6369.848,
+      "model_id": "qwen3.7-plus-2026-05-26",
+      "output_tokens": 99,
+      "root_cause": "catalog-error",
+      "root_cause_candidates": [
+        "catalog-error"
+      ],
+      "schema_version": "1.0.0",
+      "status": "ok"
+    }
+  },
+  "recorded_at": "2026-07-24T09:39:45.785599+00:00",
+  "status": "pass",
+  "trial_id": "i0019-4bcc990c6b51d39736c81768199844b95f1a8c69-no_rag-synthetic-live-a"
+}

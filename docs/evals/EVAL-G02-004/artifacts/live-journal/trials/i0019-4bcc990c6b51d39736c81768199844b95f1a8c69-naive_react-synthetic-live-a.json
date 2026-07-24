@@ -1,0 +1,44 @@
+{
+  "attempt": 2,
+  "payload": {
+    "baseline": "naive_react",
+    "case_id": "synthetic-live-a",
+    "cost_cny": 0.001402,
+    "input_tokens": 169,
+    "output_tokens": 133,
+    "repetition": null,
+    "result": {
+      "baseline": "naive_react",
+      "case_id": "synthetic-live-a",
+      "claims": [
+        {
+          "claim": "The journey failed due to a catalog-related error.",
+          "supported": true
+        },
+        {
+          "claim": "The error is correlated with the catalog service.",
+          "supported": true
+        }
+      ],
+      "evidence": [
+        "catalog-error"
+      ],
+      "fallback_count": 0,
+      "input_tokens": 169,
+      "latency_ms": 5902.456,
+      "model_id": "qwen3.7-plus-2026-05-26",
+      "output_tokens": 133,
+      "root_cause": "Catalog service failure",
+      "root_cause_candidates": [
+        "Catalog database connectivity issue",
+        "Catalog service internal error",
+        "Upstream dependency timeout affecting catalog"
+      ],
+      "schema_version": "1.0.0",
+      "status": "ok"
+    }
+  },
+  "recorded_at": "2026-07-24T09:39:29.178977+00:00",
+  "status": "pass",
+  "trial_id": "i0019-4bcc990c6b51d39736c81768199844b95f1a8c69-naive_react-synthetic-live-a"
+}

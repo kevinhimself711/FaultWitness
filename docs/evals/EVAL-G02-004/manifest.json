@@ -3,25 +3,25 @@
   "eval_id": "EVAL-G02-004",
   "gate": "G02",
   "iteration": "I-0019",
-  "candidate_sha": "c4fa561ad58c5d8da0127fae8f0d0720eec15f76",
-  "evaluated_revision": "c4fa561ad58c5d8da0127fae8f0d0720eec15f76",
-  "evidence_head_sha": "762164d74063a34be76a171ec53357c122dd1fdb",
+  "candidate_sha": "4bcc990c6b51d39736c81768199844b95f1a8c69",
+  "evaluated_revision": "4bcc990c6b51d39736c81768199844b95f1a8c69",
+  "evidence_head_sha": "4bcc990c6b51d39736c81768199844b95f1a8c69",
   "status": "pass",
   "subject_digests": {
     "config/g02/baselines.yaml": "1debc1a782867811a513b5af98320809f41061f75b8885be5f57539899df7e60",
-    "src/faultwitness_dev/g02_baselines.py": "400a47098893efd568d655a8aca5028a6590c5a713854b149766cdfc162676ed",
+    "src/faultwitness_dev/g02_baselines.py": "021cdfeadbc8ced19a4f85b86760a18462d8b973be0c389bdf89be85d11dfb25",
     "src/faultwitness_dev/evals.py": "20133739d232b18608f5818dcde1a46fb8bb63734947edea5ac3dcc72c5e6480",
-    "src/faultwitness_dev/g02_eval.py": "b29252e27e0fc3e93fa2ba9b9232d2052f0832ee8db18e73abda139d3ba1238a"
+    "src/faultwitness_dev/g02_eval.py": "aea89ef0011c224620b63d178ecb8ce15c57dbcbd69fcc76e30cde746cdba997"
   },
   "environment_fingerprint": "0c58543684910f2417ecd4e1ea3da68e289cc7b09317b17dd6f16310508072c0",
   "phases": [
     {
       "phase_id": "iteration-baseline-scoring",
       "status": "pass",
-      "start_time": "2026-07-24T07:18:38+00:00",
-      "end_time": "2026-07-24T07:19:09.235962+00:00",
-      "cache_key": "9de8df861f751d3a805c8112ea8e57992fb412d866dc36a70a4d7a2361a9d949",
-      "artifact_digest": "95715b2600695c699cb1ec2c9b7962459268416cabb15c56671a7041bea73dcc",
+      "start_time": "2026-07-24T09:39:23+00:00",
+      "end_time": "2026-07-24T09:39:45.785599+00:00",
+      "cache_key": "9cb9c6f31f45e866cf884c225e2952c2d646470bc95acbe8ce4894a76d37a470",
+      "artifact_digest": "52c034a4f338eb2d951c84df811a41c1af21474ee7192cd6f1f8b9ae633ddaca",
       "artifact_path": "docs/evals/EVAL-G02-004/artifacts/live-smoke.json",
       "private_artifact_uri": null,
       "execution_count": 1,
@@ -30,7 +30,7 @@
   ],
   "environments": ["local-deterministic", "bailian-live"],
   "commands": [
-    "uv run python -m faultwitness_dev eval-iteration I-0019 --candidate-sha c4fa561ad58c5d8da0127fae8f0d0720eec15f76"
+    "uv run python -m faultwitness_dev eval-iteration I-0019 --candidate-sha 4bcc990c6b51d39736c81768199844b95f1a8c69"
   ],
   "artifacts": [
     "docs/evals/EVAL-G02-004/PLAN.md",
@@ -39,13 +39,17 @@
     "docs/evals/EVAL-G02-004/artifacts/threshold-registry.json",
     "docs/evals/EVAL-G02-004/artifacts/deterministic-smoke.json",
     "docs/evals/EVAL-G02-004/artifacts/live-smoke.json",
+    "docs/evals/EVAL-G02-004/artifacts/live-journal/trials/i0019-4bcc990c6b51d39736c81768199844b95f1a8c69-naive_react-synthetic-live-a.json",
+    "docs/evals/EVAL-G02-004/artifacts/live-journal/trials/i0019-4bcc990c6b51d39736c81768199844b95f1a8c69-naive_react-synthetic-live-b.json",
+    "docs/evals/EVAL-G02-004/artifacts/live-journal/trials/i0019-4bcc990c6b51d39736c81768199844b95f1a8c69-no_rag-synthetic-live-a.json",
+    "docs/evals/EVAL-G02-004/artifacts/live-journal/trials/i0019-4bcc990c6b51d39736c81768199844b95f1a8c69-no_rag-synthetic-live-b.json",
     "docs/evals/EVAL-G02-004/artifacts/attempts/b448c5cf9378caa2e2c96e31ea9640205972deb4/summary.json"
   ],
   "evidence_urls": [],
   "integrations": {
     "bailian": {
       "status": "pass",
-      "reason": "Four candidate-bound non-seed trials used qwen3.7-plus-2026-05-26 with zero fallback."
+      "reason": "Four 4bcc990c6b51d39736c81768199844b95f1a8c69-bound non-seed trials used qwen3.7-plus-2026-05-26 with zero fallback."
     }
   },
   "open_evidence": []
