@@ -78,17 +78,39 @@ trap - EXIT HUP INT TERM
 """
 
 
+@dataclass(frozen=True)
+class _RemoteProcessResult:
+    returncode: int
+    stdout: str
+    stderr: str
+
+
 def _remote_process(
     runner: Any, arguments: list[str], command: str, stdin: str
-) -> Any:
-    return runner(
+) -> _RemoteProcessResult:
+    result = runner(
         [*arguments, command],
-        input=stdin,
+        input=stdin.encode("utf-8"),
         check=False,
         capture_output=True,
-        text=True,
-        encoding="utf-8",
+        text=False,
     )
+    try:
+        stdout = (
+            result.stdout.decode("utf-8")
+            if isinstance(result.stdout, bytes)
+            else result.stdout
+        )
+        stderr = (
+            result.stderr.decode("utf-8")
+            if isinstance(result.stderr, bytes)
+            else result.stderr
+        )
+    except UnicodeDecodeError as error:
+        raise GovernanceError("remote process output is not valid UTF-8") from error
+    if not isinstance(stdout, str) or not isinstance(stderr, str):
+        raise GovernanceError("remote process output must be bytes or text")
+    return _RemoteProcessResult(result.returncode, stdout, stderr)
 
 
 def _failure_detail(result: Any) -> str:

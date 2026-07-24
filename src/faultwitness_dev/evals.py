@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import subprocess
+import sys
 from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
@@ -69,7 +70,7 @@ from faultwitness_dev.g02_isolation import (
     validate_public_https_egress,
 )
 from faultwitness_dev.g02_lab import evaluate_i0017
-from faultwitness_dev.infra import _run_remote_script_transport
+from faultwitness_dev.infra import _remote_process, _run_remote_script_transport
 from faultwitness_dev.model_eval import run_model_eval
 from faultwitness_dev.observability_deploy import (
     inspect_trace_service,
@@ -518,6 +519,8 @@ def evaluate_iteration(root: Path, iteration: str, candidate_sha: str) -> dict[s
         return evaluate_i0024(root, candidate_sha)
     if iteration == "I-0026":
         return evaluate_i0026(root, candidate_sha)
+    if iteration == "I-0028":
+        return evaluate_i0028(root, candidate_sha)
     raise GovernanceError(f"no private Eval implementation is registered for {iteration}")
 
 
@@ -580,9 +583,9 @@ def evaluate_i0026(root: Path, candidate_sha: str) -> dict[str, Any]:
     ):
         raise GovernanceError("I-0026 script or credential entered process arguments")
     if [kwargs["input"] for _, kwargs in calls] != [
-        oversized_script,
-        "synthetic-credential\n",
-        "",
+        oversized_script.encode("utf-8"),
+        b"synthetic-credential\n",
+        b"",
     ]:
         raise GovernanceError("I-0026 script and credential channels were not separated")
     cases.append({"case_id": "oversized-bounded-transport", "status": "pass"})
@@ -701,6 +704,217 @@ def evaluate_i0026(root: Path, candidate_sha: str) -> dict[str, Any]:
     )
     return {
         "eval_id": "EVAL-G02-011",
+        "candidate_sha": candidate_sha,
+        "status": "pass",
+        "checks": {case["case_id"]: case["status"] for case in cases},
+        "open_evidence": [],
+    }
+
+
+def evaluate_i0028(root: Path, candidate_sha: str) -> dict[str, Any]:
+    if _head_sha(root) != candidate_sha:
+        raise GovernanceError("EVAL-G02-013 candidate SHA must equal checked-out HEAD")
+    if subprocess.run(
+        ["git", "status", "--porcelain"], cwd=root, capture_output=True, text=True
+    ).stdout:
+        raise GovernanceError("EVAL-G02-013 requires a clean candidate worktree")
+    loaded = validate_repository_schemas(root)
+    state = loaded["PROJECT_STATE.yaml"]
+    iteration = loaded["governance/iterations/I-0028.yaml"]
+    if (
+        state.get("active_gate") != "G02"
+        or state.get("active_gate_status") != "in_progress"
+        or state.get("active_iteration") != "I-0028"
+        or iteration.get("status") != "in_progress"
+    ):
+        raise GovernanceError("EVAL-G02-013 requires I-0028 as the sole active Iteration")
+
+    def result(returncode: int, stdout: str = "", stderr: str = "") -> Any:
+        return type(
+            "TransportResult",
+            (),
+            {"returncode": returncode, "stdout": stdout, "stderr": stderr},
+        )()
+
+    started_at = datetime.now(UTC).isoformat()
+    cases: list[dict[str, Any]] = []
+
+    byte_payload = "set -eu\nprintf ok\n"
+    byte_result = _remote_process(
+        subprocess.run,
+        [sys.executable, "-c"],
+        "import sys; print(sys.stdin.buffer.read().hex())",
+        byte_payload,
+    )
+    expected_hex = byte_payload.encode("utf-8").hex()
+    received_hex = byte_result.stdout.strip()
+    if byte_result.returncode or received_hex != expected_hex or "0d0a" in received_hex:
+        raise GovernanceError("I-0028 real child process did not preserve exact LF bytes")
+    cases.append(
+        {
+            "case_id": "real-child-byte-exact",
+            "status": "pass",
+            "expected_hex": expected_hex,
+            "received_hex": received_hex,
+        }
+    )
+
+    calls: list[tuple[list[str], dict[str, Any]]] = []
+    responses = iter(
+        [
+            result(0, "/tmp/faultwitness-remote.Eval28\n"),
+            result(0, "pass"),
+            result(0),
+        ]
+    )
+
+    def passing_runner(arguments: list[str], **kwargs: Any) -> Any:
+        calls.append((arguments, kwargs))
+        return next(responses)
+
+    oversized_script = "transport-marker\n" + "x" * 32_768
+    output = _run_remote_script_transport(
+        oversized_script,
+        privileged=True,
+        sudo_stdin="synthetic-credential",
+        arguments=["ssh", "candidate-bound-host"],
+        runner=passing_runner,
+    )
+    if output != "pass" or len(calls) != 3:
+        raise GovernanceError("I-0028 bounded transport did not complete all three stages")
+    if any(sum(len(value) for value in arguments) >= 32_767 for arguments, _ in calls):
+        raise GovernanceError("I-0028 child-process arguments exceed the Windows safe limit")
+    if any(
+        "transport-marker" in value or "synthetic-credential" in value
+        for arguments, _ in calls
+        for value in arguments
+    ):
+        raise GovernanceError("I-0028 script or credential entered process arguments")
+    if [kwargs["input"] for _, kwargs in calls] != [
+        oversized_script.encode("utf-8"),
+        b"synthetic-credential\n",
+        b"",
+    ]:
+        raise GovernanceError("I-0028 script and credential channels were not byte-separated")
+    if any(kwargs.get("text") is not False for _, kwargs in calls):
+        raise GovernanceError("I-0028 transport did not use binary subprocess mode")
+    if any("timeout" in kwargs or "encoding" in kwargs for _, kwargs in calls):
+        raise GovernanceError("I-0028 transport added timeout or text encoding to subprocess")
+    cases.append({"case_id": "bounded-separated-binary-channels", "status": "pass"})
+
+    failure_commands: list[str] = []
+    failure_responses = iter(
+        [
+            result(0, "/tmp/faultwitness-remote.Fail28\n"),
+            result(7, stderr="FW_PROBE_FAILED step=execute"),
+            result(0),
+        ]
+    )
+
+    def failure_runner(arguments: list[str], **_kwargs: Any) -> Any:
+        failure_commands.append(arguments[-1])
+        return next(failure_responses)
+
+    try:
+        _run_remote_script_transport(
+            "exit 7\n",
+            privileged=True,
+            sudo_stdin="synthetic-credential",
+            arguments=["ssh"],
+            runner=failure_runner,
+        )
+    except GovernanceError as error:
+        if "FW_PROBE_FAILED step=execute" not in str(error):
+            raise
+    else:
+        raise GovernanceError("I-0028 execution failure was accepted")
+    if failure_commands[-1] != "rm -f -- /tmp/faultwitness-remote.Fail28":
+        raise GovernanceError("I-0028 execution failure skipped cleanup")
+    cases.append({"case_id": "execute-failure-cleanup", "status": "pass"})
+
+    cleanup_responses = iter(
+        [
+            result(0, "/tmp/faultwitness-remote.Clean28\n"),
+            result(0, "pass"),
+            result(9, stderr="FW_CLEANUP_FAILED step=remove"),
+        ]
+    )
+    try:
+        _run_remote_script_transport(
+            "true\n",
+            privileged=True,
+            sudo_stdin="synthetic-credential",
+            arguments=["ssh"],
+            runner=lambda *_args, **_kwargs: next(cleanup_responses),
+        )
+    except GovernanceError as error:
+        if "remote script cleanup failed" not in str(error):
+            raise
+    else:
+        raise GovernanceError("I-0028 cleanup failure was accepted")
+
+    invalid_calls = 0
+
+    def invalid_runner(*_args: Any, **_kwargs: Any) -> Any:
+        nonlocal invalid_calls
+        invalid_calls += 1
+        return result(0, "/tmp/not-candidate-bound\n")
+
+    try:
+        _run_remote_script_transport(
+            "true\n",
+            privileged=True,
+            sudo_stdin="synthetic-credential",
+            arguments=["ssh"],
+            runner=invalid_runner,
+        )
+    except GovernanceError as error:
+        if "invalid temporary path" not in str(error):
+            raise
+    else:
+        raise GovernanceError("I-0028 invalid remote path was accepted")
+    if invalid_calls != 1:
+        raise GovernanceError("I-0028 executed a script after invalid path output")
+    cases.append({"case_id": "cleanup-and-path-fail-closed", "status": "pass"})
+
+    isolation = load_isolation_config(root)
+    identities = simulate_identity_policies(isolation)
+    writers = prove_writer_canaries(isolation)
+    if len(identities) != 4 or any(item.get("status") != "pass" for item in identities):
+        raise GovernanceError("V-G02-009 Iteration N must remain exactly four")
+    if len(writers) != 4 or any(item.get("status") != "pass" for item in writers):
+        raise GovernanceError("V-G02-011 Iteration N must remain exactly four")
+
+    artifact = {
+        "schema_version": "1.0.0",
+        "candidate_sha": candidate_sha,
+        "validation": "I-0028-byte-exact-remote-process-transport",
+        "transport_case_count": len(cases),
+        "cases": cases,
+        "frozen_validation_n": {
+            "V-G02-009": 4,
+            "V-G02-010": 0,
+            "V-G02-011": 4,
+        },
+        "gate_l2_execution": 0,
+        "remote_execution": 0,
+        "destructive_scenarios": 0,
+        "external_service_calls": 0,
+        "model_calls": 0,
+        "start_time": started_at,
+        "end_time": datetime.now(UTC).isoformat(),
+        "status": "pass",
+        "open_evidence": [],
+    }
+    artifact_path = (
+        root / "docs/evals/EVAL-G02-013/artifacts/byte-exact-remote-transport.json"
+    )
+    artifact_path.parent.mkdir(parents=True, exist_ok=True)
+    artifact_path.write_text(
+        json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    return {
+        "eval_id": "EVAL-G02-013",
         "candidate_sha": candidate_sha,
         "status": "pass",
         "checks": {case["case_id"]: case["status"] for case in cases},

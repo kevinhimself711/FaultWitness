@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -8,10 +10,24 @@ import pytest
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.infra import (
     _listener_scope,
+    _remote_process,
     compare_docker_baselines,
     render_core_installer,
     validate_preinstall_baseline,
 )
+
+
+def test_remote_process_preserves_lf_bytes_with_real_child() -> None:
+    payload = "set -eu\nprintf ok\n"
+    result = _remote_process(
+        subprocess.run,
+        [sys.executable, "-c"],
+        "import sys; print(sys.stdin.buffer.read().hex())",
+        payload,
+    )
+    assert result.returncode == 0
+    assert result.stdout.strip() == payload.encode("utf-8").hex()
+    assert "0d0a" not in result.stdout
 
 
 def test_privileged_runner_uses_bounded_arguments_and_separate_channels(monkeypatch) -> None:
@@ -55,7 +71,13 @@ def test_privileged_runner_uses_bounded_arguments_and_separate_channels(monkeypa
     assert "mktemp /tmp/faultwitness-remote.XXXXXX" in commands[0]
     assert commands[1] == "sudo -k -S -p '' /bin/sh /tmp/faultwitness-remote.A1b2C3"
     assert commands[2] == "rm -f -- /tmp/faultwitness-remote.A1b2C3"
-    assert [call[1]["input"] for call in captured] == [script, "secret-value\n", ""]
+    assert [call[1]["input"] for call in captured] == [
+        script.encode("utf-8"),
+        b"secret-value\n",
+        b"",
+    ]
+    assert all(call[1]["text"] is False for call in captured)
+    assert all("encoding" not in call[1] for call in captured)
     assert all("timeout" not in call[1] for call in captured)
 
 
