@@ -31,9 +31,10 @@ include Iteration Eval and are observability data, never kill timeouts.
 | Gate Eval | **2h33** |
 | Total | **18h18** |
 
-If every live attempt consumes its one complete retry, the Gate Eval contingency is 3h18 and
-the total contingency is 18h18. These are planning estimates, not execution stop conditions.
-External waiting and every retry are reported as actual elapsed time under amended Section 11.
+The normal estimates above are planning observability, not execution stop conditions. There is no
+fixed retry-count or contingency-duration ceiling: external waiting and every attributable retry
+are reported as actual elapsed time under amended Section 11 without changing samples, thresholds,
+failure semantics, or the normal expected total.
 
 ## 2. Scope, non-goals, and dependencies
 
