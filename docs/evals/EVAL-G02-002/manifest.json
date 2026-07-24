@@ -5,7 +5,7 @@
   "iteration": "I-0017",
   "candidate_sha": "c7d55f2b823448a29f01f83b3e22d6236359802e",
   "evaluated_revision": "c7d55f2b823448a29f01f83b3e22d6236359802e",
-  "evidence_head_sha": "c7d55f2b823448a29f01f83b3e22d6236359802e",
+  "evidence_head_sha": "e3f834bff47727af297fcece351aa087311b554b",
   "status": "pass",
   "subject_digests": {
     "config/g02/lab.yaml": "1adf8d580f62aa5471aae742a48b714dc5bc226c5b085566f622fa8ac86fba71",
