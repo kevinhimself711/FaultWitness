@@ -1,0 +1,153 @@
+{
+  "validation": "V-G02-015",
+  "N": 4,
+  "records": [
+    {
+      "trial_id": "i0019-naive_react-synthetic-live-a",
+      "status": "pass",
+      "attempt": 2,
+      "recorded_at": "2026-07-24T06:53:26.056173+00:00",
+      "payload": {
+        "case_id": "synthetic-live-a",
+        "result": {
+          "root_cause": "catalog-error",
+          "root_cause_candidates": [
+            "catalog-error"
+          ],
+          "evidence_ids": [
+            "catalog-error"
+          ],
+          "claims": [
+            {
+              "claim": "The journey failed due to a catalog error.",
+              "supported": true
+            }
+          ],
+          "schema_version": "1.0.0",
+          "case_id": "synthetic-live-a",
+          "status": "ok",
+          "baseline": "naive_react",
+          "model_id": "qwen3.7-plus-2026-05-26",
+          "fallback_count": 0,
+          "input_tokens": 136,
+          "output_tokens": 85,
+          "latency_ms": 5109.729
+        },
+        "input_tokens": 136,
+        "output_tokens": 85,
+        "cost_cny": 0.000952
+      }
+    },
+    {
+      "trial_id": "i0019-naive_react-synthetic-live-b",
+      "status": "pass",
+      "attempt": 2,
+      "recorded_at": "2026-07-24T06:53:31.386151+00:00",
+      "payload": {
+        "case_id": "synthetic-live-b",
+        "result": {
+          "root_cause": "catalog-error",
+          "root_cause_candidates": [
+            "catalog-error"
+          ],
+          "evidence_ids": [
+            "catalog-error"
+          ],
+          "claims": [
+            {
+              "claim": "The journey failed due to a catalog error.",
+              "supported": true
+            }
+          ],
+          "schema_version": "1.0.0",
+          "case_id": "synthetic-live-b",
+          "status": "ok",
+          "baseline": "naive_react",
+          "model_id": "qwen3.7-plus-2026-05-26",
+          "fallback_count": 0,
+          "input_tokens": 136,
+          "output_tokens": 85,
+          "latency_ms": 5326.588
+        },
+        "input_tokens": 136,
+        "output_tokens": 85,
+        "cost_cny": 0.000952
+      }
+    },
+    {
+      "trial_id": "i0019-no_rag-synthetic-live-a",
+      "status": "pass",
+      "attempt": 4,
+      "recorded_at": "2026-07-24T06:53:40.218796+00:00",
+      "payload": {
+        "case_id": "synthetic-live-a",
+        "result": {
+          "root_cause": "catalog-error",
+          "root_cause_candidates": [
+            "catalog-error"
+          ],
+          "evidence_ids": [
+            "catalog-error"
+          ],
+          "claims": [
+            {
+              "claim": "The journey failed due to a catalog error.",
+              "supported": true
+            }
+          ],
+          "schema_version": "1.0.0",
+          "case_id": "synthetic-live-a",
+          "status": "ok",
+          "baseline": "no_rag",
+          "model_id": "qwen3.7-plus-2026-05-26",
+          "fallback_count": 0,
+          "input_tokens": 124,
+          "output_tokens": 85,
+          "latency_ms": 4599.071
+        },
+        "input_tokens": 124,
+        "output_tokens": 85,
+        "cost_cny": 0.000928
+      }
+    },
+    {
+      "attempt": 2,
+      "payload": {
+        "case_id": "synthetic-live-b",
+        "cost_cny": 0.000928,
+        "input_tokens": 124,
+        "output_tokens": 85,
+        "result": {
+          "baseline": "no_rag",
+          "case_id": "synthetic-live-b",
+          "claims": [
+            {
+              "claim": "The journey failed due to a catalog error.",
+              "supported": true
+            }
+          ],
+          "evidence_ids": [
+            "catalog-error"
+          ],
+          "fallback_count": 0,
+          "input_tokens": 124,
+          "latency_ms": 4205.084,
+          "model_id": "qwen3.7-plus-2026-05-26",
+          "output_tokens": 85,
+          "root_cause": "catalog-error",
+          "root_cause_candidates": [
+            "catalog-error"
+          ],
+          "schema_version": "1.0.0",
+          "status": "ok"
+        }
+      },
+      "recorded_at": "2026-07-24T06:53:35.616650+00:00",
+      "status": "pass",
+      "trial_id": "i0019-no_rag-synthetic-live-b"
+    }
+  ],
+  "fallback_count": 0,
+  "resume_demonstrated": true,
+  "status": "pass"
+}

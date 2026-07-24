@@ -1,0 +1,49 @@
+{
+  "candidate_sha": "c4fa561ad58c5d8da0127fae8f0d0720eec15f76",
+  "validation": "V-G02-012",
+  "fixtures": [
+    {
+      "status": "scored",
+      "failure_class": null,
+      "core_e2e": 1.0,
+      "root_cause_top3": 1.0,
+      "evidence_precision": 1.0,
+      "unsupported_critical_claim": 0.0,
+      "tool_schema_validity": 1.0
+    },
+    {
+      "status": "scored",
+      "failure_class": "wrong_root_cause",
+      "core_e2e": 0.0,
+      "root_cause_top3": 1.0,
+      "evidence_precision": 1.0,
+      "unsupported_critical_claim": 0.0,
+      "tool_schema_validity": 1.0
+    },
+    {
+      "status": "scored_failure",
+      "failure_class": "malformed",
+      "reason": "baseline result lacks root_cause",
+      "core_e2e": 0.0
+    },
+    {
+      "status": "scored",
+      "failure_class": "wrong_root_cause",
+      "core_e2e": 0.0,
+      "root_cause_top3": 0.0,
+      "evidence_precision": 1.0,
+      "unsupported_critical_claim": 1.0,
+      "tool_schema_validity": 1.0
+    },
+    {
+      "status": "scored",
+      "failure_class": null,
+      "core_e2e": 0.0,
+      "root_cause_top3": 1.0,
+      "evidence_precision": 0.0,
+      "unsupported_critical_claim": 0.0,
+      "tool_schema_validity": 1.0
+    }
+  ],
+  "status": "pass"
+}

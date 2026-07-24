@@ -1,0 +1,169 @@
+{
+  "candidate_sha": "c4fa561ad58c5d8da0127fae8f0d0720eec15f76",
+  "validation": "V-G02-015",
+  "N": 4,
+  "records": [
+    {
+      "trial_id": "i0019-c4fa561ad58c5d8da0127fae8f0d0720eec15f76-naive_react-synthetic-live-a",
+      "status": "pass",
+      "attempt": 2,
+      "recorded_at": "2026-07-24T07:18:45.367429+00:00",
+      "payload": {
+        "case_id": "synthetic-live-a",
+        "result": {
+          "root_cause": "Catalog service error causing journey failure",
+          "root_cause_candidates": [
+            "Catalog service internal error",
+            "Catalog dependency timeout or unavailability",
+            "Invalid catalog request payload"
+          ],
+          "evidence": [
+            "catalog-error"
+          ],
+          "claims": [
+            {
+              "claim": "The journey failed due to a catalog-related error.",
+              "supported": true
+            },
+            {
+              "claim": "The catalog error is correlated with the failure.",
+              "supported": true
+            }
+          ],
+          "schema_version": "1.0.0",
+          "case_id": "synthetic-live-a",
+          "status": "ok",
+          "baseline": "naive_react",
+          "model_id": "qwen3.7-plus-2026-05-26",
+          "fallback_count": 0,
+          "input_tokens": 169,
+          "output_tokens": 136,
+          "latency_ms": 5433.072
+        },
+        "input_tokens": 169,
+        "output_tokens": 136,
+        "cost_cny": 0.001426
+      }
+    },
+    {
+      "trial_id": "i0019-c4fa561ad58c5d8da0127fae8f0d0720eec15f76-naive_react-synthetic-live-b",
+      "status": "pass",
+      "attempt": 2,
+      "recorded_at": "2026-07-24T07:18:52.033653+00:00",
+      "payload": {
+        "case_id": "synthetic-live-b",
+        "result": {
+          "root_cause": "Catalog service error causing journey failure",
+          "root_cause_candidates": [
+            "Catalog service internal failure",
+            "Catalog dependency timeout or unavailability",
+            "Invalid catalog request payload"
+          ],
+          "evidence": [
+            "catalog-error"
+          ],
+          "claims": [
+            {
+              "claim": "The journey failed due to a catalog-related error.",
+              "supported": true
+            },
+            {
+              "claim": "The catalog error is correlated with the journey failure.",
+              "supported": true
+            }
+          ],
+          "schema_version": "1.0.0",
+          "case_id": "synthetic-live-b",
+          "status": "ok",
+          "baseline": "naive_react",
+          "model_id": "qwen3.7-plus-2026-05-26",
+          "fallback_count": 0,
+          "input_tokens": 169,
+          "output_tokens": 137,
+          "latency_ms": 6662.204
+        },
+        "input_tokens": 169,
+        "output_tokens": 137,
+        "cost_cny": 0.001434
+      }
+    },
+    {
+      "trial_id": "i0019-c4fa561ad58c5d8da0127fae8f0d0720eec15f76-no_rag-synthetic-live-a",
+      "status": "pass",
+      "attempt": 4,
+      "recorded_at": "2026-07-24T07:19:09.235962+00:00",
+      "payload": {
+        "case_id": "synthetic-live-a",
+        "result": {
+          "root_cause": "catalog-error",
+          "root_cause_candidates": [
+            "catalog-error"
+          ],
+          "evidence": [
+            "catalog-error"
+          ],
+          "claims": [
+            {
+              "claim": "The root cause is identified as catalog-error based on the correlated error observation.",
+              "supported": true
+            }
+          ],
+          "schema_version": "1.0.0",
+          "case_id": "synthetic-live-a",
+          "status": "ok",
+          "baseline": "no_rag",
+          "model_id": "qwen3.7-plus-2026-05-26",
+          "fallback_count": 0,
+          "input_tokens": 157,
+          "output_tokens": 90,
+          "latency_ms": 6354.497
+        },
+        "input_tokens": 157,
+        "output_tokens": 90,
+        "cost_cny": 0.001034
+      }
+    },
+    {
+      "attempt": 2,
+      "payload": {
+        "case_id": "synthetic-live-b",
+        "cost_cny": 0.000986,
+        "input_tokens": 157,
+        "output_tokens": 84,
+        "result": {
+          "baseline": "no_rag",
+          "case_id": "synthetic-live-b",
+          "claims": [
+            {
+              "claim": "The journey failed due to a catalog error.",
+              "supported": true
+            }
+          ],
+          "evidence": [
+            "catalog-error"
+          ],
+          "fallback_count": 0,
+          "input_tokens": 157,
+          "latency_ms": 5241.811,
+          "model_id": "qwen3.7-plus-2026-05-26",
+          "output_tokens": 84,
+          "root_cause": "catalog-error",
+          "root_cause_candidates": [
+            "catalog-error"
+          ],
+          "schema_version": "1.0.0",
+          "status": "ok"
+        }
+      },
+      "recorded_at": "2026-07-24T07:18:57.300723+00:00",
+      "status": "pass",
+      "trial_id": "i0019-c4fa561ad58c5d8da0127fae8f0d0720eec15f76-no_rag-synthetic-live-b"
+    }
+  ],
+  "fallback_count": 0,
+  "resume_demonstrated": true,
+  "input_tokens": 652,
+  "output_tokens": 447,
+  "cost_cny": 0.00488,
+  "status": "pass"
+}

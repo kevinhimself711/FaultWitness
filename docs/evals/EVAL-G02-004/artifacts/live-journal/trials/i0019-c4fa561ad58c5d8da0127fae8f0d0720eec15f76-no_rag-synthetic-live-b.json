@@ -1,0 +1,36 @@
+{
+  "attempt": 2,
+  "payload": {
+    "case_id": "synthetic-live-b",
+    "cost_cny": 0.000986,
+    "input_tokens": 157,
+    "output_tokens": 84,
+    "result": {
+      "baseline": "no_rag",
+      "case_id": "synthetic-live-b",
+      "claims": [
+        {
+          "claim": "The journey failed due to a catalog error.",
+          "supported": true
+        }
+      ],
+      "evidence": [
+        "catalog-error"
+      ],
+      "fallback_count": 0,
+      "input_tokens": 157,
+      "latency_ms": 5241.811,
+      "model_id": "qwen3.7-plus-2026-05-26",
+      "output_tokens": 84,
+      "root_cause": "catalog-error",
+      "root_cause_candidates": [
+        "catalog-error"
+      ],
+      "schema_version": "1.0.0",
+      "status": "ok"
+    }
+  },
+  "recorded_at": "2026-07-24T07:18:57.300723+00:00",
+  "status": "pass",
+  "trial_id": "i0019-c4fa561ad58c5d8da0127fae8f0d0720eec15f76-no_rag-synthetic-live-b"
+}

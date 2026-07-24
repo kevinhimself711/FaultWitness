@@ -1,0 +1,35 @@
+{
+  "candidate_sha": "c4fa561ad58c5d8da0127fae8f0d0720eec15f76",
+  "validation": "V-G02-013",
+  "thresholds": {
+    "core_e2e": {
+      "operator": ">=",
+      "value": "max(0.70,best_baseline+0.10)"
+    },
+    "root_cause_top3": {
+      "operator": ">=",
+      "value": 0.85
+    },
+    "evidence_precision": {
+      "operator": ">=",
+      "value": 0.9
+    },
+    "unsupported_critical_claim": {
+      "operator": "<=",
+      "value": 0.02
+    },
+    "tool_schema_validity": {
+      "operator": ">=",
+      "value": 0.99
+    },
+    "dead_no_progress_loop": {
+      "operator": "<",
+      "value": 0.01
+    },
+    "fault_family_success": {
+      "operator": ">=",
+      "value": 0.55
+    }
+  },
+  "status": "pass"
+}

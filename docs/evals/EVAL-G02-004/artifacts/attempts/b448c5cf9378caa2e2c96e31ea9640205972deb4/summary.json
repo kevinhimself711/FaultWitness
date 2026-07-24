@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-004",
+  "candidate_sha": "b448c5cf9378caa2e2c96e31ea9640205972deb4",
+  "status": "invalidated_harness_failure",
+  "trial_count": 4,
+  "input_tokens": 520,
+  "output_tokens": 340,
+  "cost_cny": 0.00376,
+  "fallback_count": 0,
+  "failure": "All four model outputs used evidence_ids instead of the frozen evidence field, but the result validator treated the missing field as an empty list and recorded pass.",
+  "root_cause": "validate_result used result.get('evidence', []) and did not enforce the complete structured-result schema.",
+  "disposition": "Preserve the trial journals, fix strict schema and candidate-bound trial IDs, create a new candidate, and rerun only EVAL-G02-004.",
+  "threshold_or_sample_change": false,
+  "open_evidence": []
+}

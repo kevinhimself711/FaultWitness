@@ -123,3 +123,12 @@ claims:
     limitations:
       - "I-0018 proves policy simulation and new-writer isolation; the 60-cell, six-stage, and 22-surface live matrices remain reserved for EVAL-G02-005."
       - "No GT/locked case payload, baseline, or paid model execution is claimed."
+  - id: CLAIM-EVAL-004
+    statement: "G02 has three shared-packet diagnosis baselines, deterministic scoring, exact quality-floor measurement, clustered bootstrap aggregation, and trial-local paid-model resume."
+    status: partially_verified
+    requirements: [REQ-BUS-002, REQ-EVAL-001, REQ-EVAL-002, REQ-EVAL-003]
+    evidence:
+      - EVAL-G02-004
+    limitations:
+      - "I-0019 proves five scorer branches, seven threshold entries, deterministic N=3, and non-seed live N=4; unified-candidate Gate N=32/N=192 remains reserved for EVAL-G02-005."
+      - "Baseline attainment of future Agent quality floors is not a G02 pass condition."

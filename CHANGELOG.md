@@ -26,6 +26,12 @@
 
 ### Tooling
 
+- Complete I-0019 live evidence on candidate `c4fa561`: pass five scorer branches, seven exact
+  quality floors, deterministic N=3, and four exact-model non-seed live trials with zero fallback,
+  atomic trial-local resume, 652/447 tokens, 0.00488 CNY, and no open evidence.
+- Preserve superseded candidate `b448c5c` as a harness failure: strict schema enforcement caught the
+  `evidence_ids` alias that the first validator accepted; fix the root cause and rerun on a new
+  candidate without changing N, thresholds, token caps, or retry semantics.
 - Activate I-0019 and add the shared observation-packet boundary, exact three-baseline registry,
   deterministic scorer, frozen seven-value threshold registry, clustered 2,000-resample bootstrap,
   attributable CNY usage accounting, exact-route Bailian adapter, and atomic trial-local resume.

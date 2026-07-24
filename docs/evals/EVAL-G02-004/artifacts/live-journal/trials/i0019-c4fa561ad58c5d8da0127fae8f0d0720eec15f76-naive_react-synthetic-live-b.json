@@ -1,0 +1,42 @@
+{
+  "attempt": 2,
+  "payload": {
+    "case_id": "synthetic-live-b",
+    "cost_cny": 0.001434,
+    "input_tokens": 169,
+    "output_tokens": 137,
+    "result": {
+      "baseline": "naive_react",
+      "case_id": "synthetic-live-b",
+      "claims": [
+        {
+          "claim": "The journey failed due to a catalog-related error.",
+          "supported": true
+        },
+        {
+          "claim": "The catalog error is correlated with the journey failure.",
+          "supported": true
+        }
+      ],
+      "evidence": [
+        "catalog-error"
+      ],
+      "fallback_count": 0,
+      "input_tokens": 169,
+      "latency_ms": 6662.204,
+      "model_id": "qwen3.7-plus-2026-05-26",
+      "output_tokens": 137,
+      "root_cause": "Catalog service error causing journey failure",
+      "root_cause_candidates": [
+        "Catalog service internal failure",
+        "Catalog dependency timeout or unavailability",
+        "Invalid catalog request payload"
+      ],
+      "schema_version": "1.0.0",
+      "status": "ok"
+    }
+  },
+  "recorded_at": "2026-07-24T07:18:52.033653+00:00",
+  "status": "pass",
+  "trial_id": "i0019-c4fa561ad58c5d8da0127fae8f0d0720eec15f76-naive_react-synthetic-live-b"
+}
