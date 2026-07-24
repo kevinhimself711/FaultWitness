@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Activate I-0028 as the sole byte-exact transport corrective; I-0029 remains planned and no
+  remote Gate L2, destructive, external-service, or model work is authorized during I-0028.
 - Preserve I-0027/EVAL-G02-012 as terminal negative evidence after a real Windows subprocess probe
   proved text-mode LF-to-CRLF mutation before candidate binding; plan I-0028 byte-exact transport
   correction and I-0029/EVAL-G02-014 replacement without changing any Eval criterion.

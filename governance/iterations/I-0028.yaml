@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0028
 gate: G02
 title: Byte-Exact Remote Process Transport Corrective
-status: planned
+status: in_progress
 iteration_type: corrective
 corrects: [I-0026, I-0027]
 scope:
