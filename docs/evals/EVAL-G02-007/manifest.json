@@ -1,16 +1,47 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "eval_id": "EVAL-G02-007",
   "gate": "G02",
   "iteration": "I-0022",
-  "evaluated_revision": "not-run",
-  "status": "pending",
-  "environments": ["planned-local-deterministic"],
+  "candidate_sha": "7d6e07bc142bdd5cb0bcd1a465ae3b04931b799c",
+  "evaluated_revision": "7d6e07bc142bdd5cb0bcd1a465ae3b04931b799c",
+  "evidence_head_sha": "7d6e07bc142bdd5cb0bcd1a465ae3b04931b799c",
+  "status": "pass",
+  "subject_digests": {
+    "deploy/g02/isolation-policy.yaml": "68b9479ec1376fa8e03601cef0d6f7a383a7c592c67c90fb2a7406d56f46b3b0",
+    "docs/gates/G02/VALIDATIONS.yaml": "3b694b74eb6306549d013553fb32d3e528d75d7dbae4a8334971403617a69c8c",
+    "src/faultwitness_dev/changes.py": "a9ca01f274858bc7073f3a069940de2137029ea7cc67d8bfa1f2f804ef5d772a",
+    "src/faultwitness_dev/evals.py": "2287e9e84fe9ec15acd835e1791f78326f8e67e2a54992c305aff18a4d307f5d",
+    "src/faultwitness_dev/g02_eval.py": "f1cea580eccef2cdab414a2e823278b47080a827e86a17645e13797423d019d6",
+    "src/faultwitness_dev/g02_isolation.py": "faf620aa7f0e0ef4f5cc25a728044c19f1a465e6444317c5d00eac412a2d09ae",
+    "tests/fixtures/g02/isolation_broad_private_egress.yaml": "e72806fa490c10478a5b0aada08fb7a71cd8e2b7430ac5585e7f24013b5edbe6"
+  },
+  "environment_fingerprint": "0d7442f73f48d244b44b83ab9998ea224df5a613450c531e089410916320db49",
+  "phases": [
+    {
+      "phase_id": "live-isolation-forward-routing",
+      "status": "pass",
+      "start_time": "2026-07-24T19:36:44.350548+00:00",
+      "end_time": "2026-07-24T19:36:44.375647+00:00",
+      "cache_key": "5b89f7a06307abf8a1682a6b04a7d6464e5727f8173469c737fea7633d92fc6a",
+      "artifact_digest": "48a3cb1ce8818cacac4ac66f48d421f83e49a878fe7a8ccf8c9b88232e0e3e3d",
+      "artifact_path": "docs/evals/EVAL-G02-007/artifacts/live-isolation-forward-routing.json",
+      "private_artifact_uri": "private://faultwitness/g02/EVAL-G02-007/wrapper-attempt-2/",
+      "execution_count": 1,
+      "inherited_from_manifest": null
+    }
+  ],
+  "environments": ["windows-local-deterministic"],
   "commands": [
-    "uv run python -m faultwitness_dev eval-iteration I-0022 --candidate-sha <full-sha>"
+    "uv run python -m faultwitness_dev eval-iteration I-0022 --candidate-sha 7d6e07bc142bdd5cb0bcd1a465ae3b04931b799c",
+    "uv run pytest -q tests/g02/test_g02_isolation.py tests/g02/test_g02_eval_protocol.py tests/governance/test_governance.py",
+    "uv run python -m faultwitness_dev verify-fast",
+    "uv run python -m faultwitness_dev eval-changed"
   ],
   "artifacts": [
-    "docs/evals/EVAL-G02-007/PLAN.md"
+    "docs/evals/EVAL-G02-007/PLAN.md",
+    "docs/evals/EVAL-G02-007/REPORT.md",
+    "docs/evals/EVAL-G02-007/artifacts/live-isolation-forward-routing.json"
   ],
   "evidence_urls": [],
   "integrations": {},

@@ -1,0 +1,35 @@
+{
+  "candidate_sha": "7d6e07bc142bdd5cb0bcd1a465ae3b04931b799c",
+  "cases": [
+    {
+      "case_id": "exact-observability-egress",
+      "status": "pass"
+    },
+    {
+      "case_id": "exact-observability-ingress",
+      "status": "pass"
+    },
+    {
+      "case_id": "reject-private-public-https-egress",
+      "status": "pass"
+    },
+    {
+      "case_id": "preserve-unauthorized-denies",
+      "status": "pass"
+    },
+    {
+      "case_id": "forward-eval-selection",
+      "status": "pass"
+    }
+  ],
+  "end_time": "2026-07-24T19:36:44.375647+00:00",
+  "external_execution": 0,
+  "gate_phase_execution": 0,
+  "iteration_n": 5,
+  "model_calls": 0,
+  "open_evidence": [],
+  "schema_version": "1.0.0",
+  "start_time": "2026-07-24T19:36:44.350548+00:00",
+  "status": "pass",
+  "validation": "I-0022-live-isolation-forward-routing"
+}
