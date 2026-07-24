@@ -5,6 +5,7 @@ import json
 import os
 import subprocess
 from dataclasses import replace
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -39,6 +40,11 @@ from faultwitness_dev.bootstrap import (
     default_ssh_askpass_executable,
     derive_age_recipient,
     validate_migration,
+)
+from faultwitness_dev.checks import (
+    validate_iteration_lifecycle_history,
+    validate_iteration_status_sequence,
+    validate_iteration_status_transition,
 )
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.g02_baselines import (
@@ -493,7 +499,101 @@ def evaluate_iteration(root: Path, iteration: str, candidate_sha: str) -> dict[s
         return evaluate_i0018(root, candidate_sha)
     if iteration == "I-0019":
         return evaluate_i0019(root, candidate_sha)
+    if iteration == "I-0021":
+        return evaluate_i0021(root, candidate_sha)
     raise GovernanceError(f"no private Eval implementation is registered for {iteration}")
+
+
+def evaluate_i0021(root: Path, candidate_sha: str) -> dict[str, Any]:
+    if _head_sha(root) != candidate_sha:
+        raise GovernanceError("EVAL-G02-006 candidate SHA must equal checked-out HEAD")
+    if subprocess.run(
+        ["git", "status", "--porcelain"], cwd=root, capture_output=True, text=True
+    ).stdout:
+        raise GovernanceError("EVAL-G02-006 requires a clean candidate worktree")
+    loaded = validate_repository_schemas(root)
+    state = loaded["PROJECT_STATE.yaml"]
+    iteration = loaded["governance/iterations/I-0021.yaml"]
+    if (
+        state.get("active_gate") != "G02"
+        or state.get("active_iteration") != "I-0021"
+        or iteration.get("status") != "in_progress"
+    ):
+        raise GovernanceError("EVAL-G02-006 requires I-0021 as the sole active Iteration")
+
+    started_at = datetime.now(UTC).isoformat()
+    planned = {"id": "I-9000", "status": "planned", "iteration_type": "standard"}
+    active = {"id": "I-9000", "status": "in_progress", "iteration_type": "standard"}
+    completed = {"id": "I-9000", "status": "completed", "iteration_type": "standard"}
+    failed = {"id": "I-9000", "status": "failed", "iteration_type": "standard"}
+    cases: list[dict[str, str]] = []
+
+    validate_iteration_status_transition(planned, active, "accept-planned-active")
+    cases.append({"case_id": "accept-planned-active", "status": "pass"})
+    validate_iteration_status_transition(active, completed, "accept-active-completed")
+    cases.append({"case_id": "accept-active-completed", "status": "pass"})
+
+    for case_id, previous, current in (
+        ("reject-completed-active", completed, active),
+        ("reject-failed-planned", failed, planned),
+    ):
+        try:
+            validate_iteration_status_transition(previous, current, case_id)
+        except GovernanceError:
+            cases.append({"case_id": case_id, "status": "pass"})
+        else:
+            raise GovernanceError(f"lifecycle negative case was accepted: {case_id}")
+
+    deletion_rejected = False
+    hidden_reactivation_rejected = False
+    try:
+        validate_iteration_status_transition(completed, None, "reject-terminal-deletion")
+    except GovernanceError:
+        deletion_rejected = True
+    try:
+        validate_iteration_status_sequence(
+            [completed, active, completed], "reject-hidden-terminal-reactivation"
+        )
+    except GovernanceError:
+        hidden_reactivation_rejected = True
+    if not deletion_rejected or not hidden_reactivation_rejected:
+        raise GovernanceError("terminal deletion or hidden reactivation was accepted")
+    cases.append({"case_id": "reject-deletion-and-hidden-history", "status": "pass"})
+
+    validate_iteration_lifecycle_history(root)
+    i0020 = (root / "docs" / "roadmap" / "iterations" / "I-0020.md").read_text(encoding="utf-8")
+    forbidden = ("reopens its owning Iteration", "reopen the owner")
+    if any(phrase in i0020 for phrase in forbidden):
+        raise GovernanceError("I-0020 retains a completed-owner reopening route")
+
+    artifact = {
+        "schema_version": "1.0.0",
+        "candidate_sha": candidate_sha,
+        "validation": "I-0021-lifecycle-monotonicity",
+        "iteration_n": 5,
+        "cases": cases,
+        "policy_path": "governance/policies/iteration-lifecycle-v1.yaml",
+        "repository_history": "pass",
+        "i0020_owner_reopen_route": "absent",
+        "start_time": started_at,
+        "end_time": datetime.now(UTC).isoformat(),
+        "status": "pass",
+        "open_evidence": [],
+    }
+    artifact_path = (
+        root / "docs" / "evals" / "EVAL-G02-006" / "artifacts" / "lifecycle-monotonicity.json"
+    )
+    artifact_path.parent.mkdir(parents=True, exist_ok=True)
+    artifact_path.write_text(
+        json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    return {
+        "eval_id": "EVAL-G02-006",
+        "candidate_sha": candidate_sha,
+        "status": "pass",
+        "checks": {case["case_id"]: case["status"] for case in cases},
+        "open_evidence": [],
+    }
 
 
 def evaluate_i0019(root: Path, candidate_sha: str) -> dict[str, Any]:

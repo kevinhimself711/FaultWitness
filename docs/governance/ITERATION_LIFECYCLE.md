@@ -1,6 +1,7 @@
 # Forward-Only Iteration Lifecycle
 
-This file is the machine-detected policy epoch for forward-only Iteration history.
+The machine policy asset `governance/policies/iteration-lifecycle-v1.yaml` is the enforcement epoch
+for forward-only Iteration history. This document defines its human-readable semantics.
 
 ## Allowed transitions
 
@@ -14,6 +15,10 @@ This file is the machine-detected policy epoch for forward-only Iteration histor
 renamed, or changed to another status. A later defect creates a higher-numbered forward corrective
 Iteration with an explicit `corrects` link. After that correction, a new orchestration Iteration
 evaluates the new candidate; the earlier orchestration is not reactivated.
+
+Every Iteration created after the machine policy epoch declares `iteration_type: standard` or
+`iteration_type: corrective`. A corrective record has one or more lower-numbered same-Gate
+`corrects` links, and every target is already terminal.
 
 ## Gate failure classification
 

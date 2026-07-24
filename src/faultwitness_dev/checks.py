@@ -26,6 +26,15 @@ LIFECYCLE_MARKDOWN_PATHS = (
     "README.md",
     "docs/roadmap/PHASES.md",
 )
+ITERATION_POLICY_PATH = "governance/policies/iteration-lifecycle-v1.yaml"
+ITERATION_RECORD_PREFIX = "governance/iterations/"
+ITERATION_TERMINAL_STATUSES = {"completed", "failed"}
+ITERATION_ALLOWED_TRANSITIONS = {
+    "planned": {"planned", "in_progress", "failed"},
+    "in_progress": {"in_progress", "completed", "failed"},
+    "completed": {"completed"},
+    "failed": {"failed"},
+}
 
 
 def repository_files(root: Path) -> list[Path]:
@@ -62,9 +71,7 @@ def _markdown_front_matter(path: Path) -> dict[str, Any]:
     return document
 
 
-def validate_lifecycle_records(
-    state: dict[str, Any], records: dict[str, dict[str, Any]]
-) -> None:
+def validate_lifecycle_records(state: dict[str, Any], records: dict[str, dict[str, Any]]) -> None:
     expected = {field: state.get(field) for field in LIFECYCLE_FIELDS}
     for path, record in records.items():
         drift = {
@@ -78,9 +85,7 @@ def validate_lifecycle_records(
 
 def validate_lifecycle_documents(root: Path) -> None:
     state = load_data(root / "PROJECT_STATE.yaml")
-    records = {
-        path: _markdown_front_matter(root / path) for path in LIFECYCLE_MARKDOWN_PATHS
-    }
+    records = {path: _markdown_front_matter(root / path) for path in LIFECYCLE_MARKDOWN_PATHS}
     validate_lifecycle_records(state, records)
 
 
@@ -130,6 +135,205 @@ def validate_active_governance_state(root: Path) -> None:
                 "next Iteration is not the first planned record: "
                 f"{next_iteration} != {first_planned}"
             )
+
+
+def validate_iteration_status_transition(
+    previous: dict[str, Any] | None,
+    current: dict[str, Any] | None,
+    label: str,
+) -> None:
+    if previous is None:
+        if current is None:
+            return
+        if current.get("status") != "planned":
+            raise GovernanceError(
+                f"new Iteration must start planned: {label}={current.get('status')}"
+            )
+        if current.get("iteration_type") not in {"standard", "corrective"}:
+            raise GovernanceError(f"new Iteration lacks iteration_type: {label}")
+        if current.get("iteration_type") == "corrective" and not current.get("corrects"):
+            raise GovernanceError(f"new corrective Iteration lacks corrects links: {label}")
+        return
+    if current is None:
+        raise GovernanceError(f"Iteration record deletion is forbidden: {label}")
+    if previous.get("id") != current.get("id"):
+        raise GovernanceError(f"Iteration record identity changed: {label}")
+    previous_type = previous.get("iteration_type")
+    if previous_type is not None and current.get("iteration_type") != previous_type:
+        raise GovernanceError(f"Iteration type changed after policy binding: {label}")
+    previous_corrects = previous.get("corrects")
+    if previous_corrects is not None and current.get("corrects") != previous_corrects:
+        raise GovernanceError(f"Iteration corrects links changed after policy binding: {label}")
+    previous_status = previous.get("status")
+    current_status = current.get("status")
+    allowed = ITERATION_ALLOWED_TRANSITIONS.get(str(previous_status), set())
+    if current_status not in allowed:
+        raise GovernanceError(
+            "Iteration status regression is forbidden: "
+            f"{label} {previous_status} -> {current_status}"
+        )
+
+
+def validate_iteration_status_sequence(records: list[dict[str, Any] | None], label: str) -> None:
+    for index, (previous, current) in enumerate(zip(records, records[1:], strict=False)):
+        validate_iteration_status_transition(previous, current, f"{label}@{index + 1}")
+
+
+def _load_yaml_from_revision(root: Path, revision: str, path: str) -> dict[str, Any] | None:
+    result = subprocess.run(
+        ["git", "show", f"{revision}:{path}"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    if result.returncode:
+        return None
+    try:
+        document = yaml.safe_load(result.stdout)
+    except yaml.YAMLError as error:
+        raise GovernanceError(f"cannot parse prior Iteration record {path}: {error}") from error
+    if not isinstance(document, dict):
+        raise GovernanceError(f"prior Iteration record is not an object: {path}")
+    return document
+
+
+def _policy_start_revision(root: Path) -> str:
+    if not (root / ITERATION_POLICY_PATH).is_file():
+        raise GovernanceError("forward Iteration lifecycle policy asset is missing")
+    result = subprocess.run(
+        ["git", "log", "--format=%H", "--diff-filter=A", "--", ITERATION_POLICY_PATH],
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    commits = result.stdout.splitlines()
+    if not commits:
+        # The active implementation candidate introduces the policy in its worktree. History
+        # enforcement begins once that candidate is committed; worktree transitions are still
+        # checked below.
+        return ""
+    return commits[-1]
+
+
+def _iteration_paths_in_commit(root: Path, commit: str) -> list[str]:
+    result = subprocess.run(
+        [
+            "git",
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            commit,
+            "--",
+            "governance/iterations",
+        ],
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    return sorted(path for path in result.stdout.splitlines() if path.endswith(".yaml"))
+
+
+def _validate_committed_iteration_history(root: Path, start: str) -> None:
+    if not start:
+        return
+    result = subprocess.run(
+        ["git", "rev-list", "--reverse", "--topo-order", f"{start}^..HEAD"],
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    for commit in result.stdout.splitlines():
+        parent_result = subprocess.run(
+            ["git", "rev-parse", f"{commit}^1"],
+            cwd=root,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+        parent = parent_result.stdout.strip() if parent_result.returncode == 0 else ""
+        for path in _iteration_paths_in_commit(root, commit):
+            previous = _load_yaml_from_revision(root, parent, path) if parent else None
+            current = _load_yaml_from_revision(root, commit, path)
+            validate_iteration_status_transition(previous, current, f"{path}@{commit[:12]}")
+
+
+def validate_corrective_iteration_links(root: Path) -> None:
+    records = {
+        path.stem: load_data(path)
+        for path in sorted((root / "governance" / "iterations").glob("I-*.yaml"))
+    }
+    for iteration_id, record in records.items():
+        iteration_type = record.get("iteration_type")
+        corrects = record.get("corrects", [])
+        if iteration_type is None:
+            continue  # Legacy record created before the machine policy epoch.
+        if iteration_type not in {"standard", "corrective"}:
+            raise GovernanceError(f"Iteration has invalid iteration_type: {iteration_id}")
+        if iteration_type == "standard" and corrects:
+            raise GovernanceError(f"standard Iteration cannot declare corrects: {iteration_id}")
+        if iteration_type == "corrective" and not corrects:
+            raise GovernanceError(f"corrective Iteration lacks corrects links: {iteration_id}")
+        for target_id in corrects:
+            target = records.get(target_id)
+            if target is None:
+                raise GovernanceError(
+                    f"corrective Iteration links an unknown record: {iteration_id} -> {target_id}"
+                )
+            if target.get("status") not in ITERATION_TERMINAL_STATUSES:
+                raise GovernanceError(
+                    f"corrective Iteration target is not terminal: {iteration_id} -> {target_id}"
+                )
+            if target.get("gate") != record.get("gate"):
+                raise GovernanceError(
+                    f"corrective Iteration crosses Gate ownership: {iteration_id} -> {target_id}"
+                )
+            if int(target_id.split("-")[1]) >= int(iteration_id.split("-")[1]):
+                raise GovernanceError(
+                    f"corrective Iteration does not point backward: {iteration_id} -> {target_id}"
+                )
+
+
+def validate_iteration_lifecycle_history(root: Path) -> None:
+    policy = load_data(root / ITERATION_POLICY_PATH)
+    if policy.get("terminal_statuses") != sorted(ITERATION_TERMINAL_STATUSES):
+        raise GovernanceError("Iteration lifecycle policy terminal statuses drifted")
+    expected_transitions = {
+        status: sorted(transitions) for status, transitions in ITERATION_ALLOWED_TRANSITIONS.items()
+    }
+    observed_transitions = {
+        str(status): sorted(str(target) for target in targets)
+        for status, targets in policy.get("allowed_transitions", {}).items()
+    }
+    if observed_transitions != expected_transitions:
+        raise GovernanceError("Iteration lifecycle policy allowed transitions drifted")
+    if policy.get("new_record_initial_status") != "planned":
+        raise GovernanceError("Iteration lifecycle policy initial status drifted")
+    if policy.get("corrective_link_direction") != "lower_iteration_id":
+        raise GovernanceError("Iteration lifecycle policy corrective direction drifted")
+    validate_corrective_iteration_links(root)
+    _validate_committed_iteration_history(root, _policy_start_revision(root))
+
+    changed = set(changed_paths(root))
+    paths = sorted(
+        path
+        for path in changed
+        if path.startswith(ITERATION_RECORD_PREFIX) and path.endswith(".yaml")
+    )
+    base = os.environ.get("FW_BASE_REF")
+    revision = base if base and set(base) != {"0"} else "HEAD"
+    for path in paths:
+        previous = _load_yaml_from_revision(root, revision, path)
+        current_path = root / path
+        current = load_data(current_path) if current_path.is_file() else None
+        validate_iteration_status_transition(previous, current, f"{path}@worktree")
 
 
 def validate_validation_layer_counts(items: list[dict[str, Any]]) -> None:
@@ -236,6 +440,7 @@ def verify_fast(root: Path) -> None:
     validate_repository_schemas(root)
     validate_lifecycle_documents(root)
     validate_active_governance_state(root)
+    validate_iteration_lifecycle_history(root)
     validate_g02_validation_registry(root)
     validate_changed_manifest_artifacts(root)
     run(["ruff", "check", "src", "tests"], root)

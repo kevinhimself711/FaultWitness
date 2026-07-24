@@ -72,6 +72,14 @@ PROJECT_STATE.yaml is the authority for the active Gate and iteration, not for a
   forward corrective Iteration that links to the affected record; governance must not change the
   completed Iteration back to `in_progress` or move lifecycle state backward. A corrective
   Iteration may block the next planned Iteration, but it does not erase or reopen history.
+- `verify-fast` scans every Iteration transition from the machine policy epoch as well as the
+  current worktree. It rejects terminal-record deletion/reactivation even when a later commit hides
+  the regression. New records declare `iteration_type`; a corrective record links lower-numbered,
+  same-Gate terminal records through `corrects`.
+- Candidate readiness is the deterministic front of Gate Eval, not a separate open-ended audit.
+  Transient infrastructure failures resume the same phase/trial. An implementation, policy,
+  zero-tolerance, cleanup, metric, quality, or performance failure makes that orchestration
+  Iteration terminally failed; correction and reevaluation use new forward Iterations.
 - SHA and evidence-inheritance rules are provenance controls only. They must not alter Eval N,
   locked tests, Ground Truth, quality or performance thresholds, health-oracle windows, token/cost
   ceilings, or failure semantics.

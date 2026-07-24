@@ -3,6 +3,8 @@ id: I-0021
 gate: G02
 title: Lifecycle Monotonicity Governance
 status: in_progress
+iteration_type: corrective
+corrects: [I-0017, I-0018, I-0019]
 scope:
   - Add a verify-fast guard that rejects terminal Iteration reactivation in the worktree and committed history after the policy epoch.
   - Freeze candidate-readiness preflight and Gate failure classification without changing any Eval metric or runtime subject.
@@ -32,6 +34,7 @@ changed_paths:
   - governance/iterations
   - schemas/governance/iteration.schema.json
   - src/faultwitness_dev/checks.py
+  - src/faultwitness_dev/evals.py
   - tests/governance/test_governance.py
 behavior_change: true
 docs_updated:

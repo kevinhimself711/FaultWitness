@@ -1,0 +1,10 @@
+schema_version: "1.0.0"
+policy_id: ITERATION-LIFECYCLE-V1
+terminal_statuses: [completed, failed]
+allowed_transitions:
+  planned: [planned, in_progress, failed]
+  in_progress: [in_progress, completed, failed]
+  completed: [completed]
+  failed: [failed]
+new_record_initial_status: planned
+corrective_link_direction: lower_iteration_id

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -17,6 +18,9 @@ from faultwitness_dev.changes import (
 from faultwitness_dev.checks import (
     validate_active_governance_state,
     validate_g02_validation_registry,
+    validate_iteration_lifecycle_history,
+    validate_iteration_status_sequence,
+    validate_iteration_status_transition,
     validate_lifecycle_documents,
     validate_lifecycle_records,
     validate_manifest_revision_change,
@@ -261,9 +265,7 @@ def test_l3_validation_cannot_repeat_the_same_n() -> None:
 
 def test_zero_tolerance_registry_fields_are_nonempty() -> None:
     registry = load_data(ROOT / "docs" / "gates" / "G02" / "VALIDATIONS.yaml")
-    zero_tolerance = [
-        item for item in registry["validation_items"] if item["zero_tolerance"]
-    ]
+    zero_tolerance = [item for item in registry["validation_items"] if item["zero_tolerance"]]
     assert zero_tolerance
     for item in zero_tolerance:
         assert item["runner"]
@@ -311,6 +313,84 @@ def test_lifecycle_state_drift_is_rejected() -> None:
                 "docs/roadmap/PHASES.md": matching,
             },
         )
+
+
+def test_iteration_lifecycle_accepts_only_forward_nonterminal_transitions() -> None:
+    planned = {"id": "I-9000", "status": "planned", "iteration_type": "standard"}
+    active = {"id": "I-9000", "status": "in_progress", "iteration_type": "standard"}
+    completed = {"id": "I-9000", "status": "completed", "iteration_type": "standard"}
+    failed = {"id": "I-9000", "status": "failed", "iteration_type": "standard"}
+
+    validate_iteration_status_transition(planned, active, "planned-active")
+    validate_iteration_status_transition(active, completed, "active-completed")
+    with pytest.raises(GovernanceError, match="status regression"):
+        validate_iteration_status_transition(completed, active, "completed-active")
+    with pytest.raises(GovernanceError, match="status regression"):
+        validate_iteration_status_transition(failed, planned, "failed-planned")
+    with pytest.raises(GovernanceError, match="record deletion"):
+        validate_iteration_status_transition(completed, None, "completed-deleted")
+    mutated_type = {**active, "iteration_type": "corrective", "corrects": ["I-8999"]}
+    with pytest.raises(GovernanceError, match="type changed"):
+        validate_iteration_status_transition(active, mutated_type, "type-mutation")
+
+
+def test_iteration_sequence_rejects_reactivation_hidden_by_later_completion() -> None:
+    completed = {"id": "I-9000", "status": "completed", "iteration_type": "standard"}
+    active = {"id": "I-9000", "status": "in_progress", "iteration_type": "standard"}
+    with pytest.raises(GovernanceError, match="status regression"):
+        validate_iteration_status_sequence([completed, active, completed], "hidden-reactivation")
+
+
+def _git(repo: Path, *arguments: str) -> None:
+    subprocess.run(
+        ["git", *arguments],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+
+
+def test_repository_history_rejects_terminal_reactivation(tmp_path: Path) -> None:
+    _git(tmp_path, "init")
+    _git(tmp_path, "config", "user.name", "FaultWitness Test")
+    _git(tmp_path, "config", "user.email", "test@faultwitness.local")
+    (tmp_path / "README.md").write_text("bootstrap\n", encoding="utf-8")
+    _git(tmp_path, "add", "README.md")
+    _git(tmp_path, "commit", "-m", "bootstrap")
+
+    policy = tmp_path / "governance" / "policies" / "iteration-lifecycle-v1.yaml"
+    record = tmp_path / "governance" / "iterations" / "I-9000.yaml"
+    policy.parent.mkdir(parents=True)
+    record.parent.mkdir(parents=True)
+    policy.write_text(
+        "schema_version: '1.0.0'\n"
+        "policy_id: ITERATION-LIFECYCLE-V1\n"
+        "terminal_statuses: [completed, failed]\n"
+        "allowed_transitions:\n"
+        "  planned: [planned, in_progress, failed]\n"
+        "  in_progress: [in_progress, completed, failed]\n"
+        "  completed: [completed]\n"
+        "  failed: [failed]\n"
+        "new_record_initial_status: planned\n"
+        "corrective_link_direction: lower_iteration_id\n",
+        encoding="utf-8",
+    )
+    record.write_text("id: I-9000\nstatus: planned\niteration_type: standard\n", encoding="utf-8")
+    _git(tmp_path, "add", ".")
+    _git(tmp_path, "commit", "-m", "start policy")
+
+    for status in ("in_progress", "completed", "in_progress", "completed"):
+        record.write_text(
+            f"id: I-9000\nstatus: {status}\niteration_type: standard\n",
+            encoding="utf-8",
+        )
+        _git(tmp_path, "add", str(record.relative_to(tmp_path)))
+        _git(tmp_path, "commit", "-m", f"status {status}")
+
+    with pytest.raises(GovernanceError, match="status regression"):
+        validate_iteration_lifecycle_history(tmp_path)
 
 
 def _load_evidence_assets() -> tuple[list[dict], dict, dict]:

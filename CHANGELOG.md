@@ -26,6 +26,9 @@
 
 ### Tooling
 
+- Enforce the I-0021 forward-only lifecycle policy in `verify-fast`: scan committed history and the
+  worktree, reject terminal reactivation/deletion, require typed new Iterations and corrective
+  links, and expose five deterministic EVAL-G02-006 cases without external execution.
 - Close the final I-0017 corrective pass on business candidate `0d32648` and evidence commit
   `dae6702` with `open_evidence: []`; completed Iteration history is no longer eligible for
   reactivation.
