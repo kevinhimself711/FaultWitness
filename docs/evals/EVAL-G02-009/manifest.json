@@ -5,7 +5,7 @@
   "iteration": "I-0024",
   "candidate_sha": "a2797037d1a3aa5c7f7264c2c3b122712b6d1677",
   "evaluated_revision": "a2797037d1a3aa5c7f7264c2c3b122712b6d1677",
-  "evidence_head_sha": "a2797037d1a3aa5c7f7264c2c3b122712b6d1677",
+  "evidence_head_sha": "7e04d446bcd66fb4ed6bacef3c77503d8d043db8",
   "status": "pass",
   "subject_digests": {
     "config/g02/gate-probes.yaml": "6fb0aec3a8a7122e34564ffaf1dc13612296576f2eb12f160da877cebb99332d",

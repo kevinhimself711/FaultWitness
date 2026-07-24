@@ -35,3 +35,5 @@ Eval-scoped journal drift all fail closed with no operator adjudication route.
 
 Repository verification completed with 336 tests and zero Markdown issues. EVAL-G02-010 remains
 the sole location authorized to execute the frozen 60/6/22 live matrices on a unified candidate.
+Evidence commit `7e04d446bcd66fb4ed6bacef3c77503d8d043db8` is an asset-only descendant
+of the evaluated candidate and does not change any subject digest.

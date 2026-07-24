@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: I-0024
+active_iteration: null
 next_iteration: I-0025
 last_closed_gate: G01
 ---
@@ -11,8 +11,8 @@ last_closed_gate: G01
 FaultWitness 是一个面向微服务事故调查、受控修复与持续优化的多租户 Agent Runtime 项目。
 
 当前状态：G00、G01 已关闭；G02 正在执行。I-0020 与 I-0023 均已因确定性失败终态关闭且
-负面证据完整；I-0024 是唯一 active 的前向 L2 runner 纠错，I-0025 是其后的替代统一
-候选编排。任何已终态记录都不会重开。
+负面证据完整；I-0024 已以 `open_evidence: []` 完成 candidate-bound L2 runner 纠错。
+当前无 active Iteration，I-0025 是下一项替代统一候选编排。任何已终态记录都不会重开。
 
 ## 权威资产
 
@@ -28,9 +28,9 @@ FaultWitness 是一个面向微服务事故调查、受控修复与持续优化�
 
 - 不把 G01 平台地基包装为已经完成的 Agent 产品。
 - 不提交原始 JD、面经、密钥、私有 Trace 或受限数据。
-- I-0018 已交付 locked-test/ground-truth 隔离、160 行预登记和三个验证接口，但
-  EVAL-G02-008 证明其缺少完整的 candidate-bound provisioner/collector。
-- I-0024 只补齐并单测这三个 L2 runner，不运行 Gate L2、破坏性实验或模型；I-0025
-  才能编排十四个冻结 phase，且不得现场新增实现。
+- I-0018 已交付 locked-test/ground-truth 隔离、160 行预登记和三个验证接口；I-0024
+  已前向补齐并单测 EVAL-G02-008 证明缺失的 candidate-bound provisioner/collector。
+- I-0024 未运行 Gate L2、破坏性实验或模型；只有 I-0025 可编排十四个冻结 phase，且
+  不得现场新增实现、fixture 或测试框架。
 
 代码、API、Schema 和标识符使用英文；设计、评测和复盘文档以中文为主。

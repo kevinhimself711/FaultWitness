@@ -38,6 +38,9 @@
 
 ### Tooling
 
+- Close I-0024 on candidate `a279703` and evidence commit `7e04d44` with five passing local
+  readiness cases, unchanged 4/0/4 Iteration N, zero Gate L2/external/model execution, and
+  `open_evidence: []`.
 - Pass EVAL-G02-009 on candidate `a279703`: five deterministic collector-readiness cases preserve
   Iteration N=4/0/4, reject all named negatives, and execute zero Gate L2 cells, destructive work,
   external calls, or model calls.

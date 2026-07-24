@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0024
 gate: G02
 title: Candidate-Bound L2 Collector and Provisioning Corrective
-status: in_progress
+status: completed
 iteration_type: corrective
 corrects: [I-0018, I-0023]
 scope:
@@ -21,7 +21,7 @@ tests:
   - uv run python -m faultwitness_dev verify-fast
   - uv run python -m faultwitness_dev eval-changed
 eval_id: EVAL-G02-009
-commit: null
+commit: a2797037d1a3aa5c7f7264c2c3b122712b6d1677
 changed_paths:
   - AGENTS.md
   - CHANGELOG.md
@@ -35,6 +35,7 @@ changed_paths:
   - docs/claims/CLAIMS.yaml
   - docs/engineering/AI_DEVELOPMENT_LOG.md
   - docs/roadmap/iterations
+  - docs/roadmap/PHASES.md
   - docs/runbooks/G02_EVAL_PROTOCOL.md
   - docs/runbooks/G02_ISOLATION.md
   - governance/iterations
@@ -47,6 +48,7 @@ changed_paths:
 behavior_change: true
 docs_updated:
   - docs/roadmap/iterations/I-0024.md
+  - docs/roadmap/PHASES.md
   - docs/evals/EVAL-G02-009/PLAN.md
   - docs/evals/EVAL-G02-009/REPORT.md
   - docs/evals/EVAL-G02-009/manifest.json
