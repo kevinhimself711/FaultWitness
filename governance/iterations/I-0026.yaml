@@ -16,7 +16,7 @@ non_goals:
   - Reopening I-0024 or I-0025 or rewriting EVAL-G02-009 or EVAL-G02-010 evidence.
 dependencies: [I-0016, I-0021, I-0024, I-0025]
 tests:
-  - uv run pytest -q tests/test_infra.py tests/g02/test_g02_gate_collectors.py tests/g02/test_g02_eval_protocol.py
+  - uv run pytest -q tests/infra/test_infra.py tests/g02/test_g02_gate_collectors.py tests/g02/test_g02_eval_protocol.py
   - uv run python -m faultwitness_dev eval-iteration I-0026 --candidate-sha <full-sha>
   - uv run python -m faultwitness_dev verify-fast
   - uv run python -m faultwitness_dev eval-changed

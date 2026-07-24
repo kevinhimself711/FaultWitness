@@ -4,6 +4,9 @@
 
 ### Governance maintenance
 
+- Implement I-0026 bounded privileged remote-script transport: upload script bytes through SSH
+  stdin, execute through a short sudo path command, clean up deterministically, and ignore legacy
+  wall-clock kill arguments without changing Eval criteria.
 - Activate I-0026 as the sole bounded privileged remote-script transport corrective; I-0027 remains
   planned and no Gate L2, remote deployment, destructive scenario, external service, or model call is authorized.
 - Record I-0025/EVAL-G02-010 as terminal failed after a deterministic Windows command-line length

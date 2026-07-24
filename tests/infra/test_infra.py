@@ -14,7 +14,7 @@ from faultwitness_dev.infra import (
 )
 
 
-def test_privileged_runner_separates_password_from_script(monkeypatch) -> None:
+def test_privileged_runner_uses_bounded_arguments_and_separate_channels(monkeypatch) -> None:
     import faultwitness_dev.infra as infra
 
     class Bundle:
@@ -22,21 +22,127 @@ def test_privileged_runner_separates_password_from_script(monkeypatch) -> None:
         def server_password(self) -> str:
             return "secret-value"
 
-    captured = {}
+    captured = []
 
     monkeypatch.setattr(infra, "_remote_arguments", lambda _paths: (Bundle(), ["ssh"]))
     monkeypatch.setattr(infra.BootstrapPaths, "defaults", lambda: object())
 
+    responses = iter(
+        [
+            (0, "/tmp/faultwitness-remote.A1b2C3\n", ""),
+            (0, "ok", ""),
+            (0, "", ""),
+        ]
+    )
+
     def fake_run(arguments, **kwargs):
-        captured["arguments"] = arguments
-        captured["input"] = kwargs["input"]
-        return type("Result", (), {"returncode": 0, "stdout": "ok", "stderr": ""})()
+        captured.append((arguments, kwargs))
+        returncode, stdout, stderr = next(responses)
+        return type(
+            "Result",
+            (),
+            {"returncode": returncode, "stdout": stdout, "stderr": stderr},
+        )()
 
     monkeypatch.setattr(infra.subprocess, "run", fake_run)
-    assert infra.run_remote_script("true\n", privileged=True) == "ok"
-    assert captured["arguments"][-1].startswith("sudo -k -S -p '' /bin/sh -c ")
-    assert "dHJ1ZQo=" in captured["arguments"][-1]
-    assert captured["input"] == "secret-value\n"
+    script = "printf transport-marker\\n\n" + "x" * 100_000
+    assert infra.run_remote_script(script, privileged=True, timeout=1) == "ok"
+    assert len(captured) == 3
+    commands = [call[0][-1] for call in captured]
+    assert all(sum(len(argument) for argument in call[0]) < 32_767 for call in captured)
+    assert all("transport-marker" not in command for command in commands)
+    assert all("secret-value" not in command for command in commands)
+    assert "mktemp /tmp/faultwitness-remote.XXXXXX" in commands[0]
+    assert commands[1] == "sudo -k -S -p '' /bin/sh /tmp/faultwitness-remote.A1b2C3"
+    assert commands[2] == "rm -f -- /tmp/faultwitness-remote.A1b2C3"
+    assert [call[1]["input"] for call in captured] == [script, "secret-value\n", ""]
+    assert all("timeout" not in call[1] for call in captured)
+
+
+def test_privileged_runner_cleans_up_after_execute_failure(monkeypatch) -> None:
+    import faultwitness_dev.infra as infra
+
+    responses = iter(
+        [
+            (0, "/tmp/faultwitness-remote.Fail01\n", ""),
+            (7, "", "FW_PROBE_FAILED step=execute"),
+            (0, "", ""),
+        ]
+    )
+    commands = []
+
+    def fake_run(arguments, **_kwargs):
+        commands.append(arguments[-1])
+        returncode, stdout, stderr = next(responses)
+        return type(
+            "Result",
+            (),
+            {"returncode": returncode, "stdout": stdout, "stderr": stderr},
+        )()
+
+    with pytest.raises(GovernanceError, match="FW_PROBE_FAILED step=execute"):
+        infra._run_remote_script_transport(
+            "exit 7\n",
+            privileged=True,
+            sudo_stdin="credential",
+            arguments=["ssh"],
+            runner=fake_run,
+        )
+    assert commands[-1] == "rm -f -- /tmp/faultwitness-remote.Fail01"
+
+
+def test_privileged_runner_fails_closed_on_cleanup_failure() -> None:
+    import faultwitness_dev.infra as infra
+
+    responses = iter(
+        [
+            (0, "/tmp/faultwitness-remote.Clean01\n", ""),
+            (0, "ok", ""),
+            (9, "", "FW_CLEANUP_FAILED step=remove"),
+        ]
+    )
+
+    def fake_run(_arguments, **_kwargs):
+        returncode, stdout, stderr = next(responses)
+        return type(
+            "Result",
+            (),
+            {"returncode": returncode, "stdout": stdout, "stderr": stderr},
+        )()
+
+    with pytest.raises(GovernanceError, match="remote script cleanup failed"):
+        infra._run_remote_script_transport(
+            "true\n",
+            privileged=True,
+            sudo_stdin="credential",
+            arguments=["ssh"],
+            runner=fake_run,
+        )
+
+
+def test_privileged_runner_rejects_invalid_remote_path_without_execution() -> None:
+    import faultwitness_dev.infra as infra
+
+    calls = 0
+
+    def fake_run(_arguments, **_kwargs):
+        nonlocal calls
+        calls += 1
+        return type(
+            "Result",
+            (),
+            {"returncode": 0, "stdout": "/tmp/not-bound\n", "stderr": ""},
+        )()
+
+    with pytest.raises(GovernanceError, match="invalid temporary path"):
+        infra._run_remote_script_transport(
+            "true\n",
+            privileged=True,
+            sudo_stdin="credential",
+            arguments=["ssh"],
+            runner=fake_run,
+        )
+    assert calls == 1
 
 
 def baseline() -> dict:

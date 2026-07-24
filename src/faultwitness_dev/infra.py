@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import base64
 import hashlib
 import ipaddress
 import json
@@ -65,44 +64,122 @@ def _remote_arguments(paths: BootstrapPaths) -> tuple[Any, list[str]]:
     return bundle, arguments
 
 
-def run_remote_script(
-    script: str, *, privileged: bool, timeout: float | None = None
-) -> str:
-    paths = BootstrapPaths.defaults()
-    bundle, arguments = _remote_arguments(paths)
-    if privileged:
-        # Keep the script and password on separate channels. A NOPASSWD or cached sudo policy
-        # may leave stdin unread, so feeding password + script through one stream is unsafe.
-        encoded = base64.b64encode(script.encode("utf-8")).decode("ascii")
-        decoder = f"printf %s {shlex.quote(encoded)} | base64 -d | /bin/sh"
-        command = "sudo -k -S -p '' /bin/sh -c " + shlex.quote(decoder)
-        stdin = bundle.server_password + "\n"
-    else:
-        command = "/bin/sh -s"
-        stdin = script
-    result = subprocess.run(
+_REMOTE_SCRIPT_PATH = re.compile(r"^/tmp/faultwitness-remote\.[A-Za-z0-9]+$")
+_UPLOAD_REMOTE_SCRIPT = """set -eu
+umask 077
+remote_script=
+cleanup() { test -z "$remote_script" || rm -f -- "$remote_script"; }
+trap cleanup EXIT HUP INT TERM
+remote_script=$(mktemp /tmp/faultwitness-remote.XXXXXX)
+chmod 0600 "$remote_script"
+cat >"$remote_script"
+printf '%s\\n' "$remote_script"
+trap - EXIT HUP INT TERM
+"""
+
+
+def _remote_process(
+    runner: Any, arguments: list[str], command: str, stdin: str
+) -> Any:
+    return runner(
         [*arguments, command],
         input=stdin,
         check=False,
         capture_output=True,
         text=True,
         encoding="utf-8",
-        timeout=timeout,
     )
-    if result.returncode:
-        marker = next(
-            (line for line in result.stderr.splitlines() if line.startswith("FW_")),
-            "",
-        )
-        detail = f"; {marker}" if marker else ""
+
+
+def _failure_detail(result: Any) -> str:
+    marker = next(
+        (line for line in result.stderr.splitlines() if line.startswith("FW_")),
+        "",
+    )
+    return f"; {marker}" if marker else ""
+
+
+def _run_remote_script_transport(
+    script: str,
+    *,
+    privileged: bool,
+    sudo_stdin: str,
+    arguments: list[str],
+    runner: Any,
+) -> str:
+    if not privileged:
+        result = _remote_process(runner, arguments, "/bin/sh -s", script)
+        if result.returncode:
+            raise GovernanceError(
+                "remote infrastructure command failed ("
+                + ssh_failure_category(result.stderr)
+                + f"; exit={result.returncode}"
+                + _failure_detail(result)
+                + ")"
+            )
+        return result.stdout
+
+    # Script bytes and the sudo credential use separate SSH sessions. The child-process arguments
+    # stay fixed-size even when the probe is larger than the Windows command-line limit.
+    upload_command = "/bin/sh -c " + shlex.quote(_UPLOAD_REMOTE_SCRIPT)
+    upload = _remote_process(runner, arguments, upload_command, script)
+    if upload.returncode:
         raise GovernanceError(
-            "remote infrastructure command failed ("
-            + ssh_failure_category(result.stderr)
-            + f"; exit={result.returncode}"
-            + detail
+            "remote script upload failed ("
+            + ssh_failure_category(upload.stderr)
+            + f"; exit={upload.returncode}"
+            + _failure_detail(upload)
             + ")"
         )
-    return result.stdout
+    remote_paths = [line.strip() for line in upload.stdout.splitlines() if line.strip()]
+    if len(remote_paths) != 1 or not _REMOTE_SCRIPT_PATH.fullmatch(remote_paths[0]):
+        raise GovernanceError("remote script upload returned an invalid temporary path")
+    remote_path = remote_paths[0]
+    execute_command = "sudo -k -S -p '' /bin/sh " + shlex.quote(remote_path)
+    cleanup_command = "rm -f -- " + shlex.quote(remote_path)
+    try:
+        execute = _remote_process(
+            runner, arguments, execute_command, sudo_stdin + "\n"
+        )
+    except BaseException:
+        _remote_process(runner, arguments, cleanup_command, "")
+        raise
+    cleanup = _remote_process(runner, arguments, cleanup_command, "")
+    if execute.returncode:
+        cleanup_detail = f"; cleanup_exit={cleanup.returncode}" if cleanup.returncode else ""
+        raise GovernanceError(
+            "remote infrastructure command failed ("
+            + ssh_failure_category(execute.stderr)
+            + f"; exit={execute.returncode}"
+            + _failure_detail(execute)
+            + cleanup_detail
+            + ")"
+        )
+    if cleanup.returncode:
+        raise GovernanceError(
+            "remote script cleanup failed ("
+            + ssh_failure_category(cleanup.stderr)
+            + f"; exit={cleanup.returncode}"
+            + _failure_detail(cleanup)
+            + ")"
+        )
+    return execute.stdout
+
+
+def run_remote_script(
+    script: str, *, privileged: bool, timeout: float | None = None
+) -> str:
+    paths = BootstrapPaths.defaults()
+    bundle, arguments = _remote_arguments(paths)
+    # Backward-compatible argument only: normal progress is never killed by a preset wall clock.
+    _ = timeout
+    return _run_remote_script_transport(
+        script,
+        privileged=privileged,
+        sudo_stdin=bundle.server_password,
+        arguments=arguments,
+        runner=subprocess.run,
+    )
 
 
 def inspect_infra_prerequisites(*, privileged: bool = True) -> dict[str, Any]:
