@@ -26,6 +26,9 @@
 
 ### Tooling
 
+- Close the final I-0017 corrective pass on business candidate `0d32648` and evidence commit
+  `dae6702` with `open_evidence: []`; completed Iteration history is no longer eligible for
+  reactivation.
 - Pass the final I-0017 dual-SHA corrective Eval on candidate `0d32648`: validate the
   binding-declared evidence-head checkout guard, retain the unchanged N=32/N=6/N=4 evidence and
   image-set digest, restore all four live scenarios exactly, and leave `open_evidence: []` without

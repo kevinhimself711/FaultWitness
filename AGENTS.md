@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: I-0017
+active_iteration: null
 next_iteration: I-0020
 last_closed_gate: G01
 ---
@@ -12,9 +12,9 @@ last_closed_gate: G01
 
 FaultWitness is a multi-tenant Agent Runtime for investigating microservice incidents, proposing bounded remediations, executing approved actions, and producing auditable evaluation and training assets.
 
-G00 and G01 are closed. G02 is `in_progress`. A final readiness audit found that I-0017's lab
-deployment still rejected a validated evidence-only descendant HEAD, so I-0017 is reopened as the
-sole active Iteration. I-0020 remains planned and Gate evaluation is prohibited.
+G00 and G01 are closed. G02 is `in_progress`. I-0016 through I-0019, including the final I-0017
+dual-SHA corrective pass, are completed with no open evidence. I-0020 remains the next planned
+Iteration and Gate evaluation is prohibited until it is explicitly activated.
 
 ## Source-of-truth order
 
@@ -38,7 +38,8 @@ PROJECT_STATE.yaml is the authority for the active Gate and iteration, not for a
 - Gate closure is a separate asset-only commit evaluated against an immutable candidate SHA.
 - A final Gate-audit Iteration may only orchestrate frozen checks, reverify one candidate,
   and synchronize evidence. It may not add product behavior or a substantial Eval framework;
-  missing harness work returns to an owning Iteration and creates a new candidate.
+  missing harness work creates a new forward corrective Iteration assigned to the original owning
+  domain and produces a new candidate; a completed Iteration record is not reopened.
 - Expensive Evals must be decomposed into attributable phases whose immutable results are
   keyed by code candidate, runtime artifact/config digests, and environment fingerprint.
 - Eval runners that invoke destructive, long-running, or external-service work must support
@@ -56,6 +57,23 @@ PROJECT_STATE.yaml is the authority for the active Gate and iteration, not for a
   behavior and runtime artifacts, while `evidence_head_sha` identifies an asset-only descendant.
   Any behavior, test-semantic, threshold, workflow, or runtime-artifact change creates a new
   candidate; evidence-only changes do not.
+- A frozen `candidate_sha` is an explicit evaluation input. Current branch HEAD, the newest commit,
+  and the commit containing a report are not alternate authorities for the business candidate.
+  Exact `HEAD == candidate_sha` is required only when a runner is explicitly evaluating the
+  candidate checkout itself. A runner operating from a validated evidence-only descendant must
+  prove ancestry, changed-path allowlisting, and unchanged subject digests instead of rebinding or
+  redeploying the candidate.
+- No tracked artifact may be required to contain the SHA of the commit that contains that artifact.
+  A runner records the already-existing execution checkpoint it observed before producing output;
+  the later evidence/closure commit is identified by Git history or its Gate tag and does not
+  rewrite the producing revision to chase its own SHA.
+- Completed Iteration records are immutable. A defect discovered after completion is owned by a new
+  forward corrective Iteration that links to the affected record; governance must not change the
+  completed Iteration back to `in_progress` or move lifecycle state backward. A corrective
+  Iteration may block the next planned Iteration, but it does not erase or reopen history.
+- SHA and evidence-inheritance rules are provenance controls only. They must not alter Eval N,
+  locked tests, Ground Truth, quality or performance thresholds, health-oracle windows, token/cost
+  ceilings, or failure semantics.
 - Gate closure must update the controlled root/status asset set, including `AGENTS.md`,
   `PROJECT_STATE.yaml`, `README.md`, and `docs/roadmap/PHASES.md`, and their lifecycle fields
   must agree before verification passes.

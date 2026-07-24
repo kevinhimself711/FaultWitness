@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0017
 gate: G02
 title: Fault Lab and Scenario DSL
-status: in_progress
+status: completed
 scope:
   - Implement the digest-pinned OTel Demo lab four Scenario DSL families and six flagd adapters.
   - Implement 32 executable seed scenarios Problem Briefs ternary oracles and exact restoration.
@@ -15,7 +15,7 @@ tests:
   - make verify-fast
   - uv run python -m faultwitness_dev eval-iteration I-0017 --candidate-sha <full-sha>
 eval_id: EVAL-G02-002
-commit: null
+commit: 0d3264829e1d109b4f15ff757233e900a023bd82
 changed_paths:
   - config/g02
   - AGENTS.md
