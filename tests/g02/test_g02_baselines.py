@@ -6,20 +6,31 @@ from pathlib import Path
 import pytest
 import yaml
 
+import faultwitness_dev.g02_baselines as g02_baselines
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.g02_baselines import (
     QUALITY_FLOORS,
     LiveInfrastructureError,
+    aggregate_gate_baselines,
     build_observation_packet,
     canonical_observation_packet,
     deterministic_baseline,
     load_baseline_config,
     percentile_cluster_bootstrap,
     resumable_trial_ids,
+    run_gate_deterministic_matrix,
+    run_gate_live_matrix,
     run_live_trials,
     score_result,
     token_cost,
     validate_threshold_registry,
+)
+from faultwitness_dev.g02_eval import TrialJournal
+from faultwitness_dev.g02_lab import (
+    MemoryFlagClient,
+    base_flag_document,
+    run_gate_scenario_matrix,
+    scripted_sequence_observer,
 )
 
 FIXTURES = Path(__file__).parents[1] / "fixtures" / "g02"
@@ -192,3 +203,57 @@ def test_trial_journal_resumes_only_infrastructure_failure(tmp_path: Path) -> No
 
 def test_token_cost_uses_frozen_cny_rates() -> None:
     assert token_cost(1_000_000, 1_000_000) == 10.0
+
+
+def test_gate_baseline_runners_execute_exact_32_and_192_without_external_json(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    candidate = "1" * 40
+
+    def client_factory(_candidate_sha: str) -> MemoryFlagClient:
+        return MemoryFlagClient(base_flag_document())
+
+    def observer_factory(_candidate_sha: str, _fault_class: str):
+        return scripted_sequence_observer()
+
+    scenarios = run_gate_scenario_matrix(
+        Path(__file__).parents[2],
+        candidate,
+        TrialJournal(tmp_path / "scenarios"),
+        client_factory=client_factory,
+        observer_factory=observer_factory,
+    )
+    deterministic = run_gate_deterministic_matrix(candidate, scenarios)
+    monkeypatch.setattr(
+        g02_baselines,
+        "make_bailian_adapter",
+        lambda _root, _baseline: deterministic_baseline,
+    )
+    live = run_gate_live_matrix(
+        Path(__file__).parents[2],
+        candidate,
+        "2" * 64,
+        scenarios,
+        tmp_path / "live",
+    )
+    repeated = run_gate_live_matrix(
+        Path(__file__).parents[2],
+        candidate,
+        "2" * 64,
+        scenarios,
+        tmp_path / "live",
+    )
+    aggregate = aggregate_gate_baselines(scenarios, deterministic, live, "2" * 64)
+    assert deterministic["N"] == 32
+    assert live["trial_count"] == 192
+    assert live["status"] == "pass"
+    assert [row["trial_id"] for row in repeated["trials"]] == [
+        row["trial_id"] for row in live["trials"]
+    ]
+    journal_records = [
+        json.loads(path.read_text()) for path in (tmp_path / "live" / "trials").glob("*.json")
+    ]
+    assert len(journal_records) == 192
+    assert all(record["attempt"] == 2 for record in journal_records)
+    assert aggregate["case_clusters"] == 32
+    assert aggregate["resamples"] == 2000

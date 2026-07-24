@@ -21,3 +21,9 @@ baseline smoke, and four non-seed live trials with per-trial interruption and re
 The runner has no preset orchestration wall-clock kill timeout. This does not change N=4, the exact
 model, the one internal transient retry, token/cost ceilings, latency measurement, failure scoring,
 or any Gate metric. Each trial is persisted atomically; only `infra_failed` trials resume.
+
+This owning Iteration also supplies and unit-tests the later Gate interfaces. The Gate deterministic
+handler consumes the completed candidate-bound scenario artifact and executes N=32 itself. The Gate
+live handler derives and executes N=192 trial-local calls itself, and the aggregate handler performs
+sealed scoring plus the frozen 95% clustered bootstrap CI. Repository-external precomputed baseline
+JSON is not an admissible production path. These Gate sizes are not executed by EVAL-G02-004.

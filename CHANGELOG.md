@@ -26,6 +26,9 @@
 
 ### Tooling
 
+- Reopen owning I-0019 before I-0020 after readiness audit found the three Gate baseline handlers
+  importing precomputed JSON; replace that path with direct candidate-bound N=32/N=192 execution,
+  atomic resumable live journals, sealed scoring, and the frozen clustered bootstrap interface.
 - Complete the I-0017 corrective pass on candidate `c7d55f2`: redeploy 24/24 workloads, rerun the
   unchanged N=32 specification/N=6 adapter/N=4 live-family evidence, and prove both missing Gate
   handlers without executing the Gate N=32 live scenario matrix.

@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: null
+active_iteration: I-0019
 next_iteration: I-0020
 last_closed_gate: G01
 ---
@@ -10,8 +10,9 @@ last_closed_gate: G01
 
 FaultWitness 是一个面向微服务事故调查、受控修复与持续优化的多租户 Agent Runtime 项目。
 
-当前状态：G00、G01 已关闭；G02 正在执行。I-0017 corrective owner pass 已补齐两个 Gate
-handler 并以 `open_evidence: []` 关闭。当前没有 active Iteration；I-0020 仍保持 planned。
+当前状态：G00、G01 已关闭；G02 正在执行。I-0017 corrective owner pass 已关闭；后续审计
+发现 I-0019 Gate baseline phase 只验证外部 JSON、未执行冻结矩阵，因此 I-0019 已前向重开并
+成为唯一 active Iteration；I-0020 仍保持 planned。
 
 ## 权威资产
 

@@ -474,6 +474,8 @@ def run_live_trials(
                 "pass",
                 {
                     "case_id": packet["case_id"],
+                    "baseline": spec.get("baseline"),
+                    "repetition": spec.get("repetition"),
                     "result": result,
                     "input_tokens": int(result.get("input_tokens", 0)),
                     "output_tokens": int(result.get("output_tokens", 0)),
@@ -496,6 +498,8 @@ def run_live_trials(
                 "pass",
                 {
                     "case_id": packet["case_id"],
+                    "baseline": spec.get("baseline"),
+                    "repetition": spec.get("repetition"),
                     "result": {
                         "status": "scored_failure",
                         "failure_class": "malformed",
@@ -510,6 +514,194 @@ def run_live_trials(
             )
         completed.append(record)
     return completed
+
+
+def _scenario_cases(document: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
+    trials = document.get("trials")
+    if not isinstance(trials, list) or len(trials) != 32:
+        raise GovernanceError("G02 baseline input requires exactly 32 scenario trials")
+    cases: dict[str, dict[str, Any]] = {}
+    for trial in trials:
+        if not isinstance(trial, dict) or trial.get("status") != "pass":
+            raise GovernanceError("G02 baseline input contains an incomplete scenario")
+        payload = trial.get("payload")
+        if not isinstance(payload, dict):
+            raise GovernanceError("G02 scenario trial lacks a payload")
+        packet = canonical_observation_packet(payload.get("observation_packet", {}))
+        case_id = str(packet["case_id"])
+        fault_class = str(payload.get("fault_class", ""))
+        result = payload.get("result", {})
+        if not fault_class or not isinstance(result, dict):
+            raise GovernanceError("G02 scenario trial lacks sealed evaluator truth")
+        evidence = [
+            str(item.get("id"))
+            for item in packet["observations"]
+            if isinstance(item, dict) and item.get("id")
+        ]
+        cases[case_id] = {
+            "packet": packet,
+            "ground_truth": {"root_cause": fault_class, "evidence": evidence},
+            "family": str(result.get("family", "")),
+        }
+    if len(cases) != 32:
+        raise GovernanceError("G02 baseline input case IDs are not unique")
+    return cases
+
+
+def run_gate_deterministic_matrix(
+    candidate_sha: str, scenario_document: Mapping[str, Any]
+) -> dict[str, Any]:
+    cases = _scenario_cases(scenario_document)
+    rows = []
+    for case_id in sorted(cases):
+        case = cases[case_id]
+        result = deterministic_baseline(case["packet"])
+        rows.append(
+            {
+                "case_id": case_id,
+                "family": case["family"],
+                "ground_truth_access": False,
+                "result": result,
+                **score_result(result, case["ground_truth"]),
+            }
+        )
+    document = {
+        "candidate_sha": candidate_sha,
+        "validation": "V-G02-014",
+        "N": 32,
+        "rows": rows,
+        "status": "pass",
+    }
+    validate_deterministic_matrix(document)
+    return document
+
+
+def _gate_trial_specs(
+    candidate_sha: str, dataset_digest: str, cases: Mapping[str, Mapping[str, Any]]
+) -> dict[str, list[dict[str, Any]]]:
+    specs = {"naive_react": [], "no_rag": []}
+    for baseline in specs:
+        for case_id in sorted(cases):
+            for repetition in range(1, 4):
+                identity = {
+                    "candidate_sha": candidate_sha,
+                    "dataset_digest": dataset_digest,
+                    "baseline": baseline,
+                    "model_id": MODEL_ID,
+                    "case_id": case_id,
+                    "repetition": repetition,
+                }
+                specs[baseline].append(
+                    {
+                        "trial_id": "g02-"
+                        + hashlib.sha256(
+                            json.dumps(identity, sort_keys=True, separators=(",", ":")).encode()
+                        ).hexdigest(),
+                        "baseline": baseline,
+                        "case_id": case_id,
+                        "repetition": repetition,
+                        "packet": cases[case_id]["packet"],
+                    }
+                )
+    return specs
+
+
+def run_gate_live_matrix(
+    root: Path,
+    candidate_sha: str,
+    dataset_digest: str,
+    scenario_document: Mapping[str, Any],
+    journal_root: Path,
+) -> dict[str, Any]:
+    cases = _scenario_cases(scenario_document)
+    records = []
+    for baseline, specs in _gate_trial_specs(candidate_sha, dataset_digest, cases).items():
+        records.extend(run_live_trials(journal_root, specs, make_bailian_adapter(root, baseline)))
+    rows = []
+    for record in records:
+        payload = record.get("payload", {})
+        result = payload.get("result", {}) if isinstance(payload, dict) else {}
+        trial_status = record.get("status")
+        if trial_status == "pass" and result.get("status") == "scored_failure":
+            matrix_status = "scored_failure"
+        else:
+            matrix_status = trial_status
+        rows.append(
+            {
+                "trial_id": record.get("trial_id"),
+                "baseline": payload.get("baseline"),
+                "case_id": payload.get("case_id"),
+                "repetition": payload.get("repetition"),
+                "status": matrix_status,
+                "fallback_count": result.get("fallback_count", 0),
+                "input_tokens": payload.get("input_tokens", 0),
+                "output_tokens": payload.get("output_tokens", 0),
+                "cost_cny": payload.get("cost_cny", 0.0),
+                "result": result,
+            }
+        )
+    unresolved = [row for row in rows if row["status"] == "infra_failed"]
+    document = {
+        "candidate_sha": candidate_sha,
+        "dataset_digest": dataset_digest,
+        "model_id": MODEL_ID,
+        "trial_count": len(rows),
+        "trials": rows,
+        "status": "infra_failed" if unresolved else "pass",
+    }
+    if not unresolved:
+        validate_live_matrix(document)
+    return document
+
+
+def aggregate_gate_baselines(
+    scenario_document: Mapping[str, Any],
+    deterministic_document: Mapping[str, Any],
+    live_document: Mapping[str, Any],
+    dataset_digest: str,
+) -> dict[str, Any]:
+    cases = _scenario_cases(scenario_document)
+    live_trials = live_document.get("trials")
+    if not isinstance(live_trials, list) or len(live_trials) != 192:
+        raise GovernanceError("G02 aggregate requires exactly 192 live trials")
+    scored_live = []
+    for trial in live_trials:
+        case_id = str(trial["case_id"])
+        result = trial.get("result", {})
+        if trial.get("status") == "pass" and isinstance(result, dict):
+            score = score_result(result, cases[case_id]["ground_truth"])
+        else:
+            score = {
+                "core_e2e": 0.0,
+                "root_cause_top3": 0.0,
+                "evidence_precision": 0.0,
+                "unsupported_critical_claim": 1.0,
+                "tool_schema_validity": 0.0,
+            }
+        scored_live.append({**trial, "family": cases[case_id]["family"], **score})
+    baselines = {}
+    for baseline in ("naive_react", "no_rag"):
+        rows = [row for row in scored_live if row["baseline"] == baseline]
+        baselines[baseline] = aggregate_live_metrics(rows, dataset_digest)
+    deterministic_rows = deterministic_document.get("rows")
+    if not isinstance(deterministic_rows, list) or len(deterministic_rows) != 32:
+        raise GovernanceError("G02 aggregate requires exactly 32 deterministic rows")
+    baselines["deterministic"] = {
+        "case_count": 32,
+        "core_e2e": sum(float(row.get("core_e2e", 0.0)) for row in deterministic_rows) / 32,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cost_cny": 0.0,
+    }
+    return {
+        "status": "pass",
+        "confidence": 0.95,
+        "resamples": 2000,
+        "cluster_key": "case_id",
+        "case_clusters": 32,
+        "baselines": baselines,
+        "scored_live_trials": scored_live,
+    }
 
 
 def validate_deterministic_matrix(document: Mapping[str, Any]) -> dict[str, Any]:

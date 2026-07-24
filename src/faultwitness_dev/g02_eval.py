@@ -578,57 +578,49 @@ def _owned_phase_handlers(
             "artifact_path": output.relative_to(root).as_posix(),
         }
 
-    def baseline_input(phase_id: str) -> tuple[dict[str, Any], Path]:
-        inputs = binding.get("phase_inputs")
-        relative_outputs = {
-            "baseline-deterministic": (
-                "docs/evals/EVAL-G02-005/artifacts/phases/baseline-deterministic/results.json"
-            ),
-            "baseline-live": (
-                "docs/evals/EVAL-G02-005/artifacts/phases/baseline-live/journal-index.json"
-            ),
-        }
-        source_value = inputs.get(phase_id) if isinstance(inputs, dict) else None
-        source = Path(str(source_value)) if source_value else Path()
-        if not source.is_absolute() or not source.is_file():
-            raise GovernanceError(f"G02 baseline input must be repository-external: {phase_id}")
-        document = load_data(source)
-        if not isinstance(document, dict):
-            raise GovernanceError(f"G02 baseline input must be an object: {phase_id}")
-        return document, root / relative_outputs[phase_id]
+    def scenario_document() -> dict[str, Any]:
+        path = root / "docs/evals/EVAL-G02-005/artifacts/phases/scenario-matrix/summary.json"
+        if not path.is_file():
+            raise GovernanceError("G02 baseline phase lacks scenario-matrix output")
+        document = load_data(path)
+        if not isinstance(document, dict) or document.get("status") != "pass":
+            raise GovernanceError("G02 baseline phase received an incomplete scenario matrix")
+        return document
 
     def deterministic_baseline_phase(
         context: PhaseContext, _journal: TrialJournal
     ) -> Mapping[str, Any]:
-        from faultwitness_dev.g02_baselines import validate_deterministic_matrix
+        from faultwitness_dev.g02_baselines import run_gate_deterministic_matrix
 
-        document, output = baseline_input("baseline-deterministic")
-        if (
-            document.get("candidate_sha") != context.candidate_sha
-            or document.get("environment_fingerprint") != context.environment_fingerprint
-        ):
-            raise GovernanceError("G02 deterministic baseline binding drifted")
-        summary = validate_deterministic_matrix(document)
+        document = run_gate_deterministic_matrix(context.candidate_sha, scenario_document())
+        output = (
+            root / "docs/evals/EVAL-G02-005/artifacts/phases/baseline-deterministic/results.json"
+        )
         _atomic_json(output, document)
         return {
-            **summary,
+            "status": "pass",
+            "case_count": 32,
+            "validation": "V-G02-014",
             "artifact_digest": _canonical_digest(document),
             "artifact_path": output.relative_to(root).as_posix(),
         }
 
-    def live_baseline_phase(context: PhaseContext, _journal: TrialJournal) -> Mapping[str, Any]:
-        from faultwitness_dev.g02_baselines import validate_live_matrix
+    def live_baseline_phase(context: PhaseContext, journal: TrialJournal) -> Mapping[str, Any]:
+        from faultwitness_dev.g02_baselines import run_gate_live_matrix
 
-        document, output = baseline_input("baseline-live")
-        if (
-            document.get("candidate_sha") != context.candidate_sha
-            or document.get("environment_fingerprint") != context.environment_fingerprint
-        ):
-            raise GovernanceError("G02 live baseline binding drifted")
-        summary = validate_live_matrix(document)
+        document = run_gate_live_matrix(
+            root,
+            context.candidate_sha,
+            context.dataset_digest,
+            scenario_document(),
+            journal.root,
+        )
+        output = root / "docs/evals/EVAL-G02-005/artifacts/phases/baseline-live/journal-index.json"
         _atomic_json(output, document)
         return {
-            **summary,
+            "status": document["status"],
+            "trial_count": document["trial_count"],
+            "validation": "V-G02-015",
             "artifact_digest": _canonical_digest(document),
             "artifact_path": output.relative_to(root).as_posix(),
         }
@@ -636,10 +628,17 @@ def _owned_phase_handlers(
     def baseline_aggregate_phase(
         context: PhaseContext, _journal: TrialJournal
     ) -> Mapping[str, Any]:
-        from faultwitness_dev.g02_baselines import aggregate_live_metrics
+        from faultwitness_dev.g02_baselines import aggregate_gate_baselines
 
-        document, _ = baseline_input("baseline-live")
-        metrics = aggregate_live_metrics(document["trials"], context.dataset_digest)
+        deterministic = load_data(
+            root / "docs/evals/EVAL-G02-005/artifacts/phases/baseline-deterministic/results.json"
+        )
+        live = load_data(
+            root / "docs/evals/EVAL-G02-005/artifacts/phases/baseline-live/journal-index.json"
+        )
+        metrics = aggregate_gate_baselines(
+            scenario_document(), deterministic, live, context.dataset_digest
+        )
         output = root / "docs/evals/EVAL-G02-005/artifacts/phases/baseline-aggregate/metrics.json"
         _atomic_json(output, metrics)
         return {

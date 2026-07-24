@@ -21,6 +21,14 @@ same trial ID. The Gate runner accepts exactly 32 deterministic rows and exactly
 then calculates a 95% percentile bootstrap CI with 2,000 resamples clustered by case ID and seeded
 from the dataset digest.
 
+The unified Gate phases execute these matrices directly from the completed candidate-bound
+`scenario-matrix` artifact. They do not import operator-produced deterministic or live result JSON.
+`baseline-deterministic` executes all 32 packets, `baseline-live` derives 192 trial identities from
+the candidate SHA, dataset digest, exact model, baseline, case ID, and repetition, and
+`baseline-aggregate` scores the persisted results against sealed evaluator truth. The journal root
+is repository-external; a rerun reuses passing trial records and continues only `infra_failed`
+records.
+
 Iteration execution is:
 
 ```text
