@@ -1,5 +1,19 @@
 # AI Development Log
 
+## 2026-07-24 — G02 EVAL-G02-005 forward failure handling
+
+Candidate `585deaee6548be0940d184bee3c73dadb4511fdb` passed four fail-fast preflights and
+`lab-deploy-and-bind`. During live V-G02-009 input production, the `baseline-agent` principal was
+denied at Loki and Tempo while same-target canonical-owner controls returned HTTP 200. The frozen
+policy had neither baseline egress to `fw-observability` nor matching ingress there. The run stopped
+before trace, canary, destructive scenario, or model phases.
+
+The failure is recorded as deterministic policy/zero-tolerance failure with `open_evidence: []`.
+I-0020 becomes immutable terminal `failed`; I-0022 corrects the exact policy and forward Eval
+routing, and I-0023 replaces orchestration. This follows the I-0021 lifecycle policy: no completed
+or failed owner Iteration is reopened, and no operator-adjudicated pass or same-candidate rerun is
+created.
+
 本日志永久记录 AI 协作开发中的重要执行事实、失误、负面实验和流程改进。它不替代
 Gate Report、Eval Report 或 Git 历史，也不得用复盘结论回写已关闭 Gate 的证据。
 

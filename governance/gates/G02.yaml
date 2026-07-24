@@ -4,9 +4,9 @@ title: Fault Laboratory and Baselines
 status: in_progress
 plan: docs/gates/G02/PLAN.md
 report: docs/gates/G02/REPORT.md
-iterations: [I-0016, I-0017, I-0018, I-0019, I-0021, I-0020]
+iterations: [I-0016, I-0017, I-0018, I-0019, I-0021, I-0020, I-0022, I-0023]
 pass_criteria:
-  - All planned implementation orchestration and forward corrective Iterations pass with no open evidence.
+  - All required current forward corrective and replacement orchestration Iterations pass with no open evidence while superseded failed attempts remain immutable.
   - Four Scenario DSL families six fault classes and 32 executable seeds are reproducible on one immutable candidate.
   - The 160-row dev validation locked preregistration is exact and no corresponding case or answer is materialized before G07.
   - Ground truth and locked-test storage identity namespace and package boundaries have zero unauthorized access or leakage.

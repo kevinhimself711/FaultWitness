@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0020
 gate: G02
 title: Unified Candidate Orchestration
-status: in_progress
+status: failed
 iteration_type: standard
 scope:
   - Freeze one G02 candidate image config evaluator dataset and environment digest set.
@@ -17,7 +17,7 @@ tests:
   - uv run python -m faultwitness_dev eval-g02 --candidate-sha <full-sha>
   - uv run python -m faultwitness_dev eval-g02-close --candidate-sha <full-sha> --evidence-head-sha <full-sha>
 eval_id: EVAL-G02-005
-commit: null
+commit: "585deaee6548be0940d184bee3c73dadb4511fdb"
 changed_paths:
   - docs/evals/EVAL-G02-005
   - docs/gates/G02
@@ -26,4 +26,6 @@ behavior_change: false
 docs_updated:
   - docs/roadmap/iterations/I-0020.md
   - docs/evals/EVAL-G02-005/PLAN.md
+  - docs/evals/EVAL-G02-005/REPORT.md
+  - docs/evals/EVAL-G02-005/manifest.json
 threshold_changes: []

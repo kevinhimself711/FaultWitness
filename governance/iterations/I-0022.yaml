@@ -1,0 +1,42 @@
+schema_version: "1.0.0"
+id: I-0022
+gate: G02
+title: Live Isolation Reachability and Forward Orchestration Corrective
+status: planned
+iteration_type: corrective
+corrects: [I-0016, I-0018, I-0020]
+scope:
+  - Permit the baseline principal to read only the frozen Prometheus Loki Tempo and LangSmith observability targets while preserving every unauthorized deny.
+  - Parameterize the G02 Gate runner by the active orchestration record and Eval ID so a failed terminal orchestration is never reactivated.
+  - Redirect Gate artifact paths from failed EVAL-G02-005 to replacement EVAL-G02-008 without changing any validation sample or pass criterion.
+non_goals:
+  - Running any Gate L2 matrix destructive scenario or paid model trial.
+  - Changing validation N Ground Truth locked tests quality thresholds performance thresholds model route or failure semantics.
+dependencies: [I-0016, I-0018, I-0020, I-0021]
+tests:
+  - uv run pytest -q tests/g02/test_g02_isolation.py tests/g02/test_g02_eval_protocol.py
+  - uv run python -m faultwitness_dev eval-iteration I-0022 --candidate-sha <full-sha>
+  - uv run python -m faultwitness_dev verify-fast
+  - uv run python -m faultwitness_dev eval-changed
+eval_id: EVAL-G02-007
+commit: null
+changed_paths:
+  - deploy/g02/isolation-policy.yaml
+  - docs/evals/EVAL-G02-007
+  - docs/evals/EVAL-G02-008
+  - docs/gates/G02
+  - docs/roadmap/iterations
+  - docs/runbooks/G02_EVAL_PROTOCOL.md
+  - docs/runbooks/G02_ISOLATION.md
+  - governance/iterations
+  - src/faultwitness_dev/g02_eval.py
+  - src/faultwitness_dev/g02_isolation.py
+  - tests/g02
+  - tests/fixtures/g02
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/I-0022.md
+  - docs/evals/EVAL-G02-007/PLAN.md
+  - docs/runbooks/G02_EVAL_PROTOCOL.md
+  - docs/runbooks/G02_ISOLATION.md
+threshold_changes: []

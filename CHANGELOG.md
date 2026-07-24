@@ -4,6 +4,9 @@
 
 ### Governance maintenance
 
+- Preserve terminal EVAL-G02-005 after V-G02-009 proved two deterministic baseline observability
+  denies; plan forward corrective I-0022 and replacement orchestration I-0023 without reopening
+  I-0018 or I-0020, changing validation N, or starting any destructive/model phase.
 - Accept AMD-0004: prohibit preset wall-clock kill timers for normally progressing G02 and future
   Iteration/Gate execution without changing any Eval or performance criterion.
 - Accept AMD-0003: remove G02's three-attempt/45-minute infrastructure compatibility stop while

@@ -16,8 +16,10 @@ preregistration, three baselines, deterministic scoring, and candidate-bound evi
 not implement the read-only Agent vertical slice.
 
 The original minimum sufficient execution plan was five Iterations. The forward I-0021 governance
-corrective was added after the post-I-0019 process defect and is required before I-0020. Estimates
-include Iteration Eval and are observability data, never kill timeouts.
+corrective was added after the post-I-0019 process defect. EVAL-G02-005 then proved a deterministic
+V-G02-009 policy failure, so terminal I-0020 is followed by corrective I-0022 and replacement
+orchestration I-0023. Estimates include Iteration Eval and are observability data, never kill
+timeouts.
 
 | Work | Expected duration |
 | --- | ---: |
@@ -27,9 +29,11 @@ include Iteration Eval and are observability data, never kill timeouts.
 | I-0019 | 4h30 |
 | I-0021 forward governance corrective | 0h45 |
 | I-0020, excluding Gate Eval | 0h30 |
-| Iteration total including I-0021 | **15h45** |
+| I-0022 live-isolation and orchestration corrective | 1h15 |
+| I-0023 replacement orchestration, excluding Gate Eval | 0h30 |
+| Iteration total including forward corrections | **17h30** |
 | Gate Eval | **2h33** |
-| Total | **18h18** |
+| Total | **20h03** |
 
 The normal estimates above are planning observability, not execution stop conditions. There is no
 fixed retry-count or contingency-duration ceiling: external waiting and every attributable retry
@@ -300,6 +304,8 @@ to satisfy these future Agent floors.
 | I-0019 Baselines and Scoring | Three baselines, packet, scorer, CI, usage/cost, live journal | I-0017, I-0018 | 4h30 | Four non-seed live trials score reproducibly and resume only the interrupted trial. | None; Gate work is L3 |
 | I-0021 Lifecycle Monotonicity Governance | Prevent terminal Iteration reactivation and freeze Gate failure classification | I-0016–I-0019 | 0h45 | `verify-fast` rejects every completed/failed-to-active transition while accepting the two legal forward transitions. | No new L2 |
 | I-0020 Unified Candidate Orchestration | Freeze one candidate and orchestrate existing runners only | I-0016–I-0019, I-0021 | 0h30 excluding Gate Eval | Every phase completes without adding source, fixture, product behavior, or test framework. | No new L2 |
+| I-0022 Live Isolation Reachability and Forward Orchestration Corrective | Exact baseline observability policy and active-Iteration Eval routing | I-0016, I-0018, terminal I-0020, I-0021 | 1h15 | Five deterministic cases restore only the frozen allowed paths and make terminal EVAL-G02-005 impossible to select for a replacement run. | No new L2; repairs V-G02-009 execution path |
+| I-0023 Replacement Unified Candidate Orchestration | Freeze the corrected candidate and run the same fourteen phases in EVAL-G02-008 | I-0016–I-0019, I-0021, I-0022 | 0h30 excluding Gate Eval | The replacement candidate passes without orchestration-time implementation or evidence overwrite. | No new L2 |
 
 Every Iteration closes with `open_evidence: []`. L2 work is recorded as `owned_l2_ready`, not as
 open Iteration evidence: its owner must already have implemented and unit-tested the runner,
@@ -344,8 +350,8 @@ view is frozen below.
 | ID | Validation and excluded failure | Layer and reason | Iter N | Gate N | 3–5 audit | Owner | Runner | Negative fixture | Artifact paths |
 | --- | --- | --- | ---: | ---: | --- | --- | --- | --- | --- |
 | V-G02-001 | Phase/DAG/resume; excludes repeated pass, lost trial, stale cache | L1; deterministic state fixtures | 5 | 0 | Reduced to five transitions | I-0016 | `g02.phase_contract` | `phase_stale_cache.json` | `EVAL-G02-001/artifacts/phase-contract.json` |
-| V-G02-002 | Double SHA/binding; excludes false candidate and stale inheritance | L2; unified candidate only | 0 | 1 | One-time bootstrap | I-0016 | `g02.candidate_binding` | `candidate_non_evidence_descendant.json` | `EVAL-G02-005/.../preflight-candidate-binding/summary.json` |
-| V-G02-003 | Manifest debt; excludes fail-late remote work | L2; full manifest set exists only at Gate | 0 | 13 | All 9 G01 + 4 G02 manifests required | I-0016 | `g02.manifest_debt` | `manifest_open_evidence.json` | `EVAL-G02-005/.../preflight-manifests/manifest-debt.json` |
+| V-G02-002 | Double SHA/binding; excludes false candidate and stale inheritance | L2; unified candidate only | 0 | 1 | One-time bootstrap | I-0016 | `g02.candidate_binding` | `candidate_non_evidence_descendant.json` | `EVAL-G02-008/.../preflight-candidate-binding/summary.json` |
+| V-G02-003 | Manifest debt; excludes fail-late remote work | L2; full manifest set exists only at Gate | 0 | 13 | All 9 G01 + 4 G02 manifests required | I-0016 | `g02.manifest_debt` | `manifest_open_evidence.json` | `EVAL-G02-008/.../preflight-manifests/manifest-debt.json` |
 | V-G02-004 | DSL/seed registry; excludes count and allocation drift | L1; closed schema/enumeration | 32 | 0 | All seeds are deliverables | I-0017 | `g02.dsl_registry` | `scenario_unknown_action.yaml` | `EVAL-G02-002/artifacts/seed-registry.json` |
 | V-G02-005 | Six adapters/oracles; excludes missing state semantics | L1; category-exhaustive contracts | 6 | 0 | All six classes required | I-0017 | `g02.fault_oracle_contract` | `oracle_false_green.yaml` | `EVAL-G02-002/artifacts/fault-oracle-contract.json` |
 | V-G02-006 | Live inject/detect/recover; excludes false green and restore drift | L3; family smoke then all seeds | 4 | 32 | Three would omit a family | I-0017 | `g02.scenario_matrix` | `fault_restore_noop.yaml` | Iteration smoke and Gate scenario summary |
@@ -448,6 +454,29 @@ runtime artifact. It freezes and machine-checks these rules:
   corrective plus a new orchestration Iteration;
 - evidence-only synchronization cannot rewrite producing revisions, metrics, thresholds, or
   runtime identity.
+
+### 14.2 EVAL-G02-005 failure and replacement orchestration
+
+EVAL-G02-005 passed four preflight phases and `lab-deploy-and-bind`, then stopped while producing
+the V-G02-009 live matrix. Candidate-bound probes showed `baseline-agent` denied at the Loki and
+Tempo metrics endpoints while same-target canonical-owner controls passed. The root cause is the
+frozen policy: baseline egress names only `fw-sut`, and `fw-observability` has no corresponding
+baseline ingress. This is a deterministic policy/zero-tolerance failure, not resumable transport
+loss.
+
+The forward decision is complete:
+
+- I-0020 is terminal `failed`; EVAL-G02-005 and its negative evidence are immutable.
+- I-0022 corrects only the exact observability reachability and active-Iteration Eval routing
+  defects. It runs five deterministic local cases and no Gate L2 phase or model call.
+- I-0023 is the replacement orchestration and uses EVAL-G02-008. A future failure creates another
+  higher-numbered corrective/replacement pair; no terminal record reopens.
+- The machine validation registry redirects Gate artifact locations from EVAL-G02-005 to
+  EVAL-G02-008. V-G02-003 remains N=13 (nine G01 plus EVAL-G02-001 through EVAL-G02-004); failed
+  EVAL-G02-005 and governance/corrective EVAL-G02-006/007 are referenced separately and do not
+  inflate that frozen sample.
+- No validation N, Ground Truth, locked test, quality/performance threshold, health-oracle window,
+  model route, token/cost ceiling, destructive-once rule, or failure semantic changes.
 
 ## 15. Gate pass criteria
 

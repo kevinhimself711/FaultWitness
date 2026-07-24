@@ -1,0 +1,28 @@
+schema_version: "1.0.0"
+id: I-0023
+gate: G02
+title: Replacement Unified Candidate Orchestration
+status: planned
+iteration_type: standard
+scope:
+  - Freeze the post-I-0022 candidate and execute the same fourteen Gate phases under EVAL-G02-008.
+  - Reconcile immutable evidence and produce Gate readiness without closing G02.
+non_goals:
+  - Adding product behavior Eval frameworks runners negative fixtures test semantics thresholds or samples.
+  - Reactivating I-0020 or overwriting its failed evidence.
+dependencies: [I-0016, I-0017, I-0018, I-0019, I-0021, I-0022]
+tests:
+  - uv run python -m faultwitness_dev verify-fast
+  - uv run python -m faultwitness_dev eval-g02 --candidate-sha <full-sha>
+  - uv run python -m faultwitness_dev eval-g02-close --candidate-sha <full-sha> --evidence-head-sha <full-sha>
+eval_id: EVAL-G02-008
+commit: null
+changed_paths:
+  - docs/evals/EVAL-G02-008
+  - docs/gates/G02
+  - governance/iterations/I-0023.yaml
+behavior_change: false
+docs_updated:
+  - docs/roadmap/iterations/I-0023.md
+  - docs/evals/EVAL-G02-008/PLAN.md
+threshold_changes: []
