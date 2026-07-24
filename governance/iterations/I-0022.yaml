@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0022
 gate: G02
 title: Live Isolation Reachability and Forward Orchestration Corrective
-status: planned
+status: in_progress
 iteration_type: corrective
 corrects: [I-0016, I-0018, I-0020]
 scope:

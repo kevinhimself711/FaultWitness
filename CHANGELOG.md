@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Activate I-0022 as the sole forward corrective; I-0020 stays terminal `failed` and I-0023 stays
+  planned as the replacement orchestration.
 - Preserve terminal EVAL-G02-005 after V-G02-009 proved two deterministic baseline observability
   denies; plan forward corrective I-0022 and replacement orchestration I-0023 without reopening
   I-0018 or I-0020, changing validation N, or starting any destructive/model phase.
