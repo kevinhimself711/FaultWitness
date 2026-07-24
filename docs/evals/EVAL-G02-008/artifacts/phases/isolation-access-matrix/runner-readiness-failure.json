@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0.0",
+  "candidate_sha": "7d6648850108129c81fe98260aff8342683b5622",
+  "environment_fingerprint": "e92ddf527f22711fd4477277dc4dc6ec09ce3c6078a17744f4b80a7ef0aa3d8f",
+  "phase_id": "isolation-access-matrix",
+  "status": "blocked",
+  "classification": "deterministic_runner_readiness_failure",
+  "root_cause": "The three I-0018 Gate handlers validate operator-precomputed JSON but no candidate-bound runner provisions the frozen identities/IAM targets or collects the 60-cell, six-stage, and 22-surface live documents.",
+  "missing_capabilities": [
+    "candidate-bound deployment of deploy/g02/isolation-policy.yaml",
+    "credential and IAM provisioning for the four frozen live probe principals",
+    "executable 60-cell schema, object-prefix, and observability collector",
+    "executable correlated six-stage span collector",
+    "executable 22-surface Secret/PII canary injector and collector"
+  ],
+  "existing_interfaces": [
+    "g02.access_matrix validates phase_inputs/isolation-access-matrix",
+    "g02.stage_matrix validates phase_inputs/trace-six-stage-matrix",
+    "g02.canary_matrix validates phase_inputs/all-surface-canary"
+  ],
+  "missing_phase_inputs": [
+    "D:/FaultWitness-private/G02/I-0023/phase-inputs/isolation-access-matrix.json",
+    "D:/FaultWitness-private/G02/I-0023/phase-inputs/trace-six-stage-matrix.json",
+    "D:/FaultWitness-private/G02/I-0023/phase-inputs/all-surface-canary.json"
+  ],
+  "live_inventory": {
+    "faultwitness_eval_bucket_present": false,
+    "principal_credential_secret_count": 0,
+    "lab_ready_deployments": 24,
+    "corrected_observability_cells": {
+      "loki_baseline": "pass_after_one_retained_infra_failed_attempt",
+      "loki_canonical_owner": "pass",
+      "tempo_baseline": "pass",
+      "tempo_canonical_owner": "pass"
+    }
+  },
+  "private_evidence_digests": {
+    "isolation_inventory": "806696e584acc33b1be83cbb308c4ace59cee23bfa64807a44436a46f357b0c1",
+    "minio_inventory": "fc19486780ad87245ee4ea55c925db8b172578ad551df360389627bf961cef15",
+    "corrected_cells_attempt_1": "f86e94bb5ab1641416a1ccf73592737cc184c3e20e3462893718c0b0c4ea17f6",
+    "loki_resume_attempt": "e0b56ccf05c9affae958270100327ecf65ec4a8d0b16387f7711db2b53d5f377"
+  },
+  "downstream_execution": {
+    "complete_access_cells": 0,
+    "trace_stage_cells": 0,
+    "canary_surface_cells": 0,
+    "destructive_scenarios": 0,
+    "model_calls": 0
+  },
+  "owning_domain": "I-0018",
+  "forward_correction_required": true,
+  "open_evidence": []
+}
