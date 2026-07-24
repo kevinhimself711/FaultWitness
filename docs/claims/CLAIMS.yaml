@@ -105,3 +105,12 @@ claims:
     limitations:
       - "I-0016 proves the local deterministic protocol and owner readiness only; unified-candidate L2 execution remains reserved for EVAL-G02-005."
       - "No fault scenario, deployment, external service, baseline, or live model execution is claimed."
+  - id: CLAIM-EVAL-002
+    statement: "G02 has a candidate-bound fault lab with 32 executable seed specifications, six exact-restoring adapters, and four live Iteration smoke scenarios."
+    status: partially_verified
+    requirements: [REQ-EVAL-001, REQ-EVAL-002, REQ-EVAL-003]
+    evidence:
+      - EVAL-G02-002
+    limitations:
+      - "I-0017 proves Iteration N=4 live smoke; unified-candidate Gate N=32 remains reserved for EVAL-G02-005."
+      - "No baseline, paid model, locked-test access matrix, or 160-case materialization is claimed."

@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0018
 gate: G02
 title: Sealed Registry and Isolation Evidence
-status: planned
+status: in_progress
 scope:
   - Implement G02 identities namespace policies MinIO prefixes and sealed build boundaries.
   - Create only the 160-row preregistration and prove that no core-case payload is materialized.

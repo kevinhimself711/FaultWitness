@@ -26,6 +26,9 @@
 
 ### Tooling
 
+- Complete I-0017 on immutable implementation candidate `ca9de48`: pass all 32 seed
+  specifications, six adapter/oracle contracts, and four candidate-bound live family smokes with
+  exact restoration, no core-case materialization, no model calls, and no open evidence.
 - Implement the I-0017 digest-pinned K3s lab bootstrap, deterministic 32-seed Scenario DSL,
   six allowlisted flag adapters, ternary fault/recovery oracles, exact restoration, and registered
   false-green, restore-noop, unknown-action, and unpinned-image negative paths.
