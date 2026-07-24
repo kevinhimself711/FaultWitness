@@ -121,6 +121,8 @@
 
 ### Planning
 
+- Plan forward corrective I-0021 to make completed/failed Iteration records machine-immutable,
+  remove owner-reopen semantics, and freeze Gate preflight/failure classification before I-0020.
 - Activate I-0017 as the sole G02 Iteration authorized for the pinned fault lab, Scenario DSL,
   32-seed catalogue, oracle, exact restoration, and clean-clone runner scope.
 - Activate I-0007 as the sole G01 Iteration authorized for secure bootstrap and sanitized read-only capability evidence.

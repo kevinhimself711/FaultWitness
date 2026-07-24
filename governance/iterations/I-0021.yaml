@@ -1,0 +1,43 @@
+schema_version: "1.0.0"
+id: I-0021
+gate: G02
+title: Lifecycle Monotonicity Governance
+status: planned
+scope:
+  - Add a verify-fast guard that rejects terminal Iteration reactivation in the worktree and committed history after the policy epoch.
+  - Freeze candidate-readiness preflight and Gate failure classification without changing any Eval metric or runtime subject.
+  - Add deterministic negative tests and an explicit forward corrective ownership link.
+non_goals:
+  - Changing product behavior deployment runtime artifacts Gate phases or model execution.
+  - Changing validation N locked tests Ground Truth quality thresholds or performance thresholds.
+dependencies: [I-0016, I-0017, I-0018, I-0019]
+tests:
+  - uv run pytest -q tests/governance/test_governance.py
+  - uv run python -m faultwitness_dev verify-fast
+  - uv run python -m faultwitness_dev eval-changed
+eval_id: EVAL-G02-006
+commit: null
+changed_paths:
+  - AGENTS.md
+  - CHANGELOG.md
+  - PROJECT_STATE.yaml
+  - README.md
+  - docs/adr/ADR-0009.md
+  - docs/evals/EVAL-G02-006
+  - docs/gates/G02/PLAN.md
+  - docs/governance
+  - docs/roadmap
+  - docs/runbooks/G02_EVAL_PROTOCOL.md
+  - governance/gates/G02.yaml
+  - governance/iterations
+  - schemas/governance/iteration.schema.json
+  - src/faultwitness_dev/checks.py
+  - tests/governance/test_governance.py
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/I-0021.md
+  - docs/evals/EVAL-G02-006/PLAN.md
+  - docs/evals/EVAL-G02-006/REPORT.md
+  - docs/evals/EVAL-G02-006/manifest.json
+  - docs/governance/ITERATION_LIFECYCLE.md
+threshold_changes: []

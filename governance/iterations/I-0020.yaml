@@ -10,7 +10,7 @@ scope:
 non_goals:
   - Adding product behavior Eval frameworks runners negative fixtures or test semantics.
   - Repeating passed destructive or live phases for the same cache key.
-dependencies: [I-0016, I-0017, I-0018, I-0019]
+dependencies: [I-0016, I-0017, I-0018, I-0019, I-0021]
 tests:
   - make verify-fast
   - uv run python -m faultwitness_dev eval-g02 --candidate-sha <full-sha>

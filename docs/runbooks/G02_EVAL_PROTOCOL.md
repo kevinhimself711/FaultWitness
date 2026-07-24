@@ -59,6 +59,22 @@ attempt/execution count、UTC 时间与 cache key。
 发生传输故障时保留已经通过的 trial，只续跑失败 trial。不得删除 journal 以强制重跑；若
 cache key 改变，保留旧 evidence 并建立新候选记录。
 
+## Revision-identity guardrail (2026-07-24)
+
+- `--candidate-sha` is the explicit frozen business candidate. The command must not replace it with
+  current HEAD merely because an evidence or governance commit is newer.
+- A Gate runner may execute at the candidate or a validated evidence-only descendant. For the
+  descendant case it proves ancestry, the full changed-path allowlist, and every bound subject
+  digest; HEAD mismatch alone is neither deployment drift nor a reason to rerun a phase.
+- `candidate-binding.json` records the execution checkpoint that already existed before the runner
+  produced it. It is not required to contain the SHA of the later commit that stores the file. That
+  commit is verified through ancestry/tag, so the protocol has no SHA self-reference.
+- A runner defect discovered after an Iteration closed creates a new forward corrective Iteration.
+  Do not reactivate a completed Iteration or move `PROJECT_STATE.yaml` backward.
+- These rules change only provenance and orchestration. All frozen samples, thresholds, locked-test
+  and Ground Truth isolation, health windows, token/cost ceilings, and failure semantics remain
+  unchanged.
+
 ## Fail-closed diagnostics
 
 - `phase handler is not implemented`：返回 owning Iteration，禁止在 I-0020 补写。

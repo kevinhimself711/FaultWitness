@@ -15,7 +15,9 @@ Scenario DSL families, six fault classes, 32 executable seed scenarios, a 160-ro
 preregistration, three baselines, deterministic scoring, and candidate-bound evidence. G02 does
 not implement the read-only Agent vertical slice.
 
-The minimum sufficient execution plan is five Iterations. Their estimates include Iteration Eval.
+The original minimum sufficient execution plan was five Iterations. The forward I-0021 governance
+corrective was added after the post-I-0019 process defect and is required before I-0020. Estimates
+include Iteration Eval and are observability data, never kill timeouts.
 
 | Work | Expected duration |
 | --- | ---: |
@@ -23,10 +25,11 @@ The minimum sufficient execution plan is five Iterations. Their estimates includ
 | I-0017 | 4h00 |
 | I-0018 | 3h30 |
 | I-0019 | 4h30 |
+| I-0021 forward governance corrective | 0h45 |
 | I-0020, excluding Gate Eval | 0h30 |
-| Iteration total | **15h00** |
+| Iteration total including I-0021 | **15h45** |
 | Gate Eval | **2h33** |
-| Total | **17h33** |
+| Total | **18h18** |
 
 If every live attempt consumes its one complete retry, the Gate Eval contingency is 3h18 and
 the total contingency is 18h18. These are planning estimates, not execution stop conditions.
@@ -294,7 +297,8 @@ to satisfy these future Agent floors.
 | I-0017 Fault Lab and Scenario DSL | Pinned SUT, four families, six adapters, 32 seeds, Problem Brief, oracle | I-0016 phase interfaces | 4h00 | Four non-seed family smokes complete HEALTHY→FAULT_ACTIVE→HEALTHY with no flag drift. | V-G02-017 |
 | I-0018 Sealed Registry and Isolation Evidence | Identities, namespaces, prefixes, 160-row registry, three G01 supplemental runners | I-0016, I-0017 contracts | 3h30 | Agent/developer cannot read GT/locked while evaluator can read them but cannot mutate SUT. | V-G02-010 |
 | I-0019 Baselines and Scoring | Three baselines, packet, scorer, CI, usage/cost, live journal | I-0017, I-0018 | 4h30 | Four non-seed live trials score reproducibly and resume only the interrupted trial. | None; Gate work is L3 |
-| I-0020 Unified Candidate Orchestration | Freeze one candidate and orchestrate existing runners only | I-0016–I-0019 | 0h30 excluding Gate Eval | Every phase completes without adding source, fixture, product behavior, or test framework. | No new L2 |
+| I-0021 Lifecycle Monotonicity Governance | Prevent terminal Iteration reactivation and freeze Gate failure classification | I-0016–I-0019 | 0h45 | `verify-fast` rejects every completed/failed-to-active transition while accepting the two legal forward transitions. | No new L2 |
+| I-0020 Unified Candidate Orchestration | Freeze one candidate and orchestrate existing runners only | I-0016–I-0019, I-0021 | 0h30 excluding Gate Eval | Every phase completes without adding source, fixture, product behavior, or test framework. | No new L2 |
 
 Every Iteration closes with `open_evidence: []`. L2 work is recorded as `owned_l2_ready`, not as
 open Iteration evidence: its owner must already have implemented and unit-tested the runner,
@@ -369,7 +373,7 @@ set, configuration, evaluator, dataset, and sanitized environment fingerprint.
 | --- | --- | ---: | --- | --- | --- |
 | `preflight-manifests` | None | 2m | No | Yes | Invalid schema, timestamps, set, or open evidence fails before remote work. |
 | `preflight-candidate-binding` | manifests | 3m | No | Yes | Candidate, evidence head, or digest mismatch fails. |
-| `preflight-static-inheritance` | binding | 8m | No | Yes | Compare L1 subject/image digests only; never rerun L1. Drift reopens its owner. |
+| `preflight-static-inheritance` | binding | 8m | No | Yes | Compare L1 subject/image digests only; never rerun L1. Drift creates a new forward corrective Iteration for the owning domain. |
 | `preflight-upstream-g01` | static | 2m | No | Yes | Any debt in nine G01 manifests blocks remote phases. |
 | `lab-deploy-and-bind` | G01 preflight | 12m | No | Yes | Clean-clone and pinned-image failure blocks; infrastructure loss is resumable. |
 | `isolation-access-matrix` | lab deploy | 10m | No | Yes | All 60 allow/deny cells must match; any unauthorized success fails. |
@@ -380,7 +384,7 @@ set, configuration, evaluator, dataset, and sanitized environment fingerprint.
 | `baseline-live` | scenario, deterministic | 45m | No | Per trial | Persist 192 trials atomically; resume only infrastructure failures; fallback fails. |
 | `baseline-aggregate` | both baselines | 3m | No | Yes | Produce estimates, CI, family, latency, token, cost, and failure reports. |
 | `candidate-reconciliation` | aggregate | 5m | No | Yes | Pending, infrastructure failure, open evidence, drift, and repeated destructive work must be zero. |
-| `close-readiness` | reconciliation | 3m | No | Yes | New runner, fixture, source, or framework changes reject closure and reopen the owner. |
+| `close-readiness` | reconciliation | 3m | No | Yes | New runner, fixture, source, or framework changes reject closure and require a new forward corrective Iteration; completed records stay closed. |
 
 The serial phase total is 153 minutes, or 2h33.
 All values in the Time column and this total are estimates for planning and wall-time reconciliation,
@@ -410,12 +414,39 @@ environment fingerprint, commands, integrations, and `open_evidence`.
   deployment, runtime images, dataset, and configuration.
 - `evidence_head_sha` is the candidate or an allowlisted evidence/status-only descendant.
 - Evidence-only changes with identical artifact digests do not redeploy.
-- A semantic or runtime change reopens its owner. Unaffected phase evidence may be inherited only
-  when its declared dependency closure and all digests remain identical; the original producing
-  revision remains recorded.
+- Current HEAD never replaces the frozen business candidate implicitly. A validated evidence-only
+  descendant proves ancestry, changed-path allowlisting, and subject-digest equality; HEAD mismatch
+  alone does not redeploy or rerun the candidate.
+- A tracked binding records the already-existing execution checkpoint and is never required to name
+  the commit that contains itself. Evidence and closure commits are identified by ancestry/tag and
+  do not rewrite the producing revision.
+- A semantic or runtime change creates a new forward corrective Iteration; a completed Iteration is
+  not reopened. Unaffected phase evidence may be inherited only when its declared dependency closure
+  and all digests remain identical; the original producing revision remains recorded.
+- These provenance rules do not modify N, locked tests, Ground Truth, quality/performance thresholds,
+  health-oracle windows, token/cost ceilings, or phase failure semantics.
 
 The accepted details are in ADR-0009 and ADR-0013. I-0016 implements the mechanism; this planning
 commit does not.
+
+### 14.1 Forward corrective amendment
+
+The post-I-0019 readiness audit exposed a governance defect rather than a new G02 product
+requirement: completed owner Iterations were reactivated when a later candidate-readiness check
+failed. I-0021 is the minimum sufficient forward correction and cannot be deferred beyond I-0020,
+because Gate orchestration would otherwise retain the same state-regression path.
+
+I-0021 adds no Gate validation item, product behavior, deployment, model call, sample, threshold, or
+runtime artifact. It freezes and machine-checks these rules:
+
+- owner attribution never authorizes `completed` or `failed` Iteration reactivation;
+- terminal records are immutable and later defects use a higher-numbered corrective Iteration;
+- candidate readiness is the deterministic front of Gate Eval, not an open-ended extra audit;
+- transient infrastructure failure resumes the same phase/trial, while implementation, policy,
+  zero-tolerance, or metric failure terminates the orchestration Iteration and requires a forward
+  corrective plus a new orchestration Iteration;
+- evidence-only synchronization cannot rewrite producing revisions, metrics, thresholds, or
+  runtime identity.
 
 ## 15. Gate pass criteria
 
