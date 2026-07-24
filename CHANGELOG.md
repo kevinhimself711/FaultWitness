@@ -128,6 +128,8 @@
 
 ### Planning
 
+- Activate I-0020 as the sole unified-candidate orchestration Iteration after I-0021 closed; no new
+  runner, fixture, product behavior, test framework, threshold, or Gate phase is authorized.
 - Activate I-0021 as the sole forward governance corrective before I-0020; it may change only
   lifecycle governance, deterministic checks, tests, and evidence.
 - Plan forward corrective I-0021 to make completed/failed Iteration records machine-immutable,

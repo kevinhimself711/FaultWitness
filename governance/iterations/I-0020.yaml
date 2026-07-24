@@ -2,7 +2,8 @@ schema_version: "1.0.0"
 id: I-0020
 gate: G02
 title: Unified Candidate Orchestration
-status: planned
+status: in_progress
+iteration_type: standard
 scope:
   - Freeze one G02 candidate image config evaluator dataset and environment digest set.
   - Orchestrate only the preimplemented Gate phases and reconcile immutable evidence.
