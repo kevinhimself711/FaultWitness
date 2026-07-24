@@ -1,0 +1,40 @@
+{
+  "candidate_sha": "09693ceb52a883113c82ac1a7be489e826bad04f",
+  "cases": [
+    {
+      "case_id": "real-child-byte-exact",
+      "expected_hex": "736574202d65750a7072696e7466206f6b0a",
+      "received_hex": "736574202d65750a7072696e7466206f6b0a",
+      "status": "pass"
+    },
+    {
+      "case_id": "bounded-separated-binary-channels",
+      "status": "pass"
+    },
+    {
+      "case_id": "execute-failure-cleanup",
+      "status": "pass"
+    },
+    {
+      "case_id": "cleanup-and-path-fail-closed",
+      "status": "pass"
+    }
+  ],
+  "destructive_scenarios": 0,
+  "end_time": "2026-07-24T22:47:13.978181+00:00",
+  "external_service_calls": 0,
+  "frozen_validation_n": {
+    "V-G02-009": 4,
+    "V-G02-010": 0,
+    "V-G02-011": 4
+  },
+  "gate_l2_execution": 0,
+  "model_calls": 0,
+  "open_evidence": [],
+  "remote_execution": 0,
+  "schema_version": "1.0.0",
+  "start_time": "2026-07-24T22:47:13.939438+00:00",
+  "status": "pass",
+  "transport_case_count": 4,
+  "validation": "I-0028-byte-exact-remote-process-transport"
+}

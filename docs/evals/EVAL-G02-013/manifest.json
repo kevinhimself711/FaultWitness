@@ -1,20 +1,62 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "eval_id": "EVAL-G02-013",
   "gate": "G02",
   "iteration": "I-0028",
-  "evaluated_revision": "not-run",
-  "status": "pending",
-  "environments": ["planned-windows-local-deterministic"],
-  "commands": [
-    "uv run python -m faultwitness_dev eval-iteration I-0028 --candidate-sha <full-sha>"
+  "candidate_sha": "09693ceb52a883113c82ac1a7be489e826bad04f",
+  "evaluated_revision": "09693ceb52a883113c82ac1a7be489e826bad04f",
+  "evidence_head_sha": "09693ceb52a883113c82ac1a7be489e826bad04f",
+  "status": "pass",
+  "subject_digests": {
+    "docs/evals/EVAL-G02-013/PLAN.md": "40f00666ec40bc1433664d471478f0c59f6e5da799bbd80d0cf5535342dc5a36",
+    "governance/iterations/I-0028.yaml": "1fef949da93c6f7057ca73d94c66a0abb05397b2011b1aec01d6fa1f600b9fb6",
+    "src/faultwitness_dev/evals.py": "cebbd2dfcc6924a3f7ade29b66e55da313808f7857f7156a9bccb3091a700842",
+    "src/faultwitness_dev/infra.py": "2188405a27e3462b9a843ff977122111e1b66226cb253c76a6858e69ef5001df",
+    "tests/g02/test_g02_eval_protocol.py": "b78c709434e30ff7150948d26c7b5ba7d7f8301f9778114888cbed05f4c34c03",
+    "tests/g02/test_g02_gate_collectors.py": "6bd81fc104a989f54deb8ea153ed1279daf0e2728e74f553c8cb0ca4e5ee2cda",
+    "tests/infra/test_infra.py": "79c23149f04d91725270580c3f68bce869e984f502099a3281f72205fa87c366"
+  },
+  "environment_fingerprint": "a635c34ba21b6c46d480f1c263c10a4c7754e269ebbba29619253a3fed5e9950",
+  "phases": [
+    {
+      "phase_id": "byte-exact-remote-transport",
+      "status": "pass",
+      "start_time": "2026-07-24T22:47:13.939438+00:00",
+      "end_time": "2026-07-24T22:47:13.978181+00:00",
+      "cache_key": "7cc7c5ef6a0ab7c3940525714a237ab7a4c0371d5dd72481cc076aff9b77cd4f",
+      "artifact_digest": "d7a725118f3220e2d5e543213d87b3904e100eaa9ad59f6ea649a4a6e0fdc80d",
+      "artifact_path": "docs/evals/EVAL-G02-013/artifacts/byte-exact-remote-transport.json",
+      "private_artifact_uri": null,
+      "execution_count": 1,
+      "inherited_from_manifest": null
+    }
   ],
-  "artifacts": ["docs/evals/EVAL-G02-013/PLAN.md"],
+  "environments": ["windows-11-cpython-3.12.7-local-deterministic"],
+  "commands": [
+    "uv run pytest -q tests/infra/test_infra.py tests/g02/test_g02_gate_collectors.py tests/g02/test_g02_eval_protocol.py",
+    "uv run python -m faultwitness_dev eval-iteration I-0028 --candidate-sha 09693ceb52a883113c82ac1a7be489e826bad04f",
+    "uv run python -m faultwitness_dev verify-fast",
+    "uv run python -m faultwitness_dev eval-changed"
+  ],
+  "artifacts": [
+    "docs/evals/EVAL-G02-013/PLAN.md",
+    "docs/evals/EVAL-G02-013/REPORT.md",
+    "docs/evals/EVAL-G02-013/artifacts/byte-exact-remote-transport.json"
+  ],
   "evidence_urls": [],
   "integrations": {
-    "private_server": {"status": "not_applicable", "reason": "I-0028 is a local deterministic byte-transport corrective."},
-    "bailian": {"status": "not_applicable", "reason": "I-0028 performs no model call."},
-    "langsmith": {"status": "not_applicable", "reason": "I-0028 performs no external-service phase."}
+    "private_server": {
+      "status": "not_applicable",
+      "reason": "I-0028 is a local deterministic byte-transport corrective."
+    },
+    "bailian": {
+      "status": "not_applicable",
+      "reason": "I-0028 performed no model call."
+    },
+    "langsmith": {
+      "status": "not_applicable",
+      "reason": "I-0028 performed no external-service phase."
+    }
   },
   "open_evidence": []
 }
