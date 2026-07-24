@@ -121,6 +121,8 @@
 
 ### Planning
 
+- Activate I-0021 as the sole forward governance corrective before I-0020; it may change only
+  lifecycle governance, deterministic checks, tests, and evidence.
 - Plan forward corrective I-0021 to make completed/failed Iteration records machine-immutable,
   remove owner-reopen semantics, and freeze Gate preflight/failure classification before I-0020.
 - Activate I-0017 as the sole G02 Iteration authorized for the pinned fault lab, Scenario DSL,

@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0021
 gate: G02
 title: Lifecycle Monotonicity Governance
-status: planned
+status: in_progress
 scope:
   - Add a verify-fast guard that rejects terminal Iteration reactivation in the worktree and committed history after the policy epoch.
   - Freeze candidate-readiness preflight and Gate failure classification without changing any Eval metric or runtime subject.
