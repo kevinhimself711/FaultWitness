@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Activate I-0027 as the sole third replacement orchestration after I-0026 closed with bounded
+  transport evidence and no open evidence; I-0027 may only execute the fourteen frozen phases.
 - Close I-0026 on candidate `b50db66` with EVAL-G02-011 passing 4/4 bounded transport cases,
   frozen validation N=4/0/4, zero remote/model execution, and no open evidence.
 - Implement I-0026 bounded privileged remote-script transport: upload script bytes through SSH

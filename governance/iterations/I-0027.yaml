@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0027
 gate: G02
 title: Third Replacement Unified Candidate Orchestration
-status: planned
+status: in_progress
 iteration_type: standard
 scope:
   - Freeze the post-I-0026 candidate and execute the fourteen unchanged Gate phases under EVAL-G02-012.

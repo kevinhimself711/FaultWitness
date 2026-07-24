@@ -1,8 +1,8 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: null
-next_iteration: I-0027
+active_iteration: I-0027
+next_iteration: null
 last_closed_gate: G01
 ---
 
@@ -12,7 +12,7 @@ FaultWitness 是一个面向微服务事故调查、受控修复与持续优化�
 
 当前状态：G00、G01 已关闭；G02 正在执行。I-0020、I-0023 与 I-0025 均已因确定性失败
 终态关闭且负面证据完整；I-0024 与 I-0026 已完成 candidate-bound collector 和 bounded
-remote transport 前向纠错。I-0027 是下一项替代统一候选编排。任何终态记录都不会重开。
+remote transport 前向纠错。I-0027 是当前替代统一候选编排。任何终态记录都不会重开。
 
 ## 权威资产
 
