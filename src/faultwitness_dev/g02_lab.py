@@ -247,7 +247,13 @@ def promql(query):
 cpu_rate = promql(
     'sum(rate(container_cpu_usage_seconds_total{{namespace="fw-sut",pod=~"ad-.*",container="ad"}}[2m]))'
 )
-consumer_lag = promql('max(kafka_consumer_records_lag{{service_name="fraud-detection"}})')
+consumer_record_lag = promql(
+    'max(kafka_consumer_records_lag{{service_name="fraud-detection"}})'
+)
+consumer_poll_lag_seconds = promql(
+    'max(kafka_consumer_last_poll_seconds_ago{{service_name="fraud-detection"}})'
+)
+consumer_lag = max(consumer_record_lag, consumer_poll_lag_seconds)
 
 jaeger = json.loads(kubectl("get", "endpoints", "jaeger-query", "-o", "json"))
 jaeger_ip = jaeger["subsets"][0]["addresses"][0]["ip"]
@@ -287,10 +293,13 @@ print(json.dumps({{
     "journey_status": journey_status,
     "cpu_rate": cpu_rate,
     "consumer_lag": consumer_lag,
+    "consumer_record_lag": consumer_record_lag,
+    "consumer_poll_lag_seconds": consumer_poll_lag_seconds,
     "trace_count": len(traces),
     "error_spans": error_spans,
     "descriptions": descriptions,
     "kafka_log_error": "error" in logs.lower(),
+    "kafka_fault_log": "FeatureFlag 'kafkaQueueProblems' is enabled, sleeping" in logs,
 }}, sort_keys=True))
 PY
 """
@@ -320,7 +329,11 @@ PY
                 **sample,
                 "consumer_lag": sample["consumer_lag"],
                 "baseline_lag": self.baseline_lag,
-                "kafka_error": sample["kafka_log_error"] or sample["error_spans"] > 0,
+                "kafka_error": (
+                    sample["kafka_log_error"]
+                    or sample["kafka_fault_log"]
+                    or sample["error_spans"] > 0
+                ),
             }
         raise GovernanceError("unsupported live fault observer")
 

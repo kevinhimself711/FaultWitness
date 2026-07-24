@@ -49,6 +49,15 @@ Injection writes the private snapshot before mutation and requires complete API 
 accepts only an `injected` operation from the current candidate and requires the restored canonical
 digest to equal the original digest. Observation failure never skips restore.
 
+For `kafkaQueueProblems`, the observer reads both the exported record-lag gauge and the exported
+consumer last-poll age, and uses the greater value as the consumer-lag signal. The pinned SUT can
+prefetch a record before its injected processing delay, so record lag alone may remain zero while
+the consumer is demonstrably behind. Correlation requires the exact Fraud Detection fault log
+`FeatureFlag 'kafkaQueueProblems' is enabled, sleeping` or an error span/log; an unrelated log line
+cannot satisfy the oracle. The value must still exceed its pre-injection baseline in each of the two
+frozen observations. This is signal-source correction only and does not alter N, the 30-second
+spacing, the 90-second oracle window, or any performance or Gate threshold.
+
 ## Failure and compatibility semantics
 
 - Source or image digest drift: blocking candidate failure; do not fetch a floating replacement.

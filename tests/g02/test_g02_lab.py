@@ -12,6 +12,7 @@ from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.g02_lab import (
     ADAPTERS,
     FAMILIES,
+    LiveScenarioObserver,
     MemoryFlagClient,
     OracleState,
     base_flag_document,
@@ -87,6 +88,21 @@ def test_six_fault_adapters_reach_fault_and_exact_recovery() -> None:
 def test_false_green_oracle_fixture_is_not_fault_active() -> None:
     fixture = load_data(ROOT / "tests/fixtures/g02/oracle_false_green.yaml")
     assert fault_state(fixture["fault_class"], fixture["observations"]) is OracleState.HEALTHY
+
+
+def test_kafka_observer_uses_exported_poll_lag_and_exact_fault_log() -> None:
+    observer = LiveScenarioObserver("1" * 40, "kafkaQueueProblems")
+    observer.baseline_lag = 0.0
+    sample = {
+        "descriptions": [],
+        "consumer_lag": 12.0,
+        "kafka_log_error": False,
+        "kafka_fault_log": True,
+        "error_spans": 0,
+    }
+    observation = observer._active_observation(sample)
+    assert observation["consumer_lag"] > observation["baseline_lag"]
+    assert observation["kafka_error"] is True
 
 
 def test_restore_noop_fixture_blocks_and_quarantines() -> None:
