@@ -591,13 +591,27 @@ def evaluate_i0019(root: Path, candidate_sha: str) -> dict[str, Any]:
             result["evidence"] = []
         scored.append(score_result(result, truth))
     (artifact_dir / "scorer-contract.json").write_text(
-        json.dumps({"validation": "V-G02-012", "fixtures": scored, "status": "pass"}, indent=2)
+        json.dumps(
+            {
+                "candidate_sha": candidate_sha,
+                "validation": "V-G02-012",
+                "fixtures": scored,
+                "status": "pass",
+            },
+            indent=2,
+        )
         + "\n",
         encoding="utf-8",
     )
     (artifact_dir / "threshold-registry.json").write_text(
         json.dumps(
-            {"validation": "V-G02-013", "thresholds": QUALITY_FLOORS, "status": "pass"}, indent=2
+            {
+                "candidate_sha": candidate_sha,
+                "validation": "V-G02-013",
+                "thresholds": QUALITY_FLOORS,
+                "status": "pass",
+            },
+            indent=2,
         )
         + "\n",
         encoding="utf-8",
@@ -628,7 +642,13 @@ def evaluate_i0019(root: Path, candidate_sha: str) -> dict[str, Any]:
         )
     (artifact_dir / "deterministic-smoke.json").write_text(
         json.dumps(
-            {"validation": "V-G02-014", "N": 3, "rows": deterministic_rows, "status": "pass"},
+            {
+                "candidate_sha": candidate_sha,
+                "validation": "V-G02-014",
+                "N": 3,
+                "rows": deterministic_rows,
+                "status": "pass",
+            },
             indent=2,
         )
         + "\n",
@@ -641,7 +661,7 @@ def evaluate_i0019(root: Path, candidate_sha: str) -> dict[str, Any]:
         for case_id in ("synthetic-live-a", "synthetic-live-b"):
             trials.append(
                 {
-                    "trial_id": f"i0019-{baseline}-{case_id}",
+                    "trial_id": f"i0019-{candidate_sha}-{baseline}-{case_id}",
                     "baseline": baseline,
                     "packet": {
                         "schema_version": "1.0.0",
@@ -692,14 +712,21 @@ def evaluate_i0019(root: Path, candidate_sha: str) -> dict[str, Any]:
         live_records.extend(current)
     if any(record.get("status") != "pass" for record in live_records):
         raise GovernanceError("EVAL-G02-004 retains infrastructure-failed live trials")
+    total_input = sum(int(record["payload"].get("input_tokens", 0)) for record in live_records)
+    total_output = sum(int(record["payload"].get("output_tokens", 0)) for record in live_records)
+    total_cost = sum(float(record["payload"].get("cost_cny", 0.0)) for record in live_records)
     (artifact_dir / "live-smoke.json").write_text(
         json.dumps(
             {
+                "candidate_sha": candidate_sha,
                 "validation": "V-G02-015",
                 "N": 4,
                 "records": live_records,
                 "fallback_count": 0,
                 "resume_demonstrated": resume_demonstrated,
+                "input_tokens": total_input,
+                "output_tokens": total_output,
+                "cost_cny": total_cost,
                 "status": "pass",
             },
             indent=2,

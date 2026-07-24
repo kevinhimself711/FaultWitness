@@ -100,6 +100,14 @@ def test_deterministic_baseline_and_scorer_are_exact() -> None:
     )
 
 
+def test_model_evidence_alias_is_a_scored_schema_failure() -> None:
+    result = deterministic_baseline(packet())
+    result["evidence_ids"] = result.pop("evidence")
+    score = score_result(result, {"root_cause": "productCatalogFailure"})
+    assert score["status"] == "scored_failure"
+    assert score["failure_class"] == "malformed"
+
+
 def test_quality_registry_is_the_exact_seven_value_floor() -> None:
     assert QUALITY_FLOORS == {
         "core_e2e": {"operator": ">=", "value": "max(0.70,best_baseline+0.10)"},

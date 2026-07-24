@@ -142,8 +142,10 @@ def build_baseline_prompt(baseline: str, packet: Mapping[str, Any]) -> list[dict
             "role": "system",
             "content": (
                 mode + " Never infer or request ground truth or locked-test data. "
-                "Return one JSON object with root_cause, up to three root_cause_candidates, "
-                "evidence IDs, and claims with supported booleans."
+                "Return exactly one JSON object using these exact keys: root_cause (string), "
+                "root_cause_candidates (array of at most three strings), evidence (array of "
+                "observation ID strings), and claims (array of objects with claim and supported). "
+                "Do not rename evidence to evidence_ids and do not add keys."
             ),
         },
         {"role": "user", "content": json.dumps(packet, sort_keys=True)},
@@ -319,14 +321,46 @@ def deterministic_baseline(packet: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def validate_result(result: Mapping[str, Any]) -> None:
+    allowed = {
+        "schema_version",
+        "case_id",
+        "root_cause",
+        "root_cause_candidates",
+        "evidence",
+        "claims",
+        "status",
+        "baseline",
+        "model_id",
+        "fallback_count",
+        "input_tokens",
+        "output_tokens",
+        "latency_ms",
+    }
+    unexpected = sorted(set(result) - allowed)
+    if unexpected:
+        raise GovernanceError("baseline result has unexpected fields: " + ", ".join(unexpected))
     if not isinstance(result.get("case_id"), str) or not result["case_id"]:
         raise GovernanceError("baseline result lacks case_id")
     if not isinstance(result.get("root_cause"), str):
         raise GovernanceError("baseline result lacks root_cause")
     if result.get("status") not in {"ok", "failed"}:
         raise GovernanceError("baseline result has invalid status")
-    if not isinstance(result.get("evidence", []), list):
+    if (
+        not isinstance(result.get("root_cause_candidates"), list)
+        or len(result["root_cause_candidates"]) > 3
+    ):
+        raise GovernanceError("baseline result lacks valid root_cause_candidates")
+    if "evidence" not in result or not isinstance(result["evidence"], list):
         raise GovernanceError("baseline evidence must be a list")
+    if "claims" not in result or not isinstance(result["claims"], list):
+        raise GovernanceError("baseline claims must be a list")
+    for claim in result["claims"]:
+        if (
+            not isinstance(claim, dict)
+            or not isinstance(claim.get("claim"), str)
+            or not isinstance(claim.get("supported"), bool)
+        ):
+            raise GovernanceError("baseline claim does not satisfy the frozen schema")
 
 
 def score_result(result: Mapping[str, Any], ground_truth: Mapping[str, Any]) -> dict[str, Any]:
@@ -431,6 +465,7 @@ def run_live_trials(
         journal.write(
             trial_id, "running", {"baseline": spec.get("baseline"), "case_id": packet["case_id"]}
         )
+        result: dict[str, Any] | None = None
         try:
             result = dict(adapter(packet) if adapter else deterministic_baseline(packet))
             validate_result(result)
@@ -454,6 +489,8 @@ def run_live_trials(
                 {"case_id": packet["case_id"], "reason": str(exc)},
             )
         except GovernanceError as exc:
+            input_tokens = int(result.get("input_tokens", 0)) if result else 0
+            output_tokens = int(result.get("output_tokens", 0)) if result else 0
             record = journal.write(
                 trial_id,
                 "pass",
@@ -463,10 +500,12 @@ def run_live_trials(
                         "status": "scored_failure",
                         "failure_class": "malformed",
                         "reason": str(exc),
+                        "model_id": result.get("model_id") if result else None,
+                        "fallback_count": result.get("fallback_count") if result else 0,
                     },
-                    "input_tokens": 0,
-                    "output_tokens": 0,
-                    "cost_cny": 0.0,
+                    "input_tokens": input_tokens,
+                    "output_tokens": output_tokens,
+                    "cost_cny": token_cost(input_tokens, output_tokens),
                 },
             )
         completed.append(record)
