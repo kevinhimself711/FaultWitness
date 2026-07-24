@@ -26,6 +26,11 @@
 
 ### Tooling
 
+- Activate I-0019 and add the shared observation-packet boundary, exact three-baseline registry,
+  deterministic scorer, frozen seven-value threshold registry, clustered 2,000-resample bootstrap,
+  attributable CNY usage accounting, exact-route Bailian adapter, and atomic trial-local resume.
+- Remove preset orchestration kill time from the G02 paid baseline adapter while retaining the
+  frozen model, N, quality/performance metrics, token/cost ceilings, and one internal transient retry.
 - Complete I-0018 on immutable implementation candidate `bcc6437`: pass the 160-row metadata-only
   preregistry, three sealed package scans, four identity policies, namespace isolation, four writer
   canaries, and owned Gate runner contracts with no model calls or open evidence.

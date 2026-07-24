@@ -95,9 +95,7 @@ class PhaseContext:
 G02_PHASES = (
     PhaseDefinition("preflight-manifests", (), "I-0016"),
     PhaseDefinition("preflight-candidate-binding", ("preflight-manifests",), "I-0016"),
-    PhaseDefinition(
-        "preflight-static-inheritance", ("preflight-candidate-binding",), "I-0016"
-    ),
+    PhaseDefinition("preflight-static-inheritance", ("preflight-candidate-binding",), "I-0016"),
     PhaseDefinition("preflight-upstream-g01", ("preflight-static-inheritance",), "I-0016"),
     PhaseDefinition("lab-deploy-and-bind", ("preflight-upstream-g01",), "I-0017"),
     PhaseDefinition("isolation-access-matrix", ("lab-deploy-and-bind",), "I-0018"),
@@ -109,12 +107,8 @@ G02_PHASES = (
     ),
     PhaseDefinition("scenario-matrix", ("all-surface-canary",), "I-0017", destructive=True),
     PhaseDefinition("baseline-deterministic", ("scenario-matrix",), "I-0019"),
-    PhaseDefinition(
-        "baseline-live", ("scenario-matrix", "baseline-deterministic"), "I-0019"
-    ),
-    PhaseDefinition(
-        "baseline-aggregate", ("baseline-deterministic", "baseline-live"), "I-0019"
-    ),
+    PhaseDefinition("baseline-live", ("scenario-matrix", "baseline-deterministic"), "I-0019"),
+    PhaseDefinition("baseline-aggregate", ("baseline-deterministic", "baseline-live"), "I-0019"),
     PhaseDefinition("candidate-reconciliation", ("baseline-aggregate",), "I-0016"),
     PhaseDefinition("close-readiness", ("candidate-reconciliation",), "I-0016"),
 )
@@ -311,9 +305,10 @@ def validate_candidate_binding_document(document: Mapping[str, Any]) -> None:
         raise GovernanceError("candidate binding lacks subject digests")
     if any(not isinstance(value, str) or len(value) != 64 for value in digests.values()):
         raise GovernanceError("candidate binding contains an invalid subject digest")
-    if not isinstance(document["environment_fingerprint"], str) or len(
-        document["environment_fingerprint"]
-    ) != 64:
+    if (
+        not isinstance(document["environment_fingerprint"], str)
+        or len(document["environment_fingerprint"]) != 64
+    ):
         raise GovernanceError("candidate binding contains an invalid environment fingerprint")
 
 
@@ -501,16 +496,13 @@ def _owned_phase_handlers(
         inputs = binding.get("phase_inputs")
         relative_outputs = {
             "isolation-access-matrix": (
-                "docs/evals/EVAL-G02-005/artifacts/phases/"
-                "isolation-access-matrix/matrix.json"
+                "docs/evals/EVAL-G02-005/artifacts/phases/isolation-access-matrix/matrix.json"
             ),
             "trace-six-stage-matrix": (
-                "docs/evals/EVAL-G02-005/artifacts/phases/"
-                "trace-six-stage-matrix/matrix.json"
+                "docs/evals/EVAL-G02-005/artifacts/phases/trace-six-stage-matrix/matrix.json"
             ),
             "all-surface-canary": (
-                "docs/evals/EVAL-G02-005/artifacts/phases/"
-                "all-surface-canary/matrix.json"
+                "docs/evals/EVAL-G02-005/artifacts/phases/all-surface-canary/matrix.json"
             ),
         }
         source_value = inputs.get(phase_id) if isinstance(inputs, dict) else None
@@ -558,6 +550,77 @@ def _owned_phase_handlers(
             "artifact_path": output.relative_to(root).as_posix(),
         }
 
+    def baseline_input(phase_id: str) -> tuple[dict[str, Any], Path]:
+        inputs = binding.get("phase_inputs")
+        relative_outputs = {
+            "baseline-deterministic": (
+                "docs/evals/EVAL-G02-005/artifacts/phases/baseline-deterministic/results.json"
+            ),
+            "baseline-live": (
+                "docs/evals/EVAL-G02-005/artifacts/phases/baseline-live/journal-index.json"
+            ),
+        }
+        source_value = inputs.get(phase_id) if isinstance(inputs, dict) else None
+        source = Path(str(source_value)) if source_value else Path()
+        if not source.is_absolute() or not source.is_file():
+            raise GovernanceError(f"G02 baseline input must be repository-external: {phase_id}")
+        document = load_data(source)
+        if not isinstance(document, dict):
+            raise GovernanceError(f"G02 baseline input must be an object: {phase_id}")
+        return document, root / relative_outputs[phase_id]
+
+    def deterministic_baseline_phase(
+        context: PhaseContext, _journal: TrialJournal
+    ) -> Mapping[str, Any]:
+        from faultwitness_dev.g02_baselines import validate_deterministic_matrix
+
+        document, output = baseline_input("baseline-deterministic")
+        if (
+            document.get("candidate_sha") != context.candidate_sha
+            or document.get("environment_fingerprint") != context.environment_fingerprint
+        ):
+            raise GovernanceError("G02 deterministic baseline binding drifted")
+        summary = validate_deterministic_matrix(document)
+        _atomic_json(output, document)
+        return {
+            **summary,
+            "artifact_digest": _canonical_digest(document),
+            "artifact_path": output.relative_to(root).as_posix(),
+        }
+
+    def live_baseline_phase(context: PhaseContext, _journal: TrialJournal) -> Mapping[str, Any]:
+        from faultwitness_dev.g02_baselines import validate_live_matrix
+
+        document, output = baseline_input("baseline-live")
+        if (
+            document.get("candidate_sha") != context.candidate_sha
+            or document.get("environment_fingerprint") != context.environment_fingerprint
+        ):
+            raise GovernanceError("G02 live baseline binding drifted")
+        summary = validate_live_matrix(document)
+        _atomic_json(output, document)
+        return {
+            **summary,
+            "artifact_digest": _canonical_digest(document),
+            "artifact_path": output.relative_to(root).as_posix(),
+        }
+
+    def baseline_aggregate_phase(
+        context: PhaseContext, _journal: TrialJournal
+    ) -> Mapping[str, Any]:
+        from faultwitness_dev.g02_baselines import aggregate_live_metrics
+
+        document, _ = baseline_input("baseline-live")
+        metrics = aggregate_live_metrics(document["trials"], context.dataset_digest)
+        output = root / "docs/evals/EVAL-G02-005/artifacts/phases/baseline-aggregate/metrics.json"
+        _atomic_json(output, metrics)
+        return {
+            "status": "pass",
+            "case_clusters": metrics["case_clusters"],
+            "artifact_digest": _canonical_digest(metrics),
+            "artifact_path": output.relative_to(root).as_posix(),
+        }
+
     def reconciliation(_context: PhaseContext, journal: TrialJournal) -> Mapping[str, Any]:
         document = {
             "open_evidence": binding.get("open_evidence", []),
@@ -593,6 +656,9 @@ def _owned_phase_handlers(
         "isolation-access-matrix": access,
         "trace-six-stage-matrix": stages,
         "all-surface-canary": canary,
+        "baseline-deterministic": deterministic_baseline_phase,
+        "baseline-live": live_baseline_phase,
+        "baseline-aggregate": baseline_aggregate_phase,
         "candidate-reconciliation": reconciliation,
         "close-readiness": close,
     }
@@ -684,9 +750,7 @@ def run_phase_contract_suite(candidate_sha: str, work_root: Path) -> list[dict[s
         raise GovernanceError("exact-key pass cache was re-executed")
     cases.append({"case": "dag_and_cache", "status": "pass"})
 
-    isolated = PhaseEngine(
-        (first, second), _contract_context(candidate_sha), work_root / "case-2"
-    )
+    isolated = PhaseEngine((first, second), _contract_context(candidate_sha), work_root / "case-2")
     try:
         isolated.run(handlers, phase_id="second")
     except GovernanceError as error:
@@ -728,9 +792,7 @@ def run_phase_contract_suite(candidate_sha: str, work_root: Path) -> list[dict[s
     destructive = PhaseDefinition("destructive", (), "I-0016", destructive=True)
     destructive_calls: list[str] = []
 
-    def destructive_handler(
-        _context: PhaseContext, _journal: TrialJournal
-    ) -> Mapping[str, Any]:
+    def destructive_handler(_context: PhaseContext, _journal: TrialJournal) -> Mapping[str, Any]:
         destructive_calls.append("run")
         return {"status": "pass"}
 

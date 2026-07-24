@@ -1,0 +1,30 @@
+schema_version: "1.0.0"
+model:
+  channel: bailian
+  family: qwen
+  model_id: qwen3.7-plus-2026-05-26
+  fallback_profiles: []
+  transient_retries: 1
+  orchestration_timeout_seconds: null
+baselines:
+  naive_react:
+    max_turns: 4
+    max_tool_calls: 6
+    max_input_tokens: 8000
+    max_output_tokens: 1024
+  no_rag:
+    max_turns: 1
+    max_tool_calls: 0
+    max_input_tokens: 4000
+    max_output_tokens: 512
+bootstrap:
+  confidence: 0.95
+  resamples: 2000
+  cluster_key: case_id
+  seed_source: dataset_digest
+pricing:
+  currency: CNY
+  input_per_million: 2.0
+  output_per_million: 8.0
+  recorded_on: "2026-07-23"
+

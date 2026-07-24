@@ -1,0 +1,8 @@
+{
+  "case_id": "synthetic-wrong-root",
+  "root_cause": "paymentFailure",
+  "root_cause_candidates": ["paymentFailure"],
+  "evidence": ["catalog-error"],
+  "claims": [],
+  "status": "ok"
+}

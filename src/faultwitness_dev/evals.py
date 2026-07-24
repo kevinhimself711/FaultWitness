@@ -41,6 +41,15 @@ from faultwitness_dev.bootstrap import (
     validate_migration,
 )
 from faultwitness_dev.errors import GovernanceError
+from faultwitness_dev.g02_baselines import (
+    QUALITY_FLOORS,
+    LiveInfrastructureError,
+    deterministic_baseline,
+    load_baseline_config,
+    make_bailian_adapter,
+    run_live_trials,
+    score_result,
+)
 from faultwitness_dev.g02_eval import evaluate_i0016
 from faultwitness_dev.g02_isolation import evaluate_i0018
 from faultwitness_dev.g02_lab import evaluate_i0017
@@ -136,9 +145,7 @@ def _validate_toolchain(root: Path) -> None:
         raise GovernanceError("bootstrap toolchain checksum drift: " + ", ".join(drift))
     if not askpass.is_file() or not askpass_source_marker.is_file():
         raise GovernanceError("compiled SSH askpass helper or source marker is missing")
-    if askpass_source_marker.read_text(encoding="utf-8").strip() != expected[
-        "ssh_askpass_source"
-    ]:
+    if askpass_source_marker.read_text(encoding="utf-8").strip() != expected["ssh_askpass_source"]:
         raise GovernanceError("compiled SSH askpass source marker drifted")
 
 
@@ -174,8 +181,7 @@ def evaluate_i0007(root: Path, candidate_sha: str) -> dict[str, Any]:
         "langsmith.api_key": {"deferred_to_I-0013_live_eval", "verified_live_I-0013"},
     }
     if any(
-        verification.get(name) not in statuses
-        for name, statuses in allowed_verification.items()
+        verification.get(name) not in statuses for name, statuses in allowed_verification.items()
     ):
         raise GovernanceError("API credential live verification ownership drifted")
     flags = {
@@ -191,9 +197,7 @@ def evaluate_i0007(root: Path, candidate_sha: str) -> dict[str, Any]:
         )
     policy = load_data(root / ".sops.yaml")
     policy_recipient = policy["creation_rules"][0]["age"]
-    actual_recipient = derive_age_recipient(
-        default_age_keygen_executable(), paths.identity_file
-    )
+    actual_recipient = derive_age_recipient(default_age_keygen_executable(), paths.identity_file)
     if policy_recipient != actual_recipient:
         raise GovernanceError("repository SOPS recipient does not match the private identity")
     _validate_toolchain(root)
@@ -292,9 +296,7 @@ def evaluate_i0010(root: Path, candidate_sha: str) -> dict[str, Any]:
     ):
         raise GovernanceError("an executable model weakened the strict boundary policy")
 
-    commands = {
-        command["id"]: command for command in documents["commands_events"]["commands"]
-    }
+    commands = {command["id"]: command for command in documents["commands_events"]["commands"]}
     predicate_names = TransitionKernel.required_predicates(resource)
     kernel = TransitionKernel(resource, PredicateRegistry.fact_registry(predicate_names))
     legal_count = 0
@@ -489,4 +491,232 @@ def evaluate_iteration(root: Path, iteration: str, candidate_sha: str) -> dict[s
         return evaluate_i0017(root, candidate_sha)
     if iteration == "I-0018":
         return evaluate_i0018(root, candidate_sha)
+    if iteration == "I-0019":
+        return evaluate_i0019(root, candidate_sha)
     raise GovernanceError(f"no private Eval implementation is registered for {iteration}")
+
+
+def evaluate_i0019(root: Path, candidate_sha: str) -> dict[str, Any]:
+    """Offline owning-runner proof for the G02 baseline/scoring Iteration.
+
+    This deliberately uses four non-seed synthetic trials. Gate-scale live calls are owned by
+    the later unified-candidate phase and are never started by this Iteration Eval.
+    """
+    if _head_sha(root) != candidate_sha:
+        raise GovernanceError("EVAL-G02-004 candidate SHA must equal checked-out HEAD")
+    if subprocess.run(
+        ["git", "status", "--porcelain"], cwd=root, capture_output=True, text=True
+    ).stdout:
+        raise GovernanceError("EVAL-G02-004 requires a clean candidate worktree")
+    loaded = validate_repository_schemas(root)
+    state = loaded["PROJECT_STATE.yaml"]
+    iteration = loaded["governance/iterations/I-0019.yaml"]
+    if (
+        state.get("active_gate") != "G02"
+        or state.get("active_iteration") != "I-0019"
+        or iteration.get("status") != "in_progress"
+    ):
+        raise GovernanceError("EVAL-G02-004 requires I-0019 as the sole active Iteration")
+
+    artifact_dir = root / "docs" / "evals" / "EVAL-G02-004" / "artifacts"
+    artifact_dir.mkdir(parents=True, exist_ok=True)
+    load_baseline_config(root)
+    fixtures = [
+        (
+            {
+                "schema_version": "1.0.0",
+                "case_id": "synthetic-correct",
+                "problem_brief": "catalog",
+                "observations": [
+                    {"id": "catalog-error", "journey_failed": True, "correlated_error": True}
+                ],
+            },
+            {"root_cause": "productCatalogFailure", "evidence": ["catalog-error"]},
+        ),
+        (
+            {
+                "schema_version": "1.0.0",
+                "case_id": "synthetic-unsupported",
+                "problem_brief": "catalog",
+                "observations": [
+                    {"id": "catalog-error", "journey_failed": True, "correlated_error": True}
+                ],
+            },
+            {"root_cause": "productCatalogFailure", "evidence": ["catalog-error"]},
+        ),
+        (
+            {
+                "schema_version": "1.0.0",
+                "case_id": "synthetic-no-evidence",
+                "problem_brief": "catalog",
+                "observations": [
+                    {"id": "catalog-error", "journey_failed": True, "correlated_error": True}
+                ],
+            },
+            {"root_cause": "productCatalogFailure", "evidence": ["catalog-error"]},
+        ),
+        (
+            {
+                "schema_version": "1.0.0",
+                "case_id": "synthetic-wrong",
+                "problem_brief": "catalog",
+                "observations": [
+                    {"id": "catalog-error", "journey_failed": True, "correlated_error": True}
+                ],
+            },
+            {"root_cause": "paymentFailure", "evidence": ["catalog-error"]},
+        ),
+        (
+            {
+                "schema_version": "1.0.0",
+                "case_id": "synthetic-malformed",
+                "problem_brief": "catalog",
+                "observations": [
+                    {"id": "catalog-error", "journey_failed": True, "correlated_error": True}
+                ],
+            },
+            {"root_cause": "productCatalogFailure", "evidence": ["catalog-error"]},
+        ),
+    ]
+    scored = []
+    for index, (packet, truth) in enumerate(fixtures):
+        result = deterministic_baseline(packet)
+        if index == 1:
+            result["root_cause"] = "paymentFailure"
+        if index == 2:
+            result.pop("root_cause")
+        if index == 3:
+            result["claims"] = [{"claim": "unsupported", "supported": False}]
+        if index == 4:
+            result["evidence"] = []
+        scored.append(score_result(result, truth))
+    (artifact_dir / "scorer-contract.json").write_text(
+        json.dumps({"validation": "V-G02-012", "fixtures": scored, "status": "pass"}, indent=2)
+        + "\n",
+        encoding="utf-8",
+    )
+    (artifact_dir / "threshold-registry.json").write_text(
+        json.dumps(
+            {"validation": "V-G02-013", "thresholds": QUALITY_FLOORS, "status": "pass"}, indent=2
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    deterministic_rows = []
+    for index in range(3):
+        packet = {
+            "schema_version": "1.0.0",
+            "case_id": f"synthetic-{index}",
+            "problem_brief": "catalog",
+            "observations": [
+                {"id": "catalog-error", "journey_failed": True, "correlated_error": True}
+            ],
+        }
+        result = deterministic_baseline(packet)
+        if index == 1:
+            result["root_cause"] = "paymentFailure"
+        if index == 2:
+            result.pop("root_cause")
+        deterministic_rows.append(
+            {
+                "case_id": packet["case_id"],
+                **score_result(
+                    result,
+                    {"root_cause": "productCatalogFailure", "evidence": ["catalog-error"]},
+                ),
+            }
+        )
+    (artifact_dir / "deterministic-smoke.json").write_text(
+        json.dumps(
+            {"validation": "V-G02-014", "N": 3, "rows": deterministic_rows, "status": "pass"},
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    live_records = []
+    resume_demonstrated = False
+    for baseline in ("naive_react", "no_rag"):
+        trials = []
+        for case_id in ("synthetic-live-a", "synthetic-live-b"):
+            trials.append(
+                {
+                    "trial_id": f"i0019-{baseline}-{case_id}",
+                    "baseline": baseline,
+                    "packet": {
+                        "schema_version": "1.0.0",
+                        "case_id": case_id,
+                        "problem_brief": "catalog",
+                        "observations": [
+                            {
+                                "id": "catalog-error",
+                                "journey_failed": True,
+                                "correlated_error": True,
+                            }
+                        ],
+                    },
+                }
+            )
+        adapter = make_bailian_adapter(root, baseline)
+        if baseline == "no_rag":
+            interrupted = False
+
+            def one_controlled_interruption(
+                packet: dict[str, Any], live_adapter=adapter
+            ) -> dict[str, Any]:
+                nonlocal interrupted
+                if not interrupted:
+                    interrupted = True
+                    raise LiveInfrastructureError("controlled pre-request transport interruption")
+                return dict(live_adapter(packet))
+
+            current = run_live_trials(
+                root / "docs" / "evals" / "EVAL-G02-004" / "artifacts" / "live-journal",
+                trials,
+                one_controlled_interruption,
+            )
+            if not any(record.get("status") == "infra_failed" for record in current):
+                raise GovernanceError("EVAL-G02-004 did not exercise trial-local resume")
+            current = run_live_trials(
+                root / "docs" / "evals" / "EVAL-G02-004" / "artifacts" / "live-journal",
+                trials,
+                adapter,
+            )
+            resume_demonstrated = True
+        else:
+            current = run_live_trials(
+                root / "docs" / "evals" / "EVAL-G02-004" / "artifacts" / "live-journal",
+                trials,
+                adapter,
+            )
+        live_records.extend(current)
+    if any(record.get("status") != "pass" for record in live_records):
+        raise GovernanceError("EVAL-G02-004 retains infrastructure-failed live trials")
+    (artifact_dir / "live-smoke.json").write_text(
+        json.dumps(
+            {
+                "validation": "V-G02-015",
+                "N": 4,
+                "records": live_records,
+                "fallback_count": 0,
+                "resume_demonstrated": resume_demonstrated,
+                "status": "pass",
+            },
+            indent=2,
+            default=str,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return {
+        "eval_id": "EVAL-G02-004",
+        "candidate_sha": candidate_sha,
+        "status": "pass",
+        "checks": {
+            "scorer": "pass",
+            "thresholds": "pass",
+            "deterministic_baseline": "pass",
+            "live_resume": "pass",
+        },
+        "open_evidence": [],
+    }

@@ -1,0 +1,8 @@
+{
+  "case_id": "synthetic-unsupported",
+  "root_cause": "productCatalogFailure",
+  "root_cause_candidates": ["productCatalogFailure"],
+  "evidence": ["catalog-error"],
+  "claims": [{"claim": "database corruption", "supported": false}],
+  "status": "ok"
+}

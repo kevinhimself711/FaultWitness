@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0019
 gate: G02
 title: Baselines and Scoring
-status: planned
+status: in_progress
 scope:
   - Implement deterministic Naive ReAct and no-RAG diagnosis-only baselines over shared packets.
   - Implement deterministic scoring exact threshold registry clustered bootstrap CI and usage cost reporting.
@@ -18,6 +18,7 @@ eval_id: EVAL-G02-004
 commit: null
 changed_paths:
   - config/models
+  - config/g02
   - src/faultwitness_dev
   - tests/g02
   - tests/fixtures/g02
@@ -26,4 +27,5 @@ behavior_change: true
 docs_updated:
   - docs/roadmap/iterations/I-0019.md
   - docs/evals/EVAL-G02-004/PLAN.md
+  - docs/runbooks/G02_BASELINES.md
 threshold_changes: []

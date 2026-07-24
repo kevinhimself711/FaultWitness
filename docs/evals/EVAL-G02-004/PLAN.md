@@ -17,3 +17,7 @@ baseline smoke, and four non-seed live trials with per-trial interruption and re
 - Four live trials use the exact model with no fallback and demonstrate trial-local resume.
 - Gate seeds are not used and no Gate-scale matrix runs.
 - Model usage and cost are attributable; `open_evidence` is empty.
+
+The runner has no preset orchestration wall-clock kill timeout. This does not change N=4, the exact
+model, the one internal transient retry, token/cost ceilings, latency measurement, failure scoring,
+or any Gate metric. Each trial is persisted atomically; only `infra_failed` trials resume.

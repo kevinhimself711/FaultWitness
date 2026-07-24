@@ -1,0 +1,2 @@
+thresholds:
+  root_cause_top3: 0.84

@@ -1,0 +1,6 @@
+{
+  "trials": [
+    {"trial_id": "completed", "status": "pass", "attempt": 1},
+    {"trial_id": "interrupted", "status": "infra_failed", "attempt": 1}
+  ]
+}
