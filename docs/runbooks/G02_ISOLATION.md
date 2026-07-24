@@ -2,10 +2,11 @@
 
 ## Boundary
 
-This runbook is owned by I-0018. It freezes the storage, identity, namespace, package, and evidence
-contracts needed to keep ground truth and locked tests outside Agent and ordinary-developer reach.
-It does not materialize any of the 160 preregistered cases, deploy credentials, call a model, or run
-the Gate-layer 60-cell/6-stage/22-surface matrices.
+I-0018 froze the storage, identity, namespace, package, and evidence contracts needed to keep
+ground truth and locked tests outside Agent and ordinary-developer reach. EVAL-G02-008 later proved
+that its Gate handlers lacked executable candidate-bound provisioners and collectors; I-0024 owns
+that forward implementation correction. Neither Iteration materializes any of the 160
+preregistered cases, calls a model, or runs the Gate-layer 60-cell/6-stage/22-surface matrices.
 
 ## Storage and identity layout
 
@@ -51,7 +52,8 @@ the preregistry. Credentials are runtime-only mounts and never package inputs.
 
 ## Gate runner protocol
 
-I-0018 owns three candidate/environment-bound Gate phase interfaces:
+I-0024 correctively owns the complete execution path behind three candidate/environment-bound Gate
+phase interfaces while preserving I-0018's frozen validators and Iteration evidence:
 
 - `g02.access_matrix`: exactly 60 access cells over six schemas, five prefixes, four observability
   targets, and four probes per target.
@@ -59,16 +61,17 @@ I-0018 owns three candidate/environment-bound Gate phase interfaces:
   and `export` stages.
 - `g02.canary_matrix`: zero hits on all 22 frozen persistence/egress surfaces.
 
-Raw live probe documents remain repository-external and are named by `phase_inputs` in the frozen
-candidate binding. Each Gate phase validates candidate SHA, environment fingerprint, exact cell
-enumeration, expected result, and an artifact reference before atomically writing its reviewable
-matrix under the active standard orchestration's Eval asset. A wrong allow, missing stage, leaked
-canary, missing artifact reference, or binding mismatch is a blocking failure with no operator pass
-path.
+The runner provisions only named credential references and live targets, then produces raw probe
+documents under the repository-external candidate journal. Gate handlers invoke the collector
+directly; operator-precomputed `phase_inputs` are not an execution path. Each phase validates
+candidate SHA, environment fingerprint, exact enumeration, expected result, and an artifact
+reference before atomically writing its reviewable matrix under the active standard orchestration's
+Eval asset. A missing capability, wrong allow, missing stage, leaked canary, missing artifact
+reference, or binding mismatch is blocking with no operator pass path.
 
-EVAL-G02-005 is immutable failed history. Replacement orchestration writes new Gate artifacts only
-under `EVAL-G02-008`; no runner may select EVAL-G02-005 from terminal I-0020 or overwrite its phase
-records.
+EVAL-G02-005 and EVAL-G02-008 are immutable failed history. Replacement orchestration writes new
+Gate artifacts only under `EVAL-G02-010`; no runner may select either terminal Eval or overwrite
+its phase records.
 
 These phases have no preset orchestration timeout. The rule changes only process supervision:
 matrix N, zero-tolerance semantics, quality/performance thresholds, and all Gate criteria remain

@@ -1,0 +1,47 @@
+schema_version: "1.0.0"
+id: I-0024
+gate: G02
+title: Candidate-Bound L2 Collector and Provisioning Corrective
+status: planned
+iteration_type: corrective
+corrects: [I-0018, I-0023]
+scope:
+  - Implement candidate-bound deployment and credential-free provisioning plans for the frozen G02 isolation identities storage targets and namespaces.
+  - Implement executable collectors for the exact 60-cell access matrix six correlated trace stages and 22 Secret or PII canary surfaces.
+  - Replace operator-precomputed phase inputs with runner-produced atomically persisted documents while preserving phase candidate environment and cache binding.
+  - Unit-test each runner negative fixture phase interface and failure classification without executing a Gate L2 phase.
+non_goals:
+  - Running live access trace canary destructive scenario or paid model phases.
+  - Changing validation N Ground Truth locked tests quality or performance thresholds model route token cost or failure semantics.
+  - Reopening I-0018 or I-0023 or overwriting EVAL-G02-003 or EVAL-G02-008.
+dependencies: [I-0016, I-0018, I-0021, I-0022, I-0023]
+tests:
+  - uv run pytest -q tests/g02/test_g02_gate_collectors.py tests/g02/test_g02_isolation.py tests/g02/test_g02_eval_protocol.py
+  - uv run python -m faultwitness_dev eval-iteration I-0024 --candidate-sha <full-sha>
+  - uv run python -m faultwitness_dev verify-fast
+  - uv run python -m faultwitness_dev eval-changed
+eval_id: EVAL-G02-009
+commit: null
+changed_paths:
+  - config/g02
+  - deploy/g02
+  - docs/evals/EVAL-G02-009
+  - docs/evals/EVAL-G02-010
+  - docs/gates/G02
+  - docs/roadmap/iterations
+  - docs/runbooks/G02_EVAL_PROTOCOL.md
+  - docs/runbooks/G02_ISOLATION.md
+  - governance/iterations
+  - src/faultwitness_dev/cli.py
+  - src/faultwitness_dev/evals.py
+  - src/faultwitness_dev/g02_eval.py
+  - src/faultwitness_dev/g02_isolation.py
+  - tests/g02
+  - tests/fixtures/g02
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/I-0024.md
+  - docs/evals/EVAL-G02-009/PLAN.md
+  - docs/runbooks/G02_EVAL_PROTOCOL.md
+  - docs/runbooks/G02_ISOLATION.md
+threshold_changes: []

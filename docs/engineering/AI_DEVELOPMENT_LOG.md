@@ -1,5 +1,22 @@
 # AI Development Log
 
+## 2026-07-24 — G02 EVAL-G02-008 runner-readiness failure
+
+Candidate `7d6648850108129c81fe98260aff8342683b5622` passed four fail-fast preflights and
+`lab-deploy-and-bind` with 30 pinned image subjects and 24 ready Deployments. Before the first
+zero-tolerance matrix ran, readiness inspection proved that `g02.access_matrix`,
+`g02.stage_matrix`, and `g02.canary_matrix` only validated operator-precomputed JSON. There was no
+candidate-bound identity/storage provisioner, 60-cell access collector, six-stage correlated span
+collector, or 22-surface canary injector/collector. The expected object bucket, principal
+credential Secrets, and all three phase inputs were absent.
+
+This is a deterministic implementation/readiness failure, not an infrastructure retry. I-0023 and
+EVAL-G02-008 are terminal with complete negative evidence and `open_evidence: []`; no complete
+matrix cell, destructive scenario, or model call ran. I-0024 forward-corrects the missing runner
+implementation locally without executing L2, and I-0025/EVAL-G02-010 performs replacement
+orchestration. No closed Iteration reopens and no operator-precomputed input is accepted as a
+substitute for an executable candidate-bound collector.
+
 ## 2026-07-24 — I-0022 forward isolation correction
 
 Candidate `7d6e07bc142bdd5cb0bcd1a465ae3b04931b799c` corrected only the deterministic

@@ -78,6 +78,10 @@ cache key 改变，保留旧 evidence 并建立新候选记录。
   reconciliation, or close-readiness failure makes the current orchestration Iteration terminal.
   Correction uses a higher-numbered corrective Iteration, and full Gate orchestration resumes only
   through a higher-numbered replacement standard Iteration.
+- EVAL-G02-008 proved that a validator consuming operator-precomputed phase input is not a complete
+  L2 runner. The owning forward corrective must implement candidate-bound provisioning and
+  collection before a replacement orchestration starts; the final Gate Iteration never fabricates
+  the missing input.
 - A classified transient infrastructure or transport failure remains in the same phase/trial and
   resumes only pending or `infra_failed` work; it does not create a corrective Iteration.
 - These rules change only provenance and orchestration. All frozen samples, thresholds, locked-test

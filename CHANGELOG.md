@@ -4,6 +4,9 @@
 
 ### Governance maintenance
 
+- Preserve terminal I-0023/EVAL-G02-008 after a deterministic runner-readiness failure; plan
+  corrective I-0024 and replacement orchestration I-0025 without reopening I-0018/I-0023 or
+  changing any validation N, threshold, locked asset, destructive rule, or model budget.
 - Complete I-0022 without reopening I-0018 or I-0020; EVAL-G02-007 proves the exact observability
   correction and active-Iteration Eval routing with five deterministic cases and no Gate/model run.
 - Activate I-0022 as the sole forward corrective; I-0020 stays terminal `failed` and I-0023 stays
