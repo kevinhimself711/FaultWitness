@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Activate I-0025 as the sole replacement unified-candidate orchestration after I-0024 closed with
+  executable frozen runners and no open evidence; I-0025 may not add implementation or framework.
 - Activate I-0024 as the sole forward collector corrective; I-0025 remains planned and no Gate L2,
   destructive scenario, or model call is authorized during I-0024.
 - Preserve terminal I-0023/EVAL-G02-008 after a deterministic runner-readiness failure; plan
