@@ -26,6 +26,9 @@
 
 ### Tooling
 
+- Complete the I-0017 corrective pass on candidate `c7d55f2`: redeploy 24/24 workloads, rerun the
+  unchanged N=32 specification/N=6 adapter/N=4 live-family evidence, and prove both missing Gate
+  handlers without executing the Gate N=32 live scenario matrix.
 - Reopen owning I-0017 before I-0020 after readiness audit found registered but unmapped
   `lab-deploy-and-bind` and `scenario-matrix` phases; add candidate/image-bound deployment and
   atomic 32-seed continuation interfaces without executing Gate-layer N=32 work.
