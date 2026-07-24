@@ -1,5 +1,19 @@
 # AI Development Log
 
+## 2026-07-24 — G02 EVAL-G02-014 Python 3.8 compatibility failure
+
+Candidate `cfafa5a6f1510a1a7c8fe2c9360284214c8734f2` passed four fail-fast preflights
+and `lab-deploy-and-bind`. Candidate-bound provisioning then returned the broad
+`remote_probe_transport` category. Two bounded diagnostic invocations exposed the deterministic
+cause: the private host runs Python 3.8 and `gate_probe.py` imports Python 3.11-only `datetime.UTC`.
+
+I-0029 and EVAL-G02-014 are terminal with `open_evidence: []`; provisioning, all 60 access cells,
+trace/canary/scenario phases, external-service probes, and model calls remained zero. I-0030 must
+replace only the version-specific UTC dependency and execute the probe's import/timestamp path under
+actual Python 3.8. I-0031/EVAL-G02-016 is the only replacement orchestration. Validation N,
+thresholds, Ground Truth, locked tests, health windows, model route, and token/cost ceilings remain
+unchanged.
+
 ## 2026-07-24 — G02 EVAL-G02-012 byte-integrity failure
 
 Candidate `a5c282cbd587202cb24cd6b1fcc1e57d9785acd6` failed while preparing its

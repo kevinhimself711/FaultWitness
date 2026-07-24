@@ -40,7 +40,7 @@ uv run python -m faultwitness_dev eval-g02-close --candidate-sha <SHA> --evidenc
 ## Candidate-binding asset
 
 当前 standard orchestration Iteration 在 Gate Eval 前产生其 `eval_id` 对应目录下的
-`candidate-binding.json`。I-0029 对应 EVAL-G02-014；I-0020/EVAL-G02-005、
+`candidate-binding.json`。I-0031 对应 EVAL-G02-016；I-0020/EVAL-G02-005、
 I-0023/EVAL-G02-008 与 I-0025/EVAL-G02-010 是不可变失败历史。
 binding 记录：
 
@@ -52,7 +52,7 @@ binding 记录：
   root；不同 Eval 或 candidate 绝不共用或覆盖 journal。
 - zero waiver/open-evidence/backlog/DLQ/fallback counters。
 
-EVAL-G02-014 binding 不得含 `phase_inputs`。`isolation-access-matrix`、
+EVAL-G02-016 binding 不得含 `phase_inputs`。`isolation-access-matrix`、
 `trace-six-stage-matrix` 与 `all-surface-canary` 必须由 handler 直接调用 I-0024 collector；
 任何操作员预制 matrix 都会在 phase 启动前被拒绝。
 
@@ -72,6 +72,13 @@ decode stdout/stderr。脚本 bytes 通过第一条 SSH session 上传至权限�
 mock runner 只用于失败注入与 channel/cleanup 断言；跨平台 byte-integrity 必须由受影响平台
 上的真实 child process 比较收到的 bytes。upload、execute 或 cleanup 的确定性失败保持
 blocking；协议不增加 preset wall-clock timeout，也不改变任何 Gate N、阈值或失败语义。
+
+## Remote interpreter compatibility
+
+EVAL-G02-014 证明 current-version local import 不能替代目标 interpreter 证明。所有上传到
+私有 host 或 sealed runtime 的 Python runner，必须在 owning Iteration 内以目标实际 major/minor
+版本执行 import 与最小 runtime path。I-0030 对 `gate_probe.py` 的冻结目标是 Python 3.8；
+syntax-only parse、mock import 或 Python 3.11+ 执行均不能单独证明 compatibility。
 
 ## Journals and recovery
 

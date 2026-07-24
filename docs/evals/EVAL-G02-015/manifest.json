@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-015",
+  "gate": "G02",
+  "iteration": "I-0030",
+  "evaluated_revision": "not-run",
+  "status": "pending",
+  "environments": ["planned-managed-python-3.8-local-deterministic"],
+  "commands": [
+    "uv run python -m faultwitness_dev eval-iteration I-0030 --candidate-sha <full-sha>"
+  ],
+  "artifacts": ["docs/evals/EVAL-G02-015/PLAN.md"],
+  "evidence_urls": [],
+  "integrations": {
+    "private_server": {"status": "not_applicable", "reason": "I-0030 is a local Python compatibility corrective."},
+    "bailian": {"status": "not_applicable", "reason": "I-0030 performs no model call."},
+    "langsmith": {"status": "not_applicable", "reason": "I-0030 performs no external-service phase."}
+  },
+  "open_evidence": []
+}

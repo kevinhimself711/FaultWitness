@@ -1,39 +1,37 @@
 schema_version: "1.0.0"
-id: I-0029
+id: I-0031
 gate: G02
-title: Fourth Replacement Unified Candidate Orchestration
-status: failed
+title: Fifth Replacement Unified Candidate Orchestration
+status: planned
 iteration_type: standard
 scope:
-  - Freeze the post-I-0028 candidate and execute the fourteen unchanged Gate phases under EVAL-G02-014.
+  - Freeze the post-I-0030 candidate and execute the fourteen unchanged Gate phases under EVAL-G02-016.
   - Reconcile immutable evidence and prove close readiness without adding implementation during orchestration.
 non_goals:
   - Adding product behavior runners fixtures test semantics thresholds workflows or samples.
   - Reactivating or overwriting any terminal Iteration or failed Eval asset.
-dependencies: [I-0016, I-0017, I-0018, I-0019, I-0021, I-0022, I-0024, I-0026, I-0028]
+dependencies: [I-0016, I-0017, I-0018, I-0019, I-0021, I-0022, I-0024, I-0026, I-0028, I-0030]
 tests:
   - uv run python -m faultwitness_dev verify-fast
   - uv run python -m faultwitness_dev eval-g02 --candidate-sha <full-sha>
   - uv run python -m faultwitness_dev eval-g02-close --candidate-sha <full-sha> --evidence-head-sha <full-sha>
-eval_id: EVAL-G02-014
-commit: "cfafa5a6f1510a1a7c8fe2c9360284214c8734f2"
+eval_id: EVAL-G02-016
+commit: null
 changed_paths:
   - AGENTS.md
   - CHANGELOG.md
   - PROJECT_STATE.yaml
   - README.md
-  - docs/evals/EVAL-G02-014
+  - docs/evals/EVAL-G02-016
   - docs/gates/G02
   - docs/claims/CLAIMS.yaml
   - docs/engineering/AI_DEVELOPMENT_LOG.md
   - docs/roadmap/PHASES.md
-  - docs/roadmap/iterations/I-0029.md
-  - governance/iterations/I-0029.yaml
+  - docs/roadmap/iterations/I-0031.md
+  - governance/iterations/I-0031.yaml
 behavior_change: false
 docs_updated:
-  - docs/roadmap/iterations/I-0029.md
+  - docs/roadmap/iterations/I-0031.md
   - docs/roadmap/PHASES.md
-  - docs/evals/EVAL-G02-014/PLAN.md
-  - docs/evals/EVAL-G02-014/REPORT.md
-  - docs/evals/EVAL-G02-014/manifest.json
+  - docs/evals/EVAL-G02-016/PLAN.md
 threshold_changes: []

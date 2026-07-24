@@ -69,8 +69,8 @@ reference before atomically writing its reviewable matrix under the active stand
 Eval asset. A missing capability, wrong allow, missing stage, leaked canary, missing artifact
 reference, or binding mismatch is blocking with no operator pass path.
 
-EVAL-G02-005, EVAL-G02-008, EVAL-G02-010, and EVAL-G02-012 are immutable failed history. Replacement
-orchestration writes new Gate artifacts only under `EVAL-G02-014`; no runner may select a terminal
+EVAL-G02-005, EVAL-G02-008, EVAL-G02-010, EVAL-G02-012, and EVAL-G02-014 are immutable failed
+history. Replacement orchestration writes new Gate artifacts only under `EVAL-G02-016`; no runner may select a terminal
 Eval or overwrite its phase records.
 
 Provisioning is derived from `config/g02/gate-probes.yaml` and is checked by one identical local and

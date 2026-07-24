@@ -1,0 +1,51 @@
+schema_version: "1.0.0"
+id: I-0030
+gate: G02
+title: Python 3.8 Probe Compatibility Corrective
+status: planned
+iteration_type: corrective
+corrects: [I-0024, I-0029]
+scope:
+  - Remove the Python 3.11-only datetime UTC import from the candidate-bound remote probe while preserving UTC-aware timestamp semantics.
+  - Execute the probe import and UTC timestamp path with an actual managed Python 3.8 interpreter before candidate freeze.
+  - Keep provisioning access trace canary runner interfaces and all failure classifications unchanged.
+  - Reverify V-G02-009 and V-G02-011 at frozen Iteration N four while V-G02-010 remains Iteration N zero.
+non_goals:
+  - Running remote provisioning Gate L2 access trace canary destructive scenario external-service or paid-model phases.
+  - Changing validation N thresholds Ground Truth locked tests model route health windows token cost or Gate failure semantics.
+  - Reopening I-0024 or I-0029 or rewriting EVAL-G02-009 or EVAL-G02-014 evidence.
+dependencies: [I-0016, I-0021, I-0024, I-0028, I-0029]
+tests:
+  - uv run pytest -q tests/g02/test_g02_gate_collectors.py tests/g02/test_g02_isolation.py
+  - uv run --python 3.8 python -c <frozen-probe-import-check>
+  - uv run python -m faultwitness_dev eval-iteration I-0030 --candidate-sha <full-sha>
+  - uv run python -m faultwitness_dev verify-fast
+  - uv run python -m faultwitness_dev eval-changed
+eval_id: EVAL-G02-015
+commit: null
+changed_paths:
+  - AGENTS.md
+  - CHANGELOG.md
+  - PROJECT_STATE.yaml
+  - README.md
+  - deploy/g02/gate_probe.py
+  - docs/evals/EVAL-G02-015
+  - docs/evals/EVAL-G02-016
+  - docs/gates/G02
+  - docs/claims/CLAIMS.yaml
+  - docs/engineering/AI_DEVELOPMENT_LOG.md
+  - docs/roadmap/PHASES.md
+  - docs/roadmap/iterations
+  - docs/runbooks/G02_EVAL_PROTOCOL.md
+  - docs/runbooks/G02_ISOLATION.md
+  - governance/iterations
+  - src/faultwitness_dev/evals.py
+  - tests/g02/test_g02_gate_collectors.py
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/I-0030.md
+  - docs/evals/EVAL-G02-015/PLAN.md
+  - docs/evals/EVAL-G02-015/REPORT.md
+  - docs/evals/EVAL-G02-015/manifest.json
+  - docs/runbooks/G02_EVAL_PROTOCOL.md
+threshold_changes: []
