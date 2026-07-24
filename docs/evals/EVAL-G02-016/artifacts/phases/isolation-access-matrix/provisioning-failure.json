@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-016",
+  "iteration": "I-0031",
+  "candidate_sha": "0f3e83b871c8c69cfdb2c2321cc96e4894975d56",
+  "phase_id": "isolation-access-matrix",
+  "runner_recorded_status": "blocked",
+  "final_status": "blocked",
+  "classification": "deterministic_pinned_probe_image_availability_failure",
+  "root_cause": "digest_pinned_minio_mc_image_absent_from_k3s_and_dockerhub_pull_timed_out",
+  "pod": "fw-data/g02-mc-admin",
+  "container_state": "ImagePullBackOff",
+  "image": "docker.io/minio/mc@sha256:eb4ea9884b77704230e2423e9004d2fa738dc272876b9cc41a297d29443b8780",
+  "registry_failure": "dockerhub_manifest_head_io_timeout",
+  "attempts": {
+    "runner_attempts": 1,
+    "bounded_read_only_diagnostics": 1,
+    "total_remote_invocations": 2
+  },
+  "execution_counts": {
+    "provisioning_completed": 0,
+    "access_cells": 0,
+    "trace_stages": 0,
+    "canary_surfaces": 0,
+    "destructive_scenarios": 0,
+    "deterministic_baselines": 0,
+    "external_service_probes": 0,
+    "model_calls": 0
+  },
+  "runner_phase_start_time": "2026-07-24T23:40:57.397650+00:00",
+  "runner_phase_end_time": "2026-07-24T23:42:03.742319+00:00",
+  "diagnosis_end_time": "2026-07-24T23:45:19.4558948+00:00",
+  "retry_allowed_on_same_candidate": false,
+  "open_evidence": []
+}

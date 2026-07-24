@@ -1,25 +1,150 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "eval_id": "EVAL-G02-016",
   "gate": "G02",
   "iteration": "I-0031",
-  "evaluated_revision": "not-run",
-  "status": "pending",
+  "candidate_sha": "0f3e83b871c8c69cfdb2c2321cc96e4894975d56",
+  "evaluated_revision": "0f3e83b871c8c69cfdb2c2321cc96e4894975d56",
+  "evidence_head_sha": "0f3e83b871c8c69cfdb2c2321cc96e4894975d56",
+  "status": "fail",
+  "subject_digests": {
+    "config/g02/baselines.yaml": "1debc1a782867811a513b5af98320809f41061f75b8885be5f57539899df7e60",
+    "config/g02/gate-probes.yaml": "6fb0aec3a8a7122e34564ffaf1dc13612296576f2eb12f160da877cebb99332d",
+    "config/g02/isolation.yaml": "24be7ecfe207da9180412e94b2718467550b8706310ce4c6322c05b0bbf12b0e",
+    "config/g02/lab.yaml": "1adf8d580f62aa5471aae742a48b714dc5bc226c5b085566f622fa8ac86fba71",
+    "config/models/catalog.yaml": "488dd005b1964742391059a27c45a430204d430bfa4d88b25c9184df7445ca60",
+    "deploy/g02/gate_probe.py": "808a35b9256d85ef50a73cfa02768efacfc0a7e9a8a835ceedb46e1cd875dfc7",
+    "deploy/g02/isolation-policy.yaml": "68b9479ec1376fa8e03601cef0d6f7a383a7c592c67c90fb2a7406d56f46b3b0",
+    "deploy/g02/packages/baseline-agent/runtime.json": "f5e3896c64a8d579cea212b78c663f1a3ca6ac873ebe7623756d0dd77371aa10",
+    "deploy/g02/packages/scenario-controller/runtime.json": "cf72a99c0cbc22c394876da67ab0e5083342937945526827f88f1dc10ae071f3",
+    "deploy/g02/packages/sealed-evaluator/runtime.json": "72cd9939382e041be416177f41c8dccca0a64762883f9f473cf1c5ee514a4cb5",
+    "docs/gates/G02/VALIDATIONS.yaml": "c0516eef72eafd8dbbd520f49656778b3c54b9f5c21d43299274cd40ee28e7ac",
+    "docs/runbooks/G02_BASELINES.md": "39382ad1c8dcfd1d231a53dbac116250985e8e0d611bc020abc333a3d83a1512",
+    "docs/runbooks/G02_EVAL_PROTOCOL.md": "0ac20a9c6d7f9a941fc3d263599c1bc7b694fd830970157caaaa3a60fc17cf3d",
+    "docs/runbooks/G02_FAULT_LAB.md": "9bc19841bef226a3f368200714ebec7e7e871ff8888266436f2bb5efcb7202a8",
+    "docs/runbooks/G02_ISOLATION.md": "10bf095b96d7052297048ed56f2b63097670a99bc1e6d9b4f5dfb939be0f1f85",
+    "schemas/governance/eval-manifest.schema.json": "5be101e096688f10aa25aaf3160b6bdb4af7010e0693246a3b3e542e6035be6f",
+    "src/faultwitness_dev/evals.py": "53302200f8b3272ea76f5ba57a6d544a1a8003e431bdb4dbc4103930c84a677f",
+    "src/faultwitness_dev/g02_baselines.py": "021cdfeadbc8ced19a4f85b86760a18462d8b973be0c389bdf89be85d11dfb25",
+    "src/faultwitness_dev/g02_collectors.py": "211a46af8bfe6dfdcdf2f7d0b9c6f75e06a6d56dfa92f2b1811af6c9856c794d",
+    "src/faultwitness_dev/g02_eval.py": "2197dfe47da06f4ef7ec8fd296d1452f87687cd23900b242a58fccdd99f728ba",
+    "src/faultwitness_dev/g02_isolation.py": "faf620aa7f0e0ef4f5cc25a728044c19f1a465e6444317c5d00eac412a2d09ae",
+    "src/faultwitness_dev/g02_lab.py": "8662552737c524b868033d3d644affa0a1f06d85d799900750ab2e540f11e6a2",
+    "src/faultwitness_dev/infra.py": "2188405a27e3462b9a843ff977122111e1b66226cb253c76a6858e69ef5001df"
+  },
+  "environment_fingerprint": "32a012ad672a808004e7beb1e41fff66cf87578fbfa470a89dcff47a2b0b80a2",
+  "phases": [
+    {
+      "phase_id": "preflight-manifests",
+      "status": "pass",
+      "start_time": "2026-07-24T23:38:20.667339+00:00",
+      "end_time": "2026-07-24T23:38:20.668336+00:00",
+      "cache_key": "6394acbd6339b039e7cac60bf4201543411e4a42750fb5e645366d883193423e",
+      "artifact_digest": "264bce2710dc7fb40e43fde7500424914ebffe615cb8a9a28020288c4a052aa0",
+      "artifact_path": "docs/evals/EVAL-G02-016/artifacts/phases/preflight-manifests/manifest-debt.json",
+      "private_artifact_uri": "private://faultwitness/g02/EVAL-G02-016/0f3e83b871c8c69cfdb2c2321cc96e4894975d56/phases/preflight-manifests.json",
+      "execution_count": 1,
+      "inherited_from_manifest": null
+    },
+    {
+      "phase_id": "preflight-candidate-binding",
+      "status": "pass",
+      "start_time": "2026-07-24T23:38:44.895128+00:00",
+      "end_time": "2026-07-24T23:38:44.949756+00:00",
+      "cache_key": "756ca0e82493cef4ef0b5e5674d3d2169aeb7007041a78083fda55c3412fb9bd",
+      "artifact_digest": "6c5ed7f7de4e898834975629f82da96b559768a65c2493762a0e4d07a343c7d2",
+      "artifact_path": "docs/evals/EVAL-G02-016/artifacts/phases/preflight-candidate-binding/summary.json",
+      "private_artifact_uri": "private://faultwitness/g02/EVAL-G02-016/0f3e83b871c8c69cfdb2c2321cc96e4894975d56/phases/preflight-candidate-binding.json",
+      "execution_count": 1,
+      "inherited_from_manifest": null
+    },
+    {
+      "phase_id": "preflight-static-inheritance",
+      "status": "pass",
+      "start_time": "2026-07-24T23:39:05.703780+00:00",
+      "end_time": "2026-07-24T23:39:05.706769+00:00",
+      "cache_key": "d4ea545ae6cd20adf3d74ad965e2eef83a085078feedf5a4b62e41be90e33f27",
+      "artifact_digest": "b08fff77a1fded383463605cf6ac625a09911a2d429512d3d611c595c74b932c",
+      "artifact_path": "docs/evals/EVAL-G02-016/artifacts/phases/preflight-static-inheritance/summary.json",
+      "private_artifact_uri": "private://faultwitness/g02/EVAL-G02-016/0f3e83b871c8c69cfdb2c2321cc96e4894975d56/phases/preflight-static-inheritance.json",
+      "execution_count": 1,
+      "inherited_from_manifest": null
+    },
+    {
+      "phase_id": "preflight-upstream-g01",
+      "status": "pass",
+      "start_time": "2026-07-24T23:39:28.329026+00:00",
+      "end_time": "2026-07-24T23:39:28.330023+00:00",
+      "cache_key": "ed7199a64fb2328ce25e560951189db7db5e3d405157229ddeca6e031335e27a",
+      "artifact_digest": "4f48d4195038602a83da9060ce1b2778ed148a571a860300cb83d78f41f8b68f",
+      "artifact_path": "docs/evals/EVAL-G02-016/artifacts/phases/preflight-upstream-g01/summary.json",
+      "private_artifact_uri": "private://faultwitness/g02/EVAL-G02-016/0f3e83b871c8c69cfdb2c2321cc96e4894975d56/phases/preflight-upstream-g01.json",
+      "execution_count": 1,
+      "inherited_from_manifest": null
+    },
+    {
+      "phase_id": "lab-deploy-and-bind",
+      "status": "pass",
+      "start_time": "2026-07-24T23:39:51.038720+00:00",
+      "end_time": "2026-07-24T23:40:38.912649+00:00",
+      "cache_key": "ff7e767715caa07cbd9a5de0e1b15aca99af6d3a0acf69293eb3d3c0aa5e27c2",
+      "artifact_digest": "fc48480e11857e1de81f9c7afe2aea4e64549251cb1594230775ad7ad439a8f8",
+      "artifact_path": "docs/evals/EVAL-G02-016/artifacts/phases/lab-deploy-and-bind/summary.json",
+      "private_artifact_uri": "private://faultwitness/g02/EVAL-G02-016/0f3e83b871c8c69cfdb2c2321cc96e4894975d56/phases/lab-deploy-and-bind.json",
+      "execution_count": 1,
+      "inherited_from_manifest": null
+    },
+    {
+      "phase_id": "isolation-access-matrix",
+      "status": "blocked",
+      "start_time": "2026-07-24T23:40:57.397650+00:00",
+      "end_time": "2026-07-24T23:42:03.742319+00:00",
+      "cache_key": "1ecbe8f85309c20320a88bd268d9738362953aa13854088b30ac4107694754d9",
+      "artifact_digest": "a790e151a92d276027f2446deda3c074337f0c91b1db531ec22601d6a65fc23e",
+      "artifact_path": "docs/evals/EVAL-G02-016/artifacts/phases/isolation-access-matrix/provisioning-failure.json",
+      "private_artifact_uri": "private://faultwitness/g02/EVAL-G02-016/0f3e83b871c8c69cfdb2c2321cc96e4894975d56/failures/isolation-access-matrix.json",
+      "execution_count": 1,
+      "inherited_from_manifest": null
+    }
+  ],
   "environments": [
-    "planned-unified-candidate",
-    "planned-private-g02-lab",
-    "planned-bailian-live",
-    "planned-langsmith"
+    "private-k3s-live",
+    "private-host-python-3.8-compatible-probe",
+    "pinned-minio-mc-image-unavailable",
+    "bailian-not-run",
+    "langsmith-not-run"
   ],
   "commands": [
-    "uv run python -m faultwitness_dev eval-g02 --candidate-sha <full-sha>",
-    "uv run python -m faultwitness_dev eval-g02-close --candidate-sha <full-sha> --evidence-head-sha <full-sha>"
+    "uv run python -m faultwitness_dev eval-g02 --candidate-sha 0f3e83b871c8c69cfdb2c2321cc96e4894975d56 --phase preflight-manifests",
+    "uv run python -m faultwitness_dev eval-g02 --candidate-sha 0f3e83b871c8c69cfdb2c2321cc96e4894975d56 --phase preflight-candidate-binding",
+    "uv run python -m faultwitness_dev eval-g02 --candidate-sha 0f3e83b871c8c69cfdb2c2321cc96e4894975d56 --phase preflight-static-inheritance",
+    "uv run python -m faultwitness_dev eval-g02 --candidate-sha 0f3e83b871c8c69cfdb2c2321cc96e4894975d56 --phase preflight-upstream-g01",
+    "uv run python -m faultwitness_dev eval-g02 --candidate-sha 0f3e83b871c8c69cfdb2c2321cc96e4894975d56 --phase lab-deploy-and-bind",
+    "uv run python -m faultwitness_dev eval-g02 --candidate-sha 0f3e83b871c8c69cfdb2c2321cc96e4894975d56 --phase isolation-access-matrix",
+    "bounded read-only g02-mc-admin status diagnostic"
   ],
-  "artifacts": ["docs/evals/EVAL-G02-016/PLAN.md"],
+  "artifacts": [
+    "docs/evals/EVAL-G02-016/PLAN.md",
+    "docs/evals/EVAL-G02-016/REPORT.md",
+    "docs/evals/EVAL-G02-016/candidate-binding.json",
+    "docs/evals/EVAL-G02-016/artifacts/phases/preflight-manifests/manifest-debt.json",
+    "docs/evals/EVAL-G02-016/artifacts/phases/preflight-candidate-binding/summary.json",
+    "docs/evals/EVAL-G02-016/artifacts/phases/preflight-static-inheritance/summary.json",
+    "docs/evals/EVAL-G02-016/artifacts/phases/preflight-upstream-g01/summary.json",
+    "docs/evals/EVAL-G02-016/artifacts/phases/lab-deploy-and-bind/summary.json",
+    "docs/evals/EVAL-G02-016/artifacts/phases/isolation-access-matrix/matrix.json",
+    "docs/evals/EVAL-G02-016/artifacts/phases/isolation-access-matrix/provisioning-failure.json"
+  ],
   "evidence_urls": [],
   "integrations": {
-    "bailian": {"status": "required", "reason": "The unchanged 192-trial live baseline matrix uses the frozen route."},
-    "langsmith": {"status": "required", "reason": "Candidate-bound sanitized trace and access evidence remains blocking."}
+    "bailian": {
+      "status": "required",
+      "reason": "Paid baseline phases correctly did not start after the deterministic probe-image failure."
+    },
+    "langsmith": {
+      "status": "required",
+      "reason": "No LangSmith cell or trace phase started before the deterministic provisioning failure."
+    }
   },
   "open_evidence": []
 }

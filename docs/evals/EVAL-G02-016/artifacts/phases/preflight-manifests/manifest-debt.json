@@ -1,0 +1,20 @@
+{
+  "candidate_sha": "0f3e83b871c8c69cfdb2c2321cc96e4894975d56",
+  "manifest_count": 13,
+  "manifests": [
+    "docs/evals/EVAL-G01-001/manifest.json",
+    "docs/evals/EVAL-G01-002/manifest.json",
+    "docs/evals/EVAL-G01-003/manifest.json",
+    "docs/evals/EVAL-G01-004/manifest.json",
+    "docs/evals/EVAL-G01-005/manifest.json",
+    "docs/evals/EVAL-G01-006/manifest.json",
+    "docs/evals/EVAL-G01-007/manifest.json",
+    "docs/evals/EVAL-G01-008/manifest.json",
+    "docs/evals/EVAL-G01-009/manifest.json",
+    "docs/evals/EVAL-G02-001/manifest.json",
+    "docs/evals/EVAL-G02-002/manifest.json",
+    "docs/evals/EVAL-G02-003/manifest.json",
+    "docs/evals/EVAL-G02-004/manifest.json"
+  ],
+  "status": "pass"
+}
