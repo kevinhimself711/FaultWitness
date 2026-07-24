@@ -5,7 +5,7 @@
   "iteration": "I-0030",
   "candidate_sha": "89cf5917c9b63b5f706da012f4e4366f6ff6a8b8",
   "evaluated_revision": "89cf5917c9b63b5f706da012f4e4366f6ff6a8b8",
-  "evidence_head_sha": "89cf5917c9b63b5f706da012f4e4366f6ff6a8b8",
+  "evidence_head_sha": "8fd55669ede977ebb70c2bb125272f543a138dde",
   "status": "pass",
   "subject_digests": {
     "deploy/g02/gate_probe.py": "808a35b9256d85ef50a73cfa02768efacfc0a7e9a8a835ceedb46e1cd875dfc7",

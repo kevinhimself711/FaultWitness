@@ -14,6 +14,12 @@ actual Python 3.8. I-0031/EVAL-G02-016 is the only replacement orchestration. Va
 thresholds, Ground Truth, locked tests, health windows, model route, and token/cost ceilings remain
 unchanged.
 
+I-0030 candidate `89cf5917c9b63b5f706da012f4e4366f6ff6a8b8` then passed EVAL-G02-015.
+The actual uv-managed CPython 3.8.20 interpreter imported the probe and executed its UTC-aware
+timestamp path; both compatibility cases passed, frozen V-G02-009/010/011 Iteration N remained
+4/0/4, and remote, Gate L2, destructive, external-service, and model execution remained zero. The
+Iteration closed with `open_evidence: []`; I-0031/EVAL-G02-016 is the sole forward replacement.
+
 ## 2026-07-24 — G02 EVAL-G02-012 byte-integrity failure
 
 Candidate `a5c282cbd587202cb24cd6b1fcc1e57d9785acd6` failed while preparing its

@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Close I-0030 on candidate `89cf591` with EVAL-G02-015 passing both actual Python 3.8
+  compatibility cases, frozen validation N=4/0/4, zero remote/model execution, and no open evidence.
 - Replace the Python 3.11-only G02 remote-probe UTC import with Python 3.8-compatible
   `timezone.utc`, and add an actual managed-Python import/timestamp Iteration Eval path.
 - Activate I-0030 as the sole Python 3.8 probe compatibility corrective; I-0031 remains planned,

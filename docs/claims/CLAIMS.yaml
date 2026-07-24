@@ -132,8 +132,9 @@ claims:
       - EVAL-G02-009
       - EVAL-G02-011
       - EVAL-G02-013
+      - EVAL-G02-015
     limitations:
-      - "I-0018 proves policy simulation and new-writer isolation; I-0022 proves the exact corrected observability policy; I-0024 proves candidate-bound provisioning and collectors locally; I-0028/EVAL-G02-013 proves byte-exact Windows transport. EVAL-G02-014 exposes Python 3.8 probe incompatibility before the first cell; I-0030 must prove actual Python 3.8 execution before the 60/6/22 live matrices run in EVAL-G02-016."
+      - "I-0018 proves policy simulation and new-writer isolation; I-0022 proves the exact corrected observability policy; I-0024 proves candidate-bound provisioning and collectors locally; I-0028/EVAL-G02-013 proves byte-exact Windows transport; I-0030/EVAL-G02-015 proves the probe under actual Python 3.8.20. The 60/6/22 live matrices remain reserved for EVAL-G02-016."
       - "No GT/locked case payload, baseline, or paid model execution is claimed."
   - id: CLAIM-EVAL-004
     statement: "G02 has three shared-packet diagnosis baselines, deterministic scoring, exact quality-floor measurement, clustered bootstrap aggregation, and trial-local paid-model resume."

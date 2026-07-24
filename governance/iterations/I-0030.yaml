@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0030
 gate: G02
 title: Python 3.8 Probe Compatibility Corrective
-status: in_progress
+status: completed
 iteration_type: corrective
 corrects: [I-0024, I-0029]
 scope:
@@ -22,7 +22,7 @@ tests:
   - uv run python -m faultwitness_dev verify-fast
   - uv run python -m faultwitness_dev eval-changed
 eval_id: EVAL-G02-015
-commit: null
+commit: 89cf5917c9b63b5f706da012f4e4366f6ff6a8b8
 changed_paths:
   - AGENTS.md
   - CHANGELOG.md
