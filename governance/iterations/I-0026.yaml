@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0026
 gate: G02
 title: Bounded Privileged Remote Script Transport Corrective
-status: planned
+status: in_progress
 iteration_type: corrective
 corrects: [I-0024, I-0025]
 scope:

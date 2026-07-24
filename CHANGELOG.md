@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Activate I-0026 as the sole bounded privileged remote-script transport corrective; I-0027 remains
+  planned and no Gate L2, remote deployment, destructive scenario, external service, or model call is authorized.
 - Record I-0025/EVAL-G02-010 as terminal failed after a deterministic Windows command-line length
   defect blocked the first access cell; plan I-0026 bounded transport correction and I-0027 replacement.
 - Activate I-0025 as the sole replacement unified-candidate orchestration after I-0024 closed with
