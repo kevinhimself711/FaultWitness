@@ -4,6 +4,13 @@
 
 Result: pass.
 
+Final corrective implementation candidate
+`0d3264829e1d109b4f15ff757233e900a023bd82` passed one complete I-0017 Eval. The
+candidate changed only the lab checkout guard: the handler now accepts either the business
+candidate checkout or the exact binding-declared evidence-only descendant after proving Git
+ancestry. It rejects a mismatched HEAD and a non-descendant. The running SUT image set and G02 lab
+configuration were unchanged.
+
 Corrective implementation candidate `c7d55f2b823448a29f01f83b3e22d6236359802e` passed the complete I-0017
 Eval against the candidate-bound private K3s lab. The lab reported 24/24 Deployments Ready,
 OpenSearch Ready, image-set digest
@@ -35,6 +42,27 @@ frozen phase IDs. The corrective candidate was redeployed with 24/24 Deployments
 same frozen N=32 specification, N=6 adapter, and N=4 live family evidence successfully. It did not
 run the Gate N=32 live scenario matrix.
 
+## Final dual-SHA corrective pass
+
+The pre-I-0020 binding audit then found that `lab-deploy-and-bind` still required checked-out HEAD
+to equal the business candidate even when the frozen binding selected a validated evidence-only
+descendant. Candidate `0d32648` corrected only that checkout guard and added focused negative tests
+for HEAD mismatch and non-descendant rejection.
+
+The private lab was already 24/24 Ready on the unchanged image-set digest
+`3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e`; no image was rebuilt or
+repulled. Its candidate-binding ConfigMap was updated to the corrective candidate. One complete
+I-0017 Eval then ran from `2026-07-24T17:24:40.606182+00:00` through
+`2026-07-24T17:32:38.928793+00:00` and passed the unchanged N=32 specification, N=6 adapter, and N=4
+live-family checks. All four live scenarios reached `HEALTHY -> FAULT_ACTIVE -> HEALTHY` and restored
+the exact original flag-document digest. No Gate N=32 scenario and no model call ran.
+
+This final pass transparently repeated the monolithic I-0017 Eval once because the existing
+Iteration evaluator did not expose a checkout-guard-only phase. The resulting governance defect is
+assigned to the next forward corrective Iteration: completed records must remain immutable and
+later defects must not reactivate them. No metric, N, oracle, quality threshold, performance
+threshold, locked test, or Ground Truth changed.
+
 ## Required evidence
 
 - V-G02-004 Iteration N=32 specifications: pass.
@@ -45,6 +73,8 @@ run the Gate N=32 live scenario matrix.
 - L2 V-G02-017 clean-clone/candidate-binding runner readiness: pass.
 - Core-case payloads created: none.
 - Model calls, paid tokens, and baseline scoring: not performed.
+- Dual-SHA checkout accepts only the candidate or binding-declared validated descendant: pass.
+- HEAD mismatch and non-descendant negative paths: pass.
 
 ## Failure history and attribution
 

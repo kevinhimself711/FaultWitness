@@ -112,7 +112,7 @@ claims:
     evidence:
       - EVAL-G02-002
     limitations:
-      - "Corrective candidate c7d55f2 proves Iteration N=4 live smoke and both owner Gate phase interfaces; unified-candidate Gate N=32 remains reserved for EVAL-G02-005."
+      - "Final corrective candidate 0d32648 proves Iteration N=4 live smoke, both owner Gate phase interfaces, and the dual-SHA checkout guard; unified-candidate Gate N=32 remains reserved for EVAL-G02-005."
       - "No baseline, paid model, locked-test access matrix, or 160-case materialization is claimed."
   - id: CLAIM-EVAL-003
     statement: "G02 has a metadata-only 160-row preregistry and candidate-bound identity, namespace, package, and writer isolation contracts."

@@ -1,6 +1,6 @@
 {
-  "candidate_sha": "c7d55f2b823448a29f01f83b3e22d6236359802e",
-  "end_time": "2026-07-24T08:38:35.416222+00:00",
+  "candidate_sha": "0d3264829e1d109b4f15ff757233e900a023bd82",
+  "end_time": "2026-07-24T17:32:38.928793+00:00",
   "environment": "private-k3s-live",
   "iteration_n": 4,
   "open_evidence": [],
@@ -18,42 +18,44 @@
           "consumer_poll_lag_seconds": 0.0,
           "consumer_record_lag": 0.0,
           "correlated_error": true,
-          "cpu_rate": 0.0,
+          "cpu_rate": 0.0022291391730250004,
           "descriptions": [
+            "Error: Product Catalog Fail Feature Flag Enabled",
             "Error: Product Catalog Fail Feature Flag Enabled"
           ],
-          "error_spans": 6,
+          "error_spans": 16,
           "journey_failed": true,
           "journey_status": 200,
           "kafka_fault_log": false,
           "kafka_log_error": false,
           "ready": true,
-          "recorded_at": "2026-07-24T08:31:20.559583+00:00",
+          "recorded_at": "2026-07-24T17:24:54.254383+00:00",
           "trace_count": 5,
-          "working_set": 53657600.0
+          "working_set": 53821440.0
         },
         {
           "consumer_lag": 0.0,
           "consumer_poll_lag_seconds": 0.0,
           "consumer_record_lag": 0.0,
           "correlated_error": true,
-          "cpu_rate": 0.0010773570968284469,
+          "cpu_rate": 0.0021877051640672367,
           "descriptions": [
             "Error: Product Catalog Fail Feature Flag Enabled",
             "Error: Product Catalog Fail Feature Flag Enabled",
             "Error: Product Catalog Fail Feature Flag Enabled",
             "Error: Product Catalog Fail Feature Flag Enabled",
-            "Error: Product Catalog Fail Feature Flag Enabled"
+            "Error: Product Catalog Fail Feature Flag Enabled",
+            "failed to prepare order: failed to get product #\"OLJCESPC7Z\""
           ],
-          "error_spans": 46,
+          "error_spans": 34,
           "journey_failed": true,
           "journey_status": 200,
           "kafka_fault_log": false,
           "kafka_log_error": false,
           "ready": true,
-          "recorded_at": "2026-07-24T08:31:51.871007+00:00",
-          "trace_count": 25,
-          "working_set": 53657600.0
+          "recorded_at": "2026-07-24T17:25:25.649731+00:00",
+          "trace_count": 24,
+          "working_set": 53747712.0
         }
       ],
       "original_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
@@ -62,7 +64,24 @@
           "consumer_lag": 0.0,
           "consumer_poll_lag_seconds": 0.0,
           "consumer_record_lag": 0.0,
-          "cpu_rate": 0.0010773570968284469,
+          "cpu_rate": 0.0021877051640672367,
+          "descriptions": [],
+          "error_spans": 0,
+          "journey_healthy": true,
+          "journey_status": 200,
+          "kafka_fault_log": false,
+          "kafka_log_error": false,
+          "ready": true,
+          "recorded_at": "2026-07-24T17:25:30.286294+00:00",
+          "signal_not_worsening": true,
+          "trace_count": 1,
+          "working_set": 53747712.0
+        },
+        {
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "cpu_rate": 0.0021877051640672367,
           "descriptions": [],
           "error_spans": 2,
           "journey_healthy": true,
@@ -70,27 +89,10 @@
           "kafka_fault_log": false,
           "kafka_log_error": false,
           "ready": true,
-          "recorded_at": "2026-07-24T08:31:56.017643+00:00",
+          "recorded_at": "2026-07-24T17:26:01.712426+00:00",
           "signal_not_worsening": true,
-          "trace_count": 3,
-          "working_set": 53657600.0
-        },
-        {
-          "consumer_lag": 0.0,
-          "consumer_poll_lag_seconds": 0.0,
-          "consumer_record_lag": 0.0,
-          "cpu_rate": 0.0010867628716451226,
-          "descriptions": [],
-          "error_spans": 6,
-          "journey_healthy": true,
-          "journey_status": 200,
-          "kafka_fault_log": false,
-          "kafka_log_error": false,
-          "ready": true,
-          "recorded_at": "2026-07-24T08:32:27.325776+00:00",
-          "signal_not_worsening": true,
-          "trace_count": 19,
-          "working_set": 53645312.0
+          "trace_count": 13,
+          "working_set": 53747712.0
         }
       ],
       "restored_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
@@ -106,38 +108,38 @@
       "fault_class": "adHighCpu",
       "fault_observations": [
         {
-          "baseline_cpu_max": 0.0010867628716451226,
+          "baseline_cpu_max": 0.0021877051640672367,
           "consumer_lag": 0.0,
           "consumer_poll_lag_seconds": 0.0,
           "consumer_record_lag": 0.0,
           "correlated_span": true,
-          "cpu_rate": 1.9205501976021728,
+          "cpu_rate": 1.932991705907695,
           "descriptions": [],
           "error_spans": 0,
           "journey_status": 200,
           "kafka_fault_log": false,
           "kafka_log_error": false,
           "ready": true,
-          "recorded_at": "2026-07-24T08:33:25.961681+00:00",
-          "trace_count": 1,
-          "working_set": 53678080.0
+          "recorded_at": "2026-07-24T17:27:25.370152+00:00",
+          "trace_count": 3,
+          "working_set": 53743616.0
         },
         {
-          "baseline_cpu_max": 0.0010867628716451226,
+          "baseline_cpu_max": 0.0021877051640672367,
           "consumer_lag": 0.0,
           "consumer_poll_lag_seconds": 0.0,
           "consumer_record_lag": 0.0,
           "correlated_span": true,
-          "cpu_rate": 1.9205501976021728,
+          "cpu_rate": 1.932991705907695,
           "descriptions": [],
           "error_spans": 0,
           "journey_status": 200,
           "kafka_fault_log": false,
           "kafka_log_error": false,
           "ready": true,
-          "recorded_at": "2026-07-24T08:33:57.412517+00:00",
+          "recorded_at": "2026-07-24T17:27:56.652474+00:00",
           "trace_count": 5,
-          "working_set": 53678080.0
+          "working_set": 53743616.0
         }
       ],
       "original_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
@@ -146,7 +148,7 @@
           "consumer_lag": 0.0,
           "consumer_poll_lag_seconds": 0.0,
           "consumer_record_lag": 0.0,
-          "cpu_rate": 1.9205501976021728,
+          "cpu_rate": 1.932991705907695,
           "descriptions": [],
           "error_spans": 0,
           "journey_healthy": true,
@@ -154,10 +156,10 @@
           "kafka_fault_log": false,
           "kafka_log_error": false,
           "ready": true,
-          "recorded_at": "2026-07-24T08:34:01.679897+00:00",
+          "recorded_at": "2026-07-24T17:28:01.077128+00:00",
           "signal_not_worsening": true,
           "trace_count": 0,
-          "working_set": 53678080.0
+          "working_set": 53743616.0
         },
         {
           "consumer_lag": 0.0,
@@ -171,10 +173,10 @@
           "kafka_fault_log": false,
           "kafka_log_error": false,
           "ready": true,
-          "recorded_at": "2026-07-24T08:35:23.120026+00:00",
+          "recorded_at": "2026-07-24T17:29:16.848694+00:00",
           "signal_not_worsening": true,
-          "trace_count": 8,
-          "working_set": 53612544.0
+          "trace_count": 3,
+          "working_set": 53825536.0
         }
       ],
       "restored_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
@@ -194,10 +196,10 @@
           "consumer_lag": 0.0,
           "consumer_poll_lag_seconds": 0.0,
           "consumer_record_lag": 0.0,
-          "cpu_rate": 0.0011891987102859156,
+          "cpu_rate": 0.0021702600233127313,
           "descriptions": [
-            "Payment request failed. Invalid token. app.loyalty.level=gold",
-            "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold"
+            "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold",
+            "Payment request failed. Invalid token. app.loyalty.level=gold"
           ],
           "error_spans": 10,
           "journey_status": 200,
@@ -205,23 +207,23 @@
           "kafka_log_error": false,
           "payment_error": true,
           "ready": true,
-          "recorded_at": "2026-07-24T08:35:49.196902+00:00",
+          "recorded_at": "2026-07-24T17:29:49.862266+00:00",
           "trace_count": 1,
-          "working_set": 53616640.0
+          "working_set": 53809152.0
         },
         {
           "checkout_failed": true,
           "consumer_lag": 0.0,
           "consumer_poll_lag_seconds": 0.0,
           "consumer_record_lag": 0.0,
-          "cpu_rate": 0.0011891987102859156,
+          "cpu_rate": 0.0,
           "descriptions": [
             "Payment request failed. Invalid token. app.loyalty.level=gold",
             "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold",
             "Payment request failed. Invalid token. app.loyalty.level=gold",
             "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold",
-            "Payment request failed. Invalid token. app.loyalty.level=gold",
-            "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold"
+            "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold",
+            "Payment request failed. Invalid token. app.loyalty.level=gold"
           ],
           "error_spans": 30,
           "journey_status": 200,
@@ -229,9 +231,9 @@
           "kafka_log_error": false,
           "payment_error": true,
           "ready": true,
-          "recorded_at": "2026-07-24T08:36:20.454694+00:00",
+          "recorded_at": "2026-07-24T17:30:21.164116+00:00",
           "trace_count": 3,
-          "working_set": 53616640.0
+          "working_set": 53809152.0
         }
       ],
       "original_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
@@ -240,7 +242,7 @@
           "consumer_lag": 0.0,
           "consumer_poll_lag_seconds": 0.0,
           "consumer_record_lag": 0.0,
-          "cpu_rate": 0.00220133768161337,
+          "cpu_rate": 0.0026077303958584735,
           "descriptions": [],
           "error_spans": 0,
           "journey_healthy": true,
@@ -248,27 +250,27 @@
           "kafka_fault_log": false,
           "kafka_log_error": false,
           "ready": true,
-          "recorded_at": "2026-07-24T08:36:24.657008+00:00",
+          "recorded_at": "2026-07-24T17:30:25.507940+00:00",
           "signal_not_worsening": true,
           "trace_count": 0,
-          "working_set": 53620736.0
+          "working_set": 53768192.0
         },
         {
           "consumer_lag": 0.0,
           "consumer_poll_lag_seconds": 0.0,
           "consumer_record_lag": 0.0,
-          "cpu_rate": 0.00220133768161337,
+          "cpu_rate": 0.0026077303958584735,
           "descriptions": [],
-          "error_spans": 2,
+          "error_spans": 0,
           "journey_healthy": true,
           "journey_status": 200,
           "kafka_fault_log": false,
           "kafka_log_error": false,
           "ready": true,
-          "recorded_at": "2026-07-24T08:36:55.945336+00:00",
+          "recorded_at": "2026-07-24T17:30:56.906645+00:00",
           "signal_not_worsening": true,
-          "trace_count": 1,
-          "working_set": 53620736.0
+          "trace_count": 0,
+          "working_set": 53768192.0
         }
       ],
       "restored_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
@@ -285,10 +287,10 @@
       "fault_observations": [
         {
           "baseline_lag": 0.0,
-          "consumer_lag": 17.0,
-          "consumer_poll_lag_seconds": 17.0,
+          "consumer_lag": 18.0,
+          "consumer_poll_lag_seconds": 18.0,
           "consumer_record_lag": 0.0,
-          "cpu_rate": 0.001323210726244656,
+          "cpu_rate": 0.002327892912914534,
           "descriptions": [],
           "error_spans": 0,
           "journey_status": 200,
@@ -296,16 +298,16 @@
           "kafka_fault_log": true,
           "kafka_log_error": false,
           "ready": true,
-          "recorded_at": "2026-07-24T08:37:28.739931+00:00",
+          "recorded_at": "2026-07-24T17:31:30.677295+00:00",
           "trace_count": 3,
-          "working_set": 53673984.0
+          "working_set": 53854208.0
         },
         {
           "baseline_lag": 0.0,
-          "consumer_lag": 17.0,
-          "consumer_poll_lag_seconds": 17.0,
+          "consumer_lag": 18.0,
+          "consumer_poll_lag_seconds": 18.0,
           "consumer_record_lag": 0.0,
-          "cpu_rate": 0.001323210726244656,
+          "cpu_rate": 0.002327892912914534,
           "descriptions": [],
           "error_spans": 0,
           "journey_status": 200,
@@ -313,46 +315,46 @@
           "kafka_fault_log": true,
           "kafka_log_error": false,
           "ready": true,
-          "recorded_at": "2026-07-24T08:38:00.157294+00:00",
+          "recorded_at": "2026-07-24T17:32:02.075916+00:00",
           "trace_count": 3,
-          "working_set": 53673984.0
+          "working_set": 53854208.0
         }
       ],
       "original_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
       "recovery_observations": [
         {
-          "consumer_lag": 17.0,
-          "consumer_poll_lag_seconds": 17.0,
+          "consumer_lag": 18.0,
+          "consumer_poll_lag_seconds": 18.0,
           "consumer_record_lag": 0.0,
-          "cpu_rate": 0.001323210726244656,
+          "cpu_rate": 0.0,
           "descriptions": [],
           "error_spans": 0,
           "journey_healthy": true,
           "journey_status": 200,
-          "kafka_fault_log": true,
+          "kafka_fault_log": false,
           "kafka_log_error": false,
           "ready": true,
-          "recorded_at": "2026-07-24T08:38:04.270539+00:00",
+          "recorded_at": "2026-07-24T17:32:06.539299+00:00",
           "signal_not_worsening": true,
           "trace_count": 0,
-          "working_set": 53673984.0
+          "working_set": 53854208.0
         },
         {
-          "consumer_lag": 0.0,
-          "consumer_poll_lag_seconds": 0.0,
+          "consumer_lag": 18.0,
+          "consumer_poll_lag_seconds": 18.0,
           "consumer_record_lag": 0.0,
-          "cpu_rate": 0.0013354746164015512,
+          "cpu_rate": 0.0021648484304693017,
           "descriptions": [],
           "error_spans": 0,
           "journey_healthy": true,
           "journey_status": 200,
-          "kafka_fault_log": true,
-          "kafka_log_error": false,
+          "kafka_fault_log": false,
+          "kafka_log_error": true,
           "ready": true,
-          "recorded_at": "2026-07-24T08:38:35.630667+00:00",
+          "recorded_at": "2026-07-24T17:32:37.925696+00:00",
           "signal_not_worsening": true,
-          "trace_count": 5,
-          "working_set": 53809152.0
+          "trace_count": 3,
+          "working_set": 53710848.0
         }
       ],
       "restored_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
@@ -365,7 +367,7 @@
     }
   ],
   "schema_version": "1.0.0",
-  "start_time": "2026-07-24T08:31:06.315704+00:00",
+  "start_time": "2026-07-24T17:24:40.606182+00:00",
   "status": "pass",
   "validation": "V-G02-006"
 }

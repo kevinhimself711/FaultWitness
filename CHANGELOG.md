@@ -26,6 +26,10 @@
 
 ### Tooling
 
+- Pass the final I-0017 dual-SHA corrective Eval on candidate `0d32648`: validate the
+  binding-declared evidence-head checkout guard, retain the unchanged N=32/N=6/N=4 evidence and
+  image-set digest, restore all four live scenarios exactly, and leave `open_evidence: []` without
+  a Gate scenario or model call.
 - Make I-0017's lab deployment accept only the exact candidate or its binding-validated
   evidence-only descendant, resolving the post-candidate binding cycle without redeployment drift.
 - Reopen owning I-0017 before I-0020 after readiness audit found lab deployment rejecting the

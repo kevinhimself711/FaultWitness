@@ -3,24 +3,24 @@
   "eval_id": "EVAL-G02-002",
   "gate": "G02",
   "iteration": "I-0017",
-  "candidate_sha": "c7d55f2b823448a29f01f83b3e22d6236359802e",
-  "evaluated_revision": "c7d55f2b823448a29f01f83b3e22d6236359802e",
-  "evidence_head_sha": "e3f834bff47727af297fcece351aa087311b554b",
+  "candidate_sha": "0d3264829e1d109b4f15ff757233e900a023bd82",
+  "evaluated_revision": "0d3264829e1d109b4f15ff757233e900a023bd82",
+  "evidence_head_sha": "0d3264829e1d109b4f15ff757233e900a023bd82",
   "status": "pass",
   "subject_digests": {
     "config/g02/lab.yaml": "1adf8d580f62aa5471aae742a48b714dc5bc226c5b085566f622fa8ac86fba71",
-    "src/faultwitness_dev/g02_lab.py": "8f776c4a91e774a36506a601660b05723a354b46a4231177b20c8224274feee5",
-    "src/faultwitness_dev/g02_eval.py": "7f12d1c24e8b5fe83063321d8612c0d3a825fd83f9463cbf6bcc14eb53e58c98"
+    "src/faultwitness_dev/g02_lab.py": "8662552737c524b868033d3d644affa0a1f06d85d799900750ab2e540f11e6a2",
+    "src/faultwitness_dev/g02_eval.py": "5f6687dd0592df2cbdc8eb1ccb47c56d98d499ec5e34907975c87090b7f16bea"
   },
   "environment_fingerprint": "844829d6e0b5c4054049fea6a50c8282daa827f1c375e88248f5c431429bc62c",
   "phases": [
     {
       "phase_id": "iteration-live-smoke",
       "status": "pass",
-      "start_time": "2026-07-24T08:31:06.315704+00:00",
-      "end_time": "2026-07-24T08:38:35.416222+00:00",
-      "cache_key": "3254ca7cf93328dfe0b050bfd03cd58935197cbf92161dea7e70ffc6d4166ec3",
-      "artifact_digest": "63b63b76b998c26baccea8d6a438d2943ea3fb6c990121446c5be4c402b9d3c7",
+      "start_time": "2026-07-24T17:24:40.606182+00:00",
+      "end_time": "2026-07-24T17:32:38.928793+00:00",
+      "cache_key": "77f26e485c3db3c549bbcbb0584987f2f8a1d51dacb91781bca434a2e19dedd3",
+      "artifact_digest": "70ded1b5bba1fc876024a2d5487d88cd9e90e62eef031142416c41886d2ea3f8",
       "artifact_path": "docs/evals/EVAL-G02-002/artifacts/scenario-smoke.json",
       "private_artifact_uri": null,
       "execution_count": 1,
@@ -29,7 +29,7 @@
   ],
   "environments": ["private-k3s-live"],
   "commands": [
-    "uv run python -m faultwitness_dev eval-iteration I-0017 --candidate-sha c7d55f2b823448a29f01f83b3e22d6236359802e"
+    "uv run python -m faultwitness_dev eval-iteration I-0017 --candidate-sha 0d3264829e1d109b4f15ff757233e900a023bd82"
   ],
   "artifacts": [
     "docs/evals/EVAL-G02-002/PLAN.md",
