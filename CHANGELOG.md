@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Activate I-0030 as the sole Python 3.8 probe compatibility corrective; I-0031 remains planned,
+  and no remote Gate L2, destructive, external-service, or model work is authorized in I-0030.
 - Preserve I-0029/EVAL-G02-014 as terminal negative evidence after the private host's Python 3.8
   rejected `datetime.UTC`; plan I-0030 compatibility correction and I-0031/EVAL-G02-016 replacement.
 - Activate I-0029 as the sole fourth replacement orchestration after I-0028 closed with byte-exact
