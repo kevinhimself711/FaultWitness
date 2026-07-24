@@ -26,6 +26,9 @@
 
 ### Tooling
 
+- Complete I-0018 on immutable implementation candidate `bcc6437`: pass the 160-row metadata-only
+  preregistry, three sealed package scans, four identity policies, namespace isolation, four writer
+  canaries, and owned Gate runner contracts with no model calls or open evidence.
 - Complete I-0017 on immutable implementation candidate `ca9de48`: pass all 32 seed
   specifications, six adapter/oracle contracts, and four candidate-bound live family smokes with
   exact restoration, no core-case materialization, no model calls, and no open evidence.

@@ -5,7 +5,7 @@
   "iteration": "I-0018",
   "candidate_sha": "bcc643774c4d8577f6181664b3bf19aa12a5f281",
   "evaluated_revision": "bcc643774c4d8577f6181664b3bf19aa12a5f281",
-  "evidence_head_sha": "bcc643774c4d8577f6181664b3bf19aa12a5f281",
+  "evidence_head_sha": "6e34fd49bdb52436e987d0eb2e45e5830b61a246",
   "status": "pass",
   "subject_digests": {
     "config/g02/isolation.yaml": "24be7ecfe207da9180412e94b2718467550b8706310ce4c6322c05b0bbf12b0e",

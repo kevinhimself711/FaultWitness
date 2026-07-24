@@ -114,3 +114,12 @@ claims:
     limitations:
       - "I-0017 proves Iteration N=4 live smoke; unified-candidate Gate N=32 remains reserved for EVAL-G02-005."
       - "No baseline, paid model, locked-test access matrix, or 160-case materialization is claimed."
+  - id: CLAIM-EVAL-003
+    statement: "G02 has a metadata-only 160-row preregistry and candidate-bound identity, namespace, package, and writer isolation contracts."
+    status: partially_verified
+    requirements: [REQ-SEC-003, REQ-OBS-001, REQ-OBS-002]
+    evidence:
+      - EVAL-G02-003
+    limitations:
+      - "I-0018 proves policy simulation and new-writer isolation; the 60-cell, six-stage, and 22-surface live matrices remain reserved for EVAL-G02-005."
+      - "No GT/locked case payload, baseline, or paid model execution is claimed."

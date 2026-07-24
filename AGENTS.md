@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: I-0018
+active_iteration: null
 next_iteration: I-0019
 last_closed_gate: G01
 ---
@@ -12,10 +12,10 @@ last_closed_gate: G01
 
 FaultWitness is a multi-tenant Agent Runtime for investigating microservice incidents, proposing bounded remediations, executing approved actions, and producing auditable evaluation and training assets.
 
-G00 and G01 are closed. G02 is `in_progress`; I-0018 is the only active Iteration and I-0019 is
-next. I-0018 authorizes only the frozen sealed registry, locked-test/ground-truth isolation,
-160-row preregistration, policy/canary evidence, and owned L2 runner scope. It does not authorize
-core-case materialization, baseline scoring, paid model calls, or final Gate evaluation.
+G00 and G01 are closed. G02 is `in_progress`; I-0018 is complete with no open evidence and there is
+no active Iteration. I-0019 is planned but requires explicit project-owner confirmation after review
+of I-0018 isolation evidence. Until then, baseline scoring, paid model calls, core-case
+materialization, and final Gate evaluation are not authorized.
 
 ## Source-of-truth order
 
