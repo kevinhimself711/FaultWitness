@@ -43,6 +43,14 @@ claims:
       - EVAL-G00-006
     limitations:
       - "This claim covers design and repository governance, not product runtime behavior."
+  - id: CLAIM-GOV-004
+    statement: "Iteration lifecycle history is machine-checked as forward-only from a repository policy epoch."
+    status: verified
+    requirements: []
+    evidence:
+      - EVAL-G02-006
+    limitations:
+      - "This claim covers governance state transitions only; it does not claim G02 Gate runtime or quality success."
   - id: CLAIM-GATE-001
     statement: "G00 is closed on an immutable candidate with all six Iterations all six Evals and every frozen architecture governance and evidence criterion passing without waivers."
     status: verified

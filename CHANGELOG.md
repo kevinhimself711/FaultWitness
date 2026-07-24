@@ -26,6 +26,8 @@
 
 ### Tooling
 
+- Pass EVAL-G02-006 on candidate `826453b`: all five forward-lifecycle cases, repository history
+  scan, typed corrective links, and I-0020 owner-reopen absence pass with `open_evidence: []`.
 - Enforce the I-0021 forward-only lifecycle policy in `verify-fast`: scan committed history and the
   worktree, reject terminal reactivation/deletion, require typed new Iterations and corrective
   links, and expose five deterministic EVAL-G02-006 cases without external execution.

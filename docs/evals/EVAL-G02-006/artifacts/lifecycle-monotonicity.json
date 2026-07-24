@@ -1,0 +1,35 @@
+{
+  "candidate_sha": "826453b3cf1256e105cc32a0f0aef6fd38931258",
+  "cases": [
+    {
+      "case_id": "accept-planned-active",
+      "status": "pass"
+    },
+    {
+      "case_id": "accept-active-completed",
+      "status": "pass"
+    },
+    {
+      "case_id": "reject-completed-active",
+      "status": "pass"
+    },
+    {
+      "case_id": "reject-failed-planned",
+      "status": "pass"
+    },
+    {
+      "case_id": "reject-deletion-and-hidden-history",
+      "status": "pass"
+    }
+  ],
+  "end_time": "2026-07-24T18:25:27.049103+00:00",
+  "i0020_owner_reopen_route": "absent",
+  "iteration_n": 5,
+  "open_evidence": [],
+  "policy_path": "governance/policies/iteration-lifecycle-v1.yaml",
+  "repository_history": "pass",
+  "schema_version": "1.0.0",
+  "start_time": "2026-07-24T18:25:26.746619+00:00",
+  "status": "pass",
+  "validation": "I-0021-lifecycle-monotonicity"
+}

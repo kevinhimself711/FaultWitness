@@ -1,12 +1,36 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "eval_id": "EVAL-G02-006",
   "gate": "G02",
   "iteration": "I-0021",
-  "evaluated_revision": "not-run",
-  "status": "pending",
-  "environments": ["planned-local-deterministic"],
+  "candidate_sha": "826453b3cf1256e105cc32a0f0aef6fd38931258",
+  "evaluated_revision": "826453b3cf1256e105cc32a0f0aef6fd38931258",
+  "evidence_head_sha": "826453b3cf1256e105cc32a0f0aef6fd38931258",
+  "status": "pass",
+  "subject_digests": {
+    "governance/policies/iteration-lifecycle-v1.yaml": "408bd7c76e98d39494d7dd97e3b4568cae771087f6a91f8b9171f4976149ef6c",
+    "schemas/governance/iteration.schema.json": "2b00670d158d0ff48ee369e9445164442903a17a2734c56bec080b110a347cd8",
+    "src/faultwitness_dev/checks.py": "8a17043a0e77f178ef9d49ea3d2b198dba031cdc9d1a09c643eaa6e275a390f1",
+    "src/faultwitness_dev/evals.py": "4cff0b9044b84d535b9ce58248d23b4c8d9d2a39806324cd4df7b813b89557ee"
+  },
+  "environment_fingerprint": "bc7dcf7069f1d2ca713d7cf4a622fb4374647b7ad1b6223e609c2f5a15ab590f",
+  "phases": [
+    {
+      "phase_id": "iteration-lifecycle-monotonicity",
+      "status": "pass",
+      "start_time": "2026-07-24T18:25:26.746619+00:00",
+      "end_time": "2026-07-24T18:25:27.049103+00:00",
+      "cache_key": "8fb94bd8376b1d5f1d9fc64f328790cf54a6b99bfab97e63bd9d303661222254",
+      "artifact_digest": "a87e469e07c174c42f4c4ee2d0f851a1de4ce6a30378c3b359413dee6d50b854",
+      "artifact_path": "docs/evals/EVAL-G02-006/artifacts/lifecycle-monotonicity.json",
+      "private_artifact_uri": null,
+      "execution_count": 1,
+      "inherited_from_manifest": null
+    }
+  ],
+  "environments": ["windows-local-deterministic"],
   "commands": [
+    "uv run python -m faultwitness_dev eval-iteration I-0021 --candidate-sha 826453b3cf1256e105cc32a0f0aef6fd38931258",
     "uv run pytest -q tests/governance/test_governance.py",
     "uv run python -m faultwitness_dev verify-fast",
     "uv run python -m faultwitness_dev eval-changed"
