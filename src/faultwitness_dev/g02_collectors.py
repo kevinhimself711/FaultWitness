@@ -72,7 +72,9 @@ class ProbeBlockedError(RuntimeError):
     """A deterministic runner or provisioning failure that needs a new candidate."""
 
 
-LANGSMITH_RUN_QUERY_URL = "https://api.smith.langchain.com/api/v1/runs/query"
+LANGSMITH_CREDENTIAL_INFO_URL = (
+    "https://api.smith.langchain.com/api/v1/orgs/current/info"
+)
 
 
 def langsmith_access_probe(
@@ -84,10 +86,9 @@ def langsmith_access_probe(
     owned = client is None
     active_client = client or httpx.Client(timeout=None)
     try:
-        response = active_client.post(
-            LANGSMITH_RUN_QUERY_URL,
+        response = active_client.get(
+            LANGSMITH_CREDENTIAL_INFO_URL,
             headers={"x-api-key": credential},
-            json={"limit": 1, "select": ["id"]},
         )
     except httpx.TransportError as error:
         raise ProbeInfrastructureError("langsmith_transport") from error

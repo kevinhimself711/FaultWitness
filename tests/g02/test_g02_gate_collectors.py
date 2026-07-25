@@ -179,7 +179,8 @@ def test_langsmith_access_probe_uses_supported_attributable_read_contract(
 
     def handler(request: httpx.Request) -> httpx.Response:
         observed["url"] = str(request.url)
-        observed["body"] = json.loads(request.content)
+        observed["method"] = request.method
+        observed["body_length"] = len(request.content)
         observed["credential_present"] = request.headers.get("x-api-key") == "opaque-key"
         return httpx.Response(status, json={"runs": []})
 
@@ -190,8 +191,9 @@ def test_langsmith_access_probe_uses_supported_attributable_read_contract(
             with pytest.raises(error_type, match=error_match):
                 langsmith_access_probe("opaque-key", client=client)
     assert observed == {
-        "url": "https://api.smith.langchain.com/api/v1/runs/query",
-        "body": {"limit": 1, "select": ["id"]},
+        "url": "https://api.smith.langchain.com/api/v1/orgs/current/info",
+        "method": "GET",
+        "body_length": 0,
         "credential_present": True,
     }
 

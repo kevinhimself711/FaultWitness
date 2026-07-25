@@ -118,8 +118,10 @@ skip or reduce the frozen 60-cell Gate matrix.
 
 ## LangSmith credential seam proof
 
-The operator-side read probe uses the current official `POST /api/v1/runs/query` contract with
-`limit: 1` and `select: [id]`; response content is never retained. The public result contains only
+The operator-side read probe uses the current official
+`GET /api/v1/orgs/current/info` credential-authenticated contract; response content is never
+retained. Unlike public `/api/v1/info`, this endpoint returns 401 without a credential and therefore
+proves the existing key without requiring workspace query context. The public result contains only
 candidate/environment identity, request-contract digest, `credential_allow`, a sanitized response
 class, HTTP status, timestamps, and execution counters. Transport, 408/425/429, and 5xx remain
 resumable infrastructure failures; 401/403 remain credential denial; any other non-success response
