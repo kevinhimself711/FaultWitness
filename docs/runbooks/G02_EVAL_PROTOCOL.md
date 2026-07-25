@@ -3,9 +3,10 @@
 ## Purpose
 
 本 Runbook 说明 I-0016 冻结的 phase、cache、trial、resume 与双 SHA 操作协议。它不授权
-部署、故障注入、live service 或模型调用。只有一个 `in_progress` 的 G02 standard
-orchestration Iteration、其 `eval_id`、完整十四-phase PLAN 和 candidate-binding 资产彼此一致
-时，`eval-g02` 才能运行 Gate phase。终态 Iteration 永远不能再次选择其 Eval 资产。
+部署、故障注入、live service 或模型调用。只有一个 `in_progress` 的 G02 Gate attempt
+(`A-G##-###`)、其 `eval_id`、完整十四-phase PLAN 和 candidate-binding 资产彼此一致时，
+`eval-g02` 才能运行 Gate phase。终态 work item 永远不能再次选择其 Eval 资产。当前执行
+入口是 `A-G02-001` / `EVAL-G02-024`。
 
 ## Iteration Eval
 
@@ -33,13 +34,14 @@ uv run python -m faultwitness_dev eval-g02-close --candidate-sha <SHA> --evidenc
 - 默认执行 DAG 并复用 exact-key pass。
 - `--resume` 只继续 pending 或 `infra_failed`。
 - `--from-failed` 从最早 pending 或 `infra_failed` phase 开始。
-- `metric_fail` 或确定性 `blocked` 使当前 orchestration terminal；修复只能产生前向
-  corrective Iteration 和新 candidate。只有 `infra_failed` 可在原 trial 续跑。
+- `metric_fail` 或确定性 `blocked` 使当前 Gate attempt terminal；修复只能产生新的前向
+  `C-G02-###` corrective 和新 candidate，随后由新的 `A-G02-###` attempt 复验。只有
+  `infra_failed` 可在原 trial 续跑。
 - `scenario-matrix` 对同一 candidate/artifact/config/environment key 只执行一次。
 
 ## Candidate-binding asset
 
-当前 standard orchestration Iteration 在 Gate Eval 前产生其 `eval_id` 对应目录下的
+当前 `A-G02-001` Gate attempt 在 Gate Eval 前产生 EVAL-G02-024 目录下的
 `candidate-binding.json`。I-0033 对应 EVAL-G02-018；I-0020/EVAL-G02-005、
 I-0023/EVAL-G02-008、I-0025/EVAL-G02-010 与后续 012/014/016 是不可变失败历史。
 binding 记录：
@@ -104,26 +106,27 @@ unit。`metric_fail`/`blocked` unit 在同一 candidate 上不可重试。不得
 - `candidate-binding.json` records the execution checkpoint that already existed before the runner
   produced it. It is not required to contain the SHA of the later commit that stores the file. That
   commit is verified through ancestry/tag, so the protocol has no SHA self-reference.
-- A runner defect discovered after an Iteration closed creates a new forward corrective Iteration.
-  Do not reactivate a completed Iteration or move `PROJECT_STATE.yaml` backward.
+- A runner defect discovered after a planned Iteration closed creates a new forward
+  `C-G##-###` corrective. Do not reactivate a completed work item or move `PROJECT_STATE.yaml`
+  backward.
 - A deterministic implementation, policy, zero-tolerance, cleanup, metric, quality, performance,
-  reconciliation, or close-readiness failure makes the current orchestration Iteration terminal.
-  Correction uses a higher-numbered corrective Iteration, and full Gate orchestration resumes only
-  through a higher-numbered replacement standard Iteration.
+  reconciliation, or close-readiness failure makes the current `A-G##-###` Gate attempt terminal.
+  Correction uses the next `C-G##-###` ID, and Gate orchestration resumes only through the next
+  `A-G##-###` ID. Neither namespace consumes or extends the frozen `I-####` sequence.
 - EVAL-G02-008 proved that a validator consuming operator-precomputed phase input is not a complete
-  L2 runner. The owning forward corrective must implement candidate-bound provisioning and
-  collection before a replacement orchestration starts; the final Gate Iteration never fabricates
+  L2 runner. The owning forward `C-G##-###` corrective must implement candidate-bound provisioning
+  and collection before a replacement Gate attempt starts; an `A-G##-###` attempt never fabricates
   the missing input.
 - A classified transient infrastructure or transport failure remains in the same phase/trial and
-  resumes only pending or `infra_failed` work; it does not create a corrective Iteration.
+  resumes only pending or `infra_failed` work; it does not create a corrective.
 - These rules change only provenance and orchestration. All frozen samples, thresholds, locked-test
   and Ground Truth isolation, health windows, token/cost ceilings, and failure semantics remain
   unchanged.
 
 ## Fail-closed diagnostics
 
-- `phase handler is not implemented`：终止当前 orchestration，创建前向 corrective Iteration；
-  禁止在任何 Gate orchestration Iteration 现场补写。
+- `phase handler is not implemented`：终止当前 `A-G##-###` Gate attempt，创建前向
+  `C-G##-###` corrective；禁止在任何 Gate attempt 现场补写。
 - `dependency lacks an exact-key pass`：先运行或恢复依赖，不可跳过。
 - `cannot rerun on the same candidate`：metric failure 需要修复并生成新候选。
 - candidate/subject/environment digest drift：停止，不得批量改写 manifest SHA。
