@@ -2,7 +2,7 @@ schema_version: "1.2.0"
 id: A-G02-005
 gate: G02
 title: Post-Payment-Observer Unified Candidate Gate Attempt
-status: in_progress
+status: failed
 iteration_type: gate_attempt
 attempt_of: G02
 attempt_scope:
@@ -27,7 +27,7 @@ tests:
   - uv run python -m faultwitness_dev eval-g02 --candidate-sha <full-sha>
   - uv run python -m faultwitness_dev eval-g02-close --candidate-sha <full-sha> --evidence-head-sha <full-sha>
 eval_id: EVAL-G02-032
-commit: null
+commit: df1fea44c15baaa3f2af72d2067def1d7a9f522c
 changed_paths:
   - AGENTS.md
   - CHANGELOG.md

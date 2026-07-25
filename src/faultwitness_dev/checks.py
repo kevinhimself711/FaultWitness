@@ -31,6 +31,7 @@ ITERATION_POLICY_PATH = "governance/policies/iteration-lifecycle-v1.yaml"
 WORK_ITEM_POLICY_PATH = "governance/policies/work-item-lifecycle-v2.yaml"
 ITERATION_RECORD_PREFIX = "governance/iterations/"
 ITERATION_TERMINAL_STATUSES = {"completed", "failed"}
+DIRECT_ACTIVE_INITIAL_TYPES = {"corrective", "gate_attempt"}
 ITERATION_ALLOWED_TRANSITIONS = {
     "planned": {"planned", "in_progress", "failed"},
     "in_progress": {"in_progress", "completed", "failed"},
@@ -119,6 +120,17 @@ def validate_active_governance_state(root: Path) -> None:
         record = iterations.get(active)
         if record is None or record["gate"] != gate["id"] or record["status"] != "in_progress":
             raise GovernanceError(f"active work-item state drift: {active}")
+    in_progress = sorted(
+        iteration_id
+        for iteration_id, record in iterations.items()
+        if record["status"] == "in_progress"
+    )
+    expected_in_progress = [] if active is None else [active]
+    if in_progress != expected_in_progress:
+        raise GovernanceError(
+            "in-progress work-item state drift: "
+            f"PROJECT_STATE={expected_in_progress}, records={in_progress}"
+        )
 
     next_iteration = state.get("next_iteration")
     if next_iteration is not None:
@@ -148,15 +160,19 @@ def validate_iteration_status_transition(
     if previous is None:
         if current is None:
             return
-        if current.get("status") != "planned":
-            raise GovernanceError(
-                f"new Iteration must start planned: {label}={current.get('status')}"
-            )
-        if current.get("iteration_type") not in {"standard", "corrective", "gate_attempt"}:
+        iteration_type = current.get("iteration_type")
+        if iteration_type not in {"standard", "corrective", "gate_attempt"}:
             raise GovernanceError(f"new work item lacks iteration_type: {label}")
-        if current.get("iteration_type") == "corrective" and not current.get("corrects"):
+        initial_status = current.get("status")
+        if initial_status != "planned" and not (
+            initial_status == "in_progress" and iteration_type in DIRECT_ACTIVE_INITIAL_TYPES
+        ):
+            raise GovernanceError(
+                f"new work item has invalid initial status: {label}={initial_status}"
+            )
+        if iteration_type == "corrective" and not current.get("corrects"):
             raise GovernanceError(f"new corrective work item lacks corrects links: {label}")
-        if current.get("iteration_type") == "gate_attempt" and current.get("corrects"):
+        if iteration_type == "gate_attempt" and current.get("corrects"):
             raise GovernanceError(f"new Gate attempt cannot declare corrects links: {label}")
         return
     if current is None:
@@ -547,6 +563,10 @@ def validate_iteration_lifecycle_history(root: Path) -> None:
         raise GovernanceError("Iteration lifecycle policy allowed transitions drifted")
     if policy.get("new_record_initial_status") != "planned":
         raise GovernanceError("Iteration lifecycle policy initial status drifted")
+    if sorted(policy.get("direct_active_initial_types", [])) != sorted(
+        DIRECT_ACTIVE_INITIAL_TYPES
+    ):
+        raise GovernanceError("Iteration lifecycle policy direct-active types drifted")
     if policy.get("corrective_link_direction") != "lower_iteration_id":
         raise GovernanceError("Iteration lifecycle policy corrective direction drifted")
     validate_corrective_iteration_links(root)

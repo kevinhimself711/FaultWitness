@@ -1,0 +1,61 @@
+schema_version: "1.2.0"
+id: C-G02-006
+gate: G02
+title: Prior-Recovery Precondition Corrective
+status: in_progress
+iteration_type: corrective
+corrects: [I-0017, A-G02-005]
+root_cause:
+  id: RC-G02-006
+  source_eval: EVAL-G02-032
+  phase: scenario-matrix
+  failure_mode: The Gate runner ignores the Master Plan rule that a prior seed's two healthy recovery observations may prove the next seed precondition and instead takes a redundant one-shot control sample.
+affected_validation_ids: [V-G02-006]
+verification_scope:
+  changed_seam: adjacent-seed healthy-precondition evidence reuse
+  semantic_branches: [first_seed_control, prior_recovery_allow, unhealthy_prior_recovery_reject]
+  reused_test_entrypoints: [tests/g02/test_g02_lab.py]
+  real_seam_proof: required
+  real_seam_runner: existing run_scenario with SEED-G02-0004 and EVAL-G02-032 SEED-G02-0003 recovery evidence
+  real_seam_artifact: docs/evals/EVAL-G02-033/artifacts/prior-recovery-precondition-seam.json
+  gate_l2_execution: 0
+  full_gate_eval: false
+cost_boundary:
+  root_cause_count: 1
+  bespoke_eval_harness: false
+  gate_attempt_included: false
+  targeted_verification_separate: true
+  global_sync_deferred: true
+accounting_scope:
+  corrective_engineering: included
+  targeted_verification: separate
+  gate_attempt_execution: excluded
+  governance_sync: separate
+scope:
+  - Consume the immediately preceding passed trial's two healthy recovery observations as the next seed precondition exactly as frozen in the Master Plan.
+  - Preserve an explicit first-seed control observation and fail closed on missing or unhealthy prior recovery evidence.
+  - Reuse the existing G02 lab tests and execute only SEED-G02-0004 once through the existing runner after candidate binding.
+non_goals:
+  - Running or changing any access trace canary full scenario baseline or model matrix.
+  - Changing observation N spacing deadline recovery health threshold permissions Ground Truth locked tests quality performance token cost or failure semantics.
+  - Adding a new harness cache engine lifecycle framework or operator pass path.
+dependencies: [I-0017, C-G02-005, A-G02-005]
+tests:
+  - uv run pytest -q tests/g02/test_g02_lab.py -k prior_recovery
+  - uv run python -m faultwitness_dev verify-fast
+  - uv run python -m faultwitness_dev eval-changed
+eval_id: EVAL-G02-033
+commit: null
+changed_paths:
+  - src/faultwitness_dev/g02_lab.py
+  - tests/g02/test_g02_lab.py
+  - docs/runbooks/G02_FAULT_LAB.md
+  - docs/evals/EVAL-G02-033
+  - docs/roadmap/iterations/C-G02-006.md
+  - governance/iterations/C-G02-006.yaml
+behavior_change: true
+docs_updated:
+  - docs/runbooks/G02_FAULT_LAB.md
+  - docs/evals/EVAL-G02-033/PLAN.md
+  - docs/roadmap/iterations/C-G02-006.md
+threshold_changes: []

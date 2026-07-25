@@ -6,7 +6,7 @@ plan: docs/gates/G02/PLAN.md
 report: docs/gates/G02/REPORT.md
 iterations: [I-0016, I-0017, I-0018, I-0019, I-0021, I-0020, I-0022, I-0023, I-0024, I-0025, I-0026, I-0027, I-0028, I-0029, I-0030, I-0031, I-0032, I-0033, I-0034, I-0035, I-0036, I-0037]
 frozen_iterations: [I-0016, I-0017, I-0018, I-0019, I-0020]
-work_items: [C-G02-001, A-G02-001, C-G02-002, A-G02-002, C-G02-003, A-G02-003, C-G02-004, A-G02-004, C-G02-005, A-G02-005]
+work_items: [C-G02-001, A-G02-001, C-G02-002, A-G02-002, C-G02-003, A-G02-003, C-G02-004, A-G02-004, C-G02-005, A-G02-005, C-G02-006]
 pass_criteria:
   - All frozen implementation owners and current C-G02 corrective work complete with no open evidence and the separate A-G02 Gate attempt passes while terminal legacy attempts remain immutable.
   - Four Scenario DSL families six fault classes and 32 executable seeds are reproducible on one immutable candidate.

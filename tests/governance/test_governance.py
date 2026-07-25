@@ -372,6 +372,28 @@ def test_iteration_lifecycle_accepts_only_forward_nonterminal_transitions() -> N
         validate_iteration_status_transition(active, mutated_type, "type-mutation")
 
 
+def test_corrective_and_gate_attempt_may_start_directly_active() -> None:
+    corrective = {
+        "id": "C-G02-999",
+        "status": "in_progress",
+        "iteration_type": "corrective",
+        "corrects": ["A-G02-998"],
+    }
+    gate_attempt = {
+        "id": "A-G02-999",
+        "status": "in_progress",
+        "iteration_type": "gate_attempt",
+    }
+    validate_iteration_status_transition(None, corrective, "direct-corrective")
+    validate_iteration_status_transition(None, gate_attempt, "direct-gate-attempt")
+
+
+def test_standard_iteration_must_still_start_planned() -> None:
+    standard = {"id": "I-9999", "status": "in_progress", "iteration_type": "standard"}
+    with pytest.raises(GovernanceError, match="invalid initial status"):
+        validate_iteration_status_transition(None, standard, "direct-standard")
+
+
 def test_iteration_sequence_rejects_reactivation_hidden_by_later_completion() -> None:
     completed = {"id": "I-9000", "status": "completed", "iteration_type": "standard"}
     active = {"id": "I-9000", "status": "in_progress", "iteration_type": "standard"}
@@ -539,6 +561,7 @@ def test_repository_history_rejects_terminal_reactivation(tmp_path: Path) -> Non
         "  completed: [completed]\n"
         "  failed: [failed]\n"
         "new_record_initial_status: planned\n"
+        "direct_active_initial_types: [corrective, gate_attempt]\n"
         "corrective_link_direction: lower_iteration_id\n",
         encoding="utf-8",
     )

@@ -7,4 +7,5 @@ allowed_transitions:
   completed: [completed]
   failed: [failed]
 new_record_initial_status: planned
+direct_active_initial_types: [corrective, gate_attempt]
 corrective_link_direction: lower_iteration_id

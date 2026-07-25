@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: A-G02-005
+active_iteration: C-G02-006
 next_iteration: null
 last_closed_gate: G01
 ---
@@ -24,7 +24,9 @@ allow/reject evidence and no open evidence. A-G02-003 is terminally failed with 
 trace-prerequisite evidence. C-G02-004 is completed with exact-candidate deploy, inspect, relay,
 and smoke evidence. A-G02-004 is terminally failed with complete payment-unreachable oracle
 evidence. C-G02-005 is completed with caller-trace attribution, targeted tests, and one restored
-real scenario; A-G02-005 is the active separate Gate attempt. No terminal work item may be reopened.
+real scenario. A-G02-005 is terminally failed after three scenario passes because the runner ignored
+the Master Plan's prior-recovery precondition rule. C-G02-006 is the active minimal runner
+corrective. No terminal work item may be reopened.
 
 ## Source-of-truth order
 
@@ -41,6 +43,9 @@ PROJECT_STATE.yaml is the authority for the active Gate and work item, not for a
 ## Required workflow
 
 - No behavioral change may begin without a planned `I-####` or `C-G##-###` work-item plan.
+- A new `C-G##-###` or `A-G##-###` record may be created directly as the sole `in_progress`
+  work item in the same commit that records its complete plan. A separate planned-only activation
+  commit is forbidden; standard `I-####` Iterations must still begin as `planned`.
 - A Gate Master Plan must be frozen before its implementation iterations start.
 - `I-####` is reserved for Iterations frozen before Gate execution. Execution-time root-cause work
   uses `C-G##-###`; a unified-candidate Gate run uses `A-G##-###`. Never continue the planned

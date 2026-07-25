@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: A-G02-005
+active_iteration: C-G02-006
 next_iteration: null
 last_closed_gate: G01
 ---

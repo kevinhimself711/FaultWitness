@@ -1,0 +1,43 @@
+{
+  "candidate_sha": "df1fea44c15baaa3f2af72d2067def1d7a9f522c",
+  "image_count": 30,
+  "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+  "namespace": "fw-sut",
+  "profile": "k3s",
+  "ready_deployments": {
+    "accounting": 1,
+    "ad": 1,
+    "cart": 1,
+    "checkout": 1,
+    "currency": 1,
+    "email": 1,
+    "flagd": 1,
+    "fraud-detection": 1,
+    "frontend": 1,
+    "frontend-proxy": 1,
+    "grafana": 1,
+    "image-provider": 1,
+    "jaeger": 1,
+    "kafka": 1,
+    "load-generator": 1,
+    "otel-collector": 1,
+    "payment": 1,
+    "postgresql": 1,
+    "product-catalog": 1,
+    "prometheus": 1,
+    "quote": 1,
+    "recommendation": 1,
+    "shipping": 1,
+    "valkey-cart": 1
+  },
+  "status": "pass",
+  "sut_commit": "b74a7bc7bbe66099c61951f42b24dab8b6f02d18",
+  "trace_service": {
+    "available": 1,
+    "bundle_sha256": "1da893331df7ce3407295d662a0231466dfad4453640813e3879edb6e3ae048b",
+    "candidate_sha": "df1fea44c15baaa3f2af72d2067def1d7a9f522c",
+    "image": "docker.io/faultwitness/trace-service:df1fea44c15baaa3f2af72d2067def1d7a9f522c",
+    "ready": 1,
+    "service_type": "ClusterIP"
+  }
+}

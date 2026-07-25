@@ -68,6 +68,14 @@ cannot satisfy the oracle. The value must still exceed its pre-injection baselin
 frozen observations. This is signal-source correction only and does not alter N, the 30-second
 spacing, the 90-second oracle window, or any performance or Gate threshold.
 
+For the first seed, the controller obtains an explicit healthy control observation. For each later
+seed, the immediately preceding passed trial's two healthy recovery observations are the frozen
+precondition evidence, as permitted by the Master Plan. The runner validates both recovery records
+and records `precondition_source=prior-scenario-recovery`; it does not take an additional one-shot
+control sample between adjacent seeds. Missing or unhealthy prior recovery remains blocking. This
+removes a redundant sampling race without changing the two-observation N, 30-second spacing,
+90-second oracle window, recovery requirements, or any quality/performance threshold.
+
 For `paymentUnreachable`, the Jaeger query selects the `checkout` caller because an unreachable
 payment service cannot create a payment-service callee span. A fault observation requires one
 trace that contains all three signals: an errored checkout `PlaceOrder` server span, an errored

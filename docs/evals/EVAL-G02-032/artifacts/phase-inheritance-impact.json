@@ -1,0 +1,38 @@
+{
+  "candidate_sha": "df1fea44c15baaa3f2af72d2067def1d7a9f522c",
+  "source_candidate_sha": "723c056defa11355b3c3ad48648c5d9deb4961b8",
+  "source_manifest": "docs/evals/EVAL-G02-030/manifest.json",
+  "changed_semantic_paths": [
+    "docs/runbooks/G02_FAULT_LAB.md",
+    "src/faultwitness_dev/g02_lab.py",
+    "tests/g02/test_g02_lab.py"
+  ],
+  "changed_semantics": [
+    "paymentUnreachable caller-side scenario observation"
+  ],
+  "inherited_phases": [
+    "preflight-manifests",
+    "preflight-upstream-g01",
+    "isolation-access-matrix",
+    "trace-six-stage-matrix",
+    "all-surface-canary"
+  ],
+  "affected_phases": [
+    "preflight-candidate-binding",
+    "preflight-static-inheritance",
+    "lab-deploy-and-bind",
+    "scenario-matrix",
+    "baseline-deterministic",
+    "baseline-live",
+    "baseline-aggregate",
+    "candidate-reconciliation",
+    "close-readiness"
+  ],
+  "unchanged_subjects": {
+    "config_digest": "5977479a826a5e0cefd5900190262422e8178f48b131dbff7beeb02279ca1490",
+    "dataset_digest": "b2fb0c9ab7d5c91274d4bc40f18f3eceecb9bd31478945099ef430d879612908",
+    "environment_fingerprint": "32a012ad672a808004e7beb1e41fff66cf87578fbfa470a89dcff47a2b0b80a2",
+    "sut_image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e"
+  },
+  "status": "pass"
+}

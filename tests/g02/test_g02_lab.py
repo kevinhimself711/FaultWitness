@@ -93,6 +93,52 @@ def test_six_fault_adapters_reach_fault_and_exact_recovery() -> None:
         assert result["original_digest"] == result["restored_digest"]
 
 
+def test_prior_recovery_proves_next_precondition_without_control_resample() -> None:
+    scenario = next(
+        seed
+        for seed in seed_catalog(DIGEST)
+        if seed["fault_action"]["class"] == "productCatalogFailure"
+    )
+    delegate = _observer()
+
+    def no_control_observer(phase: str, fault_class: str) -> Mapping[str, Any]:
+        if phase == "control":
+            raise AssertionError("prior recovery must replace the redundant control sample")
+        return delegate(phase, fault_class)
+
+    healthy_recovery = [
+        {"ready": True, "journey_healthy": True, "signal_not_worsening": True},
+        {"ready": True, "journey_healthy": True, "signal_not_worsening": True},
+    ]
+    result = run_scenario(
+        scenario,
+        MemoryFlagClient(base_flag_document()),
+        no_control_observer,
+        precondition_recovery=healthy_recovery,
+    )
+    assert result["precondition_source"] == "prior-scenario-recovery"
+    assert result["state_sequence"] == ["HEALTHY", "FAULT_ACTIVE", "HEALTHY"]
+
+
+def test_unhealthy_prior_recovery_cannot_bypass_precondition() -> None:
+    scenario = next(
+        seed
+        for seed in seed_catalog(DIGEST)
+        if seed["fault_action"]["class"] == "productCatalogFailure"
+    )
+    unhealthy_recovery = [
+        {"ready": True, "journey_healthy": False, "signal_not_worsening": True},
+        {"ready": True, "journey_healthy": True, "signal_not_worsening": True},
+    ]
+    with pytest.raises(GovernanceError, match="prior scenario recovery"):
+        run_scenario(
+            scenario,
+            MemoryFlagClient(base_flag_document()),
+            _observer(),
+            precondition_recovery=unhealthy_recovery,
+        )
+
+
 def test_false_green_oracle_fixture_is_not_fault_active() -> None:
     fixture = load_data(ROOT / "tests/fixtures/g02/oracle_false_green.yaml")
     assert fault_state(fixture["fault_class"], fixture["observations"]) is OracleState.HEALTHY

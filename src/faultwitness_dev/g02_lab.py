@@ -1312,6 +1312,8 @@ def run_scenario(
     scenario: Mapping[str, Any],
     client: FlagDocumentClient,
     observer: Observer,
+    *,
+    precondition_recovery: Sequence[Observation] | None = None,
 ) -> dict[str, Any]:
     action = scenario.get("fault_action")
     fault_class = action.get("class") if isinstance(action, dict) else None
@@ -1319,8 +1321,14 @@ def run_scenario(
     if adapter is None:
         raise GovernanceError(f"scenario uses unknown fault action: {fault_class}")
     original = client.read()
-    if observer("control", fault_class).get("state") != OracleState.HEALTHY:
-        raise GovernanceError("scenario healthy precondition is not proven")
+    if precondition_recovery is None:
+        if observer("control", fault_class).get("state") != OracleState.HEALTHY:
+            raise GovernanceError("scenario healthy precondition is not proven")
+        precondition_source = "control-observation"
+    else:
+        if recovery_state(precondition_recovery) != OracleState.HEALTHY:
+            raise GovernanceError("prior scenario recovery does not prove a healthy precondition")
+        precondition_source = "prior-scenario-recovery"
     fault_observations: list[Observation] = []
     recovery_observations: list[Observation] = []
     cleanup_error: Exception | None = None
@@ -1351,6 +1359,7 @@ def run_scenario(
         "scenario_id": scenario["scenario_id"],
         "family": scenario["family"],
         "fault_class": fault_class,
+        "precondition_source": precondition_source,
         "state_sequence": ["HEALTHY", "FAULT_ACTIVE", "HEALTHY"],
         "original_digest": hashlib.sha256(canonical_json(original).encode()).hexdigest(),
         "restored_digest": hashlib.sha256(canonical_json(client.read()).encode()).hexdigest(),
@@ -1374,6 +1383,7 @@ def run_gate_scenario_matrix(
     validate_seed_catalog(seeds, bootstrap["image_set_digest"])
     completed: list[dict[str, Any]] = []
     packets: list[dict[str, Any]] = []
+    precondition_recovery: Sequence[Observation] | None = None
     from faultwitness_dev.g02_baselines import build_observation_packet
 
     for scenario in seeds:
@@ -1381,6 +1391,14 @@ def run_gate_scenario_matrix(
         previous = journal.read(trial_id)
         if previous and previous.get("status") == "pass":
             payload = dict(previous["payload"])
+            result = payload.get("result")
+            if not isinstance(result, dict) or not isinstance(
+                result.get("recovery_observations"), list
+            ):
+                raise GovernanceError("passed scenario trial lacks recovery evidence")
+            precondition_recovery = result["recovery_observations"]
+            if recovery_state(precondition_recovery) != OracleState.HEALTHY:
+                raise GovernanceError("passed scenario trial has unhealthy recovery evidence")
             completed.append(previous)
             packets.append(dict(payload["observation_packet"]))
             continue
@@ -1397,6 +1415,7 @@ def run_gate_scenario_matrix(
                 scenario,
                 client_factory(candidate_sha),
                 observer_factory(candidate_sha, str(scenario["fault_action"]["class"])),
+                precondition_recovery=precondition_recovery,
             )
             packet = build_observation_packet(scenario, result["fault_observations"])
             record = journal.write(
@@ -1428,6 +1447,7 @@ def run_gate_scenario_matrix(
             }
         completed.append(record)
         packets.append(packet)
+        precondition_recovery = result["recovery_observations"]
     if len(completed) != 32 or len(packets) != 32:
         raise GovernanceError("G02 Gate scenario matrix did not complete exactly 32 seeds")
     return {
