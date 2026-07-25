@@ -201,6 +201,7 @@ class LiveScenarioObserver:
         self.recovery_started: datetime | None = None
         self.fault_samples: list[dict[str, Any]] = []
         self.recovery_samples: list[dict[str, Any]] = []
+        self.kafka_stimulus: dict[str, Any] | None = None
 
     def _sample(self, since: datetime) -> dict[str, Any]:
         payload = base64.b64encode(
@@ -355,6 +356,99 @@ PY
         output = run_remote_script(script, privileged=True)
         return json.loads(output)
 
+    def _stimulate_kafka_fault(self) -> dict[str, Any]:
+        user_id = (
+            f"faultwitness-g02-{self.candidate_sha[:12]}-"
+            + datetime.now(UTC).strftime("%Y%m%d%H%M%S%f")
+        )
+        payload = base64.b64encode(
+            json.dumps(
+                {
+                    "candidate_sha": self.candidate_sha,
+                    "user_id": user_id,
+                    "product_id": "0PUK6V6EV0",
+                    "checkout": {
+                        "email": "faultwitness-g02@example.com",
+                        "address": {
+                            "streetAddress": "1600 Amphitheatre Parkway",
+                            "city": "Mountain View",
+                            "state": "CA",
+                            "country": "United States",
+                            "zipCode": "94043",
+                        },
+                        "creditCard": {
+                            "creditCardNumber": "4432-8015-6152-0454",
+                            "creditCardCvv": 672,
+                            "creditCardExpirationYear": 2039,
+                            "creditCardExpirationMonth": 1,
+                        },
+                        "userCurrency": "USD",
+                    },
+                },
+                separators=(",", ":"),
+            ).encode()
+        ).decode("ascii")
+        script = f"""set -eu
+python3 - <<'PY'
+import base64
+import json
+import subprocess
+import urllib.request
+
+request = json.loads(base64.b64decode({payload!r}))
+kubectl = ["/usr/local/bin/k3s", "kubectl", "-n", "fw-sut"]
+binding = subprocess.run(
+    [*kubectl, "get", "configmap", "fw-g02-candidate-binding", "-o",
+     "jsonpath={{.data.candidate_sha}}"],
+    check=True,
+    capture_output=True,
+    text=True,
+).stdout
+if binding != request["candidate_sha"]:
+    raise SystemExit("candidate binding drift")
+frontend = json.loads(subprocess.run(
+    [*kubectl, "get", "service", "frontend-proxy", "-o", "json"],
+    check=True,
+    capture_output=True,
+    text=True,
+).stdout)
+endpoint = "http://" + frontend["spec"]["clusterIP"] + ":8080"
+
+def post(path, document):
+    body = json.dumps(document, separators=(",", ":")).encode()
+    call = urllib.request.Request(
+        endpoint + path,
+        data=body,
+        headers={{"content-type": "application/json"}},
+        method="POST",
+    )
+    with urllib.request.urlopen(call) as response:
+        status = response.status
+        response.read()
+    if status < 200 or status >= 300:
+        raise SystemExit("checkout stimulus returned non-success")
+    return status
+
+cart_status = post("/api/cart", {{
+    "userId": request["user_id"],
+    "item": {{"productId": request["product_id"], "quantity": 1}},
+}})
+checkout = dict(request["checkout"])
+checkout["userId"] = request["user_id"]
+checkout_status = post("/api/checkout", checkout)
+print(json.dumps({{
+    "status": "pass",
+    "checkout_count": 1,
+    "cart_status": cart_status,
+    "checkout_status": checkout_status,
+}}, sort_keys=True))
+PY
+"""
+        document = json.loads(run_remote_script(script, privileged=True))
+        if document.get("status") != "pass" or document.get("checkout_count") != 1:
+            raise GovernanceError("Kafka workload stimulus did not complete exactly one checkout")
+        return document
+
     def _active_observation(self, sample: Mapping[str, Any]) -> dict[str, Any]:
         descriptions = "\n".join(str(item) for item in sample["descriptions"])
         if self.fault_class == "productCatalogFailure":
@@ -379,7 +473,7 @@ PY
                 "connection_error": sample["payment_connection_errors"] > 0,
             }
         if self.fault_class == "kafkaQueueProblems":
-            return {
+            observation = {
                 **sample,
                 "consumer_lag": sample["consumer_lag"],
                 "baseline_lag": self.baseline_lag,
@@ -389,6 +483,9 @@ PY
                     or sample["error_spans"] > 0
                 ),
             }
+            if self.kafka_stimulus is not None:
+                observation["kafka_stimulus"] = dict(self.kafka_stimulus)
+            return observation
         raise GovernanceError("unsupported live fault observer")
 
     def __call__(self, phase: str, fault_class: str) -> Observation:
@@ -403,6 +500,8 @@ PY
         if phase == "fault":
             if self.fault_started is None:
                 self.fault_started = datetime.now(UTC)
+                if self.fault_class == "kafkaQueueProblems":
+                    self.kafka_stimulus = self._stimulate_kafka_fault()
             elif self.fault_samples:
                 time.sleep(30)
             deadline = time.monotonic() + 90

@@ -1,0 +1,61 @@
+schema_version: "1.2.0"
+id: C-G02-008
+gate: G02
+title: Kafka Deterministic Workload Corrective
+status: in_progress
+iteration_type: corrective
+corrects: [I-0017, A-G02-007]
+root_cause:
+  id: RC-G02-008
+  source_eval: EVAL-G02-036
+  phase: scenario-matrix
+  failure_mode: The kafkaQueueProblems observer relies on incidental load-generator checkout timing, so the fault can be active while exported consumer lag remains zero until after the frozen 90-second deadline.
+affected_validation_ids: [V-G02-006]
+verification_scope:
+  changed_seam: candidate-bound Kafka fault workload stimulus
+  semantic_branches: [candidate_binding, one_checkout_only, two_sample_oracle_unchanged]
+  reused_test_entrypoints: [tests/g02/test_g02_lab.py]
+  real_seam_proof: required
+  real_seam_runner: existing run_scenario with SEED-G02-0013 and exact automatic restore
+  real_seam_artifact: docs/evals/EVAL-G02-037/artifacts/kafka-workload-stimulus-seam.json
+  gate_l2_execution: 0
+  full_gate_eval: false
+cost_boundary:
+  root_cause_count: 1
+  bespoke_eval_harness: false
+  gate_attempt_included: false
+  targeted_verification_separate: true
+  global_sync_deferred: true
+accounting_scope:
+  corrective_engineering: included
+  targeted_verification: separate
+  gate_attempt_execution: excluded
+  governance_sync: separate
+scope:
+  - Send exactly one candidate-bound synthetic checkout immediately after kafkaQueueProblems injection readback so the pinned fault receives deterministic work.
+  - Preserve the existing Kafka lag and exact-log oracle two observations 30-second spacing 90-second deadline and recovery contract.
+  - Reuse the existing G02 lab tests and execute only SEED-G02-0013 once through the existing runner with exact automatic restore.
+non_goals:
+  - Running any full scenario access trace canary baseline or model matrix.
+  - Changing observation N spacing deadline lag threshold recovery semantics permissions Ground Truth locked tests quality performance token cost or failure meaning.
+  - Adding a bespoke harness cache engine lifecycle framework or operator pass path.
+dependencies: [I-0017, C-G02-007, A-G02-007]
+tests:
+  - uv run pytest -q tests/g02/test_g02_lab.py -k kafka
+  - uv run python -m faultwitness_dev verify-fast
+  - uv run python -m faultwitness_dev eval-changed
+eval_id: EVAL-G02-037
+commit: null
+changed_paths:
+  - src/faultwitness_dev/g02_lab.py
+  - tests/g02/test_g02_lab.py
+  - docs/runbooks/G02_FAULT_LAB.md
+  - docs/evals/EVAL-G02-037
+  - docs/roadmap/iterations/C-G02-008.md
+  - governance/iterations/C-G02-008.yaml
+behavior_change: true
+docs_updated:
+  - docs/runbooks/G02_FAULT_LAB.md
+  - docs/evals/EVAL-G02-037/PLAN.md
+  - docs/roadmap/iterations/C-G02-008.md
+threshold_changes: []

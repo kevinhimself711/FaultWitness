@@ -159,6 +159,58 @@ def test_kafka_observer_uses_exported_poll_lag_and_exact_fault_log() -> None:
     assert observation["kafka_error"] is True
 
 
+def test_kafka_stimulus_is_candidate_bound_and_exactly_one_checkout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    observer = LiveScenarioObserver("1" * 40, "kafkaQueueProblems")
+    captured: dict[str, Any] = {}
+
+    def remote(script: str, *, privileged: bool) -> str:
+        captured["script"] = script
+        captured["privileged"] = privileged
+        return '{"cart_status":200,"checkout_count":1,"checkout_status":200,"status":"pass"}'
+
+    monkeypatch.setattr(g02_lab, "run_remote_script", remote)
+    result = observer._stimulate_kafka_fault()
+
+    assert result["checkout_count"] == 1
+    assert captured["privileged"] is True
+    assert "fw-g02-candidate-binding" in captured["script"]
+    assert captured["script"].count('post("/api/checkout"') == 1
+    assert captured["script"].count('post("/api/cart"') == 1
+
+
+def test_kafka_observer_stimulates_once_before_two_frozen_samples(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    observer = LiveScenarioObserver("1" * 40, "kafkaQueueProblems")
+    stimuli: list[str] = []
+    sleeps: list[float] = []
+    sample = {
+        "descriptions": [],
+        "consumer_lag": 12.0,
+        "kafka_log_error": False,
+        "kafka_fault_log": True,
+        "error_spans": 0,
+    }
+    monkeypatch.setattr(
+        observer,
+        "_stimulate_kafka_fault",
+        lambda: stimuli.append("checkout") or {"status": "pass", "checkout_count": 1},
+    )
+    monkeypatch.setattr(observer, "_sample", lambda _since: sample)
+    monkeypatch.setattr(g02_lab.time, "sleep", sleeps.append)
+
+    first = observer("fault", "kafkaQueueProblems")
+    second = observer("fault", "kafkaQueueProblems")
+
+    assert stimuli == ["checkout"]
+    assert sleeps == [30]
+    assert first["kafka_stimulus"]["checkout_count"] == 1
+    assert second["kafka_stimulus"]["checkout_count"] == 1
+    assert fault_state("kafkaQueueProblems", [first, second]) is OracleState.FAULT_ACTIVE
+
+
 def test_payment_unreachable_trace_query_uses_checkout_caller() -> None:
     assert TRACE_QUERY_SERVICES["paymentUnreachable"] == "checkout"
     assert TRACE_QUERY_SERVICES["paymentFailure"] == "payment"

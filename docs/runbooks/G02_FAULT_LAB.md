@@ -68,6 +68,13 @@ cannot satisfy the oracle. The value must still exceed its pre-injection baselin
 frozen observations. This is signal-source correction only and does not alter N, the 30-second
 spacing, the 90-second oracle window, or any performance or Gate threshold.
 
+Immediately after a `kafkaQueueProblems` injection is read back, the candidate-bound observer sends
+one synthetic checkout through the existing frontend API. That single checkout is the deterministic
+workload input for the SUT's pinned 100-record fault variant; it replaces reliance on incidental
+load-generator timing. The runner records the cart and checkout success statuses in both observations
+and never sends a second checkout for the same scenario. This does not alter the two-observation N,
+30-second spacing, 90-second deadline, lag threshold, recovery semantics, or Gate sample count.
+
 For the first seed, the controller obtains an explicit healthy control observation. For each later
 seed, the immediately preceding passed trial's two healthy recovery observations are the frozen
 precondition evidence, as permitted by the Master Plan. The runner validates both recovery records
