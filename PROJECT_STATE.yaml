@@ -10,10 +10,10 @@ governance_schema_version: "1.2.0"
 
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: null
+active_iteration: A-G02-008
 next_iteration: null
 last_closed_gate: G01
-latest_eval_run: EVAL-G02-037
+latest_eval_run: EVAL-G02-038
 
 authoritative_plan: docs/blueprint/FINAL_PLAN.md
 active_gate_plan: docs/gates/G02/PLAN.md
