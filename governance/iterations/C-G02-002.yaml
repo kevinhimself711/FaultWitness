@@ -1,0 +1,60 @@
+schema_version: "1.2.0"
+id: C-G02-002
+gate: G02
+title: LangSmith Access Probe Contract Corrective
+status: planned
+iteration_type: corrective
+corrects: [I-0024, A-G02-001]
+root_cause:
+  id: RC-G02-002
+  source_eval: EVAL-G02-024
+  phase: isolation-access-matrix
+  failure_mode: The operator-side LangSmith read probe collapses every nonretryable non-success response into actual_allow false and omits the sanitized response class, so the canonical-owner contract is neither attributable nor independently reproducible.
+affected_validation_ids: [V-G02-009]
+verification_scope:
+  changed_seam: Operator-host LangSmith credential read probe
+  semantic_branches: [credential_success, transient_response, nonretryable_classified_failure]
+  reused_test_entrypoints: [tests/g02/test_g02_gate_collectors.py]
+  real_seam_proof: required
+  real_seam_runner: g02.langsmith_access_probe
+  real_seam_artifact: docs/evals/EVAL-G02-025/artifacts/langsmith-access-seam-proof.json
+  gate_l2_execution: 0
+  full_gate_eval: false
+cost_boundary:
+  root_cause_count: 1
+  bespoke_eval_harness: false
+  gate_attempt_included: false
+  targeted_verification_separate: true
+  global_sync_deferred: true
+accounting_scope:
+  corrective_engineering: included
+  targeted_verification: separate
+  gate_attempt_execution: excluded
+  governance_sync: separate
+scope:
+  - Make the existing operator-side LangSmith read operation use one supported request contract and retain a sanitized attributable response class.
+  - Reuse the existing collector test entrypoint for three changed semantic branches and execute one minimum real credential seam proof.
+non_goals:
+  - Running the 60-cell Gate matrix any other Gate phase deployment destructive work Bailian trial or model call.
+  - Replacing or rotating credentials lowering an allow expectation adding a bespoke evaluator or changing any validation N threshold permission or failure semantic.
+dependencies: [I-0013, I-0024, C-G02-001, A-G02-001]
+tests:
+  - uv run pytest -q tests/g02/test_g02_gate_collectors.py -k langsmith_access_probe
+  - uv run python -m faultwitness_dev verify-fast
+  - uv run python -m faultwitness_dev eval-changed
+eval_id: EVAL-G02-025
+commit: null
+changed_paths:
+  - src/faultwitness_dev/g02_collectors.py
+  - tests/g02/test_g02_gate_collectors.py
+  - docs/runbooks/G02_ISOLATION.md
+  - docs/evals/EVAL-G02-025
+  - docs/roadmap/iterations/C-G02-002.md
+  - governance/iterations/C-G02-002.yaml
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/C-G02-002.md
+  - docs/evals/EVAL-G02-025/PLAN.md
+  - docs/evals/EVAL-G02-025/REPORT.md
+  - docs/runbooks/G02_ISOLATION.md
+threshold_changes: []

@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-025",
+  "gate": "G02",
+  "iteration": "C-G02-002",
+  "evaluated_revision": "not-run",
+  "status": "pending",
+  "environments": ["planned-local-candidate-bound", "planned-private-langsmith-real-seam"],
+  "commands": [
+    "uv run pytest -q tests/g02/test_g02_gate_collectors.py -k langsmith_access_probe",
+    "g02.langsmith_access_probe --candidate-sha <full-sha>"
+  ],
+  "artifacts": ["docs/evals/EVAL-G02-025/PLAN.md"],
+  "evidence_urls": [],
+  "integrations": {
+    "langsmith": {
+      "status": "required",
+      "reason": "One real credential seam proof is required before the corrective can close."
+    }
+  },
+  "open_evidence": []
+}
