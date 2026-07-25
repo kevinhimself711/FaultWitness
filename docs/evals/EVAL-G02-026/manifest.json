@@ -111,7 +111,7 @@
     "private-k3s-live",
     "candidate-bound-postgresql-minio-observability",
     "langsmith-canonical-owner-pass",
-    "langsmith-baseline-agent-denied-egress-no-progress",
+    "langsmith-baseline-agent-expected-allow-no-progress",
     "bailian-not-run"
   ],
   "commands": [
@@ -137,7 +137,7 @@
     },
     "langsmith": {
       "status": "required",
-      "reason": "Canonical-owner credential access passed, but the baseline-agent denied-egress cell lacked an event-driven terminal condition and was classified infra_failed after verified no progress."
+      "reason": "Canonical-owner credential access passed, but the baseline-agent expected-allow egress probe made no progress and was classified infra_failed after verified no progress."
     },
     "bailian": {
       "status": "required",

@@ -13,7 +13,8 @@
     "trial_journal_unchanged": true
   },
   "operator_action": "terminated_only_the_stalled_ssh_child_after_verified_no_progress",
-  "reason_code": "denied_egress_probe_has_no_event_driven_terminal_condition",
+  "expected_allow": true,
+  "reason_code": "allowed_egress_probe_made_no_progress",
   "recorded_at": "2026-07-25T15:21:08.681881+00:00",
   "trial_id": "access-58"
 }
