@@ -3,19 +3,23 @@
   "eval_id": "EVAL-G02-025",
   "gate": "G02",
   "iteration": "C-G02-002",
-  "evaluated_revision": "not-run",
-  "status": "pending",
-  "environments": ["planned-local-candidate-bound", "planned-private-langsmith-real-seam"],
+  "evaluated_revision": "b5c71f710bb4c00b3f15de5926c5bf51acab7970",
+  "status": "pass",
+  "environments": ["local-candidate-bound", "private-langsmith-real-credential-seam"],
   "commands": [
     "uv run pytest -q tests/g02/test_g02_gate_collectors.py -k langsmith_access_probe",
-    "g02.langsmith_access_probe --candidate-sha <full-sha>"
+    "g02.langsmith_access_probe on candidate b5c71f710bb4c00b3f15de5926c5bf51acab7970"
   ],
-  "artifacts": ["docs/evals/EVAL-G02-025/PLAN.md"],
+  "artifacts": [
+    "docs/evals/EVAL-G02-025/PLAN.md",
+    "docs/evals/EVAL-G02-025/REPORT.md",
+    "docs/evals/EVAL-G02-025/artifacts/langsmith-access-seam-proof.json"
+  ],
   "evidence_urls": [],
   "integrations": {
     "langsmith": {
-      "status": "required",
-      "reason": "One real credential seam proof is required before the corrective can close."
+      "status": "pass",
+      "reason": "The corrected credential-authenticated read seam returned HTTP 200 without retaining response content."
     }
   },
   "open_evidence": []

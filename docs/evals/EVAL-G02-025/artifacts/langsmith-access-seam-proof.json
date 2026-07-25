@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-025",
+  "work_item": "C-G02-002",
+  "affected_validation": "V-G02-009",
+  "evidence_class": "targeted_real_seam_not_gate_l2",
+  "candidate_sha": "b5c71f710bb4c00b3f15de5926c5bf51acab7970",
+  "environment_fingerprint": "32a012ad672a808004e7beb1e41fff66cf87578fbfa470a89dcff47a2b0b80a2",
+  "root_cause": {
+    "failed_gate_contract": "POST https://api.smith.langchain.com/runs/query",
+    "official_openapi_observation": "The top-level /runs/query path is absent; the workspace query path is /api/v1/runs/query and requires context that returned a classified HTTP 400 in the targeted proof.",
+    "corrected_contract": "GET https://api.smith.langchain.com/api/v1/orgs/current/info",
+    "credential_negative_control": "The corrected endpoint returns HTTP 401 without a credential.",
+    "request_contract_sha256": "02af66ac93c15ccb3f97115f03d2199af18dac53f6c793084f910b47a646d1f7"
+  },
+  "local_verification": {
+    "command": "uv run pytest -q tests/g02/test_g02_gate_collectors.py -k langsmith_access_probe",
+    "case_count": 3,
+    "passed": 3,
+    "branches": [
+      "credential_success",
+      "transient_response",
+      "nonretryable_classified_failure"
+    ],
+    "status": "pass"
+  },
+  "real_seam": {
+    "runner": "g02.langsmith_access_probe",
+    "method": "GET",
+    "response_content_retained": false,
+    "credential_allow": true,
+    "response_class": "success",
+    "http_status": 200,
+    "status": "pass"
+  },
+  "attempt_accounting": {
+    "public_openapi_reads": 4,
+    "credential_seam_invocations": 2,
+    "first_credential_result": "classified_http_400_workspace_query_contract",
+    "final_credential_result": "http_200_authenticated_org_info",
+    "unchanged_retries": 0,
+    "ad_hoc_diagnostic_tools": 0
+  },
+  "execution_accounting": {
+    "gate_l2_cells": 0,
+    "deployments": 0,
+    "destructive_operations": 0,
+    "bailian_calls": 0,
+    "model_calls": 0,
+    "model_tokens": 0,
+    "model_cost_cny": 0
+  },
+  "unchanged_contracts": {
+    "permissions": true,
+    "validation_n": true,
+    "quality_thresholds": true,
+    "performance_thresholds": true,
+    "ground_truth": true,
+    "locked_tests": true,
+    "failure_semantics": true
+  },
+  "safety": {
+    "credential_persisted": false,
+    "response_content_persisted": false,
+    "credential_rotated": false,
+    "operator_adjudication": false
+  },
+  "status": "pass",
+  "open_evidence": []
+}
