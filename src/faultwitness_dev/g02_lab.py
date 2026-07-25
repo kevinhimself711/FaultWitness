@@ -21,7 +21,7 @@ from typing import Any, Protocol
 import yaml
 
 from faultwitness_dev.bootstrap import BootstrapPaths, ssh_failure_category
-from faultwitness_dev.errors import GovernanceError
+from faultwitness_dev.errors import GovernanceError, InfrastructureFailure
 from faultwitness_dev.infra import (
     InfraPaths,
     _ensure_crane,
@@ -239,7 +239,8 @@ binding = kubectl(
     "jsonpath={{.data.candidate_sha}}",
 )
 if binding != request["candidate_sha"]:
-    raise SystemExit("candidate binding drift")
+    print("FW_G02_CANDIDATE_BINDING_DRIFT", file=sys.stderr)
+    raise SystemExit(42)
 
 deployments = json.loads(kubectl("get", "deployment", "-o", "json"))["items"]
 ready = all(
@@ -353,7 +354,14 @@ print(json.dumps({{
 }}, sort_keys=True))
 PY
 """
-        output = run_remote_script(script, privileged=True)
+        try:
+            output = run_remote_script(script, privileged=True)
+        except GovernanceError as error:
+            if "FW_G02_CANDIDATE_BINDING_DRIFT" in str(error):
+                raise
+            raise InfrastructureFailure(
+                f"live observation collection produced no result: {error}"
+            ) from error
         return json.loads(output)
 
     def _stimulate_kafka_fault(self) -> dict[str, Any]:
@@ -393,6 +401,8 @@ python3 - <<'PY'
 import base64
 import json
 import subprocess
+import sys
+import urllib.error
 import urllib.request
 
 request = json.loads(base64.b64decode({payload!r}))
@@ -405,7 +415,8 @@ binding = subprocess.run(
     text=True,
 ).stdout
 if binding != request["candidate_sha"]:
-    raise SystemExit("candidate binding drift")
+    print("FW_G02_CANDIDATE_BINDING_DRIFT", file=sys.stderr)
+    raise SystemExit(42)
 frontend = json.loads(subprocess.run(
     [*kubectl, "get", "service", "frontend-proxy", "-o", "json"],
     check=True,
@@ -422,9 +433,13 @@ def post(path, document):
         headers={{"content-type": "application/json"}},
         method="POST",
     )
-    with urllib.request.urlopen(call) as response:
-        status = response.status
-        response.read()
+    try:
+        with urllib.request.urlopen(call) as response:
+            status = response.status
+            response.read()
+    except urllib.error.HTTPError as error:
+        print("FW_G02_STIMULUS_HTTP_ERROR status=" + str(error.code), file=sys.stderr)
+        raise SystemExit(42)
     if status < 200 or status >= 300:
         raise SystemExit("checkout stimulus returned non-success")
     return status
@@ -444,7 +459,19 @@ print(json.dumps({{
 }}, sort_keys=True))
 PY
 """
-        document = json.loads(run_remote_script(script, privileged=True))
+        try:
+            output = run_remote_script(script, privileged=True)
+        except GovernanceError as error:
+            deterministic = (
+                "FW_G02_CANDIDATE_BINDING_DRIFT",
+                "FW_G02_STIMULUS_HTTP_ERROR",
+            )
+            if any(marker in str(error) for marker in deterministic):
+                raise
+            raise InfrastructureFailure(
+                f"Kafka workload stimulus produced no result: {error}"
+            ) from error
+        document = json.loads(output)
         if document.get("status") != "pass" or document.get("checkout_count") != 1:
             raise GovernanceError("Kafka workload stimulus did not complete exactly one checkout")
         return document
@@ -1533,6 +1560,23 @@ def run_gate_scenario_matrix(
                     "observation_packet": packet,
                 },
             )
+        except InfrastructureFailure as exc:
+            record = journal.write(
+                trial_id,
+                "infra_failed",
+                {
+                    "scenario_id": scenario["scenario_id"],
+                    "fault_class": scenario["fault_action"]["class"],
+                    "reason": str(exc),
+                },
+            )
+            return {
+                "status": "infra_failed",
+                "validation": "V-G02-006",
+                "scenario_count": len(completed),
+                "failed_trial": trial_id,
+                "trials": [*completed, record],
+            }
         except GovernanceError as exc:
             record = journal.write(
                 trial_id,

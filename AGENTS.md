@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: null
+active_iteration: C-G02-009
 next_iteration: null
 last_closed_gate: G01
 ---
@@ -34,8 +34,9 @@ failed after twelve scenario passes because the Kafka fault runner relied on inc
 traffic and did not produce consumer lag inside the frozen 90-second observation deadline. C-G02-008
 is completed with targeted tests and one candidate-bound Kafka checkout/lifecycle seam. A-G02-008
 is terminally failed because a source-collection command exited without producing an observation and
-the scenario runner incorrectly collapsed that infrastructure condition into `metric_fail`. The next
-corrective has not yet been activated. No terminal work item may be reopened.
+the scenario runner incorrectly collapsed that infrastructure condition into `metric_fail`. C-G02-009
+is active to preserve no-observation collection failures as resumable `infra_failed` trials without
+changing any Eval semantics. No terminal work item may be reopened.
 
 ## Source-of-truth order
 

@@ -1,0 +1,62 @@
+schema_version: "1.2.0"
+id: C-G02-009
+gate: G02
+title: Source-Collection Failure Classification Corrective
+status: in_progress
+iteration_type: corrective
+corrects: [I-0017, A-G02-008]
+root_cause:
+  id: RC-G02-009
+  source_eval: EVAL-G02-038
+  phase: scenario-matrix
+  failure_mode: The scenario runner catches a source-collection transport error that produced no observation as generic GovernanceError and records metric_fail even though no oracle comparison was possible.
+affected_validation_ids: [V-G02-006]
+verification_scope:
+  changed_seam: no-observation source-collection failure classification
+  semantic_branches: [collection_infra_failed, candidate_drift_blocking, completed_metric_failure_blocking]
+  reused_test_entrypoints: [tests/g02/test_g02_lab.py]
+  real_seam_proof: required
+  real_seam_runner: existing candidate-bound LiveScenarioObserver read-only sample
+  real_seam_artifact: docs/evals/EVAL-G02-039/artifacts/source-collection-classification-seam.json
+  gate_l2_execution: 0
+  full_gate_eval: false
+cost_boundary:
+  root_cause_count: 1
+  bespoke_eval_harness: false
+  gate_attempt_included: false
+  targeted_verification_separate: true
+  global_sync_deferred: true
+accounting_scope:
+  corrective_engineering: included
+  targeted_verification: separate
+  gate_attempt_execution: excluded
+  governance_sync: separate
+scope:
+  - Introduce a typed no-observation infrastructure failure and preserve it as an atomic resumable scenario trial.
+  - Keep candidate-binding drift explicit HTTP failure completed oracle failure and cleanup failure blocking and non-resumable.
+  - Reuse the existing G02 tests and execute one read-only candidate-bound source collection after exact candidate deployment.
+non_goals:
+  - Running any scenario access trace canary baseline or model matrix.
+  - Changing observation N spacing deadline oracle recovery thresholds permissions Ground Truth locked tests quality performance token cost or failure meaning.
+  - Retrying a completed metric policy cleanup or candidate-binding failure.
+dependencies: [I-0017, C-G02-008, A-G02-008]
+tests:
+  - uv run pytest -q tests/g02/test_g02_lab.py -k infra
+  - uv run python -m faultwitness_dev verify-fast
+  - uv run python -m faultwitness_dev eval-changed
+eval_id: EVAL-G02-039
+commit: null
+changed_paths:
+  - src/faultwitness_dev/errors.py
+  - src/faultwitness_dev/g02_lab.py
+  - tests/g02/test_g02_lab.py
+  - docs/runbooks/G02_FAULT_LAB.md
+  - docs/evals/EVAL-G02-039
+  - docs/roadmap/iterations/C-G02-009.md
+  - governance/iterations/C-G02-009.yaml
+behavior_change: true
+docs_updated:
+  - docs/runbooks/G02_FAULT_LAB.md
+  - docs/evals/EVAL-G02-039/PLAN.md
+  - docs/roadmap/iterations/C-G02-009.md
+threshold_changes: []

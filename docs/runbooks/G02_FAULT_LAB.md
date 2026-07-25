@@ -98,6 +98,13 @@ observer retains the first working-set sample without declaring it active, prese
 grow before the existing 90-second deadline, the fault remains non-active while the retained first
 sample remains available to cleanup; an empty sample list cannot mask the primary metric result.
 
+An external collection or stimulus transport that returns no observation is recorded as
+`infra_failed`, preserving the trial for same-candidate resume. A returned HTTP failure, candidate
+binding drift, completed observation that misses the fault oracle, or cleanup failure remains a
+non-resumable deterministic/metric result. This classification changes no oracle, N, deadline,
+recovery requirement, or threshold; it prevents absence of evidence from being scored as evidence of
+threshold failure.
+
 ## Failure and compatibility semantics
 
 - Source or image digest drift: blocking candidate failure; do not fetch a floating replacement.

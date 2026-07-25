@@ -9,7 +9,7 @@ import pytest
 
 import faultwitness_dev.g02_lab as g02_lab
 from faultwitness_dev.cli import parser
-from faultwitness_dev.errors import GovernanceError
+from faultwitness_dev.errors import GovernanceError, InfrastructureFailure
 from faultwitness_dev.g02_lab import (
     ADAPTERS,
     FAMILIES,
@@ -209,6 +209,57 @@ def test_kafka_observer_stimulates_once_before_two_frozen_samples(
     assert first["kafka_stimulus"]["checkout_count"] == 1
     assert second["kafka_stimulus"]["checkout_count"] == 1
     assert fault_state("kafkaQueueProblems", [first, second]) is OracleState.FAULT_ACTIVE
+
+
+def test_live_observation_without_result_is_infrastructure_failed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    observer = LiveScenarioObserver("1" * 40, "kafkaQueueProblems")
+    monkeypatch.setattr(
+        g02_lab,
+        "run_remote_script",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(GovernanceError("transport lost")),
+    )
+
+    with pytest.raises(InfrastructureFailure, match="produced no result"):
+        observer._sample(g02_lab.datetime.now(g02_lab.UTC))
+
+
+def test_gate_scenario_runner_preserves_collection_infra_failure(
+    tmp_path: Path,
+) -> None:
+    from faultwitness_dev.g02_eval import TrialJournal
+
+    journal = TrialJournal(tmp_path)
+    clients: list[MemoryFlagClient] = []
+
+    def client_factory(_candidate_sha: str) -> MemoryFlagClient:
+        client = MemoryFlagClient(base_flag_document())
+        clients.append(client)
+        return client
+
+    def observer_factory(_candidate_sha: str, _fault_class: str) -> Any:
+        def observe(phase: str, _fault: str) -> Mapping[str, Any]:
+            if phase == "control":
+                return {"state": OracleState.HEALTHY}
+            if phase == "recovery":
+                return {"ready": True, "journey_healthy": True, "signal_not_worsening": True}
+            raise InfrastructureFailure("fixture source collection failed")
+
+        return observe
+
+    result = run_gate_scenario_matrix(
+        ROOT,
+        "1" * 40,
+        journal,
+        client_factory=client_factory,
+        observer_factory=observer_factory,
+    )
+
+    assert result["status"] == "infra_failed"
+    assert result["scenario_count"] == 0
+    assert result["trials"][-1]["status"] == "infra_failed"
+    assert clients[0].read() == base_flag_document()
 
 
 def test_payment_unreachable_trace_query_uses_checkout_caller() -> None:
