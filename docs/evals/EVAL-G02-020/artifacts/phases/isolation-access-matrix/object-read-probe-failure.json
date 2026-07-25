@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-020",
+  "iteration": "I-0035",
+  "candidate_sha": "2c51413fecf1a4c5a707b11c9744f87ab91b927e",
+  "phase_id": "isolation-access-matrix",
+  "runner_recorded_status": "metric_fail",
+  "final_status": "metric_fail",
+  "classification": "deterministic_object_read_probe_semantics_failure",
+  "failed_cell": "s3:g02/scenarios/|canonical-owner",
+  "expected_allow": true,
+  "actual_allow": false,
+  "root_cause": "mc_stat_attempted_list_bucket_while_the_frozen_policy_intentionally_granted_only_get_object",
+  "policy_state": {
+    "principal": "scenario-controller",
+    "user_status": "enabled",
+    "attached_policy": "g02-scenario-controller-2c51413fecf1",
+    "allowed_action": "s3:GetObject",
+    "allowed_resource": "arn:aws:s3:::faultwitness-eval/g02/scenarios/*",
+    "list_bucket_granted": false,
+    "sentinel_present_under_root_identity": true
+  },
+  "observed_client_failure": [
+    "Unable to list folder. Access Denied.",
+    "Unable to stat object. Object does not exist."
+  ],
+  "attempts": {
+    "runner_attempts": 1,
+    "access_trials_persisted": 25,
+    "read_only_diagnostic_invocations": 8,
+    "diagnostic_command_errors": 5,
+    "successful_diagnostic_invocations": 3
+  },
+  "execution_counts": {
+    "ready_deployments": 24,
+    "access_cells_passed": 24,
+    "access_cells_failed": 1,
+    "access_cells_not_run": 35,
+    "trace_stages": 0,
+    "canary_surfaces": 0,
+    "destructive_scenarios": 0,
+    "deterministic_baselines": 0,
+    "external_service_probes": 0,
+    "model_calls": 0
+  },
+  "runner_phase_start_time": "2026-07-25T01:01:58.771663+00:00",
+  "runner_phase_end_time": "2026-07-25T01:03:32.203841+00:00",
+  "retry_allowed_on_same_candidate": false,
+  "required_forward_fix": "replace_the_object_read_probe_with_a_get_object_operation_that_does_not_require_list_bucket",
+  "policy_or_threshold_change_required": false,
+  "open_evidence": []
+}
