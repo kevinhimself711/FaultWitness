@@ -3,14 +3,18 @@
   "eval_id": "EVAL-G02-033",
   "gate": "G02",
   "iteration": "C-G02-006",
-  "evaluated_revision": "not-run",
-  "status": "pending",
-  "environments": ["planned-local-targeted", "planned-private-k3s-single-scenario"],
+  "evaluated_revision": "7fdb34999bef3413ccf16774440135730b23b5e4",
+  "status": "pass",
+  "environments": ["local-candidate-bound", "private-k3s-candidate-bound-24-of-24", "private-k3s-single-scenario"],
   "commands": [
     "uv run pytest -q tests/g02/test_g02_lab.py -k prior_recovery",
     "existing run_scenario with SEED-G02-0004 and preserved prior recovery"
   ],
-  "artifacts": ["docs/evals/EVAL-G02-033/PLAN.md"],
+  "artifacts": [
+    "docs/evals/EVAL-G02-033/PLAN.md",
+    "docs/evals/EVAL-G02-033/REPORT.md",
+    "docs/evals/EVAL-G02-033/artifacts/prior-recovery-precondition-seam.json"
+  ],
   "evidence_urls": [],
   "integrations": {},
   "open_evidence": []

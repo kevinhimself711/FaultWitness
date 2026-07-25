@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: C-G02-006
+active_iteration: null
 next_iteration: null
 last_closed_gate: G01
 ---
@@ -25,8 +25,9 @@ trace-prerequisite evidence. C-G02-004 is completed with exact-candidate deploy,
 and smoke evidence. A-G02-004 is terminally failed with complete payment-unreachable oracle
 evidence. C-G02-005 is completed with caller-trace attribution, targeted tests, and one restored
 real scenario. A-G02-005 is terminally failed after three scenario passes because the runner ignored
-the Master Plan's prior-recovery precondition rule. C-G02-006 is the active minimal runner
-corrective. No terminal work item may be reopened.
+the Master Plan's prior-recovery precondition rule. C-G02-006 is completed with targeted tests and
+one candidate-bound prior-recovery scenario seam. The next unified-candidate Gate attempt has not
+yet been activated. No terminal work item may be reopened.
 
 ## Source-of-truth order
 

@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: C-G02-006
+active_iteration: null
 next_iteration: null
 last_closed_gate: G01
 ---
@@ -24,8 +24,10 @@ seam 完成单根因修复。A-G02-002 在 expected-allow baseline-agent egress 
 失败；C-G02-003 已以真实 TCP allow/reject 对照证据关闭。A-G02-003 在 60/60 access 通过后
 暴露 trace-service 候选绑定前置缺口并终态失败；C-G02-004 已用 exact-candidate
 deploy/inspect/relay/smoke 证据关闭。A-G02-004 在 `paymentUnreachable` 故障 oracle 上确定性
-失败；C-G02-005 已用 caller-trace 归因、定向测试和一次精确恢复的真实场景关闭，A-G02-005 是
-当前独立 Gate attempt。任何终态记录都不会重开。
+失败；C-G02-005 已用 caller-trace 归因、定向测试和一次精确恢复的真实场景关闭。A-G02-005
+在三个场景通过后暴露 prior-recovery 前置证据未被 runner 消费的问题并终态失败；C-G02-006
+已用定向测试和一次 candidate-bound SEED-G02-0004 real seam 关闭。下一统一候选 Gate attempt
+尚未激活。任何终态记录都不会重开。
 
 ## 权威资产
 

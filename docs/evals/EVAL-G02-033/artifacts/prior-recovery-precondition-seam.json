@@ -1,0 +1,163 @@
+{
+  "candidate_sha": "7fdb34999bef3413ccf16774440135730b23b5e4",
+  "ended_at": "2026-07-25T20:02:52.118603+00:00",
+  "eval_id": "EVAL-G02-033",
+  "exact_restore": true,
+  "fault_class": "productCatalogFailure",
+  "fault_observation_count": 2,
+  "gate_l2_execution_count": 0,
+  "model_call_count": 0,
+  "open_evidence": [],
+  "precondition_source": "prior-scenario-recovery",
+  "prior_recovery_observations": [
+    {
+      "checkout_error_spans": 0,
+      "consumer_lag": 0.0,
+      "consumer_poll_lag_seconds": 0.0,
+      "consumer_record_lag": 0.0,
+      "cpu_rate": 1.1739398740356273,
+      "descriptions": [],
+      "error_spans": 0,
+      "journey_healthy": true,
+      "journey_status": 200,
+      "kafka_fault_log": false,
+      "kafka_log_error": false,
+      "payment_connection_errors": 0,
+      "ready": true,
+      "recorded_at": "2026-07-25T19:34:11.423063+00:00",
+      "signal_not_worsening": true,
+      "trace_count": 0,
+      "working_set": 54476800.0
+    },
+    {
+      "checkout_error_spans": 0,
+      "consumer_lag": 0.0,
+      "consumer_poll_lag_seconds": 0.0,
+      "consumer_record_lag": 0.0,
+      "cpu_rate": 0.0020508996468505,
+      "descriptions": [],
+      "error_spans": 0,
+      "journey_healthy": true,
+      "journey_status": 200,
+      "kafka_fault_log": false,
+      "kafka_log_error": false,
+      "payment_connection_errors": 0,
+      "ready": true,
+      "recorded_at": "2026-07-25T19:35:23.984036+00:00",
+      "signal_not_worsening": true,
+      "trace_count": 6,
+      "working_set": 54394880.0
+    }
+  ],
+  "prior_recovery_state": "HEALTHY",
+  "recovery_observation_count": 2,
+  "result": {
+    "family": "change_config",
+    "fault_class": "productCatalogFailure",
+    "fault_observations": [
+      {
+        "checkout_error_spans": 0,
+        "consumer_lag": 0.0,
+        "consumer_poll_lag_seconds": 0.0,
+        "consumer_record_lag": 0.0,
+        "correlated_error": true,
+        "cpu_rate": 0.0021256419333160604,
+        "descriptions": [
+          "Error: Product Catalog Fail Feature Flag Enabled"
+        ],
+        "error_spans": 10,
+        "journey_failed": true,
+        "journey_status": 200,
+        "kafka_fault_log": false,
+        "kafka_log_error": false,
+        "payment_connection_errors": 0,
+        "ready": true,
+        "recorded_at": "2026-07-25T20:01:33.848256+00:00",
+        "trace_count": 7,
+        "working_set": 54333440.0
+      },
+      {
+        "checkout_error_spans": 0,
+        "consumer_lag": 0.0,
+        "consumer_poll_lag_seconds": 0.0,
+        "consumer_record_lag": 0.0,
+        "correlated_error": true,
+        "cpu_rate": 0.0021256419333160604,
+        "descriptions": [
+          "Error: Product Catalog Fail Feature Flag Enabled"
+        ],
+        "error_spans": 12,
+        "journey_failed": true,
+        "journey_status": 200,
+        "kafka_fault_log": false,
+        "kafka_log_error": false,
+        "payment_connection_errors": 0,
+        "ready": true,
+        "recorded_at": "2026-07-25T20:02:06.796399+00:00",
+        "trace_count": 23,
+        "working_set": 54333440.0
+      }
+    ],
+    "original_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+    "precondition_source": "prior-scenario-recovery",
+    "recovery_observations": [
+      {
+        "checkout_error_spans": 0,
+        "consumer_lag": 0.0,
+        "consumer_poll_lag_seconds": 0.0,
+        "consumer_record_lag": 0.0,
+        "cpu_rate": 0.0,
+        "descriptions": [],
+        "error_spans": 0,
+        "journey_healthy": true,
+        "journey_status": 200,
+        "kafka_fault_log": false,
+        "kafka_log_error": false,
+        "payment_connection_errors": 0,
+        "ready": true,
+        "recorded_at": "2026-07-25T20:02:15.970510+00:00",
+        "signal_not_worsening": true,
+        "trace_count": 0,
+        "working_set": 54333440.0
+      },
+      {
+        "checkout_error_spans": 0,
+        "consumer_lag": 0.0,
+        "consumer_poll_lag_seconds": 0.0,
+        "consumer_record_lag": 0.0,
+        "cpu_rate": 0.0019544366653179643,
+        "descriptions": [],
+        "error_spans": 12,
+        "journey_healthy": true,
+        "journey_status": 200,
+        "kafka_fault_log": false,
+        "kafka_log_error": false,
+        "payment_connection_errors": 0,
+        "ready": true,
+        "recorded_at": "2026-07-25T20:02:48.909308+00:00",
+        "signal_not_worsening": true,
+        "trace_count": 26,
+        "working_set": 54386688.0
+      }
+    ],
+    "restored_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+    "scenario_id": "SEED-G02-0004",
+    "state_sequence": [
+      "HEALTHY",
+      "FAULT_ACTIVE",
+      "HEALTHY"
+    ]
+  },
+  "scenario_id": "SEED-G02-0004",
+  "schema_version": "1.0.0",
+  "source_candidate_sha": "df1fea44c15baaa3f2af72d2067def1d7a9f522c",
+  "source_eval": "EVAL-G02-032",
+  "source_trial": "g02-scenario-df1fea44c15baaa3f2af72d2067def1d7a9f522c-seed-g02-0003",
+  "started_at": "2026-07-25T20:01:14.560037+00:00",
+  "state_sequence": [
+    "HEALTHY",
+    "FAULT_ACTIVE",
+    "HEALTHY"
+  ],
+  "status": "pass"
+}
