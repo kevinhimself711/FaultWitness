@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: C-G02-011
+active_iteration: A-G02-011
 next_iteration: null
 last_closed_gate: G01
 ---
@@ -40,9 +40,10 @@ is terminally failed because the default ten-user ambient load produced fleet-wi
 `accounting` reached its sixty-second OOM restart. C-G02-010 is complete with a clean dedicated
 namespace, minimum nonzero ambient load, and one passing candidate-bound checkout seam. A-G02-010
 then passed real 60/6/22 matrices and scenario seed 1 but terminally failed on seed 2 because both
-payment fault branches still relied on incidental ambient checkout traffic. C-G02-011 is active to
-add one deterministic candidate-bound payment checkout without changing the frozen oracle, N,
-window, recovery, or thresholds. No terminal work item may be reopened.
+payment fault branches still relied on incidental ambient checkout traffic. C-G02-011 completed one
+deterministic candidate-bound payment checkout and full real lifecycle without changing the frozen
+oracle, N, window, recovery, or thresholds. A-G02-011 is active on that candidate and current clean
+namespace epoch. No terminal work item may be reopened.
 
 ## Source-of-truth order
 

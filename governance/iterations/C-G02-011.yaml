@@ -2,7 +2,7 @@ schema_version: "1.2.0"
 id: C-G02-011
 gate: G02
 title: Deterministic Payment Workload Corrective
-status: in_progress
+status: completed
 iteration_type: corrective
 corrects: [I-0017, A-G02-010]
 root_cause:
@@ -46,7 +46,7 @@ tests:
   - uv run python -m faultwitness_dev verify-fast
   - uv run python -m faultwitness_dev eval-changed
 eval_id: EVAL-G02-043
-commit: null
+commit: bd374683de25b824af8669a993c8c7b771c6001e
 changed_paths:
   - src/faultwitness_dev/g02_lab.py
   - tests/g02/test_g02_lab.py

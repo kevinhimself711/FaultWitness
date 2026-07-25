@@ -1,0 +1,51 @@
+schema_version: "1.2.0"
+id: A-G02-011
+gate: G02
+title: Deterministic-Workload Unified Candidate Gate Attempt
+status: in_progress
+iteration_type: gate_attempt
+attempt_of: G02
+attempt_scope:
+  frozen_runners_only: true
+  ad_hoc_diagnostic_tooling: false
+  deterministic_failure_reuses_candidate: false
+  transient_resume_only: true
+accounting_scope:
+  corrective_engineering: excluded
+  targeted_verification: excluded
+  gate_attempt_execution: included
+  governance_sync: separate
+scope:
+  - Freeze candidate bd374683de25b824af8669a993c8c7b771c6001e and orchestrate the existing fourteen Gate phases under EVAL-G02-044.
+  - Consume the exact-candidate clean deployment checkpoint produced by EVAL-G02-043 without deleting and recreating the same namespace a second time.
+  - Execute fresh 60-cell isolation six-stage trace 22-surface canary all 32 scenarios and every baseline and closure phase on the current namespace epoch.
+  - Preserve every prior terminal attempt and negative or targeted seam as immutable history.
+non_goals:
+  - Adding product behavior runners fixtures diagnostic tools test semantics thresholds workflows or samples.
+  - Inheriting remote matrices or scenario trials from an earlier namespace epoch or candidate.
+  - Reactivating overwriting or rebinding a terminal attempt as a passing attempt.
+dependencies: [I-0016, I-0017, I-0018, I-0019, I-0024, C-G02-001, A-G02-001, C-G02-002, A-G02-002, C-G02-003, A-G02-003, C-G02-004, A-G02-004, C-G02-005, A-G02-005, C-G02-006, A-G02-006, C-G02-007, A-G02-007, C-G02-008, A-G02-008, C-G02-009, A-G02-009, C-G02-010, A-G02-010, C-G02-011]
+tests:
+  - uv run python -m faultwitness_dev verify-fast
+  - uv run python -m faultwitness_dev eval-g02 --candidate-sha bd374683de25b824af8669a993c8c7b771c6001e
+  - uv run python -m faultwitness_dev eval-g02-close --candidate-sha bd374683de25b824af8669a993c8c7b771c6001e --evidence-head-sha bd374683de25b824af8669a993c8c7b771c6001e
+eval_id: EVAL-G02-044
+commit: bd374683de25b824af8669a993c8c7b771c6001e
+changed_paths:
+  - AGENTS.md
+  - CHANGELOG.md
+  - PROJECT_STATE.yaml
+  - README.md
+  - docs/claims/CLAIMS.yaml
+  - docs/evals/EVAL-G02-044
+  - docs/gates/G02
+  - docs/roadmap/PHASES.md
+  - docs/roadmap/iterations/A-G02-011.md
+  - governance/gates/G02.yaml
+  - governance/iterations/A-G02-011.yaml
+behavior_change: false
+docs_updated:
+  - docs/roadmap/iterations/A-G02-011.md
+  - docs/roadmap/PHASES.md
+  - docs/evals/EVAL-G02-044/PLAN.md
+threshold_changes: []
