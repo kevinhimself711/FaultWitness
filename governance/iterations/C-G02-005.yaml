@@ -2,7 +2,7 @@ schema_version: "1.2.0"
 id: C-G02-005
 gate: G02
 title: Payment-Unreachable Caller-Trace Observation Corrective
-status: planned
+status: in_progress
 iteration_type: corrective
 corrects: [I-0017, A-G02-004]
 root_cause:

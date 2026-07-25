@@ -1,8 +1,8 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: null
-next_iteration: C-G02-005
+active_iteration: C-G02-005
+next_iteration: A-G02-005
 last_closed_gate: G01
 ---
 
@@ -23,7 +23,7 @@ expected-allow egress no-progress evidence. C-G02-003 is completed with targeted
 allow/reject evidence and no open evidence. A-G02-003 is terminally failed with complete
 trace-prerequisite evidence. C-G02-004 is completed with exact-candidate deploy, inspect, relay,
 and smoke evidence. A-G02-004 is terminally failed with complete payment-unreachable oracle
-evidence; C-G02-005 is the next single-root corrective and A-G02-005 is its separate planned Gate
+evidence; C-G02-005 is the active single-root corrective and A-G02-005 is its separate planned Gate
 attempt. No terminal work item may be reopened.
 
 ## Source-of-truth order
