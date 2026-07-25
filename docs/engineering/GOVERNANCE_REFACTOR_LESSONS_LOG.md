@@ -1,5 +1,23 @@
 # Governance Refactor Lessons Log
 
+## GOV-OBS-011 — A global digest must not invalidate every phase
+
+- **Trigger:** C-G02-005 changed only the `paymentUnreachable` scenario observer, while the current
+  cache key put the complete candidate SHA and aggregate evaluator digest into every phase and
+  therefore proposed rerunning the already-passing 60-cell isolation, six-stage trace, and
+  22-surface canary matrices.
+- **Avoidable cost:** those remote matrices would produce no new information and would violate the
+  closure-freeze rule to rerun only a failed phase and affected dependencies.
+- **G02 action:** ADR-0013 now rejects candidate-wide invalidation. EVAL-G02-032 uses explicit,
+  reviewable manifest inheritance entries that preserve the original producing revision, artifact,
+  timestamps, execution count, and private journal; candidate binding, static impact proof, affected
+  deployment, the failed scenario phase, and downstream phases still execute.
+- **Post-G02 migration:** cache keys and invalidation graphs must use phase-specific semantic
+  subjects. Aggregate candidate/evaluator digests remain provenance and cannot alone invalidate an
+  otherwise unchanged phase.
+- **Metric impact:** none; N, thresholds, permissions, model route, token/cost ceilings, health
+  windows, and failure semantics are unchanged.
+
 ## 用途与边界
 
 本文件是 G02 关闭期间建立的追加式经验账本，用于捕获可证实的无效治理、治理成本异常和
