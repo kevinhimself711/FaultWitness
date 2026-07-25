@@ -1,0 +1,61 @@
+schema_version: "1.2.0"
+id: C-G02-003
+gate: G02
+title: Baseline LangSmith TCP Egress Probe Corrective
+status: planned
+iteration_type: corrective
+corrects: [I-0024, A-G02-002]
+root_cause:
+  id: RC-G02-003
+  source_eval: EVAL-G02-026
+  phase: isolation-access-matrix
+  failure_mode: The external-observability network cell couples a TCP egress assertion to BusyBox wget HTTPS behavior; on the selected baseline pod the client made no progress before any TCP/443 policy-rule hit, so an expected-allow network decision could not be observed.
+affected_validation_ids: [V-G02-009]
+verification_scope:
+  changed_seam: LangSmith pod-side network authorization probe only
+  semantic_branches: [baseline_tcp_allow, ordinary_developer_policy_reject, cross_boundary_policy_reject]
+  reused_test_entrypoints: [tests/g02/test_g02_gate_collectors.py]
+  real_seam_proof: required
+  real_seam_runner: g02.langsmith_tcp_egress_probe
+  real_seam_artifact: docs/evals/EVAL-G02-027/artifacts/langsmith-tcp-egress-seam-proof.json
+  gate_l2_execution: 0
+  full_gate_eval: false
+cost_boundary:
+  root_cause_count: 1
+  bespoke_eval_harness: false
+  gate_attempt_included: false
+  targeted_verification_separate: true
+  global_sync_deferred: true
+accounting_scope:
+  corrective_engineering: included
+  targeted_verification: separate
+  gate_attempt_execution: excluded
+  governance_sync: separate
+scope:
+  - Falsify or confirm the transport-only TCP seam on the exact existing baseline and denied probe pods before changing implementation.
+  - If confirmed implement only the external LangSmith pod-side network operation as an event-terminated TCP connect while retaining the separate credential-authenticated operator read.
+  - Reuse the existing collector pytest entrypoint and execute the minimum real allow and policy-reject seam proof.
+non_goals:
+  - Running the 60-cell Gate matrix any other Gate phase deployment destructive work Bailian trial or model call.
+  - Adding a wall-clock kill timeout changing the external allow policy replacing credentials or changing any validation N threshold permission quality performance or failure semantic.
+dependencies: [I-0013, I-0024, C-G02-002, A-G02-002]
+tests:
+  - uv run pytest -q tests/g02/test_g02_gate_collectors.py -k langsmith_tcp
+  - uv run python -m faultwitness_dev verify-fast
+  - uv run python -m faultwitness_dev eval-changed
+eval_id: EVAL-G02-027
+commit: null
+changed_paths:
+  - deploy/g02/gate_probe.py
+  - tests/g02/test_g02_gate_collectors.py
+  - docs/runbooks/G02_ISOLATION.md
+  - docs/evals/EVAL-G02-027
+  - docs/roadmap/iterations/C-G02-003.md
+  - governance/iterations/C-G02-003.yaml
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/C-G02-003.md
+  - docs/evals/EVAL-G02-027/PLAN.md
+  - docs/evals/EVAL-G02-027/REPORT.md
+  - docs/runbooks/G02_ISOLATION.md
+threshold_changes: []

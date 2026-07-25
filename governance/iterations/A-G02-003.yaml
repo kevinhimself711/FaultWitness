@@ -1,8 +1,8 @@
 schema_version: "1.2.0"
-id: A-G02-002
+id: A-G02-003
 gate: G02
-title: Post-LangSmith Unified Candidate Gate Attempt
-status: failed
+title: Post-Egress Unified Candidate Gate Attempt
+status: planned
 iteration_type: gate_attempt
 attempt_of: G02
 attempt_scope:
@@ -16,36 +16,36 @@ accounting_scope:
   gate_attempt_execution: included
   governance_sync: separate
 scope:
-  - Freeze the post-C-G02-002 candidate and execute the affected access phase plus its required candidate-binding dependencies and downstream Gate phases under EVAL-G02-026.
-  - Preserve A-G02-001 evidence as immutable history and prove reconciliation and close readiness without adding implementation.
+  - Freeze the post-C-G02-003 candidate and execute the frozen fourteen Gate phases under EVAL-G02-028.
+  - Preserve all prior attempt evidence as immutable history and prove reconciliation and close readiness without adding implementation.
 non_goals:
   - Adding product behavior runners fixtures diagnostic tools test semantics thresholds workflows or samples.
-  - Reactivating overwriting or rebinding A-G02-001 EVAL-G02-024 or any other terminal asset.
-dependencies: [I-0016, I-0017, I-0018, I-0019, I-0024, C-G02-001, A-G02-001, C-G02-002]
+  - Reactivating overwriting rebinding or inheriting a terminal attempt as current evidence.
+dependencies: [I-0016, I-0017, I-0018, I-0019, I-0024, C-G02-001, A-G02-001, C-G02-002, A-G02-002, C-G02-003]
 tests:
   - uv run python -m faultwitness_dev verify-fast
   - uv run python -m faultwitness_dev eval-g02 --candidate-sha <full-sha>
   - uv run python -m faultwitness_dev eval-g02-close --candidate-sha <full-sha> --evidence-head-sha <full-sha>
-eval_id: EVAL-G02-026
-commit: c51072931984865c900a5cac43ec907be82d0bb1
+eval_id: EVAL-G02-028
+commit: null
 changed_paths:
   - AGENTS.md
   - CHANGELOG.md
   - PROJECT_STATE.yaml
   - README.md
   - docs/claims/CLAIMS.yaml
-  - docs/evals/EVAL-G02-026
+  - docs/evals/EVAL-G02-028
   - docs/gates/G02
   - docs/runbooks/G02_EVAL_PROTOCOL.md
   - docs/roadmap/PHASES.md
-  - docs/roadmap/iterations/A-G02-002.md
+  - docs/roadmap/iterations/A-G02-003.md
   - governance/gates/G02.yaml
-  - governance/iterations/A-G02-002.yaml
+  - governance/iterations/A-G02-003.yaml
 behavior_change: false
 docs_updated:
-  - docs/roadmap/iterations/A-G02-002.md
+  - docs/roadmap/iterations/A-G02-003.md
   - docs/roadmap/PHASES.md
-  - docs/evals/EVAL-G02-026/PLAN.md
+  - docs/evals/EVAL-G02-028/PLAN.md
   - docs/gates/G02/PLAN.md
   - docs/gates/G02/REPORT.md
   - docs/runbooks/G02_EVAL_PROTOCOL.md

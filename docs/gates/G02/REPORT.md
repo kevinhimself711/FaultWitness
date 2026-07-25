@@ -56,8 +56,13 @@ execution. C-G02-001/EVAL-G02-023 owns only the exact-GetObject corrective and t
 A-G02-001/EVAL-G02-024 then passed four preflights, real deployment, and 57 live access cells before
 the stale LangSmith read contract returned a deterministic canonical-owner deny. C-G02-002/
 EVAL-G02-025 repaired only that contract and passed a real credential-authenticated read seam.
-A-G02-002/EVAL-G02-026 owns the next unified-candidate Gate attempt. G02 has not passed, no waiver
-is present, and no closure or tag is authorized. All earlier failed Eval assets remain immutable.
+A-G02-002/EVAL-G02-026 then passed four preflights, real deployment, and 57 live access cells,
+including the corrected LangSmith canonical-owner credential cell. The expected-allow
+`obs:langsmith|baseline-agent` operation made no TCP-policy-observable progress and was recorded as
+`infra_failed` after verified no progress; all downstream, destructive, Bailian, token, and cost
+work remained zero. C-G02-003 owns only that TCP egress probe seam, and A-G02-003/EVAL-G02-028 is
+the separate planned unified-candidate attempt. G02 has not passed, no waiver is present, and no
+closure or tag is authorized. All earlier failed Eval assets remain immutable.
 
 Future reports must include `G01-SUPP-ACCESS-MATRIX`, `G01-SUPP-SIX-STAGE-SPANS`, and
 `G01-SUPP-ALL-SURFACE-CANARY` without modifying closed G01 evidence.
