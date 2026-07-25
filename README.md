@@ -1,8 +1,8 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: null
-next_iteration: A-G02-003
+active_iteration: A-G02-003
+next_iteration: null
 last_closed_gate: G01
 ---
 
@@ -21,7 +21,7 @@ probe 错用隐含 `ListBucket` 的 `mc stat`，现已终态失败。未实施�
 命名治理退役；C-G02-001 已以真实 GetObject 对照证据关闭。A-G02-001 的真实访问矩阵在
 LangSmith canonical-owner cell 确定性失败并终态关闭；C-G02-002 已用真实 credential read
 seam 完成单根因修复。A-G02-002 在 expected-allow baseline-agent egress seam 无进展后终态
-失败；C-G02-003 已以真实 TCP allow/reject 对照证据关闭，A-G02-003 是下一 Gate attempt。
+失败；C-G02-003 已以真实 TCP allow/reject 对照证据关闭，A-G02-003 是当前 Gate attempt。
 任何终态记录都不会重开。
 
 ## 权威资产

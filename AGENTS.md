@@ -1,8 +1,8 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: null
-next_iteration: A-G02-003
+active_iteration: A-G02-003
+next_iteration: null
 last_closed_gate: G01
 ---
 
@@ -20,7 +20,7 @@ namespaces were separated. C-G02-001 is completed with targeted real-client evid
 evidence; A-G02-001 is terminally failed with complete LangSmith access evidence. C-G02-002 is
 completed with an attributable real credential seam. A-G02-002 is terminally failed with complete
 expected-allow egress no-progress evidence. C-G02-003 is completed with targeted real TCP
-allow/reject evidence and no open evidence; A-G02-003 is the separate next Gate attempt. No
+allow/reject evidence and no open evidence; A-G02-003 is the active separate Gate attempt. No
 terminal work item may be reopened.
 
 ## Source-of-truth order
