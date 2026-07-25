@@ -72,6 +72,46 @@ class ProbeBlockedError(RuntimeError):
     """A deterministic runner or provisioning failure that needs a new candidate."""
 
 
+LANGSMITH_RUN_QUERY_URL = "https://api.smith.langchain.com/api/v1/runs/query"
+
+
+def langsmith_access_probe(
+    credential: str, *, client: httpx.Client | None = None
+) -> dict[str, Any]:
+    """Prove the read-only credential seam without retaining response content."""
+    if not credential:
+        raise ProbeBlockedError("langsmith_credential_missing")
+    owned = client is None
+    active_client = client or httpx.Client(timeout=None)
+    try:
+        response = active_client.post(
+            LANGSMITH_RUN_QUERY_URL,
+            headers={"x-api-key": credential},
+            json={"limit": 1, "select": ["id"]},
+        )
+    except httpx.TransportError as error:
+        raise ProbeInfrastructureError("langsmith_transport") from error
+    finally:
+        if owned:
+            active_client.close()
+    status = int(response.status_code)
+    if status == 200:
+        return {
+            "credential_allow": True,
+            "response_class": "success",
+            "http_status": status,
+        }
+    if status in {408, 425, 429} or status >= 500:
+        raise ProbeInfrastructureError("langsmith_service_unavailable")
+    if status in {401, 403}:
+        return {
+            "credential_allow": False,
+            "response_class": "credential_denied",
+            "http_status": status,
+        }
+    raise ProbeBlockedError(f"langsmith_request_rejected_{status}")
+
+
 def _digest(value: Any) -> str:
     payload = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
     return hashlib.sha256(payload).hexdigest()
@@ -645,23 +685,17 @@ python3 "$work/gate_probe.py" {action} "$work/request.json"
         else:
             network = self._invoke("access", context, {"cell": dict(contract)})
             network_allow = network.get("actual_allow") is True
-        credential_allow = False
+        credential = {
+            "credential_allow": False,
+            "response_class": "not_invoked",
+            "http_status": None,
+        }
         if probe in {"canonical-owner", "baseline-agent"}:
             bundle = load_secret_bundle(
                 BootstrapPaths.defaults(), default_sops_executable()
             )
-            try:
-                with httpx.Client(timeout=None) as client:
-                    response = client.post(
-                        "https://api.smith.langchain.com/runs/query",
-                        headers={"x-api-key": bundle.langsmith_api_key},
-                        json={"limit": 1},
-                    )
-            except httpx.TransportError as error:
-                raise ProbeInfrastructureError("langsmith_transport") from error
-            if response.status_code in {408, 425, 429} or response.status_code >= 500:
-                raise ProbeInfrastructureError("langsmith_service_unavailable")
-            credential_allow = response.status_code in {200, 201}
+            credential = langsmith_access_probe(bundle.langsmith_api_key)
+        credential_allow = credential["credential_allow"]
         actual = network_allow and (
             credential_allow if probe in {"canonical-owner", "baseline-agent"} else True
         )
@@ -670,11 +704,15 @@ python3 "$work/gate_probe.py" {action} "$work/request.json"
             "probe": probe,
             "network_allow": network_allow,
             "credential_allow": credential_allow,
+            "credential_response_class": credential["response_class"],
+            "credential_http_status": credential["http_status"],
             "actual_allow": actual,
         }
         return {
             "cell_id": contract["cell_id"],
             "actual_allow": actual,
+            "credential_response_class": credential["response_class"],
+            "credential_http_status": credential["http_status"],
             "artifact_ref": _artifact_ref(context, "access", str(contract["cell_id"]), summary),
         }
 

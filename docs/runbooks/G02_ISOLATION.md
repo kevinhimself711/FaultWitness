@@ -116,6 +116,20 @@ allow/deny outcome, timestamps, and command/output digests. It never records cre
 content. This pair is external-seam compatibility evidence, not Gate L2 N and not permission to
 skip or reduce the frozen 60-cell Gate matrix.
 
+## LangSmith credential seam proof
+
+The operator-side read probe uses the current official `POST /api/v1/runs/query` contract with
+`limit: 1` and `select: [id]`; response content is never retained. The public result contains only
+candidate/environment identity, request-contract digest, `credential_allow`, a sanitized response
+class, HTTP status, timestamps, and execution counters. Transport, 408/425/429, and 5xx remain
+resumable infrastructure failures; 401/403 remain credential denial; any other non-success response
+is a blocking request-contract defect rather than an access-policy result.
+
+C-G02-002 executes this exact helper once with the existing repository-external credential. A
+non-success result fails the corrective and never authorizes key replacement, expected-allow
+relaxation, operator adjudication, or Gate L2 execution. The successful artifact path is
+`docs/evals/EVAL-G02-025/artifacts/langsmith-access-seam-proof.json`.
+
 These phases have no preset orchestration timeout. The rule changes only process supervision:
 matrix N, zero-tolerance semantics, quality/performance thresholds, and all Gate criteria remain
 unchanged.

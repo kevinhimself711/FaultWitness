@@ -4,6 +4,7 @@ import json
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
+import httpx
 import pytest
 
 from faultwitness_dev.errors import GovernanceError
@@ -14,6 +15,7 @@ from faultwitness_dev.g02_collectors import (
     ProbeInfrastructureError,
     build_provisioning_plan,
     canary_values,
+    langsmith_access_probe,
     run_access_matrix,
     run_canary_matrix,
     run_trace_matrix,
@@ -152,6 +154,46 @@ def test_remote_probe_uses_python38_compatible_utc_semantics() -> None:
     assert timestamp.utcoffset() is not None
     assert timestamp.utcoffset().total_seconds() == 0
     assert timestamp.isoformat().endswith("+00:00")
+
+
+@pytest.mark.parametrize(
+    ("status", "expected", "error_type", "error_match"),
+    [
+        (
+            200,
+            {"credential_allow": True, "response_class": "success", "http_status": 200},
+            None,
+            None,
+        ),
+        (429, None, ProbeInfrastructureError, "langsmith_service_unavailable"),
+        (422, None, ProbeBlockedError, "langsmith_request_rejected_422"),
+    ],
+)
+def test_langsmith_access_probe_uses_supported_attributable_read_contract(
+    status: int,
+    expected: dict[str, object] | None,
+    error_type: type[Exception] | None,
+    error_match: str | None,
+) -> None:
+    observed: dict[str, object] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        observed["url"] = str(request.url)
+        observed["body"] = json.loads(request.content)
+        observed["credential_present"] = request.headers.get("x-api-key") == "opaque-key"
+        return httpx.Response(status, json={"runs": []})
+
+    with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+        if error_type is None:
+            assert langsmith_access_probe("opaque-key", client=client) == expected
+        else:
+            with pytest.raises(error_type, match=error_match):
+                langsmith_access_probe("opaque-key", client=client)
+    assert observed == {
+        "url": "https://api.smith.langchain.com/api/v1/runs/query",
+        "body": {"limit": 1, "select": ["id"]},
+        "credential_present": True,
+    }
 
 
 def test_access_collector_is_exactly_60_cells_and_terminal_failure_is_not_retried(
