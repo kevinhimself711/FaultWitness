@@ -2,7 +2,7 @@ schema_version: "1.2.0"
 id: C-G02-008
 gate: G02
 title: Kafka Deterministic Workload Corrective
-status: in_progress
+status: completed
 iteration_type: corrective
 corrects: [I-0017, A-G02-007]
 root_cause:
@@ -45,7 +45,7 @@ tests:
   - uv run python -m faultwitness_dev verify-fast
   - uv run python -m faultwitness_dev eval-changed
 eval_id: EVAL-G02-037
-commit: null
+commit: 9adf0ba62f618b15bb41bbb56cec5fdc6229cc8a
 changed_paths:
   - src/faultwitness_dev/g02_lab.py
   - tests/g02/test_g02_lab.py

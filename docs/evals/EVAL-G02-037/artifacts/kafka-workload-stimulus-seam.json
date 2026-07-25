@@ -1,0 +1,119 @@
+{
+  "candidate_sha": "9adf0ba62f618b15bb41bbb56cec5fdc6229cc8a",
+  "deadline_seconds": 90,
+  "fault_class": "kafkaQueueProblems",
+  "fault_observations": [
+    {
+      "baseline_lag": 0.0,
+      "checkout_error_spans": 0,
+      "consumer_lag": 42.0,
+      "consumer_poll_lag_seconds": 42.0,
+      "consumer_record_lag": 0.0,
+      "cpu_rate": 0.0019704054379334544,
+      "descriptions": [],
+      "error_spans": 0,
+      "journey_status": 200,
+      "kafka_error": true,
+      "kafka_fault_log": true,
+      "kafka_log_error": false,
+      "kafka_stimulus": {
+        "cart_status": 200,
+        "checkout_count": 1,
+        "checkout_status": 200,
+        "status": "pass"
+      },
+      "payment_connection_errors": 0,
+      "ready": true,
+      "recorded_at": "2026-07-25T21:40:32.026815+00:00",
+      "trace_count": 3,
+      "working_set": 54566912.0
+    },
+    {
+      "baseline_lag": 0.0,
+      "checkout_error_spans": 0,
+      "consumer_lag": 42.0,
+      "consumer_poll_lag_seconds": 42.0,
+      "consumer_record_lag": 0.0,
+      "cpu_rate": 0.0019704054379334544,
+      "descriptions": [],
+      "error_spans": 0,
+      "journey_status": 200,
+      "kafka_error": true,
+      "kafka_fault_log": true,
+      "kafka_log_error": false,
+      "kafka_stimulus": {
+        "cart_status": 200,
+        "checkout_count": 1,
+        "checkout_status": 200,
+        "status": "pass"
+      },
+      "payment_connection_errors": 0,
+      "ready": true,
+      "recorded_at": "2026-07-25T21:41:05.004400+00:00",
+      "trace_count": 3,
+      "working_set": 54566912.0
+    }
+  ],
+  "gate_l2_executions": 0,
+  "lab_ready_deployment_count": 24,
+  "model_calls": 0,
+  "observation_n": 2,
+  "original_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+  "recovery_observations": [
+    {
+      "checkout_error_spans": 0,
+      "consumer_lag": 42.0,
+      "consumer_poll_lag_seconds": 42.0,
+      "consumer_record_lag": 0.0,
+      "cpu_rate": 0.0019704054379334544,
+      "descriptions": [],
+      "error_spans": 0,
+      "journey_healthy": true,
+      "journey_status": 200,
+      "kafka_fault_log": false,
+      "kafka_log_error": false,
+      "payment_connection_errors": 0,
+      "ready": true,
+      "recorded_at": "2026-07-25T21:41:14.335252+00:00",
+      "signal_not_worsening": true,
+      "trace_count": 0,
+      "working_set": 54566912.0
+    },
+    {
+      "checkout_error_spans": 0,
+      "consumer_lag": 0.0,
+      "consumer_poll_lag_seconds": 0.0,
+      "consumer_record_lag": 0.0,
+      "cpu_rate": 0.002026780460600276,
+      "descriptions": [],
+      "error_spans": 0,
+      "journey_healthy": true,
+      "journey_status": 200,
+      "kafka_fault_log": false,
+      "kafka_log_error": false,
+      "payment_connection_errors": 0,
+      "ready": true,
+      "recorded_at": "2026-07-25T21:41:47.351630+00:00",
+      "signal_not_worsening": true,
+      "trace_count": 1,
+      "working_set": 54583296.0
+    }
+  ],
+  "restored_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+  "sample_interval_seconds": 30,
+  "scenario_id": "SEED-G02-0013",
+  "schema_version": "1.0.0",
+  "state_sequence": [
+    "HEALTHY",
+    "FAULT_ACTIVE",
+    "HEALTHY"
+  ],
+  "status": "pass",
+  "stimulus": {
+    "cart_status": 200,
+    "checkout_count": 1,
+    "checkout_status": 200,
+    "status": "pass"
+  },
+  "threshold_changes": []
+}

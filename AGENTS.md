@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: C-G02-008
+active_iteration: null
 next_iteration: null
 last_closed_gate: G01
 ---
@@ -32,8 +32,8 @@ cleanup path indexed an empty fault-sample list. C-G02-007 is completed with tar
 non-growth tests plus one candidate-bound email-memory scenario seam. A-G02-007 is terminally
 failed after twelve scenario passes because the Kafka fault runner relied on incidental load-generator
 traffic and did not produce consumer lag inside the frozen 90-second observation deadline. C-G02-008
-is active to add one deterministic candidate-bound checkout stimulus without changing the oracle,
-deadline, or sample count. No terminal work item may be reopened.
+is completed with targeted tests and one candidate-bound Kafka checkout/lifecycle seam. The next
+unified-candidate Gate attempt has not yet been activated. No terminal work item may be reopened.
 
 ## Source-of-truth order
 

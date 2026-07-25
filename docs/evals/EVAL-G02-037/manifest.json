@@ -3,14 +3,22 @@
   "eval_id": "EVAL-G02-037",
   "gate": "G02",
   "iteration": "C-G02-008",
-  "evaluated_revision": "not-run",
-  "status": "pending",
-  "environments": ["local-candidate-bound", "private-k3s-single-scenario"],
+  "evaluated_revision": "9adf0ba62f618b15bb41bbb56cec5fdc6229cc8a",
+  "status": "pass",
+  "environments": [
+    "local-candidate-bound",
+    "private-k3s-candidate-bound-24-of-24",
+    "private-k3s-single-scenario"
+  ],
   "commands": [
     "uv run pytest -q tests/g02/test_g02_lab.py -k kafka",
     "existing run_scenario with SEED-G02-0013 and exact automatic restore"
   ],
-  "artifacts": ["docs/evals/EVAL-G02-037/PLAN.md"],
+  "artifacts": [
+    "docs/evals/EVAL-G02-037/PLAN.md",
+    "docs/evals/EVAL-G02-037/REPORT.md",
+    "docs/evals/EVAL-G02-037/artifacts/kafka-workload-stimulus-seam.json"
+  ],
   "evidence_urls": [],
   "integrations": {},
   "open_evidence": []
