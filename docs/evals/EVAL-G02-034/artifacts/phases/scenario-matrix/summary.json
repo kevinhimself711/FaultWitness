@@ -1,0 +1,1204 @@
+{
+  "failed_trial": "g02-scenario-7fdb34999bef3413ccf16774440135730b23b5e4-seed-g02-0008",
+  "scenario_count": 7,
+  "status": "metric_fail",
+  "trials": [
+    {
+      "attempt": 0,
+      "inherited_from_trial": "g02-scenario-df1fea44c15baaa3f2af72d2067def1d7a9f522c-seed-g02-0001",
+      "payload": {
+        "fault_class": "kafkaQueueProblems",
+        "observation_packet": {
+          "case_id": "SEED-G02-0001",
+          "observations": [
+            {
+              "baseline_lag": 0.0,
+              "checkout_error_spans": 0,
+              "consumer_lag": 38.0,
+              "consumer_poll_lag_seconds": 38.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.002209807476868321,
+              "descriptions": [],
+              "error_spans": 0,
+              "id": "SEED-G02-0001-OBS-01",
+              "journey_status": 200,
+              "kafka_error": true,
+              "kafka_fault_log": true,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T19:29:30.129707+00:00",
+              "trace_count": 1,
+              "working_set": 54362112.0
+            },
+            {
+              "baseline_lag": 0.0,
+              "checkout_error_spans": 0,
+              "consumer_lag": 38.0,
+              "consumer_poll_lag_seconds": 38.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.002209807476868321,
+              "descriptions": [],
+              "error_spans": 0,
+              "id": "SEED-G02-0001-OBS-02",
+              "journey_status": 200,
+              "kafka_error": true,
+              "kafka_fault_log": true,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T19:30:03.355026+00:00",
+              "trace_count": 1,
+              "working_set": 54362112.0
+            }
+          ],
+          "packet_digest": "2f328a04246a2096fc03da9093dd67f3448bd6292fa9d9b3002d4d80ee005bd1",
+          "problem_brief": "Investigate the hard service incident using only the provided canonical observation packet.",
+          "schema_version": "1.0.0"
+        },
+        "result": {
+          "family": "runtime_data",
+          "fault_class": "kafkaQueueProblems",
+          "fault_observations": [
+            {
+              "baseline_lag": 0.0,
+              "checkout_error_spans": 0,
+              "consumer_lag": 38.0,
+              "consumer_poll_lag_seconds": 38.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.002209807476868321,
+              "descriptions": [],
+              "error_spans": 0,
+              "journey_status": 200,
+              "kafka_error": true,
+              "kafka_fault_log": true,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T19:29:30.129707+00:00",
+              "trace_count": 1,
+              "working_set": 54362112.0
+            },
+            {
+              "baseline_lag": 0.0,
+              "checkout_error_spans": 0,
+              "consumer_lag": 38.0,
+              "consumer_poll_lag_seconds": 38.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.002209807476868321,
+              "descriptions": [],
+              "error_spans": 0,
+              "journey_status": 200,
+              "kafka_error": true,
+              "kafka_fault_log": true,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T19:30:03.355026+00:00",
+              "trace_count": 1,
+              "working_set": 54362112.0
+            }
+          ],
+          "original_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+          "recovery_observations": [
+            {
+              "checkout_error_spans": 0,
+              "consumer_lag": 38.0,
+              "consumer_poll_lag_seconds": 38.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.002209807476868321,
+              "descriptions": [],
+              "error_spans": 0,
+              "journey_healthy": true,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T19:30:12.426548+00:00",
+              "signal_not_worsening": true,
+              "trace_count": 0,
+              "working_set": 54362112.0
+            },
+            {
+              "checkout_error_spans": 0,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0018748754003120585,
+              "descriptions": [],
+              "error_spans": 0,
+              "journey_healthy": true,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T19:30:45.420785+00:00",
+              "signal_not_worsening": true,
+              "trace_count": 1,
+              "working_set": 54456320.0
+            }
+          ],
+          "restored_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+          "scenario_id": "SEED-G02-0001",
+          "state_sequence": [
+            "HEALTHY",
+            "FAULT_ACTIVE",
+            "HEALTHY"
+          ]
+        },
+        "scenario_id": "SEED-G02-0001"
+      },
+      "recorded_at": "2026-07-25T19:30:48.629967+00:00",
+      "source_attempt": 2,
+      "source_candidate_sha": "df1fea44c15baaa3f2af72d2067def1d7a9f522c",
+      "source_eval": "EVAL-G02-032",
+      "source_trial_digest": "a8d7f7f2b09da9c6e25997a6b0dc9d3f52e7940b8b8b99f9e08886a74eca90fe",
+      "status": "pass",
+      "trial_id": "g02-scenario-7fdb34999bef3413ccf16774440135730b23b5e4-seed-g02-0001"
+    },
+    {
+      "attempt": 0,
+      "inherited_from_trial": "g02-scenario-df1fea44c15baaa3f2af72d2067def1d7a9f522c-seed-g02-0002",
+      "payload": {
+        "fault_class": "paymentUnreachable",
+        "observation_packet": {
+          "case_id": "SEED-G02-0002",
+          "observations": [
+            {
+              "checkout_error_spans": 2,
+              "checkout_failed": true,
+              "connection_error": true,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.002160981914829054,
+              "descriptions": [
+                "name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses"
+              ],
+              "error_spans": 5,
+              "id": "SEED-G02-0002-OBS-01",
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 2,
+              "ready": true,
+              "recorded_at": "2026-07-25T19:31:26.424400+00:00",
+              "trace_count": 2,
+              "working_set": 54489088.0
+            },
+            {
+              "checkout_error_spans": 5,
+              "checkout_failed": true,
+              "connection_error": true,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.002160981914829054,
+              "descriptions": [
+                "name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses"
+              ],
+              "error_spans": 39,
+              "id": "SEED-G02-0002-OBS-02",
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 5,
+              "ready": true,
+              "recorded_at": "2026-07-25T19:31:59.313714+00:00",
+              "trace_count": 5,
+              "working_set": 54489088.0
+            }
+          ],
+          "packet_digest": "c25880d08dd9d4ddfd1efb08cd57b44ed135abc9d64b1e80c108c766f8d01204",
+          "problem_brief": "Investigate the hard service incident using only the provided canonical observation packet.",
+          "schema_version": "1.0.0"
+        },
+        "result": {
+          "family": "dependency_network",
+          "fault_class": "paymentUnreachable",
+          "fault_observations": [
+            {
+              "checkout_error_spans": 2,
+              "checkout_failed": true,
+              "connection_error": true,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.002160981914829054,
+              "descriptions": [
+                "name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses"
+              ],
+              "error_spans": 5,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 2,
+              "ready": true,
+              "recorded_at": "2026-07-25T19:31:26.424400+00:00",
+              "trace_count": 2,
+              "working_set": 54489088.0
+            },
+            {
+              "checkout_error_spans": 5,
+              "checkout_failed": true,
+              "connection_error": true,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.002160981914829054,
+              "descriptions": [
+                "name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses"
+              ],
+              "error_spans": 39,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 5,
+              "ready": true,
+              "recorded_at": "2026-07-25T19:31:59.313714+00:00",
+              "trace_count": 5,
+              "working_set": 54489088.0
+            }
+          ],
+          "original_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+          "recovery_observations": [
+            {
+              "checkout_error_spans": 0,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.002160981914829054,
+              "descriptions": [],
+              "error_spans": 0,
+              "journey_healthy": true,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T19:32:08.460985+00:00",
+              "signal_not_worsening": true,
+              "trace_count": 0,
+              "working_set": 54489088.0
+            },
+            {
+              "checkout_error_spans": 0,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.002135989681172975,
+              "descriptions": [],
+              "error_spans": 4,
+              "journey_healthy": true,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T19:32:41.346737+00:00",
+              "signal_not_worsening": true,
+              "trace_count": 6,
+              "working_set": 54521856.0
+            }
+          ],
+          "restored_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+          "scenario_id": "SEED-G02-0002",
+          "state_sequence": [
+            "HEALTHY",
+            "FAULT_ACTIVE",
+            "HEALTHY"
+          ]
+        },
+        "scenario_id": "SEED-G02-0002"
+      },
+      "recorded_at": "2026-07-25T19:32:44.401042+00:00",
+      "source_attempt": 2,
+      "source_candidate_sha": "df1fea44c15baaa3f2af72d2067def1d7a9f522c",
+      "source_eval": "EVAL-G02-032",
+      "source_trial_digest": "f6be386076a4e6acb15a94436313f4958717bc8f5ad953171ff4db1ce486f12c",
+      "status": "pass",
+      "trial_id": "g02-scenario-7fdb34999bef3413ccf16774440135730b23b5e4-seed-g02-0002"
+    },
+    {
+      "attempt": 0,
+      "inherited_from_trial": "g02-scenario-df1fea44c15baaa3f2af72d2067def1d7a9f522c-seed-g02-0003",
+      "payload": {
+        "fault_class": "adHighCpu",
+        "observation_packet": {
+          "case_id": "SEED-G02-0003",
+          "observations": [
+            {
+              "baseline_cpu_max": 0.002135989681172975,
+              "checkout_error_spans": 0,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "correlated_span": true,
+              "cpu_rate": 1.1739398740356273,
+              "descriptions": [],
+              "error_spans": 0,
+              "id": "SEED-G02-0003-OBS-01",
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T19:33:29.758013+00:00",
+              "trace_count": 3,
+              "working_set": 54476800.0
+            },
+            {
+              "baseline_cpu_max": 0.002135989681172975,
+              "checkout_error_spans": 0,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "correlated_span": true,
+              "cpu_rate": 1.1739398740356273,
+              "descriptions": [],
+              "error_spans": 0,
+              "id": "SEED-G02-0003-OBS-02",
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T19:34:02.559721+00:00",
+              "trace_count": 5,
+              "working_set": 54476800.0
+            }
+          ],
+          "packet_digest": "7cf1c6adfa67494dce68899d8b7432ad4fd34386e7888a7592d0b397474381fd",
+          "problem_brief": "Investigate the hard service incident using only the provided canonical observation packet.",
+          "schema_version": "1.0.0"
+        },
+        "result": {
+          "family": "resource_capacity",
+          "fault_class": "adHighCpu",
+          "fault_observations": [
+            {
+              "baseline_cpu_max": 0.002135989681172975,
+              "checkout_error_spans": 0,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "correlated_span": true,
+              "cpu_rate": 1.1739398740356273,
+              "descriptions": [],
+              "error_spans": 0,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T19:33:29.758013+00:00",
+              "trace_count": 3,
+              "working_set": 54476800.0
+            },
+            {
+              "baseline_cpu_max": 0.002135989681172975,
+              "checkout_error_spans": 0,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "correlated_span": true,
+              "cpu_rate": 1.1739398740356273,
+              "descriptions": [],
+              "error_spans": 0,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T19:34:02.559721+00:00",
+              "trace_count": 5,
+              "working_set": 54476800.0
+            }
+          ],
+          "original_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+          "recovery_observations": [
+            {
+              "checkout_error_spans": 0,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 1.1739398740356273,
+              "descriptions": [],
+              "error_spans": 0,
+              "journey_healthy": true,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T19:34:11.423063+00:00",
+              "signal_not_worsening": true,
+              "trace_count": 0,
+              "working_set": 54476800.0
+            },
+            {
+              "checkout_error_spans": 0,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0020508996468505,
+              "descriptions": [],
+              "error_spans": 0,
+              "journey_healthy": true,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T19:35:23.984036+00:00",
+              "signal_not_worsening": true,
+              "trace_count": 6,
+              "working_set": 54394880.0
+            }
+          ],
+          "restored_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+          "scenario_id": "SEED-G02-0003",
+          "state_sequence": [
+            "HEALTHY",
+            "FAULT_ACTIVE",
+            "HEALTHY"
+          ]
+        },
+        "scenario_id": "SEED-G02-0003"
+      },
+      "recorded_at": "2026-07-25T19:35:27.176202+00:00",
+      "source_attempt": 2,
+      "source_candidate_sha": "df1fea44c15baaa3f2af72d2067def1d7a9f522c",
+      "source_eval": "EVAL-G02-032",
+      "source_trial_digest": "0e785c587fabac8b05e62831d10b89612f2847ca8837319d1d5ac6d36d00325c",
+      "status": "pass",
+      "trial_id": "g02-scenario-7fdb34999bef3413ccf16774440135730b23b5e4-seed-g02-0003"
+    },
+    {
+      "attempt": 2,
+      "payload": {
+        "fault_class": "productCatalogFailure",
+        "observation_packet": {
+          "case_id": "SEED-G02-0004",
+          "observations": [
+            {
+              "checkout_error_spans": 0,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "correlated_error": true,
+              "cpu_rate": 0.0021750307933436027,
+              "descriptions": [
+                "Error: Product Catalog Fail Feature Flag Enabled"
+              ],
+              "error_spans": 6,
+              "id": "SEED-G02-0004-OBS-01",
+              "journey_failed": true,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:29:57.874553+00:00",
+              "trace_count": 8,
+              "working_set": 54460416.0
+            },
+            {
+              "checkout_error_spans": 1,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "correlated_error": true,
+              "cpu_rate": 0.00235147222114768,
+              "descriptions": [
+                "Error: Product Catalog Fail Feature Flag Enabled",
+                "Error: Product Catalog Fail Feature Flag Enabled",
+                "failed to prepare order: failed to get product #\"OLJCESPC7Z\"",
+                "Error: Product Catalog Fail Feature Flag Enabled",
+                "Error: Product Catalog Fail Feature Flag Enabled",
+                "Error: Product Catalog Fail Feature Flag Enabled",
+                "Error: Product Catalog Fail Feature Flag Enabled"
+              ],
+              "error_spans": 44,
+              "id": "SEED-G02-0004-OBS-02",
+              "journey_failed": true,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:30:30.694031+00:00",
+              "trace_count": 39,
+              "working_set": 54362112.0
+            }
+          ],
+          "packet_digest": "e459b0a17486363e73fce6632a038412818a5bb69f94a6cd308d877f81dd7123",
+          "problem_brief": "Investigate the medium service incident using only the provided canonical observation packet.",
+          "schema_version": "1.0.0"
+        },
+        "result": {
+          "family": "change_config",
+          "fault_class": "productCatalogFailure",
+          "fault_observations": [
+            {
+              "checkout_error_spans": 0,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "correlated_error": true,
+              "cpu_rate": 0.0021750307933436027,
+              "descriptions": [
+                "Error: Product Catalog Fail Feature Flag Enabled"
+              ],
+              "error_spans": 6,
+              "journey_failed": true,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:29:57.874553+00:00",
+              "trace_count": 8,
+              "working_set": 54460416.0
+            },
+            {
+              "checkout_error_spans": 1,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "correlated_error": true,
+              "cpu_rate": 0.00235147222114768,
+              "descriptions": [
+                "Error: Product Catalog Fail Feature Flag Enabled",
+                "Error: Product Catalog Fail Feature Flag Enabled",
+                "failed to prepare order: failed to get product #\"OLJCESPC7Z\"",
+                "Error: Product Catalog Fail Feature Flag Enabled",
+                "Error: Product Catalog Fail Feature Flag Enabled",
+                "Error: Product Catalog Fail Feature Flag Enabled",
+                "Error: Product Catalog Fail Feature Flag Enabled"
+              ],
+              "error_spans": 44,
+              "journey_failed": true,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:30:30.694031+00:00",
+              "trace_count": 39,
+              "working_set": 54362112.0
+            }
+          ],
+          "original_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+          "precondition_source": "prior-scenario-recovery",
+          "recovery_observations": [
+            {
+              "checkout_error_spans": 0,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.00235147222114768,
+              "descriptions": [],
+              "error_spans": 0,
+              "journey_healthy": true,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:30:39.607321+00:00",
+              "signal_not_worsening": true,
+              "trace_count": 0,
+              "working_set": 54362112.0
+            },
+            {
+              "checkout_error_spans": 0,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0016647051633596574,
+              "descriptions": [],
+              "error_spans": 6,
+              "journey_healthy": true,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:31:12.599328+00:00",
+              "signal_not_worsening": true,
+              "trace_count": 18,
+              "working_set": 54362112.0
+            }
+          ],
+          "restored_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+          "scenario_id": "SEED-G02-0004",
+          "state_sequence": [
+            "HEALTHY",
+            "FAULT_ACTIVE",
+            "HEALTHY"
+          ]
+        },
+        "scenario_id": "SEED-G02-0004"
+      },
+      "recorded_at": "2026-07-25T20:31:15.944347+00:00",
+      "status": "pass",
+      "trial_id": "g02-scenario-7fdb34999bef3413ccf16774440135730b23b5e4-seed-g02-0004"
+    },
+    {
+      "attempt": 2,
+      "payload": {
+        "fault_class": "paymentFailure",
+        "observation_packet": {
+          "case_id": "SEED-G02-0005",
+          "observations": [
+            {
+              "checkout_error_spans": 1,
+              "checkout_failed": true,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0019051632730958897,
+              "descriptions": [
+                "Payment request failed. Invalid token. app.loyalty.level=gold",
+                "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold"
+              ],
+              "error_spans": 10,
+              "id": "SEED-G02-0005-OBS-01",
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "payment_error": true,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:31:43.375780+00:00",
+              "trace_count": 1,
+              "working_set": 54272000.0
+            },
+            {
+              "checkout_error_spans": 2,
+              "checkout_failed": true,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0,
+              "descriptions": [
+                "Payment request failed. Invalid token. app.loyalty.level=gold",
+                "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold",
+                "Payment request failed. Invalid token. app.loyalty.level=gold",
+                "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold"
+              ],
+              "error_spans": 20,
+              "id": "SEED-G02-0005-OBS-02",
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "payment_error": true,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:32:16.398746+00:00",
+              "trace_count": 2,
+              "working_set": 54272000.0
+            }
+          ],
+          "packet_digest": "a41b6872efdd83b2342f1ee5e6b93287668c9d7d38cc1c5b2981f3d99e041a12",
+          "problem_brief": "Investigate the ood service incident using only the provided canonical observation packet.",
+          "schema_version": "1.0.0"
+        },
+        "result": {
+          "family": "dependency_network",
+          "fault_class": "paymentFailure",
+          "fault_observations": [
+            {
+              "checkout_error_spans": 1,
+              "checkout_failed": true,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0019051632730958897,
+              "descriptions": [
+                "Payment request failed. Invalid token. app.loyalty.level=gold",
+                "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold"
+              ],
+              "error_spans": 10,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "payment_error": true,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:31:43.375780+00:00",
+              "trace_count": 1,
+              "working_set": 54272000.0
+            },
+            {
+              "checkout_error_spans": 2,
+              "checkout_failed": true,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0,
+              "descriptions": [
+                "Payment request failed. Invalid token. app.loyalty.level=gold",
+                "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold",
+                "Payment request failed. Invalid token. app.loyalty.level=gold",
+                "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold"
+              ],
+              "error_spans": 20,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "payment_error": true,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:32:16.398746+00:00",
+              "trace_count": 2,
+              "working_set": 54272000.0
+            }
+          ],
+          "original_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+          "precondition_source": "prior-scenario-recovery",
+          "recovery_observations": [
+            {
+              "checkout_error_spans": 0,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0021047085265732293,
+              "descriptions": [],
+              "error_spans": 0,
+              "journey_healthy": true,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:32:25.367864+00:00",
+              "signal_not_worsening": true,
+              "trace_count": 0,
+              "working_set": 54304768.0
+            },
+            {
+              "checkout_error_spans": 0,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0021047085265732293,
+              "descriptions": [],
+              "error_spans": 2,
+              "journey_healthy": true,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:32:58.478606+00:00",
+              "signal_not_worsening": true,
+              "trace_count": 2,
+              "working_set": 54304768.0
+            }
+          ],
+          "restored_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+          "scenario_id": "SEED-G02-0005",
+          "state_sequence": [
+            "HEALTHY",
+            "FAULT_ACTIVE",
+            "HEALTHY"
+          ]
+        },
+        "scenario_id": "SEED-G02-0005"
+      },
+      "recorded_at": "2026-07-25T20:33:01.548249+00:00",
+      "status": "pass",
+      "trial_id": "g02-scenario-7fdb34999bef3413ccf16774440135730b23b5e4-seed-g02-0005"
+    },
+    {
+      "attempt": 2,
+      "payload": {
+        "fault_class": "paymentUnreachable",
+        "observation_packet": {
+          "case_id": "SEED-G02-0006",
+          "observations": [
+            {
+              "checkout_error_spans": 2,
+              "checkout_failed": true,
+              "connection_error": true,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.002321177364325121,
+              "descriptions": [
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses"
+              ],
+              "error_spans": 13,
+              "id": "SEED-G02-0006-OBS-01",
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 2,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:34:01.902464+00:00",
+              "trace_count": 2,
+              "working_set": 54341632.0
+            },
+            {
+              "checkout_error_spans": 4,
+              "checkout_failed": true,
+              "connection_error": true,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0021262924579407917,
+              "descriptions": [
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses"
+              ],
+              "error_spans": 36,
+              "id": "SEED-G02-0006-OBS-02",
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 4,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:34:34.804234+00:00",
+              "trace_count": 4,
+              "working_set": 54349824.0
+            }
+          ],
+          "packet_digest": "12e219bbe142ef3eb4c78bcc40b02e0d314761ff6c60162eff2a505cd38dfb8b",
+          "problem_brief": "Investigate the adversarial service incident using only the provided canonical observation packet.",
+          "schema_version": "1.0.0"
+        },
+        "result": {
+          "family": "dependency_network",
+          "fault_class": "paymentUnreachable",
+          "fault_observations": [
+            {
+              "checkout_error_spans": 2,
+              "checkout_failed": true,
+              "connection_error": true,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.002321177364325121,
+              "descriptions": [
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses"
+              ],
+              "error_spans": 13,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 2,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:34:01.902464+00:00",
+              "trace_count": 2,
+              "working_set": 54341632.0
+            },
+            {
+              "checkout_error_spans": 4,
+              "checkout_failed": true,
+              "connection_error": true,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0021262924579407917,
+              "descriptions": [
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses",
+                "name resolver error: produced zero addresses",
+                "failed to charge card: could not charge the card: rpc error: code = Unavailable desc = name resolver error: produced zero addresses"
+              ],
+              "error_spans": 36,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 4,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:34:34.804234+00:00",
+              "trace_count": 4,
+              "working_set": 54349824.0
+            }
+          ],
+          "original_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+          "precondition_source": "prior-scenario-recovery",
+          "recovery_observations": [
+            {
+              "checkout_error_spans": 0,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0021262924579407917,
+              "descriptions": [],
+              "error_spans": 0,
+              "journey_healthy": true,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:34:44.018713+00:00",
+              "signal_not_worsening": true,
+              "trace_count": 0,
+              "working_set": 54349824.0
+            },
+            {
+              "checkout_error_spans": 0,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0,
+              "descriptions": [],
+              "error_spans": 2,
+              "journey_healthy": true,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:35:16.878515+00:00",
+              "signal_not_worsening": true,
+              "trace_count": 2,
+              "working_set": 54349824.0
+            }
+          ],
+          "restored_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+          "scenario_id": "SEED-G02-0006",
+          "state_sequence": [
+            "HEALTHY",
+            "FAULT_ACTIVE",
+            "HEALTHY"
+          ]
+        },
+        "scenario_id": "SEED-G02-0006"
+      },
+      "recorded_at": "2026-07-25T20:35:19.873617+00:00",
+      "status": "pass",
+      "trial_id": "g02-scenario-7fdb34999bef3413ccf16774440135730b23b5e4-seed-g02-0006"
+    },
+    {
+      "attempt": 2,
+      "payload": {
+        "fault_class": "paymentFailure",
+        "observation_packet": {
+          "case_id": "SEED-G02-0007",
+          "observations": [
+            {
+              "checkout_error_spans": 1,
+              "checkout_failed": true,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0017037235250277334,
+              "descriptions": [
+                "Payment request failed. Invalid token. app.loyalty.level=gold",
+                "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold"
+              ],
+              "error_spans": 10,
+              "id": "SEED-G02-0007-OBS-01",
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "payment_error": true,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:36:19.042475+00:00",
+              "trace_count": 1,
+              "working_set": 54456320.0
+            },
+            {
+              "checkout_error_spans": 3,
+              "checkout_failed": true,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0021029777204962753,
+              "descriptions": [
+                "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold",
+                "Payment request failed. Invalid token. app.loyalty.level=gold",
+                "Payment request failed. Invalid token. app.loyalty.level=gold",
+                "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold",
+                "Payment request failed. Invalid token. app.loyalty.level=gold",
+                "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold"
+              ],
+              "error_spans": 30,
+              "id": "SEED-G02-0007-OBS-02",
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "payment_error": true,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:36:51.904183+00:00",
+              "trace_count": 3,
+              "working_set": 54390784.0
+            }
+          ],
+          "packet_digest": "b5786266cbdc196f23e753716a8d3a810ce58e36c7d12beabe0918b3ff49a70a",
+          "problem_brief": "Investigate the medium service incident using only the provided canonical observation packet.",
+          "schema_version": "1.0.0"
+        },
+        "result": {
+          "family": "dependency_network",
+          "fault_class": "paymentFailure",
+          "fault_observations": [
+            {
+              "checkout_error_spans": 1,
+              "checkout_failed": true,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0017037235250277334,
+              "descriptions": [
+                "Payment request failed. Invalid token. app.loyalty.level=gold",
+                "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold"
+              ],
+              "error_spans": 10,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "payment_error": true,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:36:19.042475+00:00",
+              "trace_count": 1,
+              "working_set": 54456320.0
+            },
+            {
+              "checkout_error_spans": 3,
+              "checkout_failed": true,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0021029777204962753,
+              "descriptions": [
+                "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold",
+                "Payment request failed. Invalid token. app.loyalty.level=gold",
+                "Payment request failed. Invalid token. app.loyalty.level=gold",
+                "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold",
+                "Payment request failed. Invalid token. app.loyalty.level=gold",
+                "failed to charge card: could not charge the card: rpc error: code = Unknown desc = Payment request failed. Invalid token. app.loyalty.level=gold"
+              ],
+              "error_spans": 30,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "payment_error": true,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:36:51.904183+00:00",
+              "trace_count": 3,
+              "working_set": 54390784.0
+            }
+          ],
+          "original_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+          "precondition_source": "prior-scenario-recovery",
+          "recovery_observations": [
+            {
+              "checkout_error_spans": 0,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0021029777204962753,
+              "descriptions": [],
+              "error_spans": 0,
+              "journey_healthy": true,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:37:01.256634+00:00",
+              "signal_not_worsening": true,
+              "trace_count": 0,
+              "working_set": 54390784.0
+            },
+            {
+              "checkout_error_spans": 0,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0022070897765845655,
+              "descriptions": [],
+              "error_spans": 4,
+              "journey_healthy": true,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T20:37:34.347089+00:00",
+              "signal_not_worsening": true,
+              "trace_count": 2,
+              "working_set": 54444032.0
+            }
+          ],
+          "restored_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+          "scenario_id": "SEED-G02-0007",
+          "state_sequence": [
+            "HEALTHY",
+            "FAULT_ACTIVE",
+            "HEALTHY"
+          ]
+        },
+        "scenario_id": "SEED-G02-0007"
+      },
+      "recorded_at": "2026-07-25T20:37:37.396725+00:00",
+      "status": "pass",
+      "trial_id": "g02-scenario-7fdb34999bef3413ccf16774440135730b23b5e4-seed-g02-0007"
+    },
+    {
+      "attempt": 2,
+      "payload": {
+        "fault_class": "emailMemoryLeak",
+        "reason": "scenario cleanup blocked and quarantined the SUT: list index out of range",
+        "scenario_id": "SEED-G02-0008"
+      },
+      "recorded_at": "2026-07-25T20:41:03.528454+00:00",
+      "status": "metric_fail",
+      "trial_id": "g02-scenario-7fdb34999bef3413ccf16774440135730b23b5e4-seed-g02-0008"
+    }
+  ],
+  "validation": "V-G02-006"
+}

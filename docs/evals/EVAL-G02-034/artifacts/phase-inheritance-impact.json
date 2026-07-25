@@ -1,0 +1,106 @@
+{
+  "candidate_sha": "7fdb34999bef3413ccf16774440135730b23b5e4",
+  "changed_semantics": [
+    "adjacent scenario prior-recovery precondition consumption"
+  ],
+  "inherited_phases": [
+    {
+      "artifact_digest": "b77686f29fcdbba22a505668b2fe4ed13030ccdbdec31e90705c2091d8625e95",
+      "artifact_path": "docs/evals/EVAL-G02-030/artifacts/phases/preflight-manifests/manifest-debt.json",
+      "execution_count": 0,
+      "impact": "The thirteen upstream manifest inputs are unchanged and already debt-free.",
+      "phase_id": "preflight-manifests",
+      "source_end_time": "2026-07-25T17:58:19.108408+00:00",
+      "source_execution_count": 0,
+      "source_record_digest": "4968eabf1a5b2f606b4ecf206aa34700d031e08901b41b93707f459a0946da25",
+      "source_start_time": "2026-07-25T17:58:19.107398+00:00",
+      "target_cache_key": "dc96695015567a3cf2861d84de8bd5ec6c69632469ecbbc47274679419d7e636"
+    },
+    {
+      "artifact_digest": "004c8bae37187f5ea2a990cca92884e432339b3bc9982537a5c9f04cdb770ed7",
+      "artifact_path": "docs/evals/EVAL-G02-030/artifacts/phases/preflight-upstream-g01/summary.json",
+      "execution_count": 0,
+      "impact": "All nine immutable G01 manifests and their zero-open-evidence status are unchanged.",
+      "phase_id": "preflight-upstream-g01",
+      "source_end_time": "2026-07-25T17:59:41.221387+00:00",
+      "source_execution_count": 0,
+      "source_record_digest": "763b384c6611b3d25b9d0447ed763ca327edbca18bf0fb8bc16ecbca4d7a337e",
+      "source_start_time": "2026-07-25T17:59:41.221387+00:00",
+      "target_cache_key": "2bf9c3d09d0ff86fc04178f9c3082106a06a7d5f27a37ca07b69b4723d27177c"
+    },
+    {
+      "artifact_digest": "03de35188efe97a0a92f44e3aa2c886dff9ec4557f6dffad0eb280c22a5a6271",
+      "artifact_path": "docs/evals/EVAL-G02-030/artifacts/phases/isolation-access-matrix/matrix.json",
+      "execution_count": 0,
+      "impact": "No collector, fixture, permission, identity, namespace, object prefix, runtime, configuration, environment, or route in the 60-cell matrix changed.",
+      "phase_id": "isolation-access-matrix",
+      "source_end_time": "2026-07-25T18:10:11.132800+00:00",
+      "source_execution_count": 0,
+      "source_record_digest": "d607e86346c7596ccfbd9963fdf9a48a043d0ec1b044253cad2eea1ba3baa093",
+      "source_start_time": "2026-07-25T18:06:50.315234+00:00",
+      "target_cache_key": "10844b6a806c4e79e024ae12a97c32ef2b8d72d566fc5e58c1f027dcc47babab"
+    },
+    {
+      "artifact_digest": "565ca74456382d21102c5d3009dd02b0141a5f047604ddaadd3a6d6e5bbb8e45",
+      "artifact_path": "docs/evals/EVAL-G02-030/artifacts/phases/trace-six-stage-matrix/matrix.json",
+      "execution_count": 0,
+      "impact": "No collector, fixture, stage definition, trace route, runtime, configuration, or environment in the six-stage matrix changed.",
+      "phase_id": "trace-six-stage-matrix",
+      "source_end_time": "2026-07-25T18:10:38.177174+00:00",
+      "source_execution_count": 0,
+      "source_record_digest": "7b9e10ab3221c47d59d81f838f856f4c14239fbce943ac35faa2376556d275e8",
+      "source_start_time": "2026-07-25T18:10:26.112773+00:00",
+      "target_cache_key": "a60afb6a9c26bd62ed4636db40e57ebacf3607f2c5309a02c4badc1e84329d3e"
+    },
+    {
+      "artifact_digest": "fec9599cafe445379ae482e41674ac5f1a86f36f8a25805dc5633e2a70f27933",
+      "artifact_path": "docs/evals/EVAL-G02-030/artifacts/phases/all-surface-canary/matrix.json",
+      "execution_count": 0,
+      "impact": "No collector, fixture, canary value, surface, persistence/egress route, runtime, configuration, or environment in the 22-surface matrix changed.",
+      "phase_id": "all-surface-canary",
+      "source_end_time": "2026-07-25T18:11:10.704751+00:00",
+      "source_execution_count": 0,
+      "source_record_digest": "0d4bbe898a560ad968fe1235c83286be1a07cfb4dc170b34d36917e76f67cb6b",
+      "source_start_time": "2026-07-25T18:10:52.473622+00:00",
+      "target_cache_key": "7deff184c02e3253286343817ecc2d994706e595ebabbe6eb0b5dc2d490dbe09"
+    }
+  ],
+  "inherited_scenario_trials": [
+    {
+      "execution_count": 0,
+      "observation_packet_digest": "2f328a04246a2096fc03da9093dd67f3448bd6292fa9d9b3002d4d80ee005bd1",
+      "scenario_id": "SEED-G02-0001",
+      "source_attempt": 2,
+      "source_trial_digest": "a8d7f7f2b09da9c6e25997a6b0dc9d3f52e7940b8b8b99f9e08886a74eca90fe",
+      "source_trial_id": "g02-scenario-df1fea44c15baaa3f2af72d2067def1d7a9f522c-seed-g02-0001"
+    },
+    {
+      "execution_count": 0,
+      "observation_packet_digest": "c25880d08dd9d4ddfd1efb08cd57b44ed135abc9d64b1e80c108c766f8d01204",
+      "scenario_id": "SEED-G02-0002",
+      "source_attempt": 2,
+      "source_trial_digest": "f6be386076a4e6acb15a94436313f4958717bc8f5ad953171ff4db1ce486f12c",
+      "source_trial_id": "g02-scenario-df1fea44c15baaa3f2af72d2067def1d7a9f522c-seed-g02-0002"
+    },
+    {
+      "execution_count": 0,
+      "observation_packet_digest": "7cf1c6adfa67494dce68899d8b7432ad4fd34386e7888a7592d0b397474381fd",
+      "scenario_id": "SEED-G02-0003",
+      "source_attempt": 2,
+      "source_trial_digest": "0e785c587fabac8b05e62831d10b89612f2847ca8837319d1d5ac6d36d00325c",
+      "source_trial_id": "g02-scenario-df1fea44c15baaa3f2af72d2067def1d7a9f522c-seed-g02-0003"
+    }
+  ],
+  "next_executed_scenario": "SEED-G02-0004",
+  "schema_version": "1.0.0",
+  "source_candidate_sha": "df1fea44c15baaa3f2af72d2067def1d7a9f522c",
+  "source_eval": "EVAL-G02-032",
+  "status": "pass",
+  "threshold_changes": [],
+  "unchanged_subjects": {
+    "config_digest": "5977479a826a5e0cefd5900190262422e8178f48b131dbff7beeb02279ca1490",
+    "dataset_digest": "b2fb0c9ab7d5c91274d4bc40f18f3eceecb9bd31478945099ef430d879612908",
+    "environment_fingerprint": "32a012ad672a808004e7beb1e41fff66cf87578fbfa470a89dcff47a2b0b80a2",
+    "sut_image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e"
+  }
+}
