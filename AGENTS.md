@@ -60,6 +60,10 @@ PROJECT_STATE.yaml is the authority for the active Gate and work item, not for a
 - A Gate attempt is not an Iteration and is not corrective engineering cost. It may only orchestrate
   frozen runners and evidence; `src/`, `deploy/`, `tests/`, `config/`, and `schemas/` changes are
   forbidden while an `A-G##-###` work item is active.
+- Governance and status documents may be amended during a Gate attempt when a provenance rule
+  blocks execution without protecting product behavior, Eval semantics, or an experimental
+  subject. Such amendments remain evidence-only, do not create a new business candidate, and must
+  not be expanded into another lifecycle or activation sequence.
 - Report corrective engineering, targeted corrective verification, Gate-attempt execution, and
   governance migration/closure as separate cost classes. Duration estimates never kill execution.
 - Behavioral changes, affected tests, documentation, and version manifests belong in the same commit.
@@ -93,6 +97,11 @@ PROJECT_STATE.yaml is the authority for the active Gate and work item, not for a
   candidate checkout itself. A runner operating from a validated evidence-only descendant must
   prove ancestry, changed-path allowlisting, and unchanged subject digests instead of rebinding or
   redeploying the candidate.
+- When the orchestration worktree has advanced only for governance or evidence, candidate-bound
+  remote execution runs from a clean detached checkout at `candidate_sha`. Do not change the
+  candidate, rewrite a binding, or create another commit merely to make the orchestration HEAD
+  equal the candidate. Generated phase artifacts may be copied back after the candidate preflight;
+  they never become runtime inputs.
 - No tracked artifact may be required to contain the SHA of the commit that contains that artifact.
   A runner records the already-existing execution checkpoint it observed before producing output;
   the later evidence/closure commit is identified by Git history or its Gate tag and does not
@@ -112,6 +121,11 @@ PROJECT_STATE.yaml is the authority for the active Gate and work item, not for a
 - SHA and evidence-inheritance rules are provenance controls only. They must not alter Eval N,
   locked tests, Ground Truth, quality or performance thresholds, health-oracle windows, token/cost
   ceilings, or failure semantics.
+- Before complying with a governance-only failure, apply an information-gain check. If satisfying
+  it would only add state mirrors, prose, commit ordering, or SHA churn while leaving all runtime
+  and Eval subjects unchanged, remove or bypass that governance requirement through the smallest
+  reviewable amendment. A second consecutive governance action without advancing a real phase or
+  trial is an execution-deadlock signal, not a reason to add another governance step.
 - Gate closure must update the controlled root/status asset set, including `AGENTS.md`,
   `PROJECT_STATE.yaml`, `README.md`, and `docs/roadmap/PHASES.md`, and their lifecycle fields
   must agree before verification passes.
