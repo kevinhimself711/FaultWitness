@@ -45,6 +45,7 @@ FAULT_CLASSES = (
 )
 FULL_DIGEST_REFERENCE = re.compile(r"^[^\s@]+@sha256:[0-9a-f]{64}$")
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
+PROBE_IMAGE_NAMES = ("busybox", "minio_mc")
 
 K8S_SOURCE_IMAGES: dict[str, tuple[str, ...]] = {
     "accounting": ("ghcr.io/open-telemetry/demo:2.1.3-accounting",),
@@ -588,6 +589,81 @@ def load_lab_config(root: Path) -> dict[str, Any]:
     return document
 
 
+def load_gate_probe_images(root: Path) -> dict[str, str]:
+    path = root / "config" / "g02" / "gate-probes.yaml"
+    document = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(document, dict) or document.get("schema_version") != "1.0.0":
+        raise GovernanceError("G02 gate probe config must be a versioned object")
+    images = document.get("images")
+    if not isinstance(images, dict) or set(images) != set(PROBE_IMAGE_NAMES):
+        raise GovernanceError("G02 gate probe config must declare exactly busybox and minio_mc")
+    normalized: dict[str, str] = {}
+    for name in PROBE_IMAGE_NAMES:
+        reference = images.get(name)
+        if not isinstance(reference, str) or not FULL_DIGEST_REFERENCE.fullmatch(reference):
+            raise GovernanceError(f"G02 probe image is not digest-pinned: {reference}")
+        if not containerd_normalized_reference(reference).startswith("docker.io/"):
+            raise GovernanceError(f"G02 probe image is outside the frozen Docker Hub path: {name}")
+        normalized[name] = reference
+    return normalized
+
+
+def build_offline_staging_inventory(
+    config: Mapping[str, Any], probe_images: Mapping[str, str]
+) -> dict[str, str]:
+    """Build one digest-safe Docker Hub inventory without changing the SUT image set."""
+    images = config.get("images")
+    if not isinstance(images, list) or not images:
+        raise GovernanceError("G02 lab image set is empty")
+    if set(probe_images) != set(PROBE_IMAGE_NAMES):
+        raise GovernanceError("G02 staging requires exactly the two frozen probe images")
+
+    candidates: list[tuple[str, str]] = []
+    for item in images:
+        if not isinstance(item, dict):
+            raise GovernanceError("G02 lab image entry must be an object")
+        name = item.get("name")
+        reference = item.get("reference")
+        if not isinstance(name, str) or not name or not isinstance(reference, str):
+            raise GovernanceError("G02 lab staging image lacks a name or reference")
+        if containerd_normalized_reference(reference).startswith("docker.io/"):
+            candidates.append((name, reference))
+    candidates.extend(
+        (f"probe-{name.replace('_', '-')}", str(probe_images[name]))
+        for name in PROBE_IMAGE_NAMES
+    )
+
+    inventory: dict[str, str] = {}
+    key_to_normalized: dict[str, str] = {}
+    normalized_to_key: dict[str, str] = {}
+    repository_digests: dict[str, str] = {}
+    for key, reference in candidates:
+        if not FULL_DIGEST_REFERENCE.fullmatch(reference):
+            raise GovernanceError(f"G02 staging image is not digest-pinned: {reference}")
+        normalized = containerd_normalized_reference(reference)
+        if not normalized.startswith("docker.io/"):
+            raise GovernanceError(f"G02 staging image is outside Docker Hub: {reference}")
+        repository, digest = normalized.rsplit("@", 1)
+        prior_digest = repository_digests.get(repository)
+        if prior_digest is not None and prior_digest != digest:
+            raise GovernanceError(f"G02 staging image digest drift for {repository}")
+        repository_digests[repository] = digest
+
+        prior_for_key = key_to_normalized.get(key)
+        if prior_for_key is not None and prior_for_key != normalized:
+            raise GovernanceError(f"G02 staging archive key collision: {key}")
+        if normalized in normalized_to_key:
+            continue
+        inventory[key] = reference
+        key_to_normalized[key] = normalized
+        normalized_to_key[normalized] = key
+    return inventory
+
+
+def offline_staging_inventory(root: Path, config: Mapping[str, Any]) -> dict[str, str]:
+    return build_offline_staging_inventory(config, load_gate_probe_images(root))
+
+
 def image_set_digest(config: Mapping[str, Any]) -> str:
     images = config.get("images")
     if not isinstance(images, list) or not images:
@@ -821,11 +897,7 @@ def _stage_lab_manifest(config: Mapping[str, Any], candidate_sha: str) -> None:
 
 
 def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str) -> None:
-    images = {
-        str(item["name"]): str(item["reference"])
-        for item in config["images"]
-        if str(item["reference"]).startswith("index.docker.io/")
-    }
+    images = offline_staging_inventory(root, config)
     crane = _ensure_crane(root)
     private_root = InfraPaths.defaults().evidence_dir.parent.parent
     archive_root = private_root / "artifacts" / "I-0017" / "images"
@@ -918,11 +990,15 @@ def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str)
         import_script += (
             "\n"
             f'test "$(/usr/local/bin/k3s ctr images list | '
-            f"awk -v ref={source} '$1 == ref {{print $3}}')\" = {digest}\n"
-            f"/usr/local/bin/k3s ctr images tag --force {source} {target}\n"
-            f'test "$(/usr/local/bin/k3s ctr images list | '
-            f"awk -v ref={target} '$1 == ref {{print $3}}')\" = {digest}"
+            f"awk -v ref={source} '$1 == ref {{print $3}}')\" = {digest}"
         )
+        if normalized != reference:
+            import_script += (
+                "\n"
+                f"/usr/local/bin/k3s ctr images tag --force {source} {target}\n"
+                f'test "$(/usr/local/bin/k3s ctr images list | '
+                f"awk -v ref={target} '$1 == ref {{print $3}}')\" = {digest}"
+            )
     run_remote_script(import_script, privileged=True)
 
 

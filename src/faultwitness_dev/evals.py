@@ -69,7 +69,15 @@ from faultwitness_dev.g02_isolation import (
     validate_namespace_isolation_manifest,
     validate_public_https_egress,
 )
-from faultwitness_dev.g02_lab import evaluate_i0017
+from faultwitness_dev.g02_lab import (
+    build_offline_staging_inventory,
+    containerd_normalized_reference,
+    evaluate_i0017,
+    image_set_digest,
+    load_gate_probe_images,
+    load_lab_config,
+    offline_staging_inventory,
+)
 from faultwitness_dev.infra import _remote_process, _run_remote_script_transport
 from faultwitness_dev.model_eval import run_model_eval
 from faultwitness_dev.observability_deploy import (
@@ -523,6 +531,8 @@ def evaluate_iteration(root: Path, iteration: str, candidate_sha: str) -> dict[s
         return evaluate_i0028(root, candidate_sha)
     if iteration == "I-0030":
         return evaluate_i0030(root, candidate_sha)
+    if iteration == "I-0032":
+        return evaluate_i0032(root, candidate_sha)
     raise GovernanceError(f"no private Eval implementation is registered for {iteration}")
 
 
@@ -1060,6 +1070,147 @@ print(json.dumps({
     )
     return {
         "eval_id": "EVAL-G02-015",
+        "candidate_sha": candidate_sha,
+        "status": "pass",
+        "checks": {case["case_id"]: case["status"] for case in cases},
+        "open_evidence": [],
+    }
+
+
+def evaluate_i0032(root: Path, candidate_sha: str) -> dict[str, Any]:
+    if _head_sha(root) != candidate_sha:
+        raise GovernanceError("EVAL-G02-017 candidate SHA must equal checked-out HEAD")
+    if subprocess.run(
+        ["git", "status", "--porcelain"], cwd=root, capture_output=True, text=True
+    ).stdout:
+        raise GovernanceError("EVAL-G02-017 requires a clean candidate worktree")
+    loaded = validate_repository_schemas(root)
+    state = loaded["PROJECT_STATE.yaml"]
+    iteration = loaded["governance/iterations/I-0032.yaml"]
+    if (
+        state.get("active_gate") != "G02"
+        or state.get("active_gate_status") != "in_progress"
+        or state.get("active_iteration") != "I-0032"
+        or iteration.get("status") != "in_progress"
+    ):
+        raise GovernanceError("EVAL-G02-017 requires I-0032 as the sole active Iteration")
+
+    started_at = datetime.now(UTC).isoformat()
+    cases: list[dict[str, Any]] = []
+    config = load_lab_config(root)
+    sut_digest = image_set_digest(config)
+    frozen_sut_digest = "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e"
+    if sut_digest != frozen_sut_digest or len(config.get("images", [])) != 30:
+        raise GovernanceError("I-0032 changed the frozen 30-image SUT image set")
+    probes = load_gate_probe_images(root)
+    inventory = offline_staging_inventory(root, config)
+    probe_inventory = {key: value for key, value in inventory.items() if key.startswith("probe-")}
+    expected_probe_inventory = {
+        "probe-busybox": probes["busybox"],
+        "probe-minio-mc": probes["minio_mc"],
+    }
+    if probe_inventory != expected_probe_inventory:
+        raise GovernanceError(
+            "I-0032 staging inventory does not contain the exact two probe images"
+        )
+    cases.append(
+        {
+            "case_id": "exact-sut-probe-inventory-union",
+            "status": "pass",
+            "sut_image_count": 30,
+            "sut_image_set_digest": sut_digest,
+            "probe_archive_keys": sorted(probe_inventory),
+            "probe_references": probe_inventory,
+        }
+    )
+
+    digest = "a" * 64
+    index_reference = f"index.docker.io/example/probe@sha256:{digest}"
+    docker_reference = f"docker.io/example/probe@sha256:{digest}"
+    if containerd_normalized_reference(index_reference) != docker_reference:
+        raise GovernanceError("I-0032 changed Docker Hub reference normalization")
+    cases.append(
+        {
+            "case_id": "docker-hub-reference-normalization",
+            "status": "pass",
+            "source": index_reference,
+            "normalized": docker_reference,
+        }
+    )
+
+    other_digest = "b" * 64
+    synthetic_config = {
+        "images": [
+            {
+                "name": "sut-probe",
+                "platform": "linux/amd64",
+                "reference": index_reference,
+            }
+        ]
+    }
+    synthetic_probes = {
+        "busybox": docker_reference,
+        "minio_mc": f"docker.io/example/other@sha256:{other_digest}",
+    }
+    deduplicated = build_offline_staging_inventory(synthetic_config, synthetic_probes)
+    if len(deduplicated) != 2 or "probe-busybox" in deduplicated:
+        raise GovernanceError("I-0032 did not deduplicate an equivalent exact reference")
+    drifted = dict(synthetic_probes)
+    drifted["busybox"] = f"docker.io/example/probe@sha256:{'c' * 64}"
+    try:
+        build_offline_staging_inventory(synthetic_config, drifted)
+    except GovernanceError as error:
+        if "digest drift" not in str(error):
+            raise
+    else:
+        raise GovernanceError("I-0032 accepted same-repository digest drift")
+    cases.append(
+        {
+            "case_id": "reference-deduplication-and-digest-drift-rejection",
+            "status": "pass",
+            "deduplicated_archive_keys": sorted(deduplicated),
+        }
+    )
+
+    isolation = load_isolation_config(root)
+    identities = simulate_identity_policies(isolation)
+    writers = prove_writer_canaries(isolation)
+    if len(identities) != 4 or any(item.get("status") != "pass" for item in identities):
+        raise GovernanceError("V-G02-009 Iteration N must remain exactly four")
+    if len(writers) != 4 or any(item.get("status") != "pass" for item in writers):
+        raise GovernanceError("V-G02-011 Iteration N must remain exactly four")
+
+    artifact = {
+        "schema_version": "1.0.0",
+        "candidate_sha": candidate_sha,
+        "validation": "I-0032-digest-pinned-probe-image-offline-staging",
+        "staging_case_count": len(cases),
+        "cases": cases,
+        "offline_archive_count": len(inventory),
+        "offline_archive_references": inventory,
+        "frozen_validation_n": {
+            "V-G02-009": 4,
+            "V-G02-010": 0,
+            "V-G02-011": 4,
+            "V-G02-017": 0,
+        },
+        "gate_l2_execution": 0,
+        "remote_execution": 0,
+        "destructive_scenarios": 0,
+        "external_service_calls": 0,
+        "model_calls": 0,
+        "start_time": started_at,
+        "end_time": datetime.now(UTC).isoformat(),
+        "status": "pass",
+        "open_evidence": [],
+    }
+    artifact_path = root / "docs/evals/EVAL-G02-017/artifacts/probe-image-staging.json"
+    artifact_path.parent.mkdir(parents=True, exist_ok=True)
+    artifact_path.write_text(
+        json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    return {
+        "eval_id": "EVAL-G02-017",
         "candidate_sha": candidate_sha,
         "status": "pass",
         "checks": {case["case_id"]: case["status"] for case in cases},

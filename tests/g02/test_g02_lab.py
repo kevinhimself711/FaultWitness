@@ -17,10 +17,13 @@ from faultwitness_dev.g02_lab import (
     MemoryFlagClient,
     OracleState,
     base_flag_document,
+    build_offline_staging_inventory,
     containerd_normalized_reference,
     fault_state,
     image_set_digest,
+    load_gate_probe_images,
     load_lab_config,
+    offline_staging_inventory,
     render_k3s_bootstrap_script,
     run_gate_scenario_matrix,
     run_scenario,
@@ -184,6 +187,61 @@ def test_containerd_normalization_preserves_repository_and_digest() -> None:
     assert containerd_normalized_reference(source) == (f"docker.io/library/busybox@sha256:{digest}")
     quay = f"quay.io/example/image@sha256:{digest}"
     assert containerd_normalized_reference(quay) == quay
+
+
+def test_offline_staging_inventory_contains_exact_probe_images_without_sut_digest_drift() -> None:
+    config = load_lab_config(ROOT)
+    probes = load_gate_probe_images(ROOT)
+    inventory = offline_staging_inventory(ROOT, config)
+    assert image_set_digest(config) == (
+        "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e"
+    )
+    assert {key: value for key, value in inventory.items() if key.startswith("probe-")} == {
+        "probe-busybox": probes["busybox"],
+        "probe-minio-mc": probes["minio_mc"],
+    }
+    assert inventory["busybox"] != inventory["probe-busybox"]
+
+
+def test_offline_staging_inventory_deduplicates_normalized_exact_reference() -> None:
+    digest = "a" * 64
+    config = {
+        "images": [
+            {
+                "name": "existing",
+                "platform": "linux/amd64",
+                "reference": f"index.docker.io/example/image@sha256:{digest}",
+            }
+        ]
+    }
+    inventory = build_offline_staging_inventory(
+        config,
+        {
+            "busybox": f"docker.io/example/image@sha256:{digest}",
+            "minio_mc": f"docker.io/example/other@sha256:{'b' * 64}",
+        },
+    )
+    assert set(inventory) == {"existing", "probe-minio-mc"}
+
+
+def test_offline_staging_inventory_rejects_repository_digest_drift() -> None:
+    config = {
+        "images": [
+            {
+                "name": "existing",
+                "platform": "linux/amd64",
+                "reference": f"index.docker.io/example/image@sha256:{'a' * 64}",
+            }
+        ]
+    }
+    with pytest.raises(GovernanceError, match="digest drift"):
+        build_offline_staging_inventory(
+            config,
+            {
+                "busybox": f"docker.io/example/image@sha256:{'b' * 64}",
+                "minio_mc": f"docker.io/example/other@sha256:{'c' * 64}",
+            },
+        )
 
 
 def test_clean_clone_runner_is_pinned_and_candidate_bound() -> None:
