@@ -2,7 +2,7 @@
 document_id: FW-GATE-G02-REPORT
 gate: G02
 status: in_progress
-evaluated_candidate_sha: fc167c8bc98021cb4718ec6ab254c2525441326c
+evaluated_candidate_sha: 1bc74b9d976cd5721eb9f57f4587a9fb83f35dc8
 closed_on: null
 ---
 
@@ -33,8 +33,15 @@ Hub SUT archives now share the same digest-verified path with exactly two namesp
 the frozen 30-image SUT digest is unchanged. V-G02-009/010/011/017 Iteration N remained 4/0/4/0,
 remote and model execution remained zero, and `open_evidence: []`.
 
-I-0033/EVAL-G02-018 is the next replacement orchestration. G02 has not passed, no waiver is present,
-and no closure or tag is authorized. All earlier failed Eval assets remain immutable history.
+EVAL-G02-018 then passed four preflights before `lab-deploy-and-bind` exposed deterministic
+containerd reference alias behavior: the exact `minio/mc` digest existed under `index.docker.io`,
+while the verifier required a `docker.io` source before tagging. I-0033 is terminal `failed`;
+new-candidate deployment, all matrices, destructive scenarios, external-service probes, and model
+calls remained zero with `open_evidence: []`.
+
+I-0034 is the sole exact-digest alias-resolution corrective; I-0035/EVAL-G02-020 is the planned
+replacement orchestration. G02 has not passed, no waiver is present, and no closure or tag is
+authorized. All earlier failed Eval assets remain immutable history.
 
 Future reports must include `G01-SUPP-ACCESS-MATRIX`, `G01-SUPP-SIX-STAGE-SPANS`, and
 `G01-SUPP-ALL-SURFACE-CANARY` without modifying closed G01 evidence.

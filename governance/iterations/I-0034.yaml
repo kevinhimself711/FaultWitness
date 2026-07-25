@@ -1,0 +1,50 @@
+schema_version: "1.0.0"
+id: I-0034
+gate: G02
+title: Containerd Imported-Reference Alias Resolution Corrective
+status: planned
+iteration_type: corrective
+corrects: [I-0017, I-0032, I-0033]
+scope:
+  - Resolve an imported Docker Hub source through only docker.io and index.docker.io aliases while requiring the exact repository and manifest digest.
+  - Tag and verify the frozen requested target reference after exact-digest source resolution.
+  - Unit-test exact source alias-only exact-digest and wrong-digest fail-closed behavior without changing any image reference or digest.
+  - Keep V-G02-009 V-G02-010 V-G02-011 Iteration N at 4 0 4 and V-G02-017 Iteration N at zero.
+non_goals:
+  - Running Gate L2 remote deployment access trace canary destructive scenario external-service or paid-model phases.
+  - Changing validation N thresholds Ground Truth locked tests model route health windows token cost or Gate failure semantics.
+  - Reopening I-0017 I-0032 or I-0033 or rewriting EVAL-G02-002 EVAL-G02-017 or EVAL-G02-018 evidence.
+dependencies: [I-0016, I-0017, I-0021, I-0032, I-0033]
+tests:
+  - uv run pytest -q tests/g02/test_g02_lab.py
+  - uv run python -m faultwitness_dev eval-iteration I-0034 --candidate-sha <full-sha>
+  - uv run python -m faultwitness_dev verify-fast
+  - uv run python -m faultwitness_dev eval-changed
+eval_id: EVAL-G02-019
+commit: null
+changed_paths:
+  - AGENTS.md
+  - CHANGELOG.md
+  - PROJECT_STATE.yaml
+  - README.md
+  - docs/evals/EVAL-G02-019
+  - docs/evals/EVAL-G02-020
+  - docs/gates/G02
+  - docs/claims/CLAIMS.yaml
+  - docs/engineering/AI_DEVELOPMENT_LOG.md
+  - docs/roadmap/PHASES.md
+  - docs/roadmap/iterations
+  - docs/runbooks/G02_EVAL_PROTOCOL.md
+  - docs/runbooks/G02_FAULT_LAB.md
+  - governance/iterations
+  - src/faultwitness_dev/evals.py
+  - src/faultwitness_dev/g02_lab.py
+  - tests/g02/test_g02_lab.py
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/I-0034.md
+  - docs/evals/EVAL-G02-019/PLAN.md
+  - docs/evals/EVAL-G02-019/REPORT.md
+  - docs/evals/EVAL-G02-019/manifest.json
+  - docs/runbooks/G02_FAULT_LAB.md
+threshold_changes: []

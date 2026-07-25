@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Preserve I-0033/EVAL-G02-018 as terminal negative evidence after containerd imported the exact
+  `minio/mc` digest under `index.docker.io`; plan I-0034 alias correction and I-0035 replacement.
 - Activate I-0033 as the sole sixth replacement orchestration after I-0032 closed with exact
   offline probe-image evidence and no open evidence; I-0033 may only run frozen Gate phases.
 - Close I-0032 on candidate `fc167c8` with EVAL-G02-017 passing all three offline-staging cases,

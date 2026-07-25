@@ -22,6 +22,20 @@ and deduplication preserved exact digests, and same-repository digest drift fail
 remote, Gate L2, destructive, external-service, and model execution remained zero. The Iteration
 closed with `open_evidence: []`; I-0033/EVAL-G02-018 is the sole forward replacement.
 
+I-0033 candidate `1bc74b9d976cd5721eb9f57f4587a9fb83f35dc8` then passed all four
+fail-fast preflights. `lab-deploy-and-bind` pulled and transferred both probe archives, and the exact
+`minio/mc` digest entered K3s containerd under `index.docker.io/minio/mc@sha256:...`. The frozen
+verifier required the requested `docker.io/minio/mc@sha256:...` source before tagging, so it exited
+1 before applying or binding the new candidate. One bounded read-only diagnostic proved the alias
+and exact digest.
+
+This is deterministic implementation behavior, not transient registry or transport loss. I-0033
+and EVAL-G02-018 are terminal with `open_evidence: []`; new-candidate deployment, access/trace/
+canary/scenario phases, external-service probes, and model calls remained zero. I-0034 must resolve
+only the two Docker Hub host aliases with exact repository+digest matching; I-0035/EVAL-G02-020 is
+the sole replacement. Validation N, thresholds, Ground Truth, locked tests, health windows, model
+route, and token/cost ceilings remain unchanged.
+
 ## 2026-07-24 — G02 EVAL-G02-014 Python 3.8 compatibility failure
 
 Candidate `cfafa5a6f1510a1a7c8fe2c9360284214c8734f2` passed four fail-fast preflights

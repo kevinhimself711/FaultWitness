@@ -1,8 +1,8 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: I-0033
-next_iteration: null
+active_iteration: null
+next_iteration: I-0034
 last_closed_gate: G01
 ---
 
@@ -15,8 +15,9 @@ FaultWitness 是一个面向微服务事故调查、受控修复与持续优化�
 纠错。I-0028 已用真实 Windows child process 证明 byte-exact transport 并关闭；I-0029 因
 远端 Python 3.8 compatibility 缺陷终态失败。I-0030 已用实际受管 Python 3.8.20 完成
 兼容性纠错并关闭；I-0031 因固定 probe 镜像未离线导入而终态失败。I-0032 已将两个固定
-probe 镜像纳入离线 staging/import inventory 并关闭；I-0033 是当前替代编排。任何终态
-记录都不会重开。
+probe 镜像纳入离线 staging/import inventory 并关闭；I-0033 因 containerd import alias
+解析缺陷终态失败。I-0034 是下一项精确 alias corrective，I-0035 是计划中的替代编排。
+任何终态记录都不会重开。
 
 ## 权威资产
 
@@ -41,6 +42,8 @@ probe 镜像纳入离线 staging/import inventory 并关闭；I-0033 是当前�
   UTC-aware timestamp 两个本地 cases。EVAL-G02-016 随后证明固定 `minio/mc` probe 镜像
   未进入 K3s 且节点 Docker Hub pull 超时；访问 cell、破坏性实验和模型调用仍为 0。
   EVAL-G02-017 已通过 3/3 本地 staging cases，保持 30-image SUT digest 不变；I-0033 才可
-  再次编排冻结 phase。
+  再次编排冻结 phase。EVAL-G02-018 的四个 preflight 通过，但 `minio/mc` import 只产生
+  `index.docker.io` source alias，冻结 verifier 查找 `docker.io` source 时确定性失败；后续
+  matrix、破坏性实验和模型调用均为 0。
 
 代码、API、Schema 和标识符使用英文；设计、评测和复盘文档以中文为主。
