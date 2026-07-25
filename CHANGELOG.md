@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Activate I-0035 as the sole seventh replacement orchestration after I-0034 closed with exact
+  containerd alias evidence and no open evidence; I-0035 may only run frozen Gate phases.
 - Close I-0034 on candidate `1f366dc` with EVAL-G02-019 passing all three exact-digest alias
   cases, frozen validation N=4/0/4/0, zero remote/model execution, and no open evidence.
 - Resolve only `docker.io`/`index.docker.io` imported aliases with exact repository and content
