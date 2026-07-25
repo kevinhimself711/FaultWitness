@@ -1,0 +1,116 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-027",
+  "work_item": "C-G02-003",
+  "affected_validation": "V-G02-009",
+  "evidence_class": "targeted_real_seam_not_gate_l2",
+  "candidate_sha": "44e4f48e361110e0e3bd763069601a503c482000",
+  "candidate_subjects": {
+    "deploy/g02/gate_probe.py": "811b0e0157fe865414779645e9d99b335f1b90bf1d2aef61cd6e1cb6e36f9962",
+    "tests/g02/test_g02_gate_collectors.py": "809966110124bb3f1a5afd6a4f8355a6657e3af17b2ee80b73b6efd7a0337d12",
+    "docs/runbooks/G02_ISOLATION.md": "49880cca6c733d29ed6491b883e608cfc127ac85d54111e3061f1f690f5dbeb0"
+  },
+  "environment": {
+    "lab_candidate_sha": "c51072931984865c900a5cac43ec907be82d0bb1",
+    "environment_fingerprint": "32a012ad672a808004e7beb1e41fff66cf87578fbfa470a89dcff47a2b0b80a2",
+    "source_binding": "docs/evals/EVAL-G02-026/candidate-binding.json",
+    "source_failure_evidence": "docs/evals/EVAL-G02-026/artifacts/phases/isolation-access-matrix/access-58-no-progress.json",
+    "probe_config_sha256": "6fb0aec3a8a7122e34564ffaf1dc13612296576f2eb12f160da877cebb99332d",
+    "network_policy_sha256": "68b9479ec1376fa8e03601cef0d6f7a383a7c592c67c90fb2a7406d56f46b3b0",
+    "existing_probe_pods_reused": true
+  },
+  "local_verification": {
+    "command": "uv run pytest -q tests/g02/test_g02_gate_collectors.py -k langsmith_tcp",
+    "candidate_bound_run": true,
+    "case_count": 4,
+    "passed": 4,
+    "changed_branches": [
+      "baseline_tcp_allow",
+      "ordinary_developer_policy_reject",
+      "cross_boundary_policy_reject"
+    ],
+    "unchanged_branch": "internal_observability_http",
+    "status": "pass"
+  },
+  "pre_change_falsification": {
+    "purpose": "Confirm the transport-only hypothesis before implementation on the exact existing pods.",
+    "started_at": "2026-07-25T15:56:13Z",
+    "ended_at": "2026-07-25T15:56:15Z",
+    "baseline_tcp_allow": {"return_code": 0, "elapsed_seconds": 0},
+    "ordinary_developer_policy_reject": {"return_code": 1, "elapsed_seconds": 1},
+    "cross_boundary_policy_reject": {"return_code": 1, "elapsed_seconds": 1},
+    "status": "confirmed"
+  },
+  "real_seam": {
+    "command_template": "kubectl -n <namespace> exec <pod> -- nc -z api.smith.langchain.com 443",
+    "command_template_sha256": "1e3621411ff53a12cf52a57aa906c533eb4451a703e32961bf4f0c8011f39918",
+    "sanitized_output_sha256": "5b6d0ba29020149c87f38bb6d38307d1528d4d5f29f49b88e4e8690f60febe82",
+    "started_at": "2026-07-25T16:01:47Z",
+    "ended_at": "2026-07-25T16:01:51Z",
+    "branches": [
+      {
+        "branch": "baseline_tcp_allow",
+        "principal": "baseline-agent",
+        "expected": "allowed",
+        "return_code": 0,
+        "elapsed_seconds": 2,
+        "result": "pass"
+      },
+      {
+        "branch": "ordinary_developer_policy_reject",
+        "principal": "ordinary-developer",
+        "expected": "policy_reject",
+        "return_code": 1,
+        "elapsed_seconds": 1,
+        "result": "denied_as_expected"
+      },
+      {
+        "branch": "cross_boundary_policy_reject",
+        "principal": "sealed-evaluator",
+        "expected": "policy_reject",
+        "return_code": 1,
+        "elapsed_seconds": 1,
+        "result": "denied_as_expected"
+      }
+    ],
+    "status": "pass"
+  },
+  "attempt_accounting": {
+    "remote_invocations": 3,
+    "remote_command_errors": 0,
+    "successful_remote_invocations": 3,
+    "capability_preflight_invocations": 1,
+    "pre_change_falsification_invocations": 1,
+    "candidate_seam_proof_invocations": 1
+  },
+  "execution_accounting": {
+    "gate_l2_cells": 0,
+    "deployments": 0,
+    "policy_mutations": 0,
+    "destructive_operations": 0,
+    "credential_authenticated_requests": 0,
+    "model_calls": 0,
+    "model_tokens": 0,
+    "model_cost_cny": 0
+  },
+  "unchanged_contracts": {
+    "permissions": true,
+    "validation_n": true,
+    "quality_thresholds": true,
+    "performance_thresholds": true,
+    "ground_truth": true,
+    "locked_tests": true,
+    "failure_semantics": true,
+    "internal_observability_http_checks": true,
+    "operator_credential_read": true
+  },
+  "safety": {
+    "credentials_used": false,
+    "response_body_persisted": false,
+    "pod_ip_persisted": false,
+    "policy_mutated": false,
+    "lab_mutated": false
+  },
+  "status": "pass",
+  "open_evidence": []
+}
