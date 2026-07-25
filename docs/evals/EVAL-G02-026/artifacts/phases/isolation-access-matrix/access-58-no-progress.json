@@ -1,0 +1,19 @@
+{
+  "adjudication": "infra_failed",
+  "candidate_sha": "c51072931984865c900a5cac43ec907be82d0bb1",
+  "cell_id": "obs:langsmith|baseline-agent",
+  "environment_fingerprint": "32a012ad672a808004e7beb1e41fff66cf87578fbfa470a89dcff47a2b0b80a2",
+  "last_completed_trial": "access-57",
+  "last_progress_at": "2026-07-25T15:04:57.453089+00:00",
+  "no_progress_evidence": {
+    "local_child": "ssh",
+    "remote_child": "wget -q -O /dev/null https://api.smith.langchain.com/info",
+    "remote_probe": "gate_probe.py access",
+    "same_remote_process_observed": true,
+    "trial_journal_unchanged": true
+  },
+  "operator_action": "terminated_only_the_stalled_ssh_child_after_verified_no_progress",
+  "reason_code": "denied_egress_probe_has_no_event_driven_terminal_condition",
+  "recorded_at": "2026-07-25T15:21:08.681881+00:00",
+  "trial_id": "access-58"
+}
