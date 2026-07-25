@@ -1,5 +1,24 @@
 # Governance Refactor Lessons Log
 
+## GOV-OBS-014 — Phase-level cache is too coarse for multi-side-effect setup and collection
+
+- **Trigger:** A-G02-011 consumed C-G02-011's exact-candidate `fw-sut` deployment as the whole
+  `lab-deploy-and-bind` checkpoint, but that Gate phase also owns trace-service deployment. The
+  omitted substep caused an early trace failure. After the missing binding was completed, the next
+  collection exposed a second issue: its first invocation persisted a trace before the outer command
+  failed, yet no trial checkpoint recorded that side effect.
+- **Avoidable cost:** a phase-sized pass/fail record could neither express “SUT inherited, trace
+  service pending” nor “trace persisted, relay/collection pending”. The operator had to reconstruct
+  both facts from remote state and sanitized logs.
+- **G02 action:** do not rerun the 24-service SUT or 60 passed access cells. Complete only the missing
+  trace-service substep, preserve A-G02-011 as failed, and make the deterministic trace envelope
+  byte-equivalent so the already-created identity is safe to replay.
+- **Post-G02 migration:** external phases need atomic substep checkpoints around every side effect;
+  cache/reconciliation consumes those checkpoints rather than treating a compound phase as one
+  indivisible boolean. Inheritance must enumerate substeps, not only name the parent phase.
+- **Metric impact:** none; no access cell, trace stage, canary surface, scenario, model sample,
+  permission, quality/performance threshold, or failure semantic is reduced.
+
 ## GOV-OBS-013 — Corrective impact analysis must follow workload supply, not only changed files
 
 - **Trigger:** C-G02-010 safely reduced ambient load from ten users to one and proved one no-fault

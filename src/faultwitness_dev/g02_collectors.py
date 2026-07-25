@@ -629,6 +629,19 @@ class CandidateProbeBackend:
             **dict(extra or {}),
         }
 
+    def _candidate_timestamp(self, context: ContextLike) -> str:
+        timestamp = subprocess.run(
+            ["git", "show", "-s", "--format=%cI", context.candidate_sha],
+            cwd=self.root,
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+        if timestamp.returncode or not timestamp.stdout.strip():
+            raise ProbeBlockedError("candidate_timestamp_unavailable")
+        return timestamp.stdout.strip()
+
     def _invoke(
         self, action: str, context: ContextLike, extra: Mapping[str, Any] | None = None
     ) -> dict[str, Any]:
@@ -718,7 +731,9 @@ python3 "$work/gate_probe.py" {action} "$work/request.json"
         }
 
     def trace_matrix(self, context: ContextLike) -> Mapping[str, Any]:
-        document = self._invoke("trace", context)
+        document = self._invoke(
+            "trace", context, {"candidate_timestamp": self._candidate_timestamp(context)}
+        )
         from faultwitness_dev.observability_deploy import relay_langsmith
 
         relay = relay_langsmith(context.candidate_sha)
@@ -735,7 +750,9 @@ python3 "$work/gate_probe.py" {action} "$work/request.json"
         return document
 
     def canary_matrix(self, context: ContextLike) -> Mapping[str, Any]:
-        document = self._invoke("canary", context)
+        document = self._invoke(
+            "canary", context, {"candidate_timestamp": self._candidate_timestamp(context)}
+        )
         surfaces = document.get("surfaces")
         if not isinstance(surfaces, list):
             return document

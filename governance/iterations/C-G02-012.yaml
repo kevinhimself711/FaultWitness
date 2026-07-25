@@ -1,0 +1,63 @@
+schema_version: "1.2.0"
+id: C-G02-012
+gate: G02
+title: Replay-Stable Trace Envelope Corrective
+status: in_progress
+iteration_type: corrective
+corrects: [I-0024, A-G02-011]
+root_cause:
+  id: RC-G02-012
+  source_eval: EVAL-G02-044
+  phase: trace-six-stage-matrix
+  failure_mode: A replay reused the candidate-deterministic trace reference with new wall-clock envelope timestamps, causing a persisted payload conflict.
+affected_validation_ids: [V-G02-008]
+verification_scope:
+  changed_seam: candidate-bound trace envelope replay identity
+  semantic_branches: [trace_candidate_timestamp, trace_envelope_exact_replay, canary_trace_timestamp, invalid_timestamp_fail_closed]
+  reused_test_entrypoints: [tests/g02/test_g02_gate_collectors.py]
+  real_seam_proof: required
+  real_seam_runner: existing CandidateProbeBackend trace operation invoked twice on one exact candidate
+  real_seam_artifact: docs/evals/EVAL-G02-045/artifacts/trace-replay-seam.json
+  gate_l2_execution: 0
+  full_gate_eval: false
+cost_boundary:
+  root_cause_count: 1
+  bespoke_eval_harness: false
+  gate_attempt_included: false
+  targeted_verification_separate: true
+  global_sync_deferred: true
+accounting_scope:
+  corrective_engineering: included
+  targeted_verification: separate
+  gate_attempt_execution: excluded
+  governance_sync: separate
+scope:
+  - Derive trace and canary envelope timestamps from the immutable candidate commit timestamp instead of a fresh remote wall clock.
+  - Validate that the candidate timestamp is timezone-aware before constructing any trace envelope.
+  - Preserve the existing candidate and environment derived trace ID and every six-stage trace field.
+  - Invoke the same existing real trace operation twice and prove byte-equivalent envelopes and successful duplicate handling.
+non_goals:
+  - Running access canary scenario baseline model aggregate or closure phases.
+  - Changing trace stage count names export targets observability permissions latency metrics or thresholds.
+  - Deleting persisted trace state or adjudicating the payload conflict as pass.
+dependencies: [I-0024, C-G02-011, A-G02-011]
+tests:
+  - uv run pytest -q tests/g02/test_g02_gate_collectors.py
+  - uv run python -m faultwitness_dev verify-fast
+  - uv run python -m faultwitness_dev eval-changed
+eval_id: EVAL-G02-045
+commit: null
+changed_paths:
+  - deploy/g02/gate_probe.py
+  - src/faultwitness_dev/g02_collectors.py
+  - tests/g02/test_g02_gate_collectors.py
+  - docs/runbooks/G02_ISOLATION.md
+  - docs/evals/EVAL-G02-045
+  - docs/roadmap/iterations/C-G02-012.md
+  - governance/iterations/C-G02-012.yaml
+behavior_change: true
+docs_updated:
+  - docs/runbooks/G02_ISOLATION.md
+  - docs/evals/EVAL-G02-045/PLAN.md
+  - docs/roadmap/iterations/C-G02-012.md
+threshold_changes: []

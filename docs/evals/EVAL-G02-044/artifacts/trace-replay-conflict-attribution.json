@@ -1,0 +1,26 @@
+{
+  "candidate_sha": "bd374683de25b824af8669a993c8c7b771c6001e",
+  "eval_id": "EVAL-G02-044",
+  "failed_phase": "trace-six-stage-matrix",
+  "frozen_result": {
+    "collection_trial": "trace-collection",
+    "reason_code": "remote_command_failed",
+    "stage_records_produced": 0,
+    "status": "blocked"
+  },
+  "preserved_evidence": {
+    "isolation_access_cells": 60,
+    "isolation_status": "pass",
+    "model_calls": 0
+  },
+  "sanitized_diagnostic": {
+    "exception": "faultwitness.observability.buffer.PayloadConflict",
+    "message": "trace reference reused with different payload",
+    "trace_service_available": 1,
+    "trace_service_candidate_sha": "bd374683de25b824af8669a993c8c7b771c6001e",
+    "trace_service_ready": 1,
+    "trace_service_restarts": 0
+  },
+  "root_cause": "The trace ID was deterministic for candidate and environment, but emitted_at and span timestamps used a fresh wall clock. A replay after an outer failure therefore reused the reference with a different payload digest.",
+  "threshold_or_sample_change": false
+}

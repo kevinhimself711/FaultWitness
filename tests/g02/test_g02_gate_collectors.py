@@ -156,6 +156,25 @@ def test_remote_probe_uses_python38_compatible_utc_semantics() -> None:
     assert timestamp.isoformat().endswith("+00:00")
 
 
+def test_remote_trace_envelope_is_exactly_replayable_for_one_candidate() -> None:
+    remote = _remote_probe_module()
+    request = {
+        "candidate_sha": CANDIDATE,
+        "candidate_timestamp": "2026-07-25T19:30:00-04:00",
+        "environment_fingerprint": ENVIRONMENT,
+    }
+
+    first = remote.trace_envelope(request)
+    second = remote.trace_envelope(request)
+
+    assert first == second
+    assert first["emitted_at"] == request["candidate_timestamp"]
+    assert {span["started_at"] for span in first["spans"]} == {
+        request["candidate_timestamp"]
+    }
+    assert {span["ended_at"] for span in first["spans"]} == {request["candidate_timestamp"]}
+
+
 @pytest.mark.parametrize(
     ("status", "expected", "error_type", "error_match"),
     [

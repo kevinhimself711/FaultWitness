@@ -802,6 +802,14 @@ def crockford(value: bytes) -> str:
 
 
 def trace_envelope(request: dict[str, Any], *, canary: str | None = None) -> dict[str, Any]:
+    try:
+        candidate_timestamp = datetime.fromisoformat(
+            str(request.get("candidate_timestamp", "")).replace("Z", "+00:00")
+        )
+    except ValueError as error:
+        raise BlockedFailure("candidate_timestamp_invalid") from error
+    if candidate_timestamp.tzinfo is None:
+        raise BlockedFailure("candidate_timestamp_invalid")
     seed = hashlib.sha256(
         (
             request["candidate_sha"]
@@ -810,7 +818,7 @@ def trace_envelope(request: dict[str, Any], *, canary: str | None = None) -> dic
         ).encode()
     ).digest()
     suffix = crockford(seed[:17])
-    base = datetime.now(UTC).isoformat()
+    base = str(request["candidate_timestamp"])
     stages = (
         ("api.g02-probe", "api"),
         ("state.persistence", "state_transition"),

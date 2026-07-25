@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-045",
+  "gate": "G02",
+  "iteration": "C-G02-012",
+  "evaluated_revision": "pending",
+  "status": "pending",
+  "environments": ["local-targeted", "private-k3s-live", "bailian-not-run"],
+  "commands": [
+    "uv run pytest -q tests/g02/test_g02_gate_collectors.py",
+    "existing CandidateProbeBackend trace operation invoked twice on one exact candidate"
+  ],
+  "artifacts": ["docs/evals/EVAL-G02-045/PLAN.md"],
+  "evidence_urls": [],
+  "integrations": {},
+  "open_evidence": []
+}

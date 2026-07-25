@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: A-G02-011
+active_iteration: C-G02-012
 next_iteration: null
 last_closed_gate: G01
 ---
@@ -42,8 +42,11 @@ namespace, minimum nonzero ambient load, and one passing candidate-bound checkou
 then passed real 60/6/22 matrices and scenario seed 1 but terminally failed on seed 2 because both
 payment fault branches still relied on incidental ambient checkout traffic. C-G02-011 completed one
 deterministic candidate-bound payment checkout and full real lifecycle without changing the frozen
-oracle, N, window, recovery, or thresholds. A-G02-011 is active on that candidate and current clean
-namespace epoch. No terminal work item may be reopened.
+oracle, N, window, recovery, or thresholds. A-G02-011 then ran on that candidate and current clean
+namespace epoch. Its 60-cell access matrix passed, but the trace collection terminally failed when a
+deterministic trace reference was replayed with new wall-clock timestamps. C-G02-012 is active to
+make the trace envelope byte-equivalent on replay without changing any stage or metric. No terminal
+work item may be reopened.
 
 ## Source-of-truth order
 
@@ -205,6 +208,10 @@ Planning-only commits may create or refine future work-item and Eval assets with
   inheritance, and upstream debt must pass before remote, destructive, soak, or paid work.
 - Live and multi-trial matrices persist every trial atomically and resume only pending or
   infrastructure-failed trials. A transport failure never invalidates completed trials.
+- A runner that uses a deterministic external identity must either derive the complete submitted
+  payload deterministically or persist a nonce before the first side effect. It must journal the
+  side-effect checkpoint before any later relay, collection, or aggregation step can fail; replaying
+  the same identity with different content is a runner defect, never an operator-adjudicated pass.
 - A destructive or soak phase runs once for an unchanged candidate/artifact/config/environment key.
   Its pass, threshold-fail, infrastructure-fail, cleanup, and attribution semantics are frozen in
   the Master Plan before execution.
