@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: A-G02-007
+active_iteration: null
 next_iteration: null
 last_closed_gate: G01
 ---
@@ -29,9 +29,10 @@ the Master Plan's prior-recovery precondition rule. C-G02-006 is completed with 
 one candidate-bound prior-recovery scenario seam. A-G02-006 is terminally failed after seeds 1–7
 passed because the `emailMemoryLeak` observer could not retain its first monotonic sample and its
 cleanup path indexed an empty fault-sample list. C-G02-007 is completed with targeted monotonic and
-non-growth tests plus one candidate-bound email-memory scenario seam. The next unified-candidate
-Gate attempt A-G02-007 is active on the post-memory-observer candidate. No terminal work item may
-be reopened.
+non-growth tests plus one candidate-bound email-memory scenario seam. A-G02-007 is terminally
+failed after twelve scenario passes because the Kafka fault runner relied on incidental load-generator
+traffic and did not produce consumer lag inside the frozen 90-second observation deadline. The next
+corrective has not yet been activated. No terminal work item may be reopened.
 
 ## Source-of-truth order
 

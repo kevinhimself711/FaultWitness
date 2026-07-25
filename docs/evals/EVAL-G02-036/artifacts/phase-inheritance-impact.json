@@ -1,0 +1,138 @@
+{
+  "candidate_sha": "0ef51cdb5987aa8b1c5cf17e712fe513f1d33b74",
+  "changed_semantics": [
+    "email-memory first-sample retention and monotonic two-sample observation"
+  ],
+  "inherited_phases": [
+    {
+      "artifact_digest": "b77686f29fcdbba22a505668b2fe4ed13030ccdbdec31e90705c2091d8625e95",
+      "artifact_path": "docs/evals/EVAL-G02-030/artifacts/phases/preflight-manifests/manifest-debt.json",
+      "execution_count": 0,
+      "impact": "The thirteen upstream manifest inputs are unchanged and already debt-free.",
+      "phase_id": "preflight-manifests",
+      "source_end_time": "2026-07-25T17:58:19.108408+00:00",
+      "source_execution_count": 0,
+      "source_record_digest": "22bc8fb30e2fa0d3c8855b9f91f13731b5d63e0cf8acac57e2dcdfc9b74b6f7a",
+      "source_start_time": "2026-07-25T17:58:19.107398+00:00",
+      "target_cache_key": "bac47de299fd9a028c29820237fbc95a1412ae5bb35b7e07234cc505e59d9be3"
+    },
+    {
+      "artifact_digest": "004c8bae37187f5ea2a990cca92884e432339b3bc9982537a5c9f04cdb770ed7",
+      "artifact_path": "docs/evals/EVAL-G02-030/artifacts/phases/preflight-upstream-g01/summary.json",
+      "execution_count": 0,
+      "impact": "All nine immutable G01 manifests and their zero-open-evidence status are unchanged.",
+      "phase_id": "preflight-upstream-g01",
+      "source_end_time": "2026-07-25T17:59:41.221387+00:00",
+      "source_execution_count": 0,
+      "source_record_digest": "a0d7a9b7e3cacfe33c14f1b16172327f021757d4492c61e6bc0380831d3682d1",
+      "source_start_time": "2026-07-25T17:59:41.221387+00:00",
+      "target_cache_key": "dc8e2fd9f8b774e933f38d81fdd02815ecf9ad2f71474da3582cd7a85d5021ed"
+    },
+    {
+      "artifact_digest": "03de35188efe97a0a92f44e3aa2c886dff9ec4557f6dffad0eb280c22a5a6271",
+      "artifact_path": "docs/evals/EVAL-G02-030/artifacts/phases/isolation-access-matrix/matrix.json",
+      "execution_count": 0,
+      "impact": "The email-memory observer fix changes no collector, fixture, permission, identity, namespace, object prefix, runtime, configuration, environment, or route in the 60-cell matrix.",
+      "phase_id": "isolation-access-matrix",
+      "source_end_time": "2026-07-25T18:10:11.132800+00:00",
+      "source_execution_count": 0,
+      "source_record_digest": "a314b9825f05069e551975162b26639c8b722b7b21b4282b35847fe41596ab5c",
+      "source_start_time": "2026-07-25T18:06:50.315234+00:00",
+      "target_cache_key": "12de920d3fcc7e3a59f499b810d7c483bc48f5df50fd36985bcd377fce91cd15"
+    },
+    {
+      "artifact_digest": "565ca74456382d21102c5d3009dd02b0141a5f047604ddaadd3a6d6e5bbb8e45",
+      "artifact_path": "docs/evals/EVAL-G02-030/artifacts/phases/trace-six-stage-matrix/matrix.json",
+      "execution_count": 0,
+      "impact": "The email-memory observer fix changes no collector, fixture, stage definition, trace route, runtime, configuration, or environment in the six-stage matrix.",
+      "phase_id": "trace-six-stage-matrix",
+      "source_end_time": "2026-07-25T18:10:38.177174+00:00",
+      "source_execution_count": 0,
+      "source_record_digest": "3a992b438e889d9c5d1abc46a456f1ec0d0ccef474cbf9f80448cee209ac0c54",
+      "source_start_time": "2026-07-25T18:10:26.112773+00:00",
+      "target_cache_key": "ad8f0884d419b57c64524764cf41bcf34cffa57f8b1fcde89d2f84fd6e6b4fd9"
+    },
+    {
+      "artifact_digest": "fec9599cafe445379ae482e41674ac5f1a86f36f8a25805dc5633e2a70f27933",
+      "artifact_path": "docs/evals/EVAL-G02-030/artifacts/phases/all-surface-canary/matrix.json",
+      "execution_count": 0,
+      "impact": "The email-memory observer fix changes no collector, fixture, canary value, surface, persistence/egress route, runtime, configuration, or environment in the 22-surface matrix.",
+      "phase_id": "all-surface-canary",
+      "source_end_time": "2026-07-25T18:11:10.704751+00:00",
+      "source_execution_count": 0,
+      "source_record_digest": "b98dbcdd6bed84d2fda045f5e341a74b85827d7305ef51823fafac07f98e7651",
+      "source_start_time": "2026-07-25T18:10:52.473622+00:00",
+      "target_cache_key": "a3061d3939e1ad9ad467bbdd1890264e92803b347f6aa9ede16e13e21c5a3b99"
+    }
+  ],
+  "inherited_scenario_trials": [
+    {
+      "execution_count": 0,
+      "observation_packet_digest": "2f328a04246a2096fc03da9093dd67f3448bd6292fa9d9b3002d4d80ee005bd1",
+      "scenario_id": "SEED-G02-0001",
+      "source_attempt": 0,
+      "source_trial_digest": "8ca9e5ff1d4625dd65050732d384afae672dfc4a40dbf367ca668dce59319d37",
+      "source_trial_id": "g02-scenario-7fdb34999bef3413ccf16774440135730b23b5e4-seed-g02-0001"
+    },
+    {
+      "execution_count": 0,
+      "observation_packet_digest": "c25880d08dd9d4ddfd1efb08cd57b44ed135abc9d64b1e80c108c766f8d01204",
+      "scenario_id": "SEED-G02-0002",
+      "source_attempt": 0,
+      "source_trial_digest": "35d2125d6c74bc885dae43bd6fd6b4b660a9cb6317d146dc2f9961da551d73c1",
+      "source_trial_id": "g02-scenario-7fdb34999bef3413ccf16774440135730b23b5e4-seed-g02-0002"
+    },
+    {
+      "execution_count": 0,
+      "observation_packet_digest": "7cf1c6adfa67494dce68899d8b7432ad4fd34386e7888a7592d0b397474381fd",
+      "scenario_id": "SEED-G02-0003",
+      "source_attempt": 0,
+      "source_trial_digest": "81a55d1b562f2d396b30b6e4866bb5ebe24edd25cc9479739547abf3c0a854a6",
+      "source_trial_id": "g02-scenario-7fdb34999bef3413ccf16774440135730b23b5e4-seed-g02-0003"
+    },
+    {
+      "execution_count": 0,
+      "observation_packet_digest": "e459b0a17486363e73fce6632a038412818a5bb69f94a6cd308d877f81dd7123",
+      "scenario_id": "SEED-G02-0004",
+      "source_attempt": 2,
+      "source_trial_digest": "cd9f4c4daeac3cd3262ffaaf5352911bb212391c658bc3102c8a72c83a6195f3",
+      "source_trial_id": "g02-scenario-7fdb34999bef3413ccf16774440135730b23b5e4-seed-g02-0004"
+    },
+    {
+      "execution_count": 0,
+      "observation_packet_digest": "a41b6872efdd83b2342f1ee5e6b93287668c9d7d38cc1c5b2981f3d99e041a12",
+      "scenario_id": "SEED-G02-0005",
+      "source_attempt": 2,
+      "source_trial_digest": "c7581dea0c262880d51beb164a5ef6b86ea6b01146847f99d248c09582d26f43",
+      "source_trial_id": "g02-scenario-7fdb34999bef3413ccf16774440135730b23b5e4-seed-g02-0005"
+    },
+    {
+      "execution_count": 0,
+      "observation_packet_digest": "12e219bbe142ef3eb4c78bcc40b02e0d314761ff6c60162eff2a505cd38dfb8b",
+      "scenario_id": "SEED-G02-0006",
+      "source_attempt": 2,
+      "source_trial_digest": "6735d64deb10c04bbd82df008d06818e3a46fe7105d5e87b24dcdb6f6b2ad16c",
+      "source_trial_id": "g02-scenario-7fdb34999bef3413ccf16774440135730b23b5e4-seed-g02-0006"
+    },
+    {
+      "execution_count": 0,
+      "observation_packet_digest": "b5786266cbdc196f23e753716a8d3a810ce58e36c7d12beabe0918b3ff49a70a",
+      "scenario_id": "SEED-G02-0007",
+      "source_attempt": 2,
+      "source_trial_digest": "b3f90b203c63fa293b389feb619fb438221011af65a3c8f33fb9a56c58303425",
+      "source_trial_id": "g02-scenario-7fdb34999bef3413ccf16774440135730b23b5e4-seed-g02-0007"
+    }
+  ],
+  "next_executed_scenario": "SEED-G02-0008",
+  "schema_version": "1.0.0",
+  "source_candidate_sha": "7fdb34999bef3413ccf16774440135730b23b5e4",
+  "source_eval": "EVAL-G02-034",
+  "status": "pass",
+  "threshold_changes": [],
+  "unchanged_subjects": {
+    "config_digest": "5977479a826a5e0cefd5900190262422e8178f48b131dbff7beeb02279ca1490",
+    "dataset_digest": "b2fb0c9ab7d5c91274d4bc40f18f3eceecb9bd31478945099ef430d879612908",
+    "environment_fingerprint": "32a012ad672a808004e7beb1e41fff66cf87578fbfa470a89dcff47a2b0b80a2",
+    "sut_image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e"
+  }
+}
