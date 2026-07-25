@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-028",
+  "candidate_sha": "fbd03c464904b0969fdff9a8c89170435b80ef81",
+  "environment_fingerprint": "32a012ad672a808004e7beb1e41fff66cf87578fbfa470a89dcff47a2b0b80a2",
+  "phase_id": "trace-six-stage-matrix",
+  "runner": "g02.stage_matrix",
+  "status": "fail",
+  "phase_invocation_count": 1,
+  "phase_retry_count": 0,
+  "diagnostic_invocation_count": 2,
+  "command_construction_error_count": 0,
+  "observed_duration_seconds_approx": 8.2,
+  "observed_result": {
+    "exit_code": 1,
+    "reason_code": "remote_command_or_transport_failed",
+    "phase_record_written": false,
+    "trial_record_written": false,
+    "public_matrix_written": false
+  },
+  "frozen_diagnostics": [
+    {
+      "runner": "inspect-trace-service",
+      "status": "fail",
+      "result": "remote_command_or_transport_failed"
+    },
+    {
+      "runner": "diagnose-trace-service",
+      "status": "pass",
+      "result": "trace-service Pod 1/1 Running with zero restarts and a normally started Uvicorn application"
+    }
+  ],
+  "attribution": {
+    "class": "deterministic_runner_prerequisite_gap",
+    "failure_mode": "The passed lab-deploy-and-bind phase deployed only fw-sut and did not establish the current candidate binding required by the separate fw-control trace service before the trace runner invoked the operator relay.",
+    "evidence": [
+      "CandidateProbeBackend.trace_matrix completed its remote trace action before invoking relay_langsmith outside the ProbeInfrastructureError wrapper.",
+      "relay_langsmith fail-closed checks fw-trace-candidate, trace-service ClusterIP, and TRACE_INGEST_TOKEN before opening the operator tunnel.",
+      "The frozen trace-service inspection failed for the current candidate while the sanitized service diagnosis proved the service process itself healthy."
+    ],
+    "transient_retry_authorized": false,
+    "required_forward_work_item": "C-G02-004"
+  },
+  "passed_phase_records_preserved": 6,
+  "access_cells_preserved": 60,
+  "downstream_phase_invocation_count": 0,
+  "destructive_phase_invocation_count": 0,
+  "bailian_trial_count": 0,
+  "model_call_count": 0,
+  "token_count": 0,
+  "cost_cny": 0,
+  "open_evidence": []
+}

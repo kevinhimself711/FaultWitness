@@ -1,0 +1,61 @@
+schema_version: "1.2.0"
+id: C-G02-004
+gate: G02
+title: Candidate-Bound Trace Service Deployment Corrective
+status: planned
+iteration_type: corrective
+corrects: [I-0024, A-G02-003]
+root_cause:
+  id: RC-G02-004
+  source_eval: EVAL-G02-028
+  phase: trace-six-stage-matrix
+  failure_mode: The passed G02 lab dependency deploys only fw-sut and does not establish or verify the current-candidate fw-control trace-service binding required by the operator relay.
+affected_validation_ids: [V-G02-010, V-G02-017]
+verification_scope:
+  changed_seam: G02 lab phase ownership of candidate-bound trace-service deployment and readiness
+  semantic_branches: [current_candidate_trace_deploy, stale_trace_binding_rejection, sut_deploy_after_trace_readiness]
+  reused_test_entrypoints: [tests/g02/test_g02_eval_protocol.py, tests/observability/test_deploy.py]
+  real_seam_proof: required
+  real_seam_runner: deploy-trace-service plus inspect-trace-service and smoke-trace-service
+  real_seam_artifact: docs/evals/EVAL-G02-029/artifacts/trace-service-binding-seam-proof.json
+  gate_l2_execution: 0
+  full_gate_eval: false
+cost_boundary:
+  root_cause_count: 1
+  bespoke_eval_harness: false
+  gate_attempt_included: false
+  targeted_verification_separate: true
+  global_sync_deferred: true
+accounting_scope:
+  corrective_engineering: included
+  targeted_verification: separate
+  gate_attempt_execution: excluded
+  governance_sync: separate
+scope:
+  - Make the existing lab-deploy-and-bind handler call the existing trace-service deploy and inspect seams for the exact candidate before declaring the lab dependency passed.
+  - Reuse the existing G02 protocol and observability test entrypoints for the changed success and stale-binding branches.
+  - Exercise the existing deploy inspect and sanitized smoke commands once on the corrective candidate and retain only sanitized candidate-bound evidence.
+non_goals:
+  - Running the six-stage Gate matrix any access or canary matrix destructive scenario Bailian trial model call or full Gate Eval.
+  - Refactoring PhaseEngine relay transport observability storage or lifecycle governance or changing any N threshold permission oracle quality performance or failure semantic.
+dependencies: [I-0013, I-0017, I-0024, C-G02-003, A-G02-003]
+tests:
+  - uv run pytest -q tests/g02/test_g02_eval_protocol.py tests/observability/test_deploy.py -k trace_service
+  - uv run python -m faultwitness_dev verify-fast
+  - uv run python -m faultwitness_dev eval-changed
+eval_id: EVAL-G02-029
+commit: null
+changed_paths:
+  - src/faultwitness_dev/g02_eval.py
+  - tests/g02/test_g02_eval_protocol.py
+  - docs/runbooks/G02_EVAL_PROTOCOL.md
+  - docs/evals/EVAL-G02-029
+  - docs/roadmap/iterations/C-G02-004.md
+  - governance/iterations/C-G02-004.yaml
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/C-G02-004.md
+  - docs/evals/EVAL-G02-029/PLAN.md
+  - docs/evals/EVAL-G02-029/REPORT.md
+  - docs/runbooks/G02_EVAL_PROTOCOL.md
+threshold_changes: []
