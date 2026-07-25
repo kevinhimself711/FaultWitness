@@ -180,6 +180,10 @@ G02 关闭后的重构候选：
 - **关闭后候选**：所有 terminal trial 必须原子保存最后可用的 sanitized observation、注入 readback、
   cleanup 结果和判定输入；失败 capsule 应由 runner 自动生成，不能由人工从散落日志重建。
 - **指标影响**：无；补强失败可观测性不改变 oracle、窗口、N 或性能裁决。
+- **本次实测成本**：由于 terminal sample 缺失，C-G02-005 需要 3 次约 3 秒的只读 Jaeger
+  对照才把“caller 有 connection error、callee 无 span、PaymentService 关联位于标准 RPC tag”完整
+  证实；修复后的单场景 seam 本身为 108.8 秒且一次通过。若失败 trial 原子保留 sanitized sample
+  与 span shape，前三次归因查询可全部省去。
 
 ### GOV-OBS-008 — candidate-wide cache key 阻止受影响范围复验
 
@@ -192,3 +196,17 @@ G02 关闭后的重构候选：
 - **关闭后候选**：phase cache key 应绑定该 phase 的 subject digests、运行 artifact/config 和环境，
   再由依赖图证明未受影响继承；candidate SHA 保留为 provenance，而不是所有 phase 无差别失效键。
 - **指标影响**：无；选择性继承只能复用 digest 完全相同的证据，不得减少 N、阈值或受影响复验。
+
+### GOV-OBS-009 — wrapper 被打断时必须先读远端 checkpoint，不能盲目重跑
+
+- **状态**：confirmed operational safeguard
+- **证据**：C-G02-005 的 candidate-bound lab 命令在本地等待层被人工打断后已无本地进程，但远端
+  `fw-g02-candidate-binding` 已是 `679d756...`，且 24/24 Deployments Ready。只读检查证明部署
+  实际完成，因此没有再次调用 deploy。
+- **避免的成本**：一次完整、无新增信息的 SUT redeploy；同时避免把“本地未收到终态”误分类为
+  “远端未完成”。
+- **G02 内处置**：沿用已完成远端状态，继续唯一一次 targeted scenario；不重跑部署，不伪造本地
+  command pass。
+- **关闭后候选**：外部副作用 runner 应把每个完成 checkpoint 原子写入 repository-external
+  journal；supervisor 重连后先 reconcile checkpoint，再决定 resume 哪个子步骤。
+- **指标影响**：无。

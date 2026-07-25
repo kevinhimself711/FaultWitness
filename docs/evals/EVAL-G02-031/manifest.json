@@ -3,18 +3,32 @@
   "eval_id": "EVAL-G02-031",
   "gate": "G02",
   "iteration": "C-G02-005",
-  "evaluated_revision": "not-run",
-  "status": "pending",
-  "environments": ["planned-local-candidate", "planned-private-k3s-read-only-jaeger", "planned-private-k3s-single-scenario"],
+  "evaluated_revision": "679d756dde799bc61d97655efbcf0ad91bfa25c6",
+  "status": "pass",
+  "environments": [
+    "local-candidate-bound",
+    "private-k3s-read-only-jaeger",
+    "private-k3s-single-payment-unreachable-scenario"
+  ],
   "commands": [
     "uv run pytest -q tests/g02/test_g02_lab.py -k payment_unreachable",
-    "fixed read-only checkout-versus-payment Jaeger query declared by EVAL-G02-031",
-    "existing run_scenario with SEED-G02-0002 and exact automatic restore",
+    "fixed read-only checkout-versus-payment Jaeger query for the EVAL-G02-030 failure window",
     "uv run python -m faultwitness_dev verify-fast",
-    "uv run python -m faultwitness_dev eval-changed"
+    "uv run python -m faultwitness_dev eval-changed",
+    "uv run python -m faultwitness_dev lab-g02 start --profile private-server",
+    "existing run_scenario with SEED-G02-0002 and exact automatic restore"
   ],
-  "artifacts": ["docs/evals/EVAL-G02-031/PLAN.md"],
+  "artifacts": [
+    "docs/evals/EVAL-G02-031/PLAN.md",
+    "docs/evals/EVAL-G02-031/REPORT.md",
+    "docs/evals/EVAL-G02-031/artifacts/payment-unreachable-seam-proof.json"
+  ],
   "evidence_urls": [],
-  "integrations": {},
+  "integrations": {
+    "jaeger": {
+      "status": "pass",
+      "reason": "The frozen failure interval proved the connection error on the checkout caller and its absence from the unreachable payment callee query."
+    }
+  },
   "open_evidence": []
 }

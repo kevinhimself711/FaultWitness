@@ -1,0 +1,108 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-031",
+  "candidate_sha": "679d756dde799bc61d97655efbcf0ad91bfa25c6",
+  "environment_fingerprint": "32a012ad672a808004e7beb1e41fff66cf87578fbfa470a89dcff47a2b0b80a2",
+  "root_cause_attribution": {
+    "source_eval": "EVAL-G02-030",
+    "failed_scenario": "SEED-G02-0002",
+    "frozen_window": {
+      "start": "2026-07-25T18:13:44+00:00",
+      "end": "2026-07-25T18:18:00+00:00"
+    },
+    "checkout_query": {
+      "trace_count": 23,
+      "error_span_count": 172,
+      "connection_error_span_count": 18
+    },
+    "payment_query": {
+      "trace_count": 5,
+      "error_span_count": 10,
+      "connection_error_span_count": 0
+    },
+    "correlated_caller_shape": {
+      "checkout_server": {
+        "service": "checkout",
+        "rpc.service": "oteldemo.CheckoutService",
+        "rpc.method": "PlaceOrder",
+        "span.kind": "server",
+        "error": true
+      },
+      "payment_client": {
+        "service": "checkout",
+        "rpc.service": "oteldemo.PaymentService",
+        "rpc.method": "Charge",
+        "span.kind": "client",
+        "error": true
+      },
+      "connection_error_description_present": true
+    },
+    "result": "confirmed_caller_callee_trace_selection_defect"
+  },
+  "implementation": {
+    "trace_query_service_before": "payment",
+    "trace_query_service_after": "checkout",
+    "required_same_trace_signals": [
+      "checkout PlaceOrder server error",
+      "checkout-side PaymentService Charge client error",
+      "connection-error status description"
+    ],
+    "payment_failure_branch_changed": false,
+    "oracle_state_machine_changed": false,
+    "observation_count_changed": false,
+    "oracle_window_changed": false
+  },
+  "verification": {
+    "targeted_tests": {"passed": 4, "failed": 0},
+    "repository_tests": {"passed": 378, "failed": 0},
+    "eval_changed_files": 3,
+    "candidate_binding": "679d756dde799bc61d97655efbcf0ad91bfa25c6",
+    "ready_deployments": {"ready": 24, "desired": 24},
+    "real_seam_execution_count": 1,
+    "scenario_id": "SEED-G02-0002",
+    "fault_class": "paymentUnreachable",
+    "state_sequence": ["HEALTHY", "FAULT_ACTIVE", "HEALTHY"],
+    "fault_observations": [
+      {
+        "recorded_at": "2026-07-25T18:42:21.755292+00:00",
+        "checkout_error_spans": 1,
+        "payment_connection_errors": 1,
+        "checkout_failed": true,
+        "connection_error": true,
+        "ready": true
+      },
+      {
+        "recorded_at": "2026-07-25T18:42:54.769230+00:00",
+        "checkout_error_spans": 5,
+        "payment_connection_errors": 5,
+        "checkout_failed": true,
+        "connection_error": true,
+        "ready": true
+      }
+    ],
+    "recovery_observations": [
+      {
+        "recorded_at": "2026-07-25T18:43:03.803576+00:00",
+        "ready": true,
+        "journey_healthy": true,
+        "signal_not_worsening": true
+      },
+      {
+        "recorded_at": "2026-07-25T18:43:36.718012+00:00",
+        "ready": true,
+        "journey_healthy": true,
+        "signal_not_worsening": true
+      }
+    ],
+    "original_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+    "restored_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb"
+  },
+  "gate_l2_execution": 0,
+  "full_gate_eval": false,
+  "access_trace_canary_matrix_count": 0,
+  "bailian_trial_count": 0,
+  "model_call_count": 0,
+  "token_count": 0,
+  "cost_cny": 0,
+  "open_evidence": []
+}
