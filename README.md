@@ -1,8 +1,8 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: null
-next_iteration: C-G02-002
+active_iteration: C-G02-002
+next_iteration: A-G02-002
 last_closed_gate: G01
 ---
 
@@ -19,8 +19,8 @@ probe 镜像纳入离线 staging/import inventory 并关闭；I-0033 因 contain
 解析缺陷终态失败。I-0034 已完成精确 alias corrective 并关闭；I-0035 随后证明对象读取
 probe 错用隐含 `ListBucket` 的 `mc stat`，现已终态失败。未实施的 I-0036/I-0037 已按新
 命名治理退役；C-G02-001 已以真实 GetObject 对照证据关闭。A-G02-001 的真实访问矩阵在
-LangSmith canonical-owner cell 确定性失败并终态关闭；C-G02-002 是下一单根因 corrective，
-A-G02-002 是与其分离的后续 Gate attempt。任何终态记录都不会重开。
+LangSmith canonical-owner cell 确定性失败并终态关闭；C-G02-002 是当前单根因 corrective，
+A-G02-002 是与其分离的下一 Gate attempt。任何终态记录都不会重开。
 
 ## 权威资产
 

@@ -2,7 +2,7 @@ schema_version: "1.2.0"
 id: C-G02-002
 gate: G02
 title: LangSmith Access Probe Contract Corrective
-status: planned
+status: in_progress
 iteration_type: corrective
 corrects: [I-0024, A-G02-001]
 root_cause:

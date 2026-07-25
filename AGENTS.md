@@ -1,8 +1,8 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: null
-next_iteration: C-G02-002
+active_iteration: C-G02-002
+next_iteration: A-G02-002
 last_closed_gate: G01
 ---
 
@@ -18,7 +18,7 @@ I-0023, I-0025, I-0027, I-0029, I-0031, I-0033, and I-0035 are terminally failed
 negative evidence. Legacy I-0036/I-0037 were retired before implementation when work-item
 namespaces were separated. C-G02-001 is completed with targeted real-client evidence and no open
 evidence; A-G02-001 is terminally failed with complete LangSmith access evidence. C-G02-002 is the
-next single-root-cause corrective and A-G02-002 is its separate planned Gate attempt. No terminal
+active single-root-cause corrective and A-G02-002 is its separate next Gate attempt. No terminal
 work item may be reopened.
 
 ## Source-of-truth order
