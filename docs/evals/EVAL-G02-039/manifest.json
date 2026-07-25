@@ -3,14 +3,22 @@
   "eval_id": "EVAL-G02-039",
   "gate": "G02",
   "iteration": "C-G02-009",
-  "evaluated_revision": "not-run",
-  "status": "pending",
-  "environments": ["local-candidate-bound", "private-k3s-read-only"],
+  "evaluated_revision": "17be4f2d29448bc4db49b71dafe005d7877cd99c",
+  "status": "pass",
+  "environments": [
+    "local-candidate-bound",
+    "private-k3s-candidate-bound-24-of-24",
+    "private-k3s-read-only"
+  ],
   "commands": [
     "uv run pytest -q tests/g02/test_g02_lab.py -k infra",
     "existing candidate-bound LiveScenarioObserver read-only sample"
   ],
-  "artifacts": ["docs/evals/EVAL-G02-039/PLAN.md"],
+  "artifacts": [
+    "docs/evals/EVAL-G02-039/PLAN.md",
+    "docs/evals/EVAL-G02-039/REPORT.md",
+    "docs/evals/EVAL-G02-039/artifacts/source-collection-classification-seam.json"
+  ],
   "evidence_urls": [],
   "integrations": {},
   "open_evidence": []

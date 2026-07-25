@@ -2,7 +2,7 @@ schema_version: "1.2.0"
 id: C-G02-009
 gate: G02
 title: Source-Collection Failure Classification Corrective
-status: in_progress
+status: completed
 iteration_type: corrective
 corrects: [I-0017, A-G02-008]
 root_cause:
@@ -45,7 +45,7 @@ tests:
   - uv run python -m faultwitness_dev verify-fast
   - uv run python -m faultwitness_dev eval-changed
 eval_id: EVAL-G02-039
-commit: null
+commit: 17be4f2d29448bc4db49b71dafe005d7877cd99c
 changed_paths:
   - src/faultwitness_dev/errors.py
   - src/faultwitness_dev/g02_lab.py

@@ -1,0 +1,29 @@
+{
+  "candidate_bound": true,
+  "candidate_sha": "17be4f2d29448bc4db49b71dafe005d7877cd99c",
+  "classification_fixture_count": 2,
+  "fault_flag": "off",
+  "gate_l2_executions": 0,
+  "lab_ready_deployment_count": 24,
+  "model_calls": 0,
+  "schema_version": "1.0.0",
+  "source_collection": {
+    "checkout_error_spans": 0,
+    "consumer_lag": 0.0,
+    "consumer_poll_lag_seconds": 0.0,
+    "consumer_record_lag": 0.0,
+    "cpu_rate": 0.002212752623355914,
+    "descriptions": [],
+    "error_spans": 0,
+    "journey_status": 200,
+    "kafka_fault_log": false,
+    "kafka_log_error": true,
+    "payment_connection_errors": 0,
+    "ready": true,
+    "recorded_at": "2026-07-25T22:04:28.229619+00:00",
+    "trace_count": 5,
+    "working_set": 54423552.0
+  },
+  "status": "pass",
+  "threshold_changes": []
+}
