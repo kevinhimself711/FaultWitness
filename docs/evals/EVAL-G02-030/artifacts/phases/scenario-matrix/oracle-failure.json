@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-030",
+  "candidate_sha": "723c056defa11355b3c3ad48648c5d9deb4961b8",
+  "environment_fingerprint": "32a012ad672a808004e7beb1e41fff66cf87578fbfa470a89dcff47a2b0b80a2",
+  "phase_id": "scenario-matrix",
+  "runner": "g02.scenario_matrix",
+  "status": "metric_fail",
+  "phase_execution_count": 1,
+  "destructive_retry_authorized": false,
+  "observed_result": {
+    "passed_scenarios": 1,
+    "failed_scenario": "SEED-G02-0002",
+    "fault_class": "paymentUnreachable",
+    "reason": "fault oracle did not reach FAULT_ACTIVE",
+    "flag_readback_matched": true,
+    "exact_restore_and_recovery_failed": false
+  },
+  "evidence_boundary": {
+    "raw_terminal_fault_sample_persisted": false,
+    "root_cause_verified": false,
+    "working_hypothesis": "The live observer queries Jaeger with service=payment even though an unreachable payment service can leave the connection-error span on the checkout caller and no callee span on payment.",
+    "required_forward_work_item": "C-G02-005"
+  },
+  "preserved_passes": {
+    "preflight_phases": 4,
+    "lab_deploy_and_bind": 1,
+    "access_cells": 60,
+    "trace_stages": 6,
+    "canary_surfaces": 22,
+    "scenario_trials": 1
+  },
+  "downstream_phase_invocation_count": 0,
+  "bailian_trial_count": 0,
+  "model_call_count": 0,
+  "token_count": 0,
+  "cost_cny": 0,
+  "open_evidence": []
+}

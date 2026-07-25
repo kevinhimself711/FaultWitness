@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-031",
+  "gate": "G02",
+  "iteration": "C-G02-005",
+  "evaluated_revision": "not-run",
+  "status": "pending",
+  "environments": ["planned-local-candidate", "planned-private-k3s-read-only-jaeger", "planned-private-k3s-single-scenario"],
+  "commands": [
+    "uv run pytest -q tests/g02/test_g02_lab.py -k payment_unreachable",
+    "fixed read-only checkout-versus-payment Jaeger query declared by EVAL-G02-031",
+    "existing run_scenario with SEED-G02-0002 and exact automatic restore",
+    "uv run python -m faultwitness_dev verify-fast",
+    "uv run python -m faultwitness_dev eval-changed"
+  ],
+  "artifacts": ["docs/evals/EVAL-G02-031/PLAN.md"],
+  "evidence_urls": [],
+  "integrations": {},
+  "open_evidence": []
+}

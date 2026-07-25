@@ -1,8 +1,8 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: A-G02-004
-next_iteration: null
+active_iteration: null
+next_iteration: C-G02-005
 last_closed_gate: G01
 ---
 
@@ -23,8 +23,8 @@ LangSmith canonical-owner cell 确定性失败并终态关闭；C-G02-002 已用
 seam 完成单根因修复。A-G02-002 在 expected-allow baseline-agent egress seam 无进展后终态
 失败；C-G02-003 已以真实 TCP allow/reject 对照证据关闭。A-G02-003 在 60/60 access 通过后
 暴露 trace-service 候选绑定前置缺口并终态失败；C-G02-004 已用 exact-candidate
-deploy/inspect/relay/smoke 证据关闭，A-G02-004 是当前独立 Gate attempt。任何终态记录都不会
-重开。
+deploy/inspect/relay/smoke 证据关闭。A-G02-004 在 `paymentUnreachable` 故障 oracle 上确定性
+失败；C-G02-005 是下一项单根因纠错，A-G02-005 是其后独立 Gate attempt。任何终态记录都不会重开。
 
 ## 权威资产
 

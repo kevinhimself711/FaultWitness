@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-032",
+  "gate": "G02",
+  "iteration": "A-G02-005",
+  "evaluated_revision": "not-run",
+  "status": "pending",
+  "environments": ["planned-unified-candidate", "planned-private-g02-lab", "planned-bailian-live", "planned-langsmith"],
+  "commands": [
+    "uv run python -m faultwitness_dev eval-g02 --candidate-sha <full-sha>",
+    "uv run python -m faultwitness_dev eval-g02-close --candidate-sha <full-sha> --evidence-head-sha <full-sha>"
+  ],
+  "artifacts": ["docs/evals/EVAL-G02-032/PLAN.md"],
+  "evidence_urls": [],
+  "integrations": {
+    "bailian": {"status": "required", "reason": "The unchanged 192-trial live baseline matrix uses the frozen route."},
+    "langsmith": {"status": "required", "reason": "Candidate-bound sanitized trace and access evidence remains blocking."}
+  },
+  "open_evidence": []
+}

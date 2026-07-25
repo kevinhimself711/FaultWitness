@@ -118,6 +118,9 @@ G02 关闭后的重构候选：
 - **状态**：confirmed operational waste
 - **证据**：activation 的定点 governance check 已输出 `passed`，但 shell wrapper 在约 10.8 秒
   以 124 退出，后置 `git diff --check` 需要单独补跑。
+- **再次发生**：A-G02-004 证据固化后的本地 `verify-fast` 被操作层误设的 1 秒 wrapper 上限
+  中断；随后只补跑尚未完成的本地校验并正常得到 374 tests 与 Markdown 全通过，没有重跑任何
+  Gate phase。这证明“禁用业务 timeout”仍需由统一 supervisor 默认值落实，不能依赖操作员记忆。
 - **不必要成本**：一次重复进程启动和一次额外 diff 检查；没有新增信息。
 - **G02 内处置**：不重复已通过的治理扫描；后续 progressing command 使用可持续等待与轮询，
   只补未完成步骤。
@@ -147,3 +150,45 @@ G02 关闭后的重构候选：
 - **关闭后候选**：phase failure capsule 必须声明已发生的 side effect 与 cleanup owner；后续 candidate
   的 preflight 在执行 smoke/matrix 前检查并归因 stale external state。
 - **指标影响**：无。
+
+### GOV-OBS-006 — 必需的运行期 binding 被 clean-tree 规则误认成候选污染
+
+- **状态**：confirmed operational waste
+- **证据**：EVAL-G02-030 的四个 preflight 已通过后，首次 `lab-deploy-and-bind` 调用因
+  `docs/evals/EVAL-G02-030/candidate-binding.json` 尚未进入本地 exact exclude 而被 clean-tree
+  guard 拒绝；该文件正是 runner 启动所必需、候选绑定且禁止提交前伪造的运行期输入。
+- **不必要成本**：操作员必须补本地 exclude 后重新调用 phase；失败发生在 trace-service deploy
+  子步骤之后而 phase record 之前，导致同一候选的 trace deploy 再执行一次。
+- **G02 内处置**：只加入该 Eval/路径的 `.git/info/exclude`，不放宽 clean-tree guard；四个已通过
+  preflight 不重跑，后续 phase 继续使用原 exact-key journal。
+- **关闭后候选**：运行期 binding 应位于天然 repository-external 的 Eval workspace，或由 runner
+  在 clean-tree 判断中显式识别自己的 exact input；phase 内具有外部副作用的子步骤必须各自记录
+  完成 checkpoint，phase 外层失败后不得从头重复已完成 deploy。
+- **指标影响**：无；未改变候选、环境、N、阈值、性能或失败语义。
+
+### GOV-OBS-007 — terminal scenario trial 丢弃原始失败 sample
+
+- **状态**：confirmed evidence-design gap
+- **证据**：EVAL-G02-030 的 `SEED-G02-0002` trial 只保存
+  `fault oracle did not reach FAULT_ACTIVE`；`LiveScenarioObserver` 在 90 秒窗口终点已经拥有最后
+  一个原始 sample，但 `run_gate_scenario_matrix` 的失败分支没有把它写入 trial payload。
+- **不必要成本**：代码静态证据强烈指向 `paymentUnreachable` 的 caller/callee trace 选择错误，
+  但冻结 evidence 无法证明最后 sample 中 checkout/payment 各有什么；必须在 C-G02-005 追加一次
+  最小只读 real-seam 归因，而不能直接做一行修复。
+- **G02 内处置**：不重跑 destructive phase、不把假设裁定为 pass；C-G02-005 先对冻结时间窗做
+  具名只读对照，确认后只改观测 seam，并保留一次最小场景证据。
+- **关闭后候选**：所有 terminal trial 必须原子保存最后可用的 sanitized observation、注入 readback、
+  cleanup 结果和判定输入；失败 capsule 应由 runner 自动生成，不能由人工从散落日志重建。
+- **指标影响**：无；补强失败可观测性不改变 oracle、窗口、N 或性能裁决。
+
+### GOV-OBS-008 — candidate-wide cache key 阻止受影响范围复验
+
+- **状态**：confirmed design mismatch；实际重复成本待 A-G02-005 计量
+- **证据**：`PhaseContext.cache_key` 把完整 `candidate_sha` 纳入每个 phase key。即使
+  C-G02-005 只改变 `g02_lab.py` 的一个 fault observer，新 SHA 也会让 access、trace、canary 等
+  未受影响 phase 无法继承；这与“修复后只复验失败项和受影响依赖”的治理目标不一致。
+- **G02 内处置**：closure freeze 内不重构 PhaseEngine、不伪造跨候选 pass、不批量替换 SHA；按
+  现行冻结协议完成 G02，并单独记录真实重复成本。
+- **关闭后候选**：phase cache key 应绑定该 phase 的 subject digests、运行 artifact/config 和环境，
+  再由依赖图证明未受影响继承；candidate SHA 保留为 provenance，而不是所有 phase 无差别失效键。
+- **指标影响**：无；选择性继承只能复用 digest 完全相同的证据，不得减少 N、阈值或受影响复验。
