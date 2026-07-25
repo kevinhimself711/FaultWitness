@@ -1,0 +1,18 @@
+{
+  "candidate_sha": "91c2ce4dc27d6e7e661b9fa6315605ba44124a97",
+  "cell_id": "obs:langsmith|canonical-owner",
+  "environment_fingerprint": "32a012ad672a808004e7beb1e41fff66cf87578fbfa470a89dcff47a2b0b80a2",
+  "expected_allow": true,
+  "actual_allow": false,
+  "status": "metric_fail",
+  "failure_class": "non_attributable_nonretryable_langsmith_response",
+  "frozen_runner_observation": "The live runner classified transport, 408, 425, 429, and 5xx separately; this result therefore came from a non-success nonretryable response, but the frozen artifact omitted its status class.",
+  "diagnostic_invocations": 0,
+  "command_construction_errors": 0,
+  "downstream_phases_started": 0,
+  "destructive_scenarios": 0,
+  "model_calls": 0,
+  "model_tokens": 0,
+  "model_cost_cny": 0,
+  "operator_adjudication": false
+}
