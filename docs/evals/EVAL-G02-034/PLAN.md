@@ -7,9 +7,22 @@ Execute the unchanged fourteen-phase G02 Gate Eval on candidate
 
 ## Phase order and execution boundary
 
-The frozen order remains manifest debt, candidate binding, static inheritance, G01 debt,
-candidate-bound lab, 60-cell isolation, six-stage trace, 22-surface canary, 32-seed scenario,
-deterministic baseline, 192-trial live baseline, aggregate, reconciliation, and close-readiness.
+The exact frozen phase IDs and order are:
+
+1. `preflight-manifests`
+2. `preflight-candidate-binding`
+3. `preflight-static-inheritance`
+4. `preflight-upstream-g01`
+5. `lab-deploy-and-bind`
+6. `isolation-access-matrix`
+7. `trace-six-stage-matrix`
+8. `all-surface-canary`
+9. `scenario-matrix`
+10. `baseline-deterministic`
+11. `baseline-live`
+12. `baseline-aggregate`
+13. `candidate-reconciliation`
+14. `close-readiness`
 
 The manifest/G01 debt and 60/6/22 matrices are inherited from their named passing source records
 with original timestamps, artifact digests, producing revisions, and new-attempt
