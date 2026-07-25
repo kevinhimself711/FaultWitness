@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: A-G02-008
+active_iteration: null
 next_iteration: null
 last_closed_gate: G01
 ---
@@ -33,7 +33,9 @@ non-growth tests plus one candidate-bound email-memory scenario seam. A-G02-007 
 failed after twelve scenario passes because the Kafka fault runner relied on incidental load-generator
 traffic and did not produce consumer lag inside the frozen 90-second observation deadline. C-G02-008
 is completed with targeted tests and one candidate-bound Kafka checkout/lifecycle seam. A-G02-008
-is active on the post-Kafka-workload candidate. No terminal work item may be reopened.
+is terminally failed because a source-collection command exited without producing an observation and
+the scenario runner incorrectly collapsed that infrastructure condition into `metric_fail`. The next
+corrective has not yet been activated. No terminal work item may be reopened.
 
 ## Source-of-truth order
 
