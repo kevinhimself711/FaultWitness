@@ -1,0 +1,61 @@
+{
+  "candidate_sha": "fc167c8bc98021cb4718ec6ab254c2525441326c",
+  "cases": [
+    {
+      "case_id": "exact-sut-probe-inventory-union",
+      "probe_archive_keys": [
+        "probe-busybox",
+        "probe-minio-mc"
+      ],
+      "probe_references": {
+        "probe-busybox": "docker.io/rancher/mirrored-library-busybox@sha256:101b4afd76732482eff9b95cae5f94bcf295e521fbec4e01b69c5421f3f3f3e5",
+        "probe-minio-mc": "docker.io/minio/mc@sha256:eb4ea9884b77704230e2423e9004d2fa738dc272876b9cc41a297d29443b8780"
+      },
+      "status": "pass",
+      "sut_image_count": 30,
+      "sut_image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e"
+    },
+    {
+      "case_id": "docker-hub-reference-normalization",
+      "normalized": "docker.io/example/probe@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "source": "index.docker.io/example/probe@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "status": "pass"
+    },
+    {
+      "case_id": "reference-deduplication-and-digest-drift-rejection",
+      "deduplicated_archive_keys": [
+        "probe-minio-mc",
+        "sut-probe"
+      ],
+      "status": "pass"
+    }
+  ],
+  "destructive_scenarios": 0,
+  "end_time": "2026-07-25T00:12:29.440909+00:00",
+  "external_service_calls": 0,
+  "frozen_validation_n": {
+    "V-G02-009": 4,
+    "V-G02-010": 0,
+    "V-G02-011": 4,
+    "V-G02-017": 0
+  },
+  "gate_l2_execution": 0,
+  "model_calls": 0,
+  "offline_archive_count": 7,
+  "offline_archive_references": {
+    "busybox": "index.docker.io/library/busybox@sha256:7a3ebe5bfd1a4a19797d20b0c0bb39d44393e9a03fd852c0865b0f540d868df0",
+    "grafana": "index.docker.io/grafana/grafana@sha256:7c064e627d9cb50c3485c9ded5ca0222de89a08e41403322a0c3ca6f1777a8d1",
+    "jaeger": "index.docker.io/jaegertracing/all-in-one@sha256:1147036b9becc1eca6006f1af7eb2f0c2fe039a8d313ce15c6aa52a6a877f9f7",
+    "opensearch": "index.docker.io/opensearchproject/opensearch@sha256:61c97e6da9e307f5511793f776d3c47d5faa663ad70a432f1b9ed62767b18505",
+    "probe-busybox": "docker.io/rancher/mirrored-library-busybox@sha256:101b4afd76732482eff9b95cae5f94bcf295e521fbec4e01b69c5421f3f3f3e5",
+    "probe-minio-mc": "docker.io/minio/mc@sha256:eb4ea9884b77704230e2423e9004d2fa738dc272876b9cc41a297d29443b8780",
+    "valkey": "index.docker.io/valkey/valkey@sha256:78aec401a63daa9218305e7d7cb9152cbd74b1d3c8a78d86683553d3a298690f"
+  },
+  "open_evidence": [],
+  "remote_execution": 0,
+  "schema_version": "1.0.0",
+  "staging_case_count": 3,
+  "start_time": "2026-07-25T00:12:29.423297+00:00",
+  "status": "pass",
+  "validation": "I-0032-digest-pinned-probe-image-offline-staging"
+}

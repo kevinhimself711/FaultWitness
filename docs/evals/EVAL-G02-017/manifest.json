@@ -1,20 +1,63 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "eval_id": "EVAL-G02-017",
   "gate": "G02",
   "iteration": "I-0032",
-  "evaluated_revision": "not-run",
-  "status": "pending",
-  "environments": ["planned-local-deterministic-probe-image-staging"],
-  "commands": [
-    "uv run python -m faultwitness_dev eval-iteration I-0032 --candidate-sha <full-sha>"
+  "candidate_sha": "fc167c8bc98021cb4718ec6ab254c2525441326c",
+  "evaluated_revision": "fc167c8bc98021cb4718ec6ab254c2525441326c",
+  "evidence_head_sha": "fc167c8bc98021cb4718ec6ab254c2525441326c",
+  "status": "pass",
+  "subject_digests": {
+    "config/g02/gate-probes.yaml": "6fb0aec3a8a7122e34564ffaf1dc13612296576f2eb12f160da877cebb99332d",
+    "config/g02/lab.yaml": "1adf8d580f62aa5471aae742a48b714dc5bc226c5b085566f622fa8ac86fba71",
+    "docs/evals/EVAL-G02-017/PLAN.md": "a62fc0494fb17d5df25728c23bb4322fdc038b5e0bff0c8613867143aa461bec",
+    "docs/runbooks/G02_FAULT_LAB.md": "88d6778bff38b971fff678094fcf1b226f6aec037850505e0d5adc1cba5066f0",
+    "governance/iterations/I-0032.yaml": "f47b5930f5b8a2033a63732557832339bb3a7cf26ee2ea198e13c63e7d390f36",
+    "src/faultwitness_dev/evals.py": "ffa140f6a2bbc27288219d0d16b94e8aca349ceff21da30b44a0349ba1084bfe",
+    "src/faultwitness_dev/g02_lab.py": "06dea6edf8dac82a7e8f58676707bafeb7d5c0bdedca23560c727e4b0dfbbeb6",
+    "tests/g02/test_g02_lab.py": "b1eece366f09307958f5945ade351f93a30e94ba38da2d10f57898803f58290d"
+  },
+  "environment_fingerprint": "05bce54b3659e62272291cf3b4dbd6f48b58a58173a759beb5f3ba8e4728c566",
+  "phases": [
+    {
+      "phase_id": "probe-image-offline-staging",
+      "status": "pass",
+      "start_time": "2026-07-25T00:12:29.423297+00:00",
+      "end_time": "2026-07-25T00:12:29.440909+00:00",
+      "cache_key": "436815f98f81df2841bd05ea16318f282c676c2dd4d81d7263f62237f802f1d0",
+      "artifact_digest": "f7c2adccd7e0304f17e72c4aae0214285da790eb8ec2940bd061500a3dacd718",
+      "artifact_path": "docs/evals/EVAL-G02-017/artifacts/probe-image-staging.json",
+      "private_artifact_uri": null,
+      "execution_count": 1,
+      "inherited_from_manifest": null
+    }
   ],
-  "artifacts": ["docs/evals/EVAL-G02-017/PLAN.md"],
+  "environments": ["windows-11-local-deterministic-offline-staging"],
+  "commands": [
+    "uv run pytest -q tests/g02/test_g02_lab.py tests/g02/test_g02_gate_collectors.py",
+    "uv run python -m faultwitness_dev eval-iteration I-0032 --candidate-sha fc167c8bc98021cb4718ec6ab254c2525441326c",
+    "uv run python -m faultwitness_dev verify-fast",
+    "uv run python -m faultwitness_dev eval-changed"
+  ],
+  "artifacts": [
+    "docs/evals/EVAL-G02-017/PLAN.md",
+    "docs/evals/EVAL-G02-017/REPORT.md",
+    "docs/evals/EVAL-G02-017/artifacts/probe-image-staging.json"
+  ],
   "evidence_urls": [],
   "integrations": {
-    "private_server": {"status": "not_applicable", "reason": "I-0032 performs only local deterministic staging proof."},
-    "bailian": {"status": "not_applicable", "reason": "I-0032 performs no model call."},
-    "langsmith": {"status": "not_applicable", "reason": "I-0032 performs no external-service phase."}
+    "private_server": {
+      "status": "not_applicable",
+      "reason": "I-0032 performed only local deterministic offline-staging proof."
+    },
+    "bailian": {
+      "status": "not_applicable",
+      "reason": "I-0032 performed no model call."
+    },
+    "langsmith": {
+      "status": "not_applicable",
+      "reason": "I-0032 performed no external-service phase."
+    }
   },
   "open_evidence": []
 }
