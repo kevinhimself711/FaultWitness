@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-029",
+  "iteration": "C-G02-004",
+  "candidate_sha": "b4b58546c0e97d2bebb64a1fd04208e13427e7fb",
+  "recorded_at": "2026-07-25T17:50:57.4727272Z",
+  "status": "pass",
+  "local_verification": {
+    "named_case_count": 3,
+    "named_case_pass_count": 3,
+    "repository_test_count": 374,
+    "repository_test_pass_count": 374,
+    "eval_changed_file_count": 10
+  },
+  "deployment": {
+    "status": "pass",
+    "candidate_sha": "b4b58546c0e97d2bebb64a1fd04208e13427e7fb",
+    "bundle_sha256": "714db462bc1620b139292768e1025ab67385a87b4228521f0a8ff5cc21f76fdb",
+    "image": "docker.io/faultwitness/trace-service:b4b58546c0e97d2bebb64a1fd04208e13427e7fb",
+    "observed_duration_seconds": 108.9,
+    "preset_wall_clock_kill": false
+  },
+  "readiness": {
+    "status": "pass",
+    "available": 1,
+    "ready": 1,
+    "service_type": "ClusterIP",
+    "candidate_binding_exact": true
+  },
+  "smoke_sequence": [
+    {
+      "attempt": 1,
+      "status": "fail",
+      "reason": "preexisting_pending_trace_count_violated_frozen_empty_buffer_precondition",
+      "operator_adjudicated_pass": false
+    },
+    {
+      "step": "existing_operator_relay_cleanup",
+      "status": "pass",
+      "exported_trace_count": 2,
+      "langsmith_export_attempts": 2,
+      "pending_traces_after": 0,
+      "pending_langsmith_after": 0
+    },
+    {
+      "attempt": 2,
+      "status": "pass",
+      "frozen_outcome_matrix_unchanged": true,
+      "pending_delivery_after": 0
+    }
+  ],
+  "attribution": {
+    "failed_attempt_trace_count": 1,
+    "first_smoke_trace_count": 1,
+    "cleanup_exported_trace_count": 2,
+    "root_confirmed": "A-G02-003 stopped after remote trace ingestion and before operator relay, so its pending trace survived the candidate rebinding and made the first corrective smoke start non-empty."
+  },
+  "gate_l2_execution_count": 0,
+  "six_stage_matrix_count": 0,
+  "access_matrix_count": 0,
+  "canary_matrix_count": 0,
+  "destructive_execution_count": 0,
+  "bailian_trial_count": 0,
+  "model_call_count": 0,
+  "token_count": 0,
+  "cost_cny": 0,
+  "open_evidence": []
+}

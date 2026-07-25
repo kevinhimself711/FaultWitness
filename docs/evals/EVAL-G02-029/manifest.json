@@ -3,19 +3,33 @@
   "eval_id": "EVAL-G02-029",
   "gate": "G02",
   "iteration": "C-G02-004",
-  "evaluated_revision": "not-run",
-  "status": "pending",
-  "environments": ["planned-local-candidate-bound", "planned-private-trace-service"],
+  "evaluated_revision": "b4b58546c0e97d2bebb64a1fd04208e13427e7fb",
+  "status": "pass",
+  "environments": [
+    "local-candidate-bound",
+    "private-k3s-trace-service",
+    "private-langsmith-operator-relay"
+  ],
   "commands": [
     "three named pytest cases for current binding, stale binding, and rollout without a wall-clock kill",
-    "existing deploy-trace-service inspect-trace-service and smoke-trace-service commands on <full-sha>"
+    "uv run python -m faultwitness_dev verify-fast",
+    "uv run python -m faultwitness_dev eval-changed",
+    "uv run python -m faultwitness_dev deploy-trace-service --candidate-sha b4b58546c0e97d2bebb64a1fd04208e13427e7fb",
+    "uv run python -m faultwitness_dev inspect-trace-service --candidate-sha b4b58546c0e97d2bebb64a1fd04208e13427e7fb",
+    "uv run python -m faultwitness_dev smoke-trace-service --candidate-sha b4b58546c0e97d2bebb64a1fd04208e13427e7fb",
+    "faultwitness_dev.observability_deploy.relay_langsmith on b4b58546c0e97d2bebb64a1fd04208e13427e7fb",
+    "uv run python -m faultwitness_dev smoke-trace-service --candidate-sha b4b58546c0e97d2bebb64a1fd04208e13427e7fb after attributed buffer cleanup"
   ],
-  "artifacts": ["docs/evals/EVAL-G02-029/PLAN.md"],
+  "artifacts": [
+    "docs/evals/EVAL-G02-029/PLAN.md",
+    "docs/evals/EVAL-G02-029/REPORT.md",
+    "docs/evals/EVAL-G02-029/artifacts/trace-service-binding-seam-proof.json"
+  ],
   "evidence_urls": [],
   "integrations": {
     "langsmith": {
-      "status": "required",
-      "reason": "The existing sanitized smoke proves the corrected candidate-bound relay seam and drains pending delivery."
+      "status": "pass",
+      "reason": "The exact-candidate relay exported the attributed backlog, then the unchanged sanitized smoke passed with zero pending delivery."
     }
   },
   "open_evidence": []

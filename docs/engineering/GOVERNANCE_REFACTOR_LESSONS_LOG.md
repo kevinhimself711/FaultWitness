@@ -136,3 +136,14 @@ G02 关闭后的重构候选：
 - **关闭后候选**：治理迁移增加 nested-command timeout inventory，规则验证必须覆盖最终执行的
   子命令而不只检查 wrapper API。
 - **指标影响**：无。
+
+### GOV-OBS-005 — 失败 attempt 的外部残留未进入 cleanup contract
+
+- **状态**：confirmed execution gap
+- **证据**：A-G02-003 在 trace ingest 后、relay 前失败；新 candidate 的首次 smoke 因非空 buffer
+  失败。既有 relay 随后恰好导出 2 条记录（旧 attempt 1 条、首次 smoke 1 条）并归零。
+- **不必要成本**：一次必然失败的 smoke、一次额外归因和一次清理后复验。
+- **G02 内处置**：不放宽 frozen smoke matrix；用既有 relay 修复已归因状态后只复验 smoke。
+- **关闭后候选**：phase failure capsule 必须声明已发生的 side effect 与 cleanup owner；后续 candidate
+  的 preflight 在执行 smoke/matrix 前检查并归因 stale external state。
+- **指标影响**：无。
