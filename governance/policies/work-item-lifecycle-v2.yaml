@@ -1,0 +1,56 @@
+schema_version: "1.0.0"
+policy_id: WORK-ITEM-LIFECYCLE-V2
+effective_on: "2026-07-24"
+namespaces:
+  planned_iteration: "^I-[0-9]{4}$"
+  corrective: "^C-G[0-9]{2}-[0-9]{3}$"
+  gate_attempt: "^A-G[0-9]{2}-[0-9]{3}$"
+legacy_gate_ids: [G00, G01]
+last_legacy_iteration_id: I-0037
+legacy_corrective_ids: [I-0021, I-0022, I-0024, I-0026, I-0028, I-0030, I-0032, I-0034, I-0036]
+legacy_gate_attempt_ids: [I-0020, I-0023, I-0025, I-0027, I-0029, I-0031, I-0033, I-0035, I-0037]
+planned_iteration:
+  external_seam_declaration: required
+  mock_only_gate_readiness: false
+  real_semantic_probe: required_per_declared_seam
+  failure_diagnostic: required_per_declared_seam
+corrective:
+  root_cause_count: 1
+  gate_l2_execution: 0
+  full_gate_eval: false
+  gate_attempt_included: false
+  bespoke_eval_harness: false
+  real_seam_proof: required_when_external_boundary_changes
+  evidence_scope: changed_semantic_branches_only
+  global_sync: defer_until_gate_attempt_or_gate_closure
+  command_patterns_forbidden:
+    - "(^|\\s)eval-g[0-9]{2}(\\s|$)"
+    - "(^|\\s)eval-g[0-9]{2}-close(\\s|$)"
+  forbidden_declared_paths:
+    - docs/claims/CLAIMS.yaml
+  forbidden_gate_asset_names: [PLAN.md, REPORT.md, VALIDATIONS.yaml]
+  forbidden_global_prefixes: [docs/blueprint/, governance/gates/]
+gate_attempt:
+  behavior_change: false
+  threshold_changes: []
+  implementation_change: false
+  forbidden_declared_prefixes:
+    - src/
+    - deploy/
+    - tests/
+    - config/
+    - schemas/
+    - .github/
+    - pyproject.toml
+    - uv.lock
+  runner_fixture_framework_changes: false
+  frozen_runners_only: true
+  ad_hoc_diagnostic_tooling: false
+  deterministic_failure_reuses_candidate: false
+  transient_resume_only: true
+accounting:
+  corrective_engineering: separate
+  targeted_corrective_verification: separate
+  gate_attempt_execution: separate
+  governance_migration_or_closure: separate
+  duration_estimates_are_kill_timeouts: false

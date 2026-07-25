@@ -6,12 +6,109 @@
   "required": ["schema_version", "id", "gate", "title", "status", "scope", "non_goals", "dependencies", "tests", "eval_id", "commit", "changed_paths", "behavior_change", "docs_updated", "threshold_changes"],
   "properties": {
     "schema_version": {"pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
-    "id": {"pattern": "^I-[0-9]{4}$"},
+    "id": {"$ref": "#/$defs/work_item_id"},
     "gate": {"pattern": "^G[0-9]{2}$"},
     "title": {"type": "string", "minLength": 5},
     "status": {"enum": ["planned", "in_progress", "completed", "failed"]},
-    "iteration_type": {"enum": ["standard", "corrective"]},
-    "corrects": {"type": "array", "items": {"pattern": "^I-[0-9]{4}$"}, "uniqueItems": true},
+    "iteration_type": {"enum": ["standard", "corrective", "gate_attempt"]},
+    "corrects": {"type": "array", "items": {"$ref": "#/$defs/work_item_id"}, "uniqueItems": true},
+    "attempt_of": {"pattern": "^G[0-9]{2}$"},
+    "planning_readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["external_seams", "mock_only_gate_readiness"],
+      "properties": {
+        "external_seams": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "operation", "real_seam_runner", "failure_diagnostic", "artifact_path"],
+            "properties": {
+              "id": {"type": "string", "minLength": 3},
+              "operation": {"type": "string", "minLength": 5},
+              "real_seam_runner": {"type": "string", "minLength": 3},
+              "failure_diagnostic": {"type": "string", "minLength": 3},
+              "artifact_path": {"type": "string", "minLength": 3}
+            }
+          }
+        },
+        "mock_only_gate_readiness": {"const": false}
+      }
+    },
+    "root_cause": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "source_eval", "phase", "failure_mode"],
+      "properties": {
+        "id": {"pattern": "^RC-G[0-9]{2}-[0-9]{3}$"},
+        "source_eval": {"pattern": "^EVAL-G[0-9]{2}-[0-9]{3}$"},
+        "phase": {"type": "string", "minLength": 3},
+        "failure_mode": {"type": "string", "minLength": 10}
+      }
+    },
+    "affected_validation_ids": {
+      "type": "array",
+      "items": {"pattern": "^V-G[0-9]{2}-[0-9]{3}$"},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "verification_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["changed_seam", "semantic_branches", "reused_test_entrypoints", "real_seam_proof", "gate_l2_execution", "full_gate_eval"],
+      "properties": {
+        "changed_seam": {"type": "string", "minLength": 5},
+        "semantic_branches": {"type": "array", "items": {"type": "string", "minLength": 3}, "minItems": 1, "uniqueItems": true},
+        "reused_test_entrypoints": {"type": "array", "items": {"type": "string", "minLength": 3}, "minItems": 1, "uniqueItems": true},
+        "real_seam_proof": {"enum": ["required", "not_applicable"]},
+        "real_seam_runner": {"type": "string", "minLength": 3},
+        "real_seam_artifact": {"type": "string", "minLength": 3},
+        "gate_l2_execution": {"const": 0},
+        "full_gate_eval": {"const": false}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"real_seam_proof": {"const": "required"}}, "required": ["real_seam_proof"]},
+          "then": {"required": ["real_seam_runner", "real_seam_artifact"]}
+        }
+      ]
+    },
+    "cost_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["root_cause_count", "bespoke_eval_harness", "gate_attempt_included", "targeted_verification_separate", "global_sync_deferred"],
+      "properties": {
+        "root_cause_count": {"const": 1},
+        "bespoke_eval_harness": {"const": false},
+        "gate_attempt_included": {"const": false},
+        "targeted_verification_separate": {"const": true},
+        "global_sync_deferred": {"const": true}
+      }
+    },
+    "attempt_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frozen_runners_only", "ad_hoc_diagnostic_tooling", "deterministic_failure_reuses_candidate", "transient_resume_only"],
+      "properties": {
+        "frozen_runners_only": {"const": true},
+        "ad_hoc_diagnostic_tooling": {"const": false},
+        "deterministic_failure_reuses_candidate": {"const": false},
+        "transient_resume_only": {"const": true}
+      }
+    },
+    "accounting_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["corrective_engineering", "targeted_verification", "gate_attempt_execution", "governance_sync"],
+      "properties": {
+        "corrective_engineering": {"enum": ["included", "excluded"]},
+        "targeted_verification": {"enum": ["included", "separate", "excluded"]},
+        "gate_attempt_execution": {"enum": ["included", "excluded"]},
+        "governance_sync": {"enum": ["included", "separate", "excluded"]}
+      }
+    },
     "scope": {"type": "array", "items": {"type": "string", "minLength": 3}, "minItems": 1},
     "non_goals": {"type": "array", "items": {"type": "string"}},
     "dependencies": {"type": "array", "items": {"type": "string"}},
@@ -35,5 +132,47 @@
         }
       }
     }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"id": {"pattern": "^C-G[0-9]{2}-[0-9]{3}$"}}, "required": ["id"]},
+      "then": {
+        "required": ["iteration_type", "corrects", "root_cause", "affected_validation_ids", "verification_scope", "cost_boundary", "accounting_scope"],
+        "properties": {
+          "iteration_type": {"const": "corrective"},
+          "corrects": {"minItems": 1},
+          "accounting_scope": {
+            "properties": {
+              "corrective_engineering": {"const": "included"},
+              "targeted_verification": {"const": "separate"},
+              "gate_attempt_execution": {"const": "excluded"},
+              "governance_sync": {"const": "separate"}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"id": {"pattern": "^A-G[0-9]{2}-[0-9]{3}$"}}, "required": ["id"]},
+      "then": {
+        "required": ["iteration_type", "attempt_of", "attempt_scope", "accounting_scope"],
+        "properties": {
+          "iteration_type": {"const": "gate_attempt"},
+          "behavior_change": {"const": false},
+          "threshold_changes": {"maxItems": 0},
+          "accounting_scope": {
+            "properties": {
+              "corrective_engineering": {"const": "excluded"},
+              "targeted_verification": {"const": "excluded"},
+              "gate_attempt_execution": {"const": "included"},
+              "governance_sync": {"const": "separate"}
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "work_item_id": {"pattern": "^(I-[0-9]{4}|C-G[0-9]{2}-[0-9]{3}|A-G[0-9]{2}-[0-9]{3})$"}
   }
 }

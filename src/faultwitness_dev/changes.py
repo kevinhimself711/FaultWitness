@@ -117,11 +117,11 @@ def validate_changed_assets(root: Path, paths: list[str]) -> str:
             )
             return f"validated asset-only {closing_gate} closure for {len(paths)} changed files"
         if any(path.startswith(GOVERNED_PREFIXES) for path in paths):
-            raise GovernanceError("governed change is missing an Iteration record")
+            raise GovernanceError("governed change is missing a work-item record")
         return "documentation-only change without governed behavior"
     record_path = root / "governance" / "iterations" / f"{iteration_id}.yaml"
     if not record_path.is_file():
-        raise GovernanceError(f"Iteration record does not exist: {iteration_id}")
+        raise GovernanceError(f"work-item record does not exist: {iteration_id}")
     record = load_data(record_path)
     validate_change_record(record, root)
     return f"validated {iteration_id} for {len(paths)} changed files"
@@ -130,7 +130,7 @@ def validate_changed_assets(root: Path, paths: list[str]) -> str:
 def infer_iteration_id(root: Path, paths: list[str]) -> str | None:
     candidates: list[str] = []
     for path in paths:
-        if not path.startswith("governance/iterations/I-") or not path.endswith(".yaml"):
+        if not path.startswith("governance/iterations/") or not path.endswith(".yaml"):
             continue
         record = load_data(root / path)
         if record.get("status") in {"in_progress", "completed", "failed"} and record.get(

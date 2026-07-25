@@ -29,36 +29,22 @@ containerd may register an imported Docker Hub reference under the `index.docker
   the verifier requires `docker.io`. I-0034 corrected alias resolution, but EVAL-G02-020 then
   proved that the object-read probe used `mc stat`, which implicitly required `ListBucket` despite
   the frozen policy granting only `GetObject`. I-0035 is terminal; exact-GetObject corrective
-  I-0036 and replacement I-0037 are the sole forward path.
-Estimates include Iteration Eval and are observability data, never kill timeouts.
+  I-0036/I-0037 were retired before implementation. C-G02-001 and A-G02-001 are the sole forward
+  corrective and Gate-attempt path under AMD-0005.
+Estimates are observability data, never kill timeouts. Corrective engineering is no longer rolled
+into the frozen Iteration budget or mixed with Gate-attempt execution.
 
-| Work | Expected duration |
+| Cost class | Expected duration |
 | --- | ---: |
-| I-0016 | 2h30 |
-| I-0017 | 4h00 |
-| I-0018 | 3h30 |
-| I-0019 | 4h30 |
-| I-0021 forward governance corrective | 0h45 |
-| I-0020, excluding Gate Eval | 0h30 |
-| I-0022 live-isolation and orchestration corrective | 1h15 |
-| I-0023 replacement orchestration, excluding Gate Eval | 0h30 |
-| I-0024 L2 collector and provisioning corrective | 3h00 |
-| I-0025 second replacement orchestration, excluding Gate Eval | 0h30 |
-| I-0026 bounded privileged transport corrective | 1h30 |
-| I-0027 third replacement orchestration, excluding Gate Eval | 0h30 |
-| I-0028 byte-exact process transport corrective | 1h00 |
-| I-0029 fourth replacement orchestration, excluding Gate Eval | 0h30 |
-| I-0030 Python 3.8 probe compatibility corrective | 0h45 |
-| I-0031 fifth replacement orchestration, excluding Gate Eval | 0h30 |
-| I-0032 digest-pinned probe-image offline staging corrective | 1h15 |
-| I-0033 sixth replacement orchestration, excluding Gate Eval | 0h30 |
-| I-0034 containerd imported-reference alias corrective | 1h00 |
-| I-0035 seventh replacement orchestration, excluding Gate Eval | 0h30 |
-| I-0036 exact GetObject probe corrective | 0h45 |
-| I-0037 eighth replacement orchestration, excluding Gate Eval | 0h30 |
-| Iteration total including forward corrections | **30h15** |
-| Gate Eval | **2h33** |
-| Total | **32h48** |
+| Frozen I-0016 through I-0020 plan, including attempt setup | 15h00 |
+| Frozen Gate Eval | 2h33 |
+| Original frozen total | **17h33** |
+| C-G02-001 root-cause fix plus targeted proof | 0h30 |
+| A-G02-001 attempt setup, excluding Gate Eval | 0h15 |
+| Current forward work including Gate Eval | **3h18** |
+
+Legacy corrective and failed-attempt overhead is reported as actual historical cost in
+`docs/engineering/G02_CORRECTIVE_COST_POSTMORTEM.md`; it is not relabelled as planned Iteration work.
 
 The normal estimates above are planning observability, not execution stop conditions. There is no
 fixed retry-count or contingency-duration ceiling: external waiting and every attributable retry
@@ -130,7 +116,8 @@ uv run python -m faultwitness_dev eval-g02-close --candidate-sha <SHA> --evidenc
 - Scenario DSL and preregistration schemas start at 1.0.0 and are versioned independently.
 - G02 Eval manifests are planned as schema 2.0.0. The repository's current v1 manifest schema
   remains in force until I-0016 implements a backward-compatible migration.
-- The governance planning asset schema is 1.1.0.
+- The original governance planning asset schema was 1.1.0; AMD-0005 introduces work-item schema
+  1.2.0 without changing any Gate metric or runtime contract.
 - Architecture, OpenAPI, AsyncAPI, state machines, and command/event contracts do not change.
 
 ## 4. Scenario DSL and seed catalogue
@@ -344,12 +331,14 @@ to satisfy these future Agent floors.
 | I-0034 Containerd Imported-Reference Alias Resolution Corrective | Resolve `docker.io`/`index.docker.io` imported aliases only when repository and exact digest match, then tag and verify the frozen target | I-0016, I-0017, I-0021, I-0032, terminal I-0033 | 1h00 | Three local cases prove exact source, alias-only exact-digest, and wrong-digest fail-closed behavior. | No new L2; repairs V-G02-017 import verification path |
 | I-0035 Seventh Replacement Unified Candidate Orchestration | Freeze the post-I-0034 candidate and run the same fourteen phases in EVAL-G02-020 | I-0016–I-0019, I-0021, I-0022, I-0024, I-0026, I-0028, I-0030, I-0032, I-0034 | 0h30 excluding Gate Eval | The candidate passes using only preimplemented runners and immutable phase evidence. | No new L2 |
 
-| I-0036 Exact GetObject Probe Corrective | Replace object-read `mc stat` with direct GetObject semantics and prove allowed, denied, and unchanged-write branches locally | I-0016, I-0018, I-0021, I-0024, terminal I-0035 | 0h45 | Three deterministic cases prove reads require only GetObject while denied identities remain denied and write probes are unchanged. | No new L2; repairs the V-G02-009 object-read probe |
-| I-0037 Eighth Replacement Unified Candidate Orchestration | Freeze the post-I-0036 candidate and run the same fourteen phases in EVAL-G02-022 | I-0016–I-0019, I-0021, I-0022, I-0024, I-0026, I-0028, I-0030, I-0032, I-0034, I-0036 | 0h30 excluding Gate Eval | The candidate passes using only preimplemented runners and immutable phase evidence. | No new L2 |
+| I-0036 Retired Legacy Corrective Identifier | No implementation; terminal naming-migration record | I-0035 | 0h00 engineering | Corrective work does not continue the frozen I sequence. | No L2 |
+| I-0037 Retired Legacy Gate-Attempt Identifier | Never activated; terminal naming-migration record | I-0036 | 0h00 engineering | Gate attempts do not continue the frozen I sequence. | No L2 |
+| C-G02-001 Exact GetObject Probe Corrective | Change only object-read semantics; reuse pytest and execute a minimum real-client seam proof | I-0024, terminal I-0035 | 0h30 | Three changed branches and one real seam proof exclude implicit ListBucket without running Gate N. | No L2; repairs V-G02-009 seam |
+| A-G02-001 Unified Candidate Gate Attempt | Freeze the post-C-G02-001 candidate and run fourteen phases in EVAL-G02-024 | Frozen owners plus C-G02-001 | 0h15 excluding Gate Eval | The candidate passes using only frozen runners and immutable evidence. | No new L2 |
 
-Every Iteration closes with `open_evidence: []`. L2 work is recorded as `owned_l2_ready`, not as
-open Iteration evidence: its owner must already have implemented and unit-tested the runner,
-negative fixture, phase interface, and candidate/environment binding protocol.
+Every implementation work item closes with `open_evidence: []`. L2 work is recorded as
+`owned_l2_ready`, not as open work-item evidence: its owner must already have implemented and
+unit-tested the runner, negative fixture, phase interface, and candidate/environment binding protocol.
 
 ## 11. Environment compatibility retry rule
 
@@ -390,16 +379,16 @@ view is frozen below.
 | ID | Validation and excluded failure | Layer and reason | Iter N | Gate N | 3–5 audit | Owner | Runner | Negative fixture | Artifact paths |
 | --- | --- | --- | ---: | ---: | --- | --- | --- | --- | --- |
 | V-G02-001 | Phase/DAG/resume; excludes repeated pass, lost trial, stale cache | L1; deterministic state fixtures | 5 | 0 | Reduced to five transitions | I-0016 | `g02.phase_contract` | `phase_stale_cache.json` | `EVAL-G02-001/artifacts/phase-contract.json` |
-| V-G02-002 | Double SHA/binding; excludes false candidate and stale inheritance | L2; unified candidate only | 0 | 1 | One-time bootstrap | I-0016 | `g02.candidate_binding` | `candidate_non_evidence_descendant.json` | `EVAL-G02-022/.../preflight-candidate-binding/summary.json` |
-| V-G02-003 | Manifest debt; excludes fail-late remote work | L2; full manifest set exists only at Gate | 0 | 13 | All 9 G01 + 4 G02 manifests required | I-0016 | `g02.manifest_debt` | `manifest_open_evidence.json` | `EVAL-G02-022/.../preflight-manifests/manifest-debt.json` |
+| V-G02-002 | Double SHA/binding; excludes false candidate and stale inheritance | L2; unified candidate only | 0 | 1 | One-time bootstrap | I-0016 | `g02.candidate_binding` | `candidate_non_evidence_descendant.json` | `EVAL-G02-024/.../preflight-candidate-binding/summary.json` |
+| V-G02-003 | Manifest debt; excludes fail-late remote work | L2; full manifest set exists only at Gate | 0 | 13 | All 9 G01 + 4 G02 manifests required | I-0016 | `g02.manifest_debt` | `manifest_open_evidence.json` | `EVAL-G02-024/.../preflight-manifests/manifest-debt.json` |
 | V-G02-004 | DSL/seed registry; excludes count and allocation drift | L1; closed schema/enumeration | 32 | 0 | All seeds are deliverables | I-0017 | `g02.dsl_registry` | `scenario_unknown_action.yaml` | `EVAL-G02-002/artifacts/seed-registry.json` |
 | V-G02-005 | Six adapters/oracles; excludes missing state semantics | L1; category-exhaustive contracts | 6 | 0 | All six classes required | I-0017 | `g02.fault_oracle_contract` | `oracle_false_green.yaml` | `EVAL-G02-002/artifacts/fault-oracle-contract.json` |
 | V-G02-006 | Live inject/detect/recover; excludes false green and restore drift | L3; family smoke then all seeds | 4 | 32 | Three would omit a family | I-0017 | `g02.scenario_matrix` | `fault_restore_noop.yaml` | Iteration smoke and Gate scenario summary |
 | V-G02-007 | 160-row preregistry; excludes premature G07 materialization | L1; deterministic registry/object check | 160 | 0 | All rows are the deliverable | I-0018 | `g02.preregistry` | `prereg_materialized_case.yaml` | `EVAL-G02-003/artifacts/preregistry.json` |
 | V-G02-008 | Package exclusion; excludes embedded GT/locked data | L1; digest-pinned content scan | 3 | 0 | Three images are exhaustive | I-0018 | `g02.sealed_package_scan` | `image_contains_ground_truth.txt` | `EVAL-G02-003/artifacts/sealed-package-scan.json` |
-| V-G02-009 | Access matrix; excludes Agent/developer/evaluator/controller privilege drift | L3; four policy identities then 60 live cells | 4 | 60 | All four identities required | I-0024 | `g02.access_matrix` | `access_wrong_allow.yaml` | I-0018 policy simulation plus EVAL-G02-022 Gate matrix |
-| V-G02-010 | G01 six-stage spans; excludes missing correlated stage evidence | L2; complete stack required | 0 | 6 | Six stages are exhaustive | I-0024 | `g02.stage_matrix` | `trace_missing_stage.json` | EVAL-G02-022 Gate six-stage matrix |
-| V-G02-011 | G01 all-surface canary; excludes Secret/PII leakage | L3; four new writers then 22 live cells | 4 | 22 | All four writers required | I-0024 | `g02.canary_matrix` | `canary_leaked_artifact.json` | I-0018 writer proof plus EVAL-G02-022 Gate matrix |
+| V-G02-009 | Access matrix; excludes Agent/developer/evaluator/controller privilege drift | L3; four policy identities then 60 live cells | 4 | 60 | All four identities required | I-0024 | `g02.access_matrix` | `access_wrong_allow.yaml` | I-0018 policy simulation plus EVAL-G02-024 Gate matrix |
+| V-G02-010 | G01 six-stage spans; excludes missing correlated stage evidence | L2; complete stack required | 0 | 6 | Six stages are exhaustive | I-0024 | `g02.stage_matrix` | `trace_missing_stage.json` | EVAL-G02-024 Gate six-stage matrix |
+| V-G02-011 | G01 all-surface canary; excludes Secret/PII leakage | L3; four new writers then 22 live cells | 4 | 22 | All four writers required | I-0024 | `g02.canary_matrix` | `canary_leaked_artifact.json` | I-0018 writer proof plus EVAL-G02-024 Gate matrix |
 | V-G02-012 | Scorer semantics; excludes mis-scored malformed/unsupported output | L1; pure algorithm | 5 | 0 | Five fixtures cover all branches | I-0019 | `g02.scorer_contract` | `score_unsupported_claim.json` | `EVAL-G02-004/artifacts/scorer-contract.json` |
 | V-G02-013 | Seven thresholds; excludes omission or decrease | L1; exact constant registry | 7 | 0 | All seven values required | I-0019 | `g02.threshold_registry` | `threshold_decrease.yaml` | `EVAL-G02-004/artifacts/threshold-registry.json` |
 | V-G02-014 | Deterministic baseline; excludes GT access and nondeterminism | L3; three behavior fixtures then 32 seeds | 3 | 32 | Correct/wrong/malformed are minimum | I-0019 | `g02.deterministic_baseline` | `deterministic_wrong_root.json` | Iteration smoke and Gate results |
@@ -420,7 +409,7 @@ set, configuration, evaluator, dataset, and sanitized environment fingerprint.
 | --- | --- | ---: | --- | --- | --- |
 | `preflight-manifests` | None | 2m | No | Yes | Invalid schema, timestamps, set, or open evidence fails before remote work. |
 | `preflight-candidate-binding` | manifests | 3m | No | Yes | Candidate, evidence head, or digest mismatch fails. |
-| `preflight-static-inheritance` | binding | 8m | No | Yes | Compare L1 subject/image digests only; never rerun L1. Drift creates a new forward corrective Iteration for the owning domain. |
+| `preflight-static-inheritance` | binding | 8m | No | Yes | Compare L1 subject/image digests only; never rerun L1. Drift creates a new `C-G02-nnn` work item for the owning domain. |
 | `preflight-upstream-g01` | static | 2m | No | Yes | Any debt in nine G01 manifests blocks remote phases. |
 | `lab-deploy-and-bind` | G01 preflight | 12m | No | Yes | Clean-clone and pinned-image failure blocks; infrastructure loss is resumable. |
 | `isolation-access-matrix` | lab deploy | 10m | No | Yes | All 60 allow/deny cells must match; any unauthorized success fails. |
@@ -431,7 +420,7 @@ set, configuration, evaluator, dataset, and sanitized environment fingerprint.
 | `baseline-live` | scenario, deterministic | 45m | No | Per trial | Persist 192 trials atomically; resume only infrastructure failures; fallback fails. |
 | `baseline-aggregate` | both baselines | 3m | No | Yes | Produce estimates, CI, family, latency, token, cost, and failure reports. |
 | `candidate-reconciliation` | aggregate | 5m | No | Yes | Pending, infrastructure failure, open evidence, drift, and repeated destructive work must be zero. |
-| `close-readiness` | reconciliation | 3m | No | Yes | New runner, fixture, source, or framework changes reject closure and require a new forward corrective Iteration; completed records stay closed. |
+| `close-readiness` | reconciliation | 3m | No | Yes | New runner, fixture, source, or framework changes reject closure and require a new `C-G02-nnn` work item; completed records stay closed. |
 
 The serial phase total is 153 minutes, or 2h33.
 All values in the Time column and this total are estimates for planning and wall-time reconciliation,
@@ -467,7 +456,7 @@ environment fingerprint, commands, integrations, and `open_evidence`.
 - A tracked binding records the already-existing execution checkpoint and is never required to name
   the commit that contains itself. Evidence and closure commits are identified by ancestry/tag and
   do not rewrite the producing revision.
-- A semantic or runtime change creates a new forward corrective Iteration; a completed Iteration is
+- A semantic or runtime change creates a new forward `C-G02-nnn` work item; a completed work item is
   not reopened. Unaffected phase evidence may be inherited only when its declared dependency closure
   and all digests remain identical; the original producing revision remains recorded.
 - These provenance rules do not modify N, locked tests, Ground Truth, quality/performance thresholds,
@@ -487,11 +476,11 @@ I-0021 adds no Gate validation item, product behavior, deployment, model call, s
 runtime artifact. It freezes and machine-checks these rules:
 
 - owner attribution never authorizes `completed` or `failed` Iteration reactivation;
-- terminal records are immutable and later defects use a higher-numbered corrective Iteration;
+- terminal records are immutable and later defects use the next `C-G02-nnn` corrective ID;
 - candidate readiness is the deterministic front of Gate Eval, not an open-ended extra audit;
 - transient infrastructure failure resumes the same phase/trial, while implementation, policy,
-  zero-tolerance, or metric failure terminates the orchestration Iteration and requires a forward
-  corrective plus a new orchestration Iteration;
+  zero-tolerance, or metric failure terminates the `A-G02-nnn` attempt and requires a forward
+  corrective plus the next Gate attempt;
 - evidence-only synchronization cannot rewrite producing revisions, metrics, thresholds, or
   runtime identity.
 
@@ -650,10 +639,11 @@ failure.
 The eighth forward decision is complete:
 
 - I-0035 is terminal `failed`; EVAL-G02-020 and its 24-pass-plus-metric-fail evidence are immutable.
-- I-0036 replaces only the object-read operation with a direct GetObject probe and runs exactly
-  three local deterministic runner-semantics cases with zero Gate L2 or remote work.
-- I-0037/EVAL-G02-022 runs the same fourteen phases on a new candidate. Final artifact paths move
-  forward to EVAL-G02-022; old failed artifacts remain unchanged.
+- I-0036/I-0037 are terminal naming-migration records with zero implementation and zero Eval work.
+- C-G02-001 replaces only the object-read operation, reuses the existing test framework for three
+  semantic branches, and records one minimum real-client seam proof with zero Gate L2.
+- A-G02-001/EVAL-G02-024 runs the same fourteen phases on a new candidate. Final artifact paths move
+  forward to EVAL-G02-024; old failed artifacts remain unchanged.
 - V-G02-009/010/011 Iteration N stays 4/0/4 and every Gate N remains unchanged.
 - No isolation permission, validation threshold, Ground Truth, locked test, health-oracle window,
   model route, token/cost ceiling, destructive-once rule, or failure semantic changes.

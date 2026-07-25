@@ -6,12 +6,12 @@ plan_version: "G02-master-plan-v1"
 architecture_version: "1.0.0"
 requirements_version: "1.0.0"
 contracts_version: "1.0.0"
-governance_schema_version: "1.1.0"
+governance_schema_version: "1.2.0"
 
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: I-0036
-next_iteration: I-0037
+active_iteration: null
+next_iteration: C-G02-001
 last_closed_gate: G01
 latest_eval_run: EVAL-G02-020
 

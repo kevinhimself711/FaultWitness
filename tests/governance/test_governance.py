@@ -25,6 +25,8 @@ from faultwitness_dev.checks import (
     validate_lifecycle_records,
     validate_manifest_revision_change,
     validate_validation_layer_counts,
+    validate_work_item_namespaces_and_cost,
+    validate_work_item_record,
 )
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.schemas import (
@@ -49,6 +51,22 @@ def test_repository_governance_assets_are_valid() -> None:
     loaded = validate_repository_schemas(ROOT)
     assert "PROJECT_STATE.yaml" in loaded
     assert "governance/iterations/I-0002.yaml" in loaded
+    assert "governance/iterations/C-G02-001.yaml" in loaded
+    assert "governance/iterations/A-G02-001.yaml" in loaded
+
+
+def test_work_item_schema_accepts_separate_corrective_and_attempt_namespaces() -> None:
+    schema = load_data(SCHEMAS / "iteration.schema.json")
+    validate_document(
+        load_data(ROOT / "governance/iterations/C-G02-001.yaml"),
+        schema,
+        "corrective-work-item",
+    )
+    validate_document(
+        load_data(ROOT / "governance/iterations/A-G02-001.yaml"),
+        schema,
+        "gate-attempt-work-item",
+    )
 
 
 def test_missing_required_field_is_rejected() -> None:
@@ -359,6 +377,133 @@ def test_iteration_sequence_rejects_reactivation_hidden_by_later_completion() ->
     active = {"id": "I-9000", "status": "in_progress", "iteration_type": "standard"}
     with pytest.raises(GovernanceError, match="status regression"):
         validate_iteration_status_sequence([completed, active, completed], "hidden-reactivation")
+
+
+def _work_item_policy_context() -> tuple[dict, dict[str, dict]]:
+    policy = load_data(ROOT / "governance/policies/work-item-lifecycle-v2.yaml")
+    gates = {
+        path.stem: load_data(path)
+        for path in (ROOT / "governance/gates").glob("G*.yaml")
+    }
+    return policy, gates
+
+
+def test_repository_work_item_namespaces_and_cost_boundaries_pass() -> None:
+    validate_work_item_namespaces_and_cost(ROOT)
+
+
+def test_new_corrective_cannot_reuse_the_planned_iteration_namespace() -> None:
+    policy, gates = _work_item_policy_context()
+    record = copy.deepcopy(load_data(ROOT / "governance/iterations/C-G02-001.yaml"))
+    record["id"] = "I-0038"
+    with pytest.raises(GovernanceError, match="must use C-Gxx-nnn namespace"):
+        validate_work_item_record("I-0038", record, policy, gates)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        ("gate_l2", "Gate L2 or full Gate Eval"),
+        ("bespoke_harness", "bespoke Eval harness"),
+        ("gate_command", "full Gate execution"),
+        ("global_gate_asset", "deferred global assets"),
+        ("other_eval", "another Eval asset"),
+    ],
+)
+def test_corrective_rejects_cost_inflating_scope(mutation: str, message: str) -> None:
+    policy, gates = _work_item_policy_context()
+    record = copy.deepcopy(load_data(ROOT / "governance/iterations/C-G02-001.yaml"))
+    if mutation == "gate_l2":
+        record["verification_scope"]["gate_l2_execution"] = 60
+    elif mutation == "bespoke_harness":
+        record["cost_boundary"]["bespoke_eval_harness"] = True
+    elif mutation == "gate_command":
+        record["tests"].append("uv run python -m faultwitness_dev eval-g02 --resume")
+    elif mutation == "global_gate_asset":
+        record["changed_paths"].append("docs/gates/G02/REPORT.md")
+    else:
+        record["changed_paths"].append("docs/evals/EVAL-G02-024")
+    with pytest.raises(GovernanceError, match=message):
+        validate_work_item_record("C-G02-001", record, policy, gates)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        ("implementation_path", "implementation paths"),
+        ("behavior", "behavior or thresholds"),
+        ("threshold", "behavior or thresholds"),
+        ("ad_hoc_diagnostic", "execution boundary"),
+    ],
+)
+def test_gate_attempt_rejects_engineering_scope(mutation: str, message: str) -> None:
+    policy, gates = _work_item_policy_context()
+    record = copy.deepcopy(load_data(ROOT / "governance/iterations/A-G02-001.yaml"))
+    if mutation == "implementation_path":
+        record["changed_paths"].append("src/faultwitness_dev/new_gate_harness.py")
+    elif mutation == "behavior":
+        record["behavior_change"] = True
+    elif mutation == "threshold":
+        record["threshold_changes"] = [
+            {"id": "quality", "from": 1, "to": 2, "direction": "increase"}
+        ]
+    else:
+        record["attempt_scope"]["ad_hoc_diagnostic_tooling"] = True
+    with pytest.raises(GovernanceError, match=message):
+        validate_work_item_record("A-G02-001", record, policy, gates)
+
+
+def test_machine_registry_accepts_immutable_legacy_corrective_and_attempt_ids() -> None:
+    policy, gates = _work_item_policy_context()
+    validate_work_item_record(
+        "I-0034",
+        load_data(ROOT / "governance/iterations/I-0034.yaml"),
+        policy,
+        gates,
+    )
+    validate_work_item_record(
+        "I-0035",
+        load_data(ROOT / "governance/iterations/I-0035.yaml"),
+        policy,
+        gates,
+    )
+
+
+def test_future_planned_iteration_requires_real_seam_and_diagnostic_declarations() -> None:
+    policy, gates = _work_item_policy_context()
+    gates = {
+        **gates,
+        "G03": {
+            "id": "G03",
+            "iterations": ["I-0038"],
+            "frozen_iterations": ["I-0038"],
+            "work_items": [],
+        },
+    }
+    record = copy.deepcopy(load_data(ROOT / "governance/iterations/I-0016.yaml"))
+    record.update(
+        {
+            "id": "I-0038",
+            "gate": "G03",
+            "iteration_type": "standard",
+            "planning_readiness": {
+                "external_seams": [
+                    {
+                        "id": "minio-read",
+                        "operation": "direct object read",
+                        "real_seam_runner": "runner.minio_read",
+                        "failure_diagnostic": "runner.minio_read_diagnostic",
+                        "artifact_path": "docs/evals/example/real-seam.json",
+                    }
+                ],
+                "mock_only_gate_readiness": False,
+            },
+        }
+    )
+    validate_work_item_record("I-0038", record, policy, gates)
+    del record["planning_readiness"]["external_seams"][0]["failure_diagnostic"]
+    with pytest.raises(GovernanceError, match="lacks real proof or diagnostic"):
+        validate_work_item_record("I-0038", record, policy, gates)
 
 
 def _git(repo: Path, *arguments: str) -> None:

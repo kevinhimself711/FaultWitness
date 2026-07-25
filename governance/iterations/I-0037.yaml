@@ -1,8 +1,8 @@
 schema_version: "1.0.0"
 id: I-0037
 gate: G02
-title: Eighth Replacement Unified Candidate Orchestration
-status: planned
+title: Retired Legacy Gate-Attempt Identifier
+status: failed
 iteration_type: standard
 scope:
   - Freeze the post-I-0036 candidate and execute the fourteen unchanged Gate phases under EVAL-G02-022.
@@ -16,7 +16,7 @@ tests:
   - uv run python -m faultwitness_dev eval-g02 --candidate-sha <full-sha>
   - uv run python -m faultwitness_dev eval-g02-close --candidate-sha <full-sha> --evidence-head-sha <full-sha>
 eval_id: EVAL-G02-022
-commit: null
+commit: 41efb97dcba00f7ccfe3f1d2994393b91f2c6bf2
 changed_paths:
   - AGENTS.md
   - CHANGELOG.md

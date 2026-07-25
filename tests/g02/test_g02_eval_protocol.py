@@ -135,26 +135,26 @@ def test_frozen_phase_registry_has_fail_fast_order_and_one_destructive_phase() -
     } == {"I-0024"}
 
 
-def test_forward_orchestration_selects_e008_and_rejects_terminal_i0020() -> None:
+def test_gate_attempt_selects_a_namespace_and_rejects_terminal_legacy_attempt() -> None:
     state = {
         "active_gate": "G02",
         "active_gate_status": "in_progress",
-        "active_iteration": "I-0023",
+        "active_iteration": "A-G02-001",
     }
-    iteration = load_data(ROOT / "governance/iterations/I-0023.yaml")
+    iteration = load_data(ROOT / "governance/iterations/A-G02-001.yaml")
     iteration["status"] = "in_progress"
-    manifest = load_data(ROOT / "docs/evals/EVAL-G02-008/manifest.json")
-    plan = (ROOT / "docs/evals/EVAL-G02-008/PLAN.md").read_text(encoding="utf-8")
+    manifest = load_data(ROOT / "docs/evals/EVAL-G02-024/manifest.json")
+    plan = (ROOT / "docs/evals/EVAL-G02-024/PLAN.md").read_text(encoding="utf-8")
     assert validate_gate_orchestration_selection(state, iteration, manifest, plan) == (
-        "I-0023",
-        "EVAL-G02-008",
+        "A-G02-001",
+        "EVAL-G02-024",
     )
 
-    terminal = load_data(ROOT / "governance/iterations/I-0020.yaml")
-    terminal_state = {**state, "active_iteration": "I-0020"}
-    failed_manifest = load_data(ROOT / "docs/evals/EVAL-G02-005/manifest.json")
-    failed_plan = (ROOT / "docs/evals/EVAL-G02-005/PLAN.md").read_text(encoding="utf-8")
-    with pytest.raises(GovernanceError, match="active standard orchestration"):
+    terminal = load_data(ROOT / "governance/iterations/I-0035.yaml")
+    terminal_state = {**state, "active_iteration": "I-0035"}
+    failed_manifest = load_data(ROOT / "docs/evals/EVAL-G02-020/manifest.json")
+    failed_plan = (ROOT / "docs/evals/EVAL-G02-020/PLAN.md").read_text(encoding="utf-8")
+    with pytest.raises(GovernanceError, match="active A-G02-nnn"):
         validate_gate_orchestration_selection(
             terminal_state, terminal, failed_manifest, failed_plan
         )
@@ -164,12 +164,12 @@ def test_forward_orchestration_rejects_an_incomplete_phase_plan() -> None:
     state = {
         "active_gate": "G02",
         "active_gate_status": "in_progress",
-        "active_iteration": "I-0023",
+        "active_iteration": "A-G02-001",
     }
-    iteration = load_data(ROOT / "governance/iterations/I-0023.yaml")
+    iteration = load_data(ROOT / "governance/iterations/A-G02-001.yaml")
     iteration["status"] = "in_progress"
-    manifest = load_data(ROOT / "docs/evals/EVAL-G02-008/manifest.json")
-    with pytest.raises(GovernanceError, match="complete Gate orchestration"):
+    manifest = load_data(ROOT / "docs/evals/EVAL-G02-024/manifest.json")
+    with pytest.raises(GovernanceError, match="complete orchestration"):
         validate_gate_orchestration_selection(state, iteration, manifest, "preflight-manifests")
 
 

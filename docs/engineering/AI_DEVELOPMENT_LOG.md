@@ -1,5 +1,27 @@
 # AI Development Log
 
+## 2026-07-24 — G02 corrective cost and work-item namespace correction
+
+Governance now distinguishes frozen planned Iterations (`I-####`), single-root-cause correctives
+(`C-G##-###`), and unified-candidate Gate attempts (`A-G##-###`). I-0036/I-0037 were retired before
+implementation or execution; the same forward work is C-G02-001/EVAL-G02-023 followed by
+A-G02-001/EVAL-G02-024. Historical I records and failed Eval evidence remain immutable.
+
+The measured cost defect was lifecycle amplification, not frozen Gate N: I-0034 required five
+commits and 49 cumulative file touches around a four-file implementation, while legacy I-0036 had
+already generated 31 file touches before the one-command fix began. Every failed Gate candidate
+stopped before the complete access/trace/canary/scenario/live-model matrices; paid model calls were
+zero. The Master Plan defect was narrower and real: memory-backed matrix-shape checks did not prove
+the live MinIO client operation, making Gate Eval the first semantic seam test.
+
+New machine policy confines C work to one root cause, changed semantic branches, existing test
+entrypoints, and minimum real-seam evidence; it forbids Gate L2/full Gate Eval, bespoke corrective
+harnesses, cross-work-item evidence redirection, and global Gate synchronization. A work items
+cannot change implementation or invent diagnostic tools. Future planned I records must declare
+each external seam with a real runner, read-only diagnostic, and artifact path. Cost classes are
+reported separately. No validation N, metric, quality/performance floor, permission, Ground Truth,
+locked test, model route, token/cost ceiling, or failure semantic changed.
+
 ## 2026-07-24 — G02 EVAL-G02-016 pinned probe-image failure
 
 Candidate `0f3e83b871c8c69cfdb2c2321cc96e4894975d56` passed four fail-fast preflights

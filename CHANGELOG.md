@@ -4,6 +4,11 @@
 
 ### Governance maintenance
 
+- Separate frozen Iterations (`I-*`), single-root-cause correctives (`C-G##-*`), and unified Gate
+  attempts (`A-G##-*`). Retire unimplemented I-0036/I-0037 forward into C-G02-001/A-G02-001,
+  machine-limit corrective scope, require minimum real-seam readiness, and account engineering,
+  targeted verification, Gate execution, and governance synchronization separately without
+  changing any Eval N, metric, threshold, or performance criterion.
 - Activate I-0036 as the sole exact-GetObject probe corrective; I-0037 remains planned and no
   Gate L2, deployment, destructive, external-service, or model phase is authorized in I-0036.
 - Preserve I-0035/EVAL-G02-020 as terminal after 24 passing database access cells and one

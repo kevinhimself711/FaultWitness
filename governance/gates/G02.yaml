@@ -5,8 +5,10 @@ status: in_progress
 plan: docs/gates/G02/PLAN.md
 report: docs/gates/G02/REPORT.md
 iterations: [I-0016, I-0017, I-0018, I-0019, I-0021, I-0020, I-0022, I-0023, I-0024, I-0025, I-0026, I-0027, I-0028, I-0029, I-0030, I-0031, I-0032, I-0033, I-0034, I-0035, I-0036, I-0037]
+frozen_iterations: [I-0016, I-0017, I-0018, I-0019, I-0020]
+work_items: [C-G02-001, A-G02-001]
 pass_criteria:
-  - All required current forward corrective and replacement orchestration Iterations pass with no open evidence while superseded failed attempts remain immutable.
+  - All frozen implementation owners and current C-G02 corrective work complete with no open evidence and the separate A-G02 Gate attempt passes while terminal legacy attempts remain immutable.
   - Four Scenario DSL families six fault classes and 32 executable seeds are reproducible on one immutable candidate.
   - The 160-row dev validation locked preregistration is exact and no corresponding case or answer is materialized before G07.
   - Ground truth and locked-test storage identity namespace and package boundaries have zero unauthorized access or leakage.
@@ -14,7 +16,7 @@ pass_criteria:
   - The seven authoritative quality floors and comparison semantics are exact without requiring a baseline to attain them.
   - Every validation in docs/gates/G02/VALIDATIONS.yaml passes under its unique L1 L2 or L3 ownership.
   - Three G01 supplemental evidence matrices are recorded forward without changing any closed G01 audit asset.
-  - The final Gate Iteration adds no product behavior runner fixture or test framework and the destructive scenario phase runs once per candidate key.
+  - The final A-G02 Gate attempt adds no product behavior runner fixture or test framework and the destructive scenario phase runs once per candidate key.
   - Candidate and evidence SHAs phase timestamps artifact digests and final reconciliation are complete with no fallback unresolved infrastructure failure or waiver.
 waivers: []
 amendments:
@@ -22,3 +24,4 @@ amendments:
   - docs/blueprint/AMENDMENTS/AMD-0002.md
   - docs/blueprint/AMENDMENTS/AMD-0003.md
   - docs/blueprint/AMENDMENTS/AMD-0004.md
+  - docs/blueprint/AMENDMENTS/AMD-0005.md

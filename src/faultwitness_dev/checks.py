@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 from pathlib import Path
 from shutil import which
@@ -27,6 +28,7 @@ LIFECYCLE_MARKDOWN_PATHS = (
     "docs/roadmap/PHASES.md",
 )
 ITERATION_POLICY_PATH = "governance/policies/iteration-lifecycle-v1.yaml"
+WORK_ITEM_POLICY_PATH = "governance/policies/work-item-lifecycle-v2.yaml"
 ITERATION_RECORD_PREFIX = "governance/iterations/"
 ITERATION_TERMINAL_STATUSES = {"completed", "failed"}
 ITERATION_ALLOWED_TRANSITIONS = {
@@ -107,32 +109,33 @@ def validate_active_governance_state(root: Path) -> None:
             f"PROJECT_STATE={state['active_gate_status']}, gate_record={gate['status']}"
         )
 
+    work_item_ids = [*gate["iterations"], *gate.get("work_items", [])]
     iterations = {
         iteration_id: load_data(root / "governance" / "iterations" / f"{iteration_id}.yaml")
-        for iteration_id in gate["iterations"]
+        for iteration_id in work_item_ids
     }
     active = state.get("active_iteration")
     if active is not None:
         record = iterations.get(active)
         if record is None or record["gate"] != gate["id"] or record["status"] != "in_progress":
-            raise GovernanceError(f"active Iteration state drift: {active}")
+            raise GovernanceError(f"active work-item state drift: {active}")
 
     next_iteration = state.get("next_iteration")
     if next_iteration is not None:
         record = iterations.get(next_iteration)
         if record is None or record["gate"] != gate["id"] or record["status"] != "planned":
-            raise GovernanceError(f"next Iteration state drift: {next_iteration}")
+            raise GovernanceError(f"next work-item state drift: {next_iteration}")
         first_planned = next(
             (
                 iteration_id
-                for iteration_id in gate["iterations"]
+                for iteration_id in work_item_ids
                 if iterations[iteration_id]["status"] == "planned"
             ),
             None,
         )
         if next_iteration != first_planned:
             raise GovernanceError(
-                "next Iteration is not the first planned record: "
+                "next work item is not the first planned record: "
                 f"{next_iteration} != {first_planned}"
             )
 
@@ -149,10 +152,12 @@ def validate_iteration_status_transition(
             raise GovernanceError(
                 f"new Iteration must start planned: {label}={current.get('status')}"
             )
-        if current.get("iteration_type") not in {"standard", "corrective"}:
-            raise GovernanceError(f"new Iteration lacks iteration_type: {label}")
+        if current.get("iteration_type") not in {"standard", "corrective", "gate_attempt"}:
+            raise GovernanceError(f"new work item lacks iteration_type: {label}")
         if current.get("iteration_type") == "corrective" and not current.get("corrects"):
-            raise GovernanceError(f"new corrective Iteration lacks corrects links: {label}")
+            raise GovernanceError(f"new corrective work item lacks corrects links: {label}")
+        if current.get("iteration_type") == "gate_attempt" and current.get("corrects"):
+            raise GovernanceError(f"new Gate attempt cannot declare corrects links: {label}")
         return
     if current is None:
         raise GovernanceError(f"Iteration record deletion is forbidden: {label}")
@@ -268,17 +273,19 @@ def _validate_committed_iteration_history(root: Path, start: str) -> None:
 def validate_corrective_iteration_links(root: Path) -> None:
     records = {
         path.stem: load_data(path)
-        for path in sorted((root / "governance" / "iterations").glob("I-*.yaml"))
+        for path in sorted((root / "governance" / "iterations").glob("*.yaml"))
     }
     for iteration_id, record in records.items():
         iteration_type = record.get("iteration_type")
         corrects = record.get("corrects", [])
         if iteration_type is None:
             continue  # Legacy record created before the machine policy epoch.
-        if iteration_type not in {"standard", "corrective"}:
-            raise GovernanceError(f"Iteration has invalid iteration_type: {iteration_id}")
+        if iteration_type not in {"standard", "corrective", "gate_attempt"}:
+            raise GovernanceError(f"work item has invalid iteration_type: {iteration_id}")
         if iteration_type == "standard" and corrects:
             raise GovernanceError(f"standard Iteration cannot declare corrects: {iteration_id}")
+        if iteration_type == "gate_attempt" and corrects:
+            raise GovernanceError(f"Gate attempt cannot declare corrects: {iteration_id}")
         if iteration_type == "corrective" and not corrects:
             raise GovernanceError(f"corrective Iteration lacks corrects links: {iteration_id}")
         for target_id in corrects:
@@ -295,10 +302,234 @@ def validate_corrective_iteration_links(root: Path) -> None:
                 raise GovernanceError(
                     f"corrective Iteration crosses Gate ownership: {iteration_id} -> {target_id}"
                 )
-            if int(target_id.split("-")[1]) >= int(iteration_id.split("-")[1]):
+            if iteration_id.startswith("I-") and int(target_id.split("-")[1]) >= int(
+                iteration_id.split("-")[1]
+            ):
                 raise GovernanceError(
                     f"corrective Iteration does not point backward: {iteration_id} -> {target_id}"
                 )
+
+
+def _work_item_number(work_id: str) -> int:
+    try:
+        return int(work_id.split("-")[-1])
+    except (TypeError, ValueError) as error:
+        raise GovernanceError(f"work-item identifier has no numeric suffix: {work_id}") from error
+
+
+def _reject_cross_work_item_asset_paths(work_id: str, record: dict[str, Any]) -> None:
+    eval_prefix = f"docs/evals/{record.get('eval_id')}/"
+    roadmap_path = f"docs/roadmap/iterations/{work_id}.md"
+    governance_path = f"governance/iterations/{work_id}.yaml"
+    for declared in (str(path) for path in record.get("changed_paths", [])):
+        if declared.startswith("docs/evals/") and not (
+            declared == eval_prefix.rstrip("/") or declared.startswith(eval_prefix)
+        ):
+            raise GovernanceError(
+                f"work item declares another Eval asset: {work_id}: {declared}"
+            )
+        if declared.startswith("docs/roadmap/iterations/") and declared != roadmap_path:
+            raise GovernanceError(
+                f"work item declares another roadmap record: {work_id}: {declared}"
+            )
+        if declared.startswith("governance/iterations/") and declared != governance_path:
+            raise GovernanceError(
+                f"work item declares another governance record: {work_id}: {declared}"
+            )
+
+
+def validate_work_item_record(
+    work_id: str,
+    record: dict[str, Any],
+    policy: dict[str, Any],
+    gates: dict[str, dict[str, Any]],
+) -> None:
+    legacy_correctives = set(policy.get("legacy_corrective_ids", []))
+    legacy_attempts = set(policy.get("legacy_gate_attempt_ids", []))
+    corrective_policy = policy.get("corrective", {})
+    attempt_policy = policy.get("gate_attempt", {})
+    planned_policy = policy.get("planned_iteration", {})
+    if record.get("id") != work_id:
+        raise GovernanceError(f"work-item filename and identifier drifted: {work_id}")
+    kind = record.get("iteration_type")
+    gate_id = record.get("gate")
+    if work_id.startswith(("C-", "A-")) and work_id.split("-")[1] != gate_id:
+        raise GovernanceError(f"work-item namespace crosses Gate ownership: {work_id}")
+    if work_id.startswith("C-"):
+        if kind != "corrective":
+            raise GovernanceError(f"C namespace requires corrective type: {work_id}")
+        cost = record.get("cost_boundary", {})
+        verification = record.get("verification_scope", {})
+        accounting = record.get("accounting_scope", {})
+        if cost.get("root_cause_count") != corrective_policy.get("root_cause_count"):
+            raise GovernanceError(f"corrective must own exactly one root cause: {work_id}")
+        if cost.get("bespoke_eval_harness") is not False:
+            raise GovernanceError(f"corrective bespoke Eval harness is forbidden: {work_id}")
+        if cost.get("gate_attempt_included") is not False:
+            raise GovernanceError(f"corrective cannot include a Gate attempt: {work_id}")
+        if cost.get("targeted_verification_separate") is not True:
+            raise GovernanceError(
+                f"corrective verification cost must be accounted separately: {work_id}"
+            )
+        if cost.get("global_sync_deferred") is not True:
+            raise GovernanceError(f"corrective must defer global Gate synchronization: {work_id}")
+        if verification.get("gate_l2_execution") != 0 or verification.get("full_gate_eval"):
+            raise GovernanceError(f"corrective cannot execute Gate L2 or full Gate Eval: {work_id}")
+        if not verification.get("semantic_branches") or not verification.get(
+            "reused_test_entrypoints"
+        ):
+            raise GovernanceError(
+                f"corrective must name changed branches and reused tests: {work_id}"
+            )
+        if verification.get("real_seam_proof") == "required" and (
+            not verification.get("real_seam_runner")
+            or not verification.get("real_seam_artifact")
+        ):
+            raise GovernanceError(f"corrective real-seam proof is incomplete: {work_id}")
+        expected_accounting = {
+            "corrective_engineering": "included",
+            "targeted_verification": "separate",
+            "gate_attempt_execution": "excluded",
+            "governance_sync": "separate",
+        }
+        if accounting != expected_accounting:
+            raise GovernanceError(f"corrective cost accounting drifted: {work_id}")
+        forbidden_paths = set(corrective_policy.get("forbidden_declared_paths", []))
+        forbidden_paths.update(
+            f"docs/gates/{gate_id}/{name}"
+            for name in corrective_policy.get("forbidden_gate_asset_names", [])
+        )
+        changed_paths = [str(path) for path in record.get("changed_paths", [])]
+        overlap = sorted(forbidden_paths.intersection(changed_paths))
+        if overlap:
+            raise GovernanceError(
+                f"corrective declares deferred global assets: {work_id}: {overlap}"
+            )
+        forbidden_prefixes = tuple(corrective_policy.get("forbidden_global_prefixes", []))
+        prefix_overlap = sorted(
+            path
+            for path in changed_paths
+            if forbidden_prefixes and path.startswith(forbidden_prefixes)
+        )
+        if prefix_overlap:
+            raise GovernanceError(
+                f"corrective declares global governance assets: {work_id}: {prefix_overlap}"
+            )
+        commands = "\n".join(str(value) for value in record.get("tests", []))
+        forbidden_patterns = [
+            pattern
+            for pattern in corrective_policy.get("command_patterns_forbidden", [])
+            if re.search(str(pattern), commands)
+        ]
+        if forbidden_patterns:
+            raise GovernanceError(f"corrective includes full Gate execution: {work_id}")
+        _reject_cross_work_item_asset_paths(work_id, record)
+    elif work_id.startswith("A-"):
+        if kind != "gate_attempt" or record.get("attempt_of") != gate_id:
+            raise GovernanceError(f"A namespace requires a same-Gate attempt record: {work_id}")
+        if record.get("behavior_change") or record.get("threshold_changes"):
+            raise GovernanceError(f"Gate attempt cannot change behavior or thresholds: {work_id}")
+        expected_scope = {
+            "frozen_runners_only": attempt_policy.get("frozen_runners_only"),
+            "ad_hoc_diagnostic_tooling": attempt_policy.get("ad_hoc_diagnostic_tooling"),
+            "deterministic_failure_reuses_candidate": attempt_policy.get(
+                "deterministic_failure_reuses_candidate"
+            ),
+            "transient_resume_only": attempt_policy.get("transient_resume_only"),
+        }
+        if record.get("attempt_scope") != expected_scope:
+            raise GovernanceError(f"Gate-attempt execution boundary drifted: {work_id}")
+        expected_accounting = {
+            "corrective_engineering": "excluded",
+            "targeted_verification": "excluded",
+            "gate_attempt_execution": "included",
+            "governance_sync": "separate",
+        }
+        if record.get("accounting_scope") != expected_accounting:
+            raise GovernanceError(f"Gate-attempt cost accounting drifted: {work_id}")
+        forbidden = tuple(attempt_policy.get("forbidden_declared_prefixes", []))
+        changed = [str(path) for path in record.get("changed_paths", [])]
+        if any(path.startswith(forbidden) for path in changed):
+            raise GovernanceError(f"Gate attempt declares implementation paths: {work_id}")
+        _reject_cross_work_item_asset_paths(work_id, record)
+    elif work_id.startswith("I-"):
+        if kind == "corrective" and work_id not in legacy_correctives:
+            raise GovernanceError(f"new corrective must use C-Gxx-nnn namespace: {work_id}")
+        gate = gates.get(str(gate_id), {})
+        frozen = set(gate.get("frozen_iterations", []))
+        if (
+            frozen
+            and kind == "standard"
+            and work_id not in frozen
+            and work_id not in legacy_attempts
+        ):
+            raise GovernanceError(f"post-freeze standard work must use C/A namespace: {work_id}")
+        last_legacy = str(policy.get("last_legacy_iteration_id", "I-0000"))
+        if _work_item_number(work_id) > _work_item_number(last_legacy):
+            if kind != "standard":
+                raise GovernanceError(f"new planned I namespace requires standard type: {work_id}")
+            readiness = record.get("planning_readiness")
+            if not isinstance(readiness, dict):
+                raise GovernanceError(f"new planned Iteration lacks seam readiness: {work_id}")
+            if readiness.get("mock_only_gate_readiness") is not planned_policy.get(
+                "mock_only_gate_readiness"
+            ):
+                raise GovernanceError(f"mock-only Gate readiness is forbidden: {work_id}")
+            seams = readiness.get("external_seams")
+            if not isinstance(seams, list):
+                raise GovernanceError(f"external-seam declaration is required: {work_id}")
+            seam_ids = [seam.get("id") for seam in seams if isinstance(seam, dict)]
+            if len(seam_ids) != len(seams) or len(seam_ids) != len(set(seam_ids)):
+                raise GovernanceError(f"external-seam declarations are invalid: {work_id}")
+            required = {
+                "id",
+                "operation",
+                "real_seam_runner",
+                "failure_diagnostic",
+                "artifact_path",
+            }
+            if any(required - set(seam) for seam in seams):
+                raise GovernanceError(f"external seam lacks real proof or diagnostic: {work_id}")
+    else:
+        raise GovernanceError(f"unknown work-item namespace: {work_id}")
+
+
+def validate_work_item_namespaces_and_cost(root: Path) -> None:
+    policy = load_data(root / WORK_ITEM_POLICY_PATH)
+    if policy.get("policy_id") != "WORK-ITEM-LIFECYCLE-V2":
+        raise GovernanceError("work-item lifecycle policy identity drifted")
+    records = {
+        path.stem: load_data(path)
+        for path in sorted((root / "governance" / "iterations").glob("*.yaml"))
+    }
+    gates = {
+        path.stem: load_data(path)
+        for path in sorted((root / "governance" / "gates").glob("G*.yaml"))
+    }
+    legacy_gates = set(policy.get("legacy_gate_ids", []))
+    for gate_id, gate in gates.items():
+        if gate_id in legacy_gates:
+            continue
+        if "frozen_iterations" not in gate or "work_items" not in gate:
+            raise GovernanceError(f"modern Gate lacks frozen/work-item separation: {gate_id}")
+        iterations = set(gate.get("iterations", []))
+        frozen = set(gate.get("frozen_iterations", []))
+        if not frozen.issubset(iterations):
+            raise GovernanceError(
+                f"Gate frozen Iterations are not historical Iterations: {gate_id}"
+            )
+        declared_work = list(gate.get("work_items", []))
+        if len(declared_work) != len(set(declared_work)):
+            raise GovernanceError(f"Gate has duplicate work items: {gate_id}")
+        expected_work = sorted(
+            work_id
+            for work_id, record in records.items()
+            if record.get("gate") == gate_id and work_id.startswith(("C-", "A-"))
+        )
+        if sorted(declared_work) != expected_work:
+            raise GovernanceError(f"Gate work-item registry is incomplete: {gate_id}")
+    for work_id, record in records.items():
+        validate_work_item_record(work_id, record, policy, gates)
 
 
 def validate_iteration_lifecycle_history(root: Path) -> None:
@@ -319,6 +550,12 @@ def validate_iteration_lifecycle_history(root: Path) -> None:
     if policy.get("corrective_link_direction") != "lower_iteration_id":
         raise GovernanceError("Iteration lifecycle policy corrective direction drifted")
     validate_corrective_iteration_links(root)
+    work_item_policy = root / WORK_ITEM_POLICY_PATH
+    has_v2_records = any((root / "governance" / "iterations").glob("[CA]-G*.yaml"))
+    if work_item_policy.is_file():
+        validate_work_item_namespaces_and_cost(root)
+    elif has_v2_records:
+        raise GovernanceError("work-item lifecycle policy asset is missing")
     _validate_committed_iteration_history(root, _policy_start_revision(root))
 
     changed = set(changed_paths(root))

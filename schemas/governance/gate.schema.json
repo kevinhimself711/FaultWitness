@@ -12,6 +12,8 @@
     "plan": {"type": "string", "minLength": 1},
     "report": {"type": "string", "minLength": 1},
     "iterations": {"type": "array", "items": {"pattern": "^I-[0-9]{4}$"}, "uniqueItems": true},
+    "frozen_iterations": {"type": "array", "items": {"pattern": "^I-[0-9]{4}$"}, "uniqueItems": true},
+    "work_items": {"type": "array", "items": {"pattern": "^(C-G[0-9]{2}-[0-9]{3}|A-G[0-9]{2}-[0-9]{3})$"}, "uniqueItems": true},
     "pass_criteria": {"type": "array", "items": {"type": "string", "minLength": 5}, "minItems": 1},
     "waivers": {"type": "array", "items": {"type": "string"}},
     "amendments": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}

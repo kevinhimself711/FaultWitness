@@ -135,17 +135,17 @@ def validate_gate_orchestration_selection(
         or state.get("active_iteration") != iteration_id
         or iteration.get("gate") != "G02"
         or iteration.get("status") != "in_progress"
-        or iteration.get("iteration_type") != "standard"
+        or iteration.get("iteration_type") != "gate_attempt"
     ):
-        raise GovernanceError("G02 Gate Eval requires one active standard orchestration Iteration")
+        raise GovernanceError("G02 Gate Eval requires one active A-G02-nnn Gate-attempt work item")
     if not isinstance(iteration_id, str) or not isinstance(eval_id, str):
-        raise GovernanceError("G02 orchestration record lacks an Iteration or Eval ID")
+        raise GovernanceError("G02 orchestration record lacks a work-item or Eval ID")
     if manifest.get("eval_id") != eval_id or manifest.get("iteration") != iteration_id:
         raise GovernanceError("G02 orchestration Eval manifest binding drifted")
     missing = [phase.phase_id for phase in G02_PHASES if phase.phase_id not in plan_text]
     if missing:
         raise GovernanceError(
-            "G02 active Iteration is not a complete Gate orchestration: " + ", ".join(missing)
+            "G02 active Gate attempt is not a complete orchestration: " + ", ".join(missing)
         )
     return iteration_id, eval_id
 
@@ -155,14 +155,14 @@ def resolve_active_gate_eval(root: Path) -> tuple[str, str]:
     state = loaded["PROJECT_STATE.yaml"]
     iteration_id = state.get("active_iteration")
     if not isinstance(iteration_id, str):
-        raise GovernanceError("G02 Gate Eval requires an active orchestration Iteration")
+        raise GovernanceError("G02 Gate Eval requires an active A-G02-nnn Gate attempt")
     iteration_path = root / "governance" / "iterations" / f"{iteration_id}.yaml"
     if not iteration_path.is_file():
-        raise GovernanceError("G02 active Iteration record is missing")
+        raise GovernanceError("G02 active Gate-attempt record is missing")
     iteration = load_data(iteration_path)
     eval_id = iteration.get("eval_id")
     if not isinstance(eval_id, str):
-        raise GovernanceError("G02 active Iteration lacks an Eval ID")
+        raise GovernanceError("G02 active Gate attempt lacks an Eval ID")
     eval_root = root / "docs" / "evals" / eval_id
     manifest_path = eval_root / "manifest.json"
     plan_path = eval_root / "PLAN.md"

@@ -1,0 +1,60 @@
+schema_version: "1.2.0"
+id: C-G02-001
+gate: G02
+title: Exact GetObject Probe Corrective
+status: planned
+iteration_type: corrective
+corrects: [I-0024, I-0035]
+root_cause:
+  id: RC-G02-001
+  source_eval: EVAL-G02-020
+  phase: isolation-access-matrix
+  failure_mode: mc stat required ListBucket before testing the frozen GetObject permission
+affected_validation_ids: [V-G02-009]
+verification_scope:
+  changed_seam: MinIO object-read probe command
+  semantic_branches: [allowed_getobject, denied_getobject, unchanged_write]
+  reused_test_entrypoints: [tests/g02/test_g02_gate_collectors.py]
+  real_seam_proof: required
+  real_seam_runner: docs/runbooks/G02_ISOLATION.md#exact-getobject-seam-proof
+  real_seam_artifact: docs/evals/EVAL-G02-023/artifacts/real-seam-proof.json
+  gate_l2_execution: 0
+  full_gate_eval: false
+cost_boundary:
+  root_cause_count: 1
+  bespoke_eval_harness: false
+  gate_attempt_included: false
+  targeted_verification_separate: true
+  global_sync_deferred: true
+accounting_scope:
+  corrective_engineering: included
+  targeted_verification: separate
+  gate_attempt_execution: excluded
+  governance_sync: separate
+scope:
+  - Replace only the object-read mc stat command with exact GetObject semantics against the existing sentinel.
+  - Reuse the existing test framework for three changed semantic branches and record one targeted real-tool seam proof.
+non_goals:
+  - Running the 60-cell Gate matrix any other Gate phase deployment destructive work external service or model call.
+  - Adding a bespoke Eval harness updating global Claims or Master Plan paths or changing any permission N threshold or failure semantic.
+dependencies: [I-0016, I-0018, I-0024, I-0035]
+tests:
+  - uv run pytest -q tests/g02/test_g02_gate_collectors.py -k object_probe
+  - uv run python -m faultwitness_dev verify-fast
+  - uv run python -m faultwitness_dev eval-changed
+eval_id: EVAL-G02-023
+commit: null
+changed_paths:
+  - deploy/g02/gate_probe.py
+  - docs/evals/EVAL-G02-023
+  - docs/roadmap/iterations/C-G02-001.md
+  - docs/runbooks/G02_ISOLATION.md
+  - governance/iterations/C-G02-001.yaml
+  - tests/g02/test_g02_gate_collectors.py
+behavior_change: true
+docs_updated:
+  - docs/roadmap/iterations/C-G02-001.md
+  - docs/evals/EVAL-G02-023/PLAN.md
+  - docs/evals/EVAL-G02-023/REPORT.md
+  - docs/runbooks/G02_ISOLATION.md
+threshold_changes: []

@@ -1,8 +1,8 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: I-0036
-next_iteration: I-0037
+active_iteration: null
+next_iteration: C-G02-001
 last_closed_gate: G01
 ---
 
@@ -15,9 +15,9 @@ FaultWitness is a multi-tenant Agent Runtime for investigating microservice inci
 G00 and G01 are closed. G02 is `in_progress`. I-0016 through I-0019 and forward correctives I-0021,
 I-0022, I-0024, I-0026, I-0028, I-0030, I-0032, and I-0034 are completed with no open evidence. I-0020,
 I-0023, I-0025, I-0027, I-0029, I-0031, I-0033, and I-0035 are terminally failed with complete
-negative evidence. I-0036 is the active forward object-read probe corrective; I-0037 is the planned
-replacement orchestration. I-0036 may run only local deterministic work and may not run Gate L2,
-deployment, destructive, external-service, or model phases. No terminal Iteration may be reopened.
+negative evidence. Legacy I-0036/I-0037 were retired before implementation when work-item
+namespaces were separated. C-G02-001 is the next exact-GetObject corrective; A-G02-001 is the
+separate planned Gate attempt. No terminal work item may be reopened.
 
 ## Source-of-truth order
 
@@ -29,20 +29,34 @@ When artifacts disagree, use this precedence and stop to resolve the drift inste
 4. Tests and implementation.
 5. Generated reports and explanatory documentation.
 
-PROJECT_STATE.yaml is the authority for the active Gate and iteration, not for architecture semantics.
+PROJECT_STATE.yaml is the authority for the active Gate and work item, not for architecture semantics.
 
 ## Required workflow
 
-- No behavioral change may begin without an iteration plan.
+- No behavioral change may begin without a planned `I-####` or `C-G##-###` work-item plan.
 - A Gate Master Plan must be frozen before its implementation iterations start.
+- `I-####` is reserved for Iterations frozen before Gate execution. Execution-time root-cause work
+  uses `C-G##-###`; a unified-candidate Gate run uses `A-G##-###`. Never continue the planned
+  Iteration sequence to disguise emergent corrective work or a Gate retry.
+- A corrective owns exactly one named root cause. It includes only the fix, changed semantic
+  branches, any required minimum real-seam proof, and its own evidence. It executes no Gate L2 or full
+  Gate Eval, reuses the existing test entrypoint, adds no bespoke per-corrective Eval harness, and
+  defers Master Plan, Validation-final-path, Claims, and Gate Report synchronization to the
+  Gate-attempt or closure boundary. Engineering, targeted verification, Gate execution, and
+  governance synchronization are accounted separately.
+- A Gate attempt is not an Iteration and is not corrective engineering cost. It may only orchestrate
+  frozen runners and evidence; `src/`, `deploy/`, `tests/`, `config/`, and `schemas/` changes are
+  forbidden while an `A-G##-###` work item is active.
+- Report corrective engineering, targeted corrective verification, Gate-attempt execution, and
+  governance migration/closure as separate cost classes. Duration estimates never kill execution.
 - Behavioral changes, affected tests, documentation, and version manifests belong in the same commit.
 - Do not lower a Gate threshold, modify locked tests, or alter ground truth in an implementation commit.
 - Failed Gates, negative experiments, and rejected architectures must remain in the repository history.
 - Gate closure is a separate asset-only commit evaluated against an immutable candidate SHA.
-- A final Gate-audit Iteration may only orchestrate frozen checks, reverify one candidate,
+- A final `A-G##-###` Gate attempt may only orchestrate frozen checks, reverify one candidate,
   and synchronize evidence. It may not add product behavior or a substantial Eval framework;
-  missing harness work creates a new forward corrective Iteration assigned to the original owning
-  domain and produces a new candidate; a completed Iteration record is not reopened.
+  missing owning-runner work creates a new forward `C-G##-###` assigned to that domain and produces
+  a new candidate; a completed work-item record is not reopened.
 - Expensive Evals must be decomposed into attributable phases whose immutable results are
   keyed by code candidate, runtime artifact/config digests, and environment fingerprint.
 - Eval runners that invoke destructive, long-running, or external-service work must support
@@ -70,18 +84,18 @@ PROJECT_STATE.yaml is the authority for the active Gate and iteration, not for a
   A runner records the already-existing execution checkpoint it observed before producing output;
   the later evidence/closure commit is identified by Git history or its Gate tag and does not
   rewrite the producing revision to chase its own SHA.
-- Completed Iteration records are immutable. A defect discovered after completion is owned by a new
-  forward corrective Iteration that links to the affected record; governance must not change the
-  completed Iteration back to `in_progress` or move lifecycle state backward. A corrective
-  Iteration may block the next planned Iteration, but it does not erase or reopen history.
-- `verify-fast` scans every Iteration transition from the machine policy epoch as well as the
+- Completed work-item records are immutable. A defect discovered after completion is owned by a new
+  forward `C-G##-###` corrective that links to the affected record; governance must not change the
+  completed work item back to `in_progress` or move lifecycle state backward. A corrective may
+  block the next Gate attempt, but it does not erase or reopen history.
+- `verify-fast` scans every work-item transition from the machine policy epoch as well as the
   current worktree. It rejects terminal-record deletion/reactivation even when a later commit hides
-  the regression. New records declare `iteration_type`; a corrective record links lower-numbered,
-  same-Gate terminal records through `corrects`.
+  the regression. New C/A records use their dedicated namespace; legacy I correctives retain their
+  same-Gate terminal links through the machine-readable legacy registry.
 - Candidate readiness is the deterministic front of Gate Eval, not a separate open-ended audit.
   Transient infrastructure failures resume the same phase/trial. An implementation, policy,
   zero-tolerance, cleanup, metric, quality, or performance failure makes that orchestration
-  Iteration terminally failed; correction and reevaluation use new forward Iterations.
+  attempt terminally failed; correction uses the next C ID and reevaluation uses the next A ID.
 - SHA and evidence-inheritance rules are provenance controls only. They must not alter Eval N,
   locked tests, Ground Truth, quality or performance thresholds, health-oracle windows, token/cost
   ceilings, or failure semantics.
@@ -99,12 +113,23 @@ PROJECT_STATE.yaml is the authority for the active Gate and iteration, not for a
 - A runner shipped to a remote or sealed environment must execute its import and minimum runtime
   path under that environment's actual interpreter version before its owning Iteration closes.
   Local current-version imports and syntax-only checks are insufficient compatibility evidence.
+- A correction that changes an external client command, platform boundary, credential transport,
+  image path, interpreter path, or protocol seam must exercise the changed operation once through
+  the real tool/environment before the corrective closes. This is targeted seam evidence, not a
+  full Gate matrix and not permission to increase the corrective sample.
+- Every future Master Plan Iteration declares each external client/platform/credential/image/
+  interpreter/protocol operation it introduces, plus a real-seam runner, a predeclared read-only
+  failure diagnostic, and an artifact path. A memory backend, mock, schema check, or matrix-shape
+  test cannot be the sole readiness evidence for a live Gate operation.
+- Gate attempts use only frozen diagnostic runners and command templates. Ad hoc diagnostic tools
+  or command-construction experiments are implementation work and require a new corrective; each
+  failed attempt records diagnostic invocation and command-error counts in its failure artifact.
 - Every digest-pinned helper or probe image required after lab deployment must enter the same
   digest-verified offline staging and containerd-import path as the SUT images. A later in-cluster
   registry pull is not candidate bootstrap evidence and may not be assumed available.
 - Do not commit or push unless the user explicitly requests it.
 
-Planning-only commits may create or refine future Iteration and Eval assets without activating them. They never authorize product behavior, infrastructure mutation, credential use, or live evaluation.
+Planning-only commits may create or refine future work-item and Eval assets without activating them. They never authorize product behavior, infrastructure mutation, credential use, or live evaluation.
 
 ## Validation ownership and Eval execution
 
@@ -121,7 +146,7 @@ Planning-only commits may create or refine future Iteration and Eval assets with
   design, classify it as L2 and do not run it in the Iteration.
 - Every L2 item names an owning Iteration. That Iteration implements and unit-tests the runner,
   negative fixture, phase interface, and candidate/environment binding before it closes. The final
-  Gate Iteration may only orchestrate frozen runners and may not add product behavior, fixtures, or
+  Gate attempt may only orchestrate frozen runners and may not add product behavior, fixtures, or
   a test framework.
 - An Iteration that adds a persistence surface, egress surface, trace stage, identity principal, or
   storage namespace proves the new surface's leakage, authorization, and observability properties

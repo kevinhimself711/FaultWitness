@@ -51,9 +51,10 @@ Read-only diagnosis proved the user enabled, candidate policy attached, sentinel
 `ListBucket` permission. I-0035 is terminal `failed`; 35 remaining access cells and all downstream
 phases, destructive scenarios, external-service probes, and model calls remained zero.
 
-I-0036/EVAL-G02-021 is the next exact-GetObject runner corrective; I-0037/EVAL-G02-022 is the later
-replacement orchestration. G02 has not passed, no waiver is present, and no closure or tag is
-authorized. All earlier failed Eval assets remain immutable history.
+I-0036/I-0037 and EVAL-G02-021/022 are terminal naming-migration records with no implementation or
+execution. C-G02-001/EVAL-G02-023 owns only the exact-GetObject corrective and targeted proof;
+A-G02-001/EVAL-G02-024 owns the later unified-candidate Gate attempt. G02 has not passed, no waiver
+is present, and no closure or tag is authorized. All earlier failed Eval assets remain immutable.
 
 Future reports must include `G01-SUPP-ACCESS-MATRIX`, `G01-SUPP-SIX-STAGE-SPANS`, and
 `G01-SUPP-ALL-SURFACE-CANARY` without modifying closed G01 evidence.

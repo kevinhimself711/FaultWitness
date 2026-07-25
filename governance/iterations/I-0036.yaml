@@ -1,8 +1,8 @@
 schema_version: "1.0.0"
 id: I-0036
 gate: G02
-title: Exact GetObject Probe Corrective
-status: in_progress
+title: Retired Legacy Corrective Identifier
+status: failed
 iteration_type: corrective
 corrects: [I-0024, I-0035]
 scope:
@@ -20,7 +20,7 @@ tests:
   - uv run python -m faultwitness_dev verify-fast
   - uv run python -m faultwitness_dev eval-changed
 eval_id: EVAL-G02-021
-commit: null
+commit: 7751041c2222a4dec22ada3ca4106c0cf996015b
 changed_paths:
   - AGENTS.md
   - CHANGELOG.md

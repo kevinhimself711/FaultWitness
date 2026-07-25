@@ -1,6 +1,7 @@
 # EVAL-G02-021 Report
 
-Result: `not run`.
+Result: `not applicable`.
 
-This placeholder contains no execution claim and will be replaced only by the I-0036 candidate-bound
-deterministic Iteration Eval.
+I-0036 was retired before implementation when corrective work moved to the C-Gxx-nnn namespace.
+No test, deployment, remote operation, Gate phase, or model call ran. The actual corrective evidence
+is owned by EVAL-G02-023 under C-G02-001.
