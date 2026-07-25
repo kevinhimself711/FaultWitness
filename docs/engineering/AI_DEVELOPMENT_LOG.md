@@ -14,6 +14,14 @@ add both frozen probe images to the existing digest-verified offline staging/imp
 I-0033/EVAL-G02-018 is the only replacement orchestration. Validation N, thresholds, Ground Truth,
 locked tests, health windows, model route, and token/cost ceilings remain unchanged.
 
+I-0032 candidate `fc167c8bc98021cb4718ec6ab254c2525441326c` then passed EVAL-G02-017.
+All three local deterministic cases passed: the two fixed probe images joined the existing five
+Docker Hub SUT archives through the shared digest-verified staging/import inventory, normalization
+and deduplication preserved exact digests, and same-repository digest drift failed closed. The
+30-image SUT digest remained unchanged; frozen V-G02-009/010/011/017 Iteration N remained 4/0/4/0;
+remote, Gate L2, destructive, external-service, and model execution remained zero. The Iteration
+closed with `open_evidence: []`; I-0033/EVAL-G02-018 is the sole forward replacement.
+
 ## 2026-07-24 — G02 EVAL-G02-014 Python 3.8 compatibility failure
 
 Candidate `cfafa5a6f1510a1a7c8fe2c9360284214c8734f2` passed four fail-fast preflights

@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0032
 gate: G02
 title: Digest-Pinned Probe Image Offline Staging Corrective
-status: in_progress
+status: completed
 iteration_type: corrective
 corrects: [I-0017, I-0031]
 scope:
@@ -21,7 +21,7 @@ tests:
   - uv run python -m faultwitness_dev verify-fast
   - uv run python -m faultwitness_dev eval-changed
 eval_id: EVAL-G02-017
-commit: null
+commit: fc167c8bc98021cb4718ec6ab254c2525441326c
 changed_paths:
   - AGENTS.md
   - CHANGELOG.md

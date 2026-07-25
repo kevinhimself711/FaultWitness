@@ -2,7 +2,7 @@
 document_id: FW-GATE-G02-REPORT
 gate: G02
 status: in_progress
-evaluated_candidate_sha: 0f3e83b871c8c69cfdb2c2321cc96e4894975d56
+evaluated_candidate_sha: fc167c8bc98021cb4718ec6ab254c2525441326c
 closed_on: null
 ---
 
@@ -28,9 +28,13 @@ passed four preflights and lab deployment before the exact pinned `minio/mc` hel
 I-0031 is terminal `failed`; provisioning, all 60 access cells, later phases, and model calls
 remained zero with `open_evidence: []`.
 
-I-0032 is the sole digest-pinned probe-image offline staging corrective; I-0033/EVAL-G02-018 is the
-planned replacement orchestration. G02 has not passed, no waiver is present, and no closure or tag
-is authorized. All earlier failed Eval assets remain immutable history.
+I-0032/EVAL-G02-017 passed all three local deterministic staging cases. The five existing Docker
+Hub SUT archives now share the same digest-verified path with exactly two namespaced probe archives;
+the frozen 30-image SUT digest is unchanged. V-G02-009/010/011/017 Iteration N remained 4/0/4/0,
+remote and model execution remained zero, and `open_evidence: []`.
+
+I-0033/EVAL-G02-018 is the next replacement orchestration. G02 has not passed, no waiver is present,
+and no closure or tag is authorized. All earlier failed Eval assets remain immutable history.
 
 Future reports must include `G01-SUPP-ACCESS-MATRIX`, `G01-SUPP-SIX-STAGE-SPANS`, and
 `G01-SUPP-ALL-SURFACE-CANARY` without modifying closed G01 evidence.

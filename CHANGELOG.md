@@ -4,6 +4,10 @@
 
 ### Governance maintenance
 
+- Close I-0032 on candidate `fc167c8` with EVAL-G02-017 passing all three offline-staging cases,
+  frozen validation N=4/0/4/0, zero remote/model execution, and no open evidence.
+- Extend the existing digest-verified OCI staging/import inventory with the two exact frozen probe
+  images while preserving the 30-image SUT digest and stable SUT archive keys.
 - Activate I-0032 as the sole digest-pinned probe-image staging corrective; I-0033 remains planned,
   and no remote Gate L2, destructive, external-service, or model work is authorized in I-0032.
 - Preserve I-0031/EVAL-G02-016 as terminal negative evidence after the exact pinned `minio/mc`
