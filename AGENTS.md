@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: null
+active_iteration: A-G02-009
 next_iteration: null
 last_closed_gate: G01
 ---
@@ -35,8 +35,8 @@ traffic and did not produce consumer lag inside the frozen 90-second observation
 is completed with targeted tests and one candidate-bound Kafka checkout/lifecycle seam. A-G02-008
 is terminally failed because a source-collection command exited without producing an observation and
 the scenario runner incorrectly collapsed that infrastructure condition into `metric_fail`. C-G02-009
-is completed with classification tests and one candidate-bound read-only collection seam. The next
-unified-candidate Gate attempt has not yet been activated. No terminal work item may be reopened.
+is completed with classification tests and one candidate-bound read-only collection seam. A-G02-009
+is active on the infrastructure-classification candidate. No terminal work item may be reopened.
 
 ## Source-of-truth order
 

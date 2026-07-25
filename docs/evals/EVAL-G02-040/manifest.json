@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-040",
+  "gate": "G02",
+  "iteration": "A-G02-009",
+  "evaluated_revision": "17be4f2d29448bc4db49b71dafe005d7877cd99c",
+  "status": "pending",
+  "environments": ["private-k3s-live", "bailian-live-authorized"],
+  "commands": [
+    "uv run python -m faultwitness_dev eval-g02 --candidate-sha 17be4f2d29448bc4db49b71dafe005d7877cd99c",
+    "uv run python -m faultwitness_dev eval-g02-close --candidate-sha 17be4f2d29448bc4db49b71dafe005d7877cd99c --evidence-head-sha 17be4f2d29448bc4db49b71dafe005d7877cd99c"
+  ],
+  "artifacts": ["docs/evals/EVAL-G02-040/PLAN.md"],
+  "evidence_urls": [],
+  "integrations": {},
+  "open_evidence": []
+}
