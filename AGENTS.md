@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: null
+active_iteration: A-G02-007
 next_iteration: null
 last_closed_gate: G01
 ---
@@ -30,7 +30,8 @@ one candidate-bound prior-recovery scenario seam. A-G02-006 is terminally failed
 passed because the `emailMemoryLeak` observer could not retain its first monotonic sample and its
 cleanup path indexed an empty fault-sample list. C-G02-007 is completed with targeted monotonic and
 non-growth tests plus one candidate-bound email-memory scenario seam. The next unified-candidate
-Gate attempt has not yet been activated. No terminal work item may be reopened.
+Gate attempt A-G02-007 is active on the post-memory-observer candidate. No terminal work item may
+be reopened.
 
 ## Source-of-truth order
 

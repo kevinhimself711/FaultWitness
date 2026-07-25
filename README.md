@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: null
+active_iteration: A-G02-007
 next_iteration: null
 last_closed_gate: G01
 ---
@@ -28,8 +28,8 @@ deploy/inspect/relay/smoke 证据关闭。A-G02-004 在 `paymentUnreachable` 故
 在三个场景通过后暴露 prior-recovery 前置证据未被 runner 消费的问题并终态失败；C-G02-006
 已用定向测试和一次 candidate-bound SEED-G02-0004 real seam 关闭。A-G02-006 在 seeds 1–7
 通过后因 `emailMemoryLeak` 双样本 observer 的空列表 cleanup 缺陷终态失败；C-G02-007 已用
-定向测试和一次 candidate-bound email-memory real seam 关闭，下一 Gate attempt 尚未激活。
-任何终态记录都不会重开。
+定向测试和一次 candidate-bound email-memory real seam 关闭；A-G02-007 是当前统一候选 Gate
+attempt。任何终态记录都不会重开。
 
 ## 权威资产
 
