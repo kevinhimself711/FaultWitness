@@ -210,6 +210,69 @@ def test_memory_observer_uses_working_set_signal() -> None:
     assert observation["working_set"] == 42.0
 
 
+def _live_memory_sample(working_set: float) -> dict[str, Any]:
+    return {
+        "working_set": working_set,
+        "descriptions": [],
+        "ready": True,
+        "journey_status": 200,
+        "trace_count": 0,
+    }
+
+
+def test_memory_observer_retains_first_sample_and_uses_second_growth(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    observer = LiveScenarioObserver("1" * 40, "emailMemoryLeak")
+    samples = iter(
+        (
+            _live_memory_sample(100.0),
+            _live_memory_sample(110.0),
+            _live_memory_sample(100.0),
+            _live_memory_sample(90.0),
+        )
+    )
+    sleeps: list[float] = []
+    monkeypatch.setattr(observer, "_sample", lambda _since: next(samples))
+    monkeypatch.setattr(g02_lab.time, "sleep", sleeps.append)
+
+    first = observer("fault", "emailMemoryLeak")
+    second = observer("fault", "emailMemoryLeak")
+    first_recovery = observer("recovery", "emailMemoryLeak")
+    second_recovery = observer("recovery", "emailMemoryLeak")
+
+    assert observer.fault_samples == [first, second]
+    assert fault_state("emailMemoryLeak", [first, second]) is OracleState.FAULT_ACTIVE
+    assert first_recovery["signal_not_worsening"] is True
+    assert second_recovery["signal_not_worsening"] is True
+    assert sleeps == [30, 30]
+
+
+def test_memory_non_growth_keeps_cleanup_comparator(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    observer = LiveScenarioObserver("1" * 40, "emailMemoryLeak")
+    samples = iter(
+        (
+            _live_memory_sample(100.0),
+            _live_memory_sample(99.0),
+            _live_memory_sample(90.0),
+        )
+    )
+    clock = iter((0.0, 0.0, 91.0, 0.0))
+    monkeypatch.setattr(observer, "_sample", lambda _since: next(samples))
+    monkeypatch.setattr(g02_lab.time, "sleep", lambda _seconds: None)
+    monkeypatch.setattr(g02_lab.time, "monotonic", lambda: next(clock))
+
+    first = observer("fault", "emailMemoryLeak")
+    second = observer("fault", "emailMemoryLeak")
+    recovery = observer("recovery", "emailMemoryLeak")
+
+    assert observer.fault_samples == [first]
+    assert fault_state("emailMemoryLeak", [first, second]) is OracleState.HEALTHY
+    assert recovery["signal_not_worsening"] is True
+
+
 def test_restore_noop_fixture_blocks_and_quarantines() -> None:
     fixture = load_data(ROOT / "tests/fixtures/g02/fault_restore_noop.yaml")
     scenario = next(

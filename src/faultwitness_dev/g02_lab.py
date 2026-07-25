@@ -408,9 +408,15 @@ PY
             deadline = time.monotonic() + 90
             while True:
                 observation = self._active_observation(self._sample(self.fault_started))
-                active = (
-                    fault_state(fault_class, [observation, observation]) == OracleState.FAULT_ACTIVE
+                if self.fault_class == "emailMemoryLeak" and not self.fault_samples:
+                    self.fault_samples.append(observation)
+                    return observation
+                comparison = (
+                    [self.fault_samples[-1], observation]
+                    if self.fault_class == "emailMemoryLeak"
+                    else [observation, observation]
                 )
+                active = fault_state(fault_class, comparison) == OracleState.FAULT_ACTIVE
                 if active:
                     self.fault_samples.append(observation)
                     return observation

@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-035",
+  "gate": "G02",
+  "iteration": "C-G02-007",
+  "evaluated_revision": "not-run",
+  "status": "pending",
+  "environments": ["planned-local-targeted", "planned-private-k3s-single-scenario"],
+  "commands": [
+    "uv run pytest -q tests/g02/test_g02_lab.py -k memory",
+    "existing run_scenario with SEED-G02-0008 and exact automatic restore"
+  ],
+  "artifacts": ["docs/evals/EVAL-G02-035/PLAN.md"],
+  "evidence_urls": [],
+  "integrations": {},
+  "open_evidence": []
+}

@@ -85,6 +85,12 @@ error, a description without the PaymentService client span, or a payment busine
 satisfy the oracle. The two observations, 30-second spacing, 90-second oracle window, recovery
 contract, N, and all quality/performance thresholds remain unchanged.
 
+`emailMemoryLeak` is the only fault whose active oracle compares two different samples. The live
+observer retains the first working-set sample without declaring it active, preserves the existing
+30-second spacing, and compares the second sample against the first. If the second sample does not
+grow before the existing 90-second deadline, the fault remains non-active while the retained first
+sample remains available to cleanup; an empty sample list cannot mask the primary metric result.
+
 ## Failure and compatibility semantics
 
 - Source or image digest drift: blocking candidate failure; do not fetch a floating replacement.
