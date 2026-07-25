@@ -5,7 +5,7 @@
   "iteration": "I-0035",
   "candidate_sha": "2c51413fecf1a4c5a707b11c9744f87ab91b927e",
   "evaluated_revision": "2c51413fecf1a4c5a707b11c9744f87ab91b927e",
-  "evidence_head_sha": "2c51413fecf1a4c5a707b11c9744f87ab91b927e",
+  "evidence_head_sha": "92118b596b0825f7c72018beb374b13c04e3f0b0",
   "status": "fail",
   "subject_digests": {
     "config/g02/baselines.yaml": "1debc1a782867811a513b5af98320809f41061f75b8885be5f57539899df7e60",

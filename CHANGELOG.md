@@ -4,6 +4,9 @@
 
 ### Governance maintenance
 
+- Preserve I-0035/EVAL-G02-020 as terminal after 24 passing database access cells and one
+  deterministic object-read probe semantics failure; plan I-0036 exact-GetObject correction and
+  I-0037/EVAL-G02-022 replacement without changing isolation permissions or Eval criteria.
 - Activate I-0035 as the sole seventh replacement orchestration after I-0034 closed with exact
   containerd alias evidence and no open evidence; I-0035 may only run frozen Gate phases.
 - Close I-0034 on candidate `1f366dc` with EVAL-G02-019 passing all three exact-digest alias

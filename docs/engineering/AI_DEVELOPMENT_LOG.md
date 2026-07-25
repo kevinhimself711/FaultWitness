@@ -44,6 +44,23 @@ manifest digest, and 30-image SUT digest. V-G02-009/010/011/017 Iteration N rema
 remote, Gate L2, deployment, destructive, external-service, and model execution remained zero. The
 Iteration closed with `open_evidence: []`; I-0035/EVAL-G02-020 is the sole forward replacement.
 
+I-0035 candidate `2c51413fecf1a4c5a707b11c9744f87ab91b927e` then passed four fail-fast
+preflights and `lab-deploy-and-bind` with 24 ready Deployments. The first 24 database access cells
+passed. The first object cell, `s3:g02/scenarios/|canonical-owner`, returned a deterministic
+`metric_fail`: the runner used `mc stat`, which attempted `ListBucket` before exercising the
+policy's exact `s3:GetObject` grant.
+
+Eight attributable read-only diagnostic invocations included five diagnostic-command errors and
+three successful observations. They proved the user enabled, exact candidate policy attached,
+sentinel present, and direct client failure caused by the missing—intentionally ungranted—folder
+listing permission. No policy, secret, threshold, or candidate artifact was mutated.
+
+I-0035/EVAL-G02-020 are terminal with `open_evidence: []`; 35 access cells and all trace, canary,
+scenario, baseline, external-service, and model work remained unrun. I-0036 must replace only the
+read operation with direct GetObject semantics and prove three local branches. I-0037/EVAL-G02-022
+is the sole later replacement. Validation N, thresholds, Ground Truth, locked tests, health windows,
+model route, token/cost ceilings, and isolation permissions remain unchanged.
+
 ## 2026-07-24 — G02 EVAL-G02-014 Python 3.8 compatibility failure
 
 Candidate `cfafa5a6f1510a1a7c8fe2c9360284214c8734f2` passed four fail-fast preflights

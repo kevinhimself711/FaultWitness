@@ -2,7 +2,7 @@
 document_id: FW-GATE-G02-REPORT
 gate: G02
 status: in_progress
-evaluated_candidate_sha: 1f366dc8bbe0e71611367b87ed72fb4e70db69cd
+evaluated_candidate_sha: 2c51413fecf1a4c5a707b11c9744f87ab91b927e
 closed_on: null
 ---
 
@@ -44,8 +44,16 @@ source, alias-only exact digest, and wrong-digest fail-closed behavior all match
 contract; V-G02-009/010/011/017 Iteration N remained 4/0/4/0, remote/model execution remained zero,
 and `open_evidence: []`.
 
-I-0035/EVAL-G02-020 is the next replacement orchestration. G02 has not passed, no waiver is present,
-and no closure or tag is authorized. All earlier failed Eval assets remain immutable history.
+EVAL-G02-020 then passed the four preflights and deployment with 24 ready Deployments. The first
+24 database access cells passed; `s3:g02/scenarios/|canonical-owner` failed because the frozen
+runner used `mc stat`, which attempted `ListBucket` before exercising the exact `GetObject` grant.
+Read-only diagnosis proved the user enabled, candidate policy attached, sentinel present, and no
+`ListBucket` permission. I-0035 is terminal `failed`; 35 remaining access cells and all downstream
+phases, destructive scenarios, external-service probes, and model calls remained zero.
+
+I-0036/EVAL-G02-021 is the next exact-GetObject runner corrective; I-0037/EVAL-G02-022 is the later
+replacement orchestration. G02 has not passed, no waiver is present, and no closure or tag is
+authorized. All earlier failed Eval assets remain immutable history.
 
 Future reports must include `G01-SUPP-ACCESS-MATRIX`, `G01-SUPP-SIX-STAGE-SPANS`, and
 `G01-SUPP-ALL-SURFACE-CANARY` without modifying closed G01 evidence.

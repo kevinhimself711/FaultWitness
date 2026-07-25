@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-021",
+  "gate": "G02",
+  "iteration": "I-0036",
+  "evaluated_revision": "not-run",
+  "status": "pending",
+  "environments": ["planned-local-deterministic"],
+  "commands": ["uv run python -m faultwitness_dev eval-iteration I-0036 --candidate-sha <full-sha>"],
+  "artifacts": ["docs/evals/EVAL-G02-021/PLAN.md"],
+  "evidence_urls": [],
+  "integrations": {},
+  "open_evidence": []
+}
