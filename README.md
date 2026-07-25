@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: C-G02-001
+active_iteration: null
 next_iteration: A-G02-001
 last_closed_gate: G01
 ---
@@ -18,7 +18,7 @@ FaultWitness 是一个面向微服务事故调查、受控修复与持续优化�
 probe 镜像纳入离线 staging/import inventory 并关闭；I-0033 因 containerd import alias
 解析缺陷终态失败。I-0034 已完成精确 alias corrective 并关闭；I-0035 随后证明对象读取
 probe 错用隐含 `ListBucket` 的 `mc stat`，现已终态失败。未实施的 I-0036/I-0037 已按新
-命名治理退役；C-G02-001 是当前 corrective，A-G02-001 是与其分离的下一 Gate attempt。
+命名治理退役；C-G02-001 已以真实 GetObject 对照证据关闭，A-G02-001 是下一 Gate attempt。
 任何终态记录都不会重开。
 
 ## 权威资产
@@ -50,6 +50,7 @@ probe 错用隐含 `ListBucket` 的 `mc stat`，现已终态失败。未实施�
   EVAL-G02-019 已通过 3/3 本地 alias-resolution cases，wrong-digest alias 保持 fail closed。
   EVAL-G02-020 的四个 preflight 与 deployment 通过，前 24 个 database access cells 通过；
   第一个对象读取 cell 因 `mc stat` 隐含需要未授权的 `ListBucket` 而确定性失败。后续 phase
-  与模型调用为 0；C-G02-001 将只修正为精确 `GetObject` probe。
+  与模型调用为 0；C-G02-001 已将读取修正为精确 `GetObject` probe，3/3 本地分支与真实
+  `minio/mc` allow/deny 对照均通过。
 
 代码、API、Schema 和标识符使用英文；设计、评测和复盘文档以中文为主。

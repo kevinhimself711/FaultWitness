@@ -2,7 +2,7 @@ schema_version: "1.2.0"
 id: C-G02-001
 gate: G02
 title: Exact GetObject Probe Corrective
-status: in_progress
+status: completed
 iteration_type: corrective
 corrects: [I-0024, I-0035]
 root_cause:
@@ -43,7 +43,7 @@ tests:
   - uv run python -m faultwitness_dev verify-fast
   - uv run python -m faultwitness_dev eval-changed
 eval_id: EVAL-G02-023
-commit: null
+commit: 0baa43d7004fe4cab270356ba27df68e7dfe3f1d
 changed_paths:
   - deploy/g02/gate_probe.py
   - docs/evals/EVAL-G02-023

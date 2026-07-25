@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-023",
+  "work_item": "C-G02-001",
+  "affected_validation": "V-G02-009",
+  "evidence_class": "targeted_real_seam_not_gate_l2",
+  "candidate_sha": "0baa43d7004fe4cab270356ba27df68e7dfe3f1d",
+  "candidate_subjects": {
+    "deploy/g02/gate_probe.py": "20df17c48e712ac77e23f4b789f6ee06738bb63d15883361c1110808193d5df9",
+    "tests/g02/test_g02_gate_collectors.py": "50f9b87a39ca99283db47c57e3e656f4aed97427e17a8540befc887612fcb40f",
+    "docs/runbooks/G02_ISOLATION.md": "c1896a48bc08b86b77bd72c4d40505a5eccee6a6dd3bd6e89596d9b8ec579266"
+  },
+  "environment": {
+    "lab_candidate_sha": "2c51413fecf1a4c5a707b11c9744f87ab91b927e",
+    "environment_fingerprint": "32a012ad672a808004e7beb1e41fff66cf87578fbfa470a89dcff47a2b0b80a2",
+    "client_version": "RELEASE.2025-08-13T08-35-41Z",
+    "client_runtime": "go1.24.6 linux/amd64",
+    "source_binding": "docs/evals/EVAL-G02-020/candidate-binding.json",
+    "source_policy_evidence": "docs/evals/EVAL-G02-020/artifacts/phases/isolation-access-matrix/object-read-probe-failure.json"
+  },
+  "local_verification": {
+    "command": "uv run pytest -q tests/g02/test_g02_gate_collectors.py -k object_probe",
+    "candidate_bound_run": true,
+    "case_count": 3,
+    "passed": 3,
+    "branches": [
+      "allowed_getobject",
+      "denied_getobject",
+      "unchanged_write"
+    ],
+    "status": "pass"
+  },
+  "real_seam": {
+    "command_template": "mc cat <alias>/faultwitness-eval/g02/scenarios/deny-sentinel >/dev/null",
+    "command_template_sha256": "95746bda10f8f6caf6213756294b2e99013674220a82c600a2dee01d61d6378c",
+    "sanitized_output_sha256": "9373bddf20426e1c48dbee9a4f82bcdd3fe3458a4e81eae1d06f0aa9db941163",
+    "allow_control": {
+      "principal": "scenario-controller",
+      "operation": "direct_getobject",
+      "list_bucket_granted": false,
+      "result": "pass"
+    },
+    "deny_control": {
+      "principal": "ordinary-developer",
+      "operation": "direct_getobject",
+      "result": "denied_as_expected"
+    },
+    "status": "pass"
+  },
+  "attempt_accounting": {
+    "local_launcher_rejected_before_execution": 1,
+    "remote_invocations": 2,
+    "remote_command_errors": 1,
+    "successful_remote_invocations": 1,
+    "first_remote_failure": "exit_127_while_auxiliary_container_utilities_were_present",
+    "corrective_action": "decode_credentials_on_host_and_use_only_mc_plus_posix_shell_in_container"
+  },
+  "execution_accounting": {
+    "recorded_at": "2026-07-25T03:59:13.0030661Z",
+    "successful_remote_wall_time_seconds": 3.4,
+    "gate_l2_cells": 0,
+    "deployments": 0,
+    "destructive_operations": 0,
+    "external_service_trials": 0,
+    "model_calls": 0,
+    "model_tokens": 0,
+    "model_cost_cny": 0
+  },
+  "unchanged_contracts": {
+    "permissions": true,
+    "validation_n": true,
+    "quality_thresholds": true,
+    "performance_thresholds": true,
+    "ground_truth": true,
+    "locked_tests": true,
+    "failure_semantics": true
+  },
+  "safety": {
+    "credentials_persisted": false,
+    "object_content_persisted": false,
+    "policy_mutated": false,
+    "lab_mutated": false
+  },
+  "status": "pass",
+  "open_evidence": []
+}

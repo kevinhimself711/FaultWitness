@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: C-G02-001
+active_iteration: null
 next_iteration: A-G02-001
 last_closed_gate: G01
 ---
@@ -16,8 +16,8 @@ G00 and G01 are closed. G02 is `in_progress`. I-0016 through I-0019 and forward 
 I-0022, I-0024, I-0026, I-0028, I-0030, I-0032, and I-0034 are completed with no open evidence. I-0020,
 I-0023, I-0025, I-0027, I-0029, I-0031, I-0033, and I-0035 are terminally failed with complete
 negative evidence. Legacy I-0036/I-0037 were retired before implementation when work-item
-namespaces were separated. C-G02-001 is the active exact-GetObject corrective; A-G02-001 is the
-separate next Gate attempt. No terminal work item may be reopened.
+namespaces were separated. C-G02-001 is completed with targeted real-client evidence and no open
+evidence; A-G02-001 is the separate next Gate attempt. No terminal work item may be reopened.
 
 ## Source-of-truth order
 

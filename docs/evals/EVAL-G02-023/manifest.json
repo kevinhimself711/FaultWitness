@@ -3,12 +3,24 @@
   "eval_id": "EVAL-G02-023",
   "gate": "G02",
   "iteration": "C-G02-001",
-  "evaluated_revision": "not-run",
-  "status": "pending",
-  "environments": ["planned-local-targeted", "planned-real-minio-client-seam"],
-  "commands": ["uv run pytest -q tests/g02/test_g02_gate_collectors.py -k object_probe"],
-  "artifacts": ["docs/evals/EVAL-G02-023/PLAN.md"],
+  "evaluated_revision": "0baa43d7004fe4cab270356ba27df68e7dfe3f1d",
+  "status": "pass",
+  "environments": ["local-candidate-bound", "private-g02-real-minio-client-seam"],
+  "commands": [
+    "uv run pytest -q tests/g02/test_g02_gate_collectors.py -k object_probe",
+    "read-only run_remote_script proof from docs/runbooks/G02_ISOLATION.md#exact-getobject-seam-proof"
+  ],
+  "artifacts": [
+    "docs/evals/EVAL-G02-023/PLAN.md",
+    "docs/evals/EVAL-G02-023/REPORT.md",
+    "docs/evals/EVAL-G02-023/artifacts/real-seam-proof.json"
+  ],
   "evidence_urls": [],
-  "integrations": {},
+  "integrations": {
+    "minio": {
+      "status": "pass",
+      "reason": "The frozen real client passed the direct GetObject allow/deny seam proof."
+    }
+  },
   "open_evidence": []
 }
