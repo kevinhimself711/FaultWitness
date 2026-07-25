@@ -112,3 +112,15 @@ G02 关闭后的重构候选：
 - **关闭后候选**：Master Plan 的外部 seam contract 增加“谁部署、谁绑定、谁诊断、失败写到哪里”
   四项，并由 runner 自动把 operator-side prerequisite failure 写入 trial/phase journal。
 - **指标影响**：无。
+
+### GOV-OBS-003 — 外层工具默认 timeout 打断已完成的定点校验
+
+- **状态**：confirmed operational waste
+- **证据**：activation 的定点 governance check 已输出 `passed`，但 shell wrapper 在约 10.8 秒
+  以 124 退出，后置 `git diff --check` 需要单独补跑。
+- **不必要成本**：一次重复进程启动和一次额外 diff 检查；没有新增信息。
+- **G02 内处置**：不重复已通过的治理扫描；后续 progressing command 使用可持续等待与轮询，
+  只补未完成步骤。
+- **关闭后候选**：统一 command supervisor 默认不实施 wall-clock kill，并明确区分命令终态与
+  orchestration wrapper 终态。
+- **指标影响**：无。
