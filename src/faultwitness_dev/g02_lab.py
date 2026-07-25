@@ -984,21 +984,26 @@ def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str)
     for reference in images.values():
         normalized = containerd_normalized_reference(reference)
         expected_digest = reference.rsplit("@", 1)[1]
-        source = shlex.quote(reference)
         target = shlex.quote(normalized)
         digest = shlex.quote(expected_digest)
-        import_script += (
-            "\n"
-            f'test "$(/usr/local/bin/k3s ctr images list | '
-            f"awk -v ref={source} '$1 == ref {{print $3}}')\" = {digest}"
+        candidates = " ".join(
+            shlex.quote(candidate) for candidate in containerd_registry_aliases(reference)
         )
-        if normalized != reference:
-            import_script += (
-                "\n"
-                f"/usr/local/bin/k3s ctr images tag --force {source} {target}\n"
-                f'test "$(/usr/local/bin/k3s ctr images list | '
-                f"awk -v ref={target} '$1 == ref {{print $3}}')\" = {digest}"
-            )
+        import_script += (
+            "\nsource_ref=\n"
+            f"for candidate_ref in {candidates}; do\n"
+            "  observed_digest=$(/usr/local/bin/k3s ctr images list | "
+            "awk -v ref=\"$candidate_ref\" '$1 == ref {print $3; exit}')\n"
+            f'  if test "$observed_digest" = {digest}; then '
+            'source_ref="$candidate_ref"; break; fi\n'
+            "done\n"
+            'test -n "$source_ref"\n'
+            f'if test "$source_ref" != {target}; then\n'
+            f"  /usr/local/bin/k3s ctr images tag --force \"$source_ref\" {target}\n"
+            "fi\n"
+            f'test "$(/usr/local/bin/k3s ctr images list | '
+            f"awk -v ref={target} '$1 == ref {{print $3; exit}}')\" = {digest}"
+        )
     run_remote_script(import_script, privileged=True)
 
 
@@ -1007,6 +1012,31 @@ def containerd_normalized_reference(reference: str) -> str:
     if not reference.startswith(prefix):
         return reference
     return "docker.io/" + reference.removeprefix(prefix)
+
+
+def containerd_registry_aliases(reference: str) -> tuple[str, ...]:
+    if not FULL_DIGEST_REFERENCE.fullmatch(reference):
+        raise GovernanceError(f"containerd source reference is not digest-pinned: {reference}")
+    docker_prefix = "docker.io/"
+    index_prefix = "index.docker.io/"
+    if reference.startswith(docker_prefix):
+        return (reference, index_prefix + reference.removeprefix(docker_prefix))
+    if reference.startswith(index_prefix):
+        return (reference, docker_prefix + reference.removeprefix(index_prefix))
+    return (reference,)
+
+
+def select_containerd_import_source(
+    reference: str, inventory: Mapping[str, str]
+) -> str:
+    candidates = containerd_registry_aliases(reference)
+    expected_digest = reference.rsplit("@", 1)[1]
+    for candidate in candidates:
+        if inventory.get(candidate) == expected_digest:
+            return candidate
+    raise GovernanceError(
+        "containerd import lacks an exact repository-and-digest source for " + reference
+    )
 
 
 def _file_sha256(path: Path) -> str:

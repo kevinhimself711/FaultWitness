@@ -29,6 +29,10 @@ I-0032 extends this same inventory with exactly the two digest-pinned helper ima
 contract. Existing SUT archive keys remain stable; probe archives use the `probe-*` namespace so
 the distinct SUT and probe BusyBox digests cannot overwrite each other. Probe Pods must never
 depend on a later direct registry pull from the private node.
+After import, source resolution checks only the `docker.io` and `index.docker.io` forms of the same
+digest-qualified repository, prefers the requested form, and requires the containerd content digest
+to equal the frozen manifest digest before tagging the requested target. A name-only alias or a
+same-repository wrong digest fails closed.
 The runner replaces complete image scalar values
 with their registered digests, applies every namespaced resource to `fw-sut`, waits for all
 Deployments and OpenSearch, and writes `fw-g02-candidate-binding`.

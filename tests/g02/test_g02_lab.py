@@ -19,6 +19,7 @@ from faultwitness_dev.g02_lab import (
     base_flag_document,
     build_offline_staging_inventory,
     containerd_normalized_reference,
+    containerd_registry_aliases,
     fault_state,
     image_set_digest,
     load_gate_probe_images,
@@ -28,6 +29,7 @@ from faultwitness_dev.g02_lab import (
     run_gate_scenario_matrix,
     run_scenario,
     seed_catalog,
+    select_containerd_import_source,
     validate_lab_bootstrap,
     validate_seed_catalog,
 )
@@ -242,6 +244,31 @@ def test_offline_staging_inventory_rejects_repository_digest_drift() -> None:
                 "minio_mc": f"docker.io/example/other@sha256:{'c' * 64}",
             },
         )
+
+
+def test_containerd_import_source_prefers_requested_exact_digest() -> None:
+    digest = "sha256:" + "a" * 64
+    requested = f"docker.io/example/image@{digest}"
+    alias = f"index.docker.io/example/image@{digest}"
+    assert select_containerd_import_source(
+        requested, {requested: digest, alias: digest}
+    ) == requested
+
+
+def test_containerd_import_source_accepts_only_exact_digest_alias() -> None:
+    digest = "sha256:" + "a" * 64
+    requested = f"docker.io/example/image@{digest}"
+    alias = f"index.docker.io/example/image@{digest}"
+    assert containerd_registry_aliases(requested) == (requested, alias)
+    assert select_containerd_import_source(requested, {alias: digest}) == alias
+
+
+def test_containerd_import_source_rejects_wrong_digest_alias() -> None:
+    digest = "sha256:" + "a" * 64
+    requested = f"docker.io/example/image@{digest}"
+    alias = f"index.docker.io/example/image@{digest}"
+    with pytest.raises(GovernanceError, match="exact repository-and-digest"):
+        select_containerd_import_source(requested, {alias: "sha256:" + "b" * 64})
 
 
 def test_clean_clone_runner_is_pinned_and_candidate_bound() -> None:

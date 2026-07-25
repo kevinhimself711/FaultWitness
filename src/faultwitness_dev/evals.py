@@ -72,11 +72,13 @@ from faultwitness_dev.g02_isolation import (
 from faultwitness_dev.g02_lab import (
     build_offline_staging_inventory,
     containerd_normalized_reference,
+    containerd_registry_aliases,
     evaluate_i0017,
     image_set_digest,
     load_gate_probe_images,
     load_lab_config,
     offline_staging_inventory,
+    select_containerd_import_source,
 )
 from faultwitness_dev.infra import _remote_process, _run_remote_script_transport
 from faultwitness_dev.model_eval import run_model_eval
@@ -533,6 +535,8 @@ def evaluate_iteration(root: Path, iteration: str, candidate_sha: str) -> dict[s
         return evaluate_i0030(root, candidate_sha)
     if iteration == "I-0032":
         return evaluate_i0032(root, candidate_sha)
+    if iteration == "I-0034":
+        return evaluate_i0034(root, candidate_sha)
     raise GovernanceError(f"no private Eval implementation is registered for {iteration}")
 
 
@@ -1211,6 +1215,119 @@ def evaluate_i0032(root: Path, candidate_sha: str) -> dict[str, Any]:
     )
     return {
         "eval_id": "EVAL-G02-017",
+        "candidate_sha": candidate_sha,
+        "status": "pass",
+        "checks": {case["case_id"]: case["status"] for case in cases},
+        "open_evidence": [],
+    }
+
+
+def evaluate_i0034(root: Path, candidate_sha: str) -> dict[str, Any]:
+    if _head_sha(root) != candidate_sha:
+        raise GovernanceError("EVAL-G02-019 candidate SHA must equal checked-out HEAD")
+    if subprocess.run(
+        ["git", "status", "--porcelain"], cwd=root, capture_output=True, text=True
+    ).stdout:
+        raise GovernanceError("EVAL-G02-019 requires a clean candidate worktree")
+    loaded = validate_repository_schemas(root)
+    state = loaded["PROJECT_STATE.yaml"]
+    iteration = loaded["governance/iterations/I-0034.yaml"]
+    if (
+        state.get("active_gate") != "G02"
+        or state.get("active_gate_status") != "in_progress"
+        or state.get("active_iteration") != "I-0034"
+        or iteration.get("status") != "in_progress"
+    ):
+        raise GovernanceError("EVAL-G02-019 requires I-0034 as the sole active Iteration")
+
+    started_at = datetime.now(UTC).isoformat()
+    cases: list[dict[str, Any]] = []
+    digest = "sha256:" + "a" * 64
+    requested = f"docker.io/example/probe@{digest}"
+    alias = f"index.docker.io/example/probe@{digest}"
+
+    exact_source = select_containerd_import_source(
+        requested, {requested: digest, alias: digest}
+    )
+    if exact_source != requested:
+        raise GovernanceError("I-0034 did not prefer the exact requested source")
+    cases.append(
+        {
+            "case_id": "requested-source-exact-digest",
+            "status": "pass",
+            "selected_source": exact_source,
+        }
+    )
+
+    alias_source = select_containerd_import_source(requested, {alias: digest})
+    if alias_source != alias or containerd_registry_aliases(requested) != (requested, alias):
+        raise GovernanceError("I-0034 did not resolve the exact Docker Hub host alias")
+    cases.append(
+        {
+            "case_id": "alias-only-source-exact-digest",
+            "status": "pass",
+            "selected_source": alias_source,
+            "target_reference": requested,
+        }
+    )
+
+    try:
+        select_containerd_import_source(requested, {alias: "sha256:" + "b" * 64})
+    except GovernanceError as error:
+        if "exact repository-and-digest" not in str(error):
+            raise
+    else:
+        raise GovernanceError("I-0034 accepted an alias with the wrong digest")
+    cases.append(
+        {
+            "case_id": "alias-wrong-digest-fails-closed",
+            "status": "pass",
+        }
+    )
+
+    isolation = load_isolation_config(root)
+    identities = simulate_identity_policies(isolation)
+    writers = prove_writer_canaries(isolation)
+    if len(identities) != 4 or any(item.get("status") != "pass" for item in identities):
+        raise GovernanceError("V-G02-009 Iteration N must remain exactly four")
+    if len(writers) != 4 or any(item.get("status") != "pass" for item in writers):
+        raise GovernanceError("V-G02-011 Iteration N must remain exactly four")
+
+    config = load_lab_config(root)
+    sut_digest = image_set_digest(config)
+    if sut_digest != "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e":
+        raise GovernanceError("I-0034 changed the frozen SUT image-set digest")
+    artifact = {
+        "schema_version": "1.0.0",
+        "candidate_sha": candidate_sha,
+        "validation": "I-0034-containerd-imported-reference-alias-resolution",
+        "alias_case_count": len(cases),
+        "cases": cases,
+        "sut_image_set_digest": sut_digest,
+        "frozen_validation_n": {
+            "V-G02-009": 4,
+            "V-G02-010": 0,
+            "V-G02-011": 4,
+            "V-G02-017": 0,
+        },
+        "gate_l2_execution": 0,
+        "remote_execution": 0,
+        "deployments": 0,
+        "destructive_scenarios": 0,
+        "external_service_calls": 0,
+        "model_calls": 0,
+        "start_time": started_at,
+        "end_time": datetime.now(UTC).isoformat(),
+        "status": "pass",
+        "open_evidence": [],
+    }
+    artifact_path = root / "docs/evals/EVAL-G02-019/artifacts/containerd-alias-resolution.json"
+    artifact_path.parent.mkdir(parents=True, exist_ok=True)
+    artifact_path.write_text(
+        json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    return {
+        "eval_id": "EVAL-G02-019",
         "candidate_sha": candidate_sha,
         "status": "pass",
         "checks": {case["case_id"]: case["status"] for case in cases},
