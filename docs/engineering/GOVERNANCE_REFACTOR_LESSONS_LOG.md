@@ -210,3 +210,28 @@ G02 关闭后的重构候选：
 - **关闭后候选**：外部副作用 runner 应把每个完成 checkpoint 原子写入 repository-external
   journal；supervisor 重连后先 reconcile checkpoint，再决定 resume 哪个子步骤。
 - **指标影响**：无。
+
+### GOV-OBS-010 — ADR 冻结了 selective inheritance，但 runner 从未实现
+
+- **状态**：confirmed compatibility debt
+- **证据**：ADR-0013 明确允许依赖闭包与 digest 完全一致的未受影响 phase 建立
+  `inherited_from_manifest`；manifest schema 也有该字段。但仓库搜索表明该字段只出现在 schema、
+  tests 和已填 `null` 的 manifest 中，没有 writer、validator 或 CLI。`PhaseContext.cache_key` 同时把
+  完整 `candidate_sha` 与全局 `evaluator_digest` 放入每个 phase key，`PhaseEngine._exact_pass` 只接受
+  当前 key 的私有 journal pass，`inspect_g02_close_readiness` 也只读取这些 journal records。
+- **当前触发**：C-G02-005 只改变 `g02_lab.py` 的 payment observer、对应测试与 runbook，按当前
+  closure freeze，A-G02-005 应只重跑受影响的 lab/scenario/downstream baseline 闭包；但新 SHA 与
+  全局 evaluator digest 会让 A-G02-030 已通过的 60-cell access、six-stage trace 和 22-surface
+  canary 全部 cache miss。
+- **不能采用的路径**：手工伪造新 key 的私有 pass records 会绕过 runner 与独立复核；在 active
+  Gate attempt 内补 inheritance tooling 又违反 closure freeze 的“不得新增框架”。
+- **G02 内处置**：EVAL-G02-030 的 pass records 保持不可变且不在同一 exact key 重跑；A-G02-005
+  按现有冻结 DAG 为新 candidate 各执行一次必需依赖，再执行 scenario/downstream。该重复成本单独
+  记为当前 runner 的 compatibility debt，不以重构 Gate Eval 为代价阻断 G02 关闭。
+- **附带 allowlist 缺口**：新经验账本不在当前 `EVIDENCE_ONLY_FILES`/prefixes 中，因此包含动态经验
+  的 handoff commit 不能作为 `679d756...` 的 evidence-only descendant。G02 内不改 allowlist，
+  而是在 A-G02-005 freeze 前提交账本并把最终 HEAD 作为新 candidate，显式计量这次纯治理 SHA churn。
+- **关闭后候选**：phase subject ownership、依赖闭包、source-manifest digest 验证和 inheritance
+  materialization 必须成为同一个机器校验 runner；全局 evaluator digest 应拆成 phase-specific
+  digest，否则 selective rerun 只是文档承诺。
+- **指标影响**：无；合法继承必须证明未受影响 phase 的原 N、artifact、环境与失败语义完全相同。
