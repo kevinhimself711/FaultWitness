@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0034
 gate: G02
 title: Containerd Imported-Reference Alias Resolution Corrective
-status: planned
+status: in_progress
 iteration_type: corrective
 corrects: [I-0017, I-0032, I-0033]
 scope:

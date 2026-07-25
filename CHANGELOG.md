@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Activate I-0034 as the sole containerd imported-reference alias corrective; I-0035 remains
+  planned, and no remote Gate L2, deployment, destructive, external-service, or model work is authorized.
 - Preserve I-0033/EVAL-G02-018 as terminal negative evidence after containerd imported the exact
   `minio/mc` digest under `index.docker.io`; plan I-0034 alias correction and I-0035 replacement.
 - Activate I-0033 as the sole sixth replacement orchestration after I-0032 closed with exact
