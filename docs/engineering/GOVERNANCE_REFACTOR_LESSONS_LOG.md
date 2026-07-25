@@ -274,3 +274,19 @@ G02 关闭后的重构候选：
   materialization 必须成为同一个机器校验 runner；全局 evaluator digest 应拆成 phase-specific
   digest，否则 selective rerun 只是文档承诺。
 - **指标影响**：无；合法继承必须证明未受影响 phase 的原 N、artifact、环境与失败语义完全相同。
+
+### GOV-OBS-011 — subject-equivalent descendant 与 detached-worktree 强制规则互相冲突
+
+- **状态**：confirmed governance contradiction；已在 G02 内前向止血
+- **证据**：`G02_EVAL_PROTOCOL` 与 `AGENTS.md` 前一条规则允许经 ancestry、changed-path 和
+  subject digest 验证的 evidence-only descendant 执行；紧邻规则却又要求 governance/evidence
+  HEAD 必须切到 detached candidate worktree。A-G02-009 激活后 24 个运行/Eval subject 与
+  `17be4f2...` 完全一致，额外切换 worktree 不会增加任何实验信息。
+- **不必要成本**：为让缺少 active-attempt 资产的旧 checkout 能启动 runner，需要复制或临时同步
+  状态资产，并再次处理 clean-tree/binding；这正是治理 SHA 与运行 SHA 互相追逐的来源之一。
+- **G02 内处置**：统一为“subject-equivalent descendant 可直接执行；只有存在未提交或非 allowlist
+  subject 变化时才使用 detached checkout”。不重绑候选、不重部署、不重跑已通过 phase。
+- **关闭后候选**：Gate runner 只接收 release/candidate ID 与 phase-owned subject manifest；Git
+  worktree 位置和治理 HEAD 不再是执行语义。文档与状态资产不参与实验 cache identity。
+- **指标影响**：无；仍验证候选 ancestry、运行/Eval subject、镜像/config/dataset/environment digest，
+  不改变 N、阈值、权限、模型路线、token/费用、health window 或失败语义。

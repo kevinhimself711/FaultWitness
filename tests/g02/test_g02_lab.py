@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from collections.abc import Mapping
 from pathlib import Path
 from types import SimpleNamespace
@@ -540,6 +541,9 @@ def test_clean_clone_runner_is_pinned_and_candidate_bound() -> None:
     assert "readyReplicas" in script
     assert "grep -q '\"emailMemoryLeak\"'" in script
     assert "rollout restart deployment/flagd" in script
+    assert "FW_G02_LOAD_USERS_ANCHOR_DRIFT" in script
+    assert "load_users_minimum" in script
+    assert 'value: "1"' in script
     assert "sleep 5" in script
     assert "rollout status" not in script
     assert "--timeout" not in script
@@ -555,6 +559,27 @@ def test_clean_clone_runner_is_pinned_and_candidate_bound() -> None:
     assert len(readiness_checks) == 2
     for index, check in enumerate(readiness_checks):
         compile(check.split("\n')", 1)[0], f"g02-readiness-{index}", "exec")
+
+
+def test_lab_manifest_uses_minimum_nonzero_ambient_load(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    script = render_k3s_bootstrap_script(load_lab_config(ROOT), "1" * 40)
+    transform = script.split("<<'PY'\n", 1)[1].split("\nPY\n", 1)[0]
+    manifest = tmp_path / "lab.yaml"
+    manifest.write_text(
+        'marker: "emailMemoryLeak"\n'
+        '            - name: LOCUST_USERS\n'
+        '              value: "10"\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(sys, "argv", ["g02-manifest-transform", str(manifest)])
+
+    exec(compile(transform, "g02-manifest-transform", "exec"), {})
+
+    rendered = manifest.read_text(encoding="utf-8")
+    assert 'value: "1"' in rendered
+    assert 'value: "10"' not in rendered
 
 
 def test_lab_start_cli_is_explicitly_private_server_scoped() -> None:

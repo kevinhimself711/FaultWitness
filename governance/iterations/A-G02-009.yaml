@@ -2,7 +2,7 @@ schema_version: "1.2.0"
 id: A-G02-009
 gate: G02
 title: Infrastructure-Classification Unified Candidate Gate Attempt
-status: in_progress
+status: failed
 iteration_type: gate_attempt
 attempt_of: G02
 attempt_scope:

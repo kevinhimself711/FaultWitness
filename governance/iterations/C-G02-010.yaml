@@ -1,0 +1,61 @@
+schema_version: "1.2.0"
+id: C-G02-010
+gate: G02
+title: Ambient Lab Load Corrective
+status: in_progress
+iteration_type: corrective
+corrects: [I-0017, A-G02-009]
+root_cause:
+  id: RC-G02-010
+  source_eval: EVAL-G02-040
+  phase: scenario-matrix
+  failure_mode: The upstream ten-user ambient load produced fleet-wide POST 504 responses and the accounting container's sixty-second OOM restart while readiness checks still passed.
+affected_validation_ids: [V-G02-006]
+verification_scope:
+  changed_seam: dedicated-lab ambient load manifest transform
+  semantic_branches: [minimum_nonzero_ambient_load, exact_anchor_fail_closed, candidate_bound_checkout]
+  reused_test_entrypoints: [tests/g02/test_g02_lab.py]
+  real_seam_proof: required
+  real_seam_runner: existing candidate-bound deployer and single-checkout Kafka stimulus
+  real_seam_artifact: docs/evals/EVAL-G02-041/artifacts/ambient-load-seam.json
+  gate_l2_execution: 0
+  full_gate_eval: false
+cost_boundary:
+  root_cause_count: 1
+  bespoke_eval_harness: false
+  gate_attempt_included: false
+  targeted_verification_separate: true
+  global_sync_deferred: true
+accounting_scope:
+  corrective_engineering: included
+  targeted_verification: separate
+  gate_attempt_execution: excluded
+  governance_sync: separate
+scope:
+  - Rewrite the pinned upstream load-generator setting from ten users to the minimum nonzero one user in the dedicated G02 lab only.
+  - Fail closed if the exact upstream manifest anchor drifts.
+  - Reuse the existing deployer and one-checkout stimulus to prove the candidate-bound real seam without running Gate L2.
+non_goals:
+  - Running any scenario access trace canary baseline or model matrix.
+  - Changing scenario N fault variants observation spacing oracle windows recovery thresholds permissions Ground Truth locked tests quality performance model route token or cost.
+  - Increasing service resource limits changing pinned images or reclassifying explicit HTTP failures.
+dependencies: [I-0017, C-G02-008, C-G02-009, A-G02-009]
+tests:
+  - uv run pytest -q tests/g02/test_g02_lab.py -k ambient_load
+  - uv run python -m faultwitness_dev verify-fast
+  - uv run python -m faultwitness_dev eval-changed
+eval_id: EVAL-G02-041
+commit: null
+changed_paths:
+  - src/faultwitness_dev/g02_lab.py
+  - tests/g02/test_g02_lab.py
+  - docs/runbooks/G02_FAULT_LAB.md
+  - docs/evals/EVAL-G02-041
+  - docs/roadmap/iterations/C-G02-010.md
+  - governance/iterations/C-G02-010.yaml
+behavior_change: true
+docs_updated:
+  - docs/runbooks/G02_FAULT_LAB.md
+  - docs/evals/EVAL-G02-041/PLAN.md
+  - docs/roadmap/iterations/C-G02-010.md
+threshold_changes: []

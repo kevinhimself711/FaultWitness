@@ -1,0 +1,31 @@
+{
+  "accounting": {
+    "last_exit_code": 137,
+    "last_finished_at": "2026-07-25T22:21:37Z",
+    "last_reason": "OOMKilled",
+    "memory_limit": "120Mi",
+    "restart_count": 62
+  },
+  "candidate_sha": "17be4f2d29448bc4db49b71dafe005d7877cd99c",
+  "classification": "metric_fail",
+  "diagnostic_collected_at": "2026-07-25T18:31:44.2394078-04:00",
+  "environment": {
+    "all_deployments_ready_after_failure": true,
+    "load_generator_replicas": 1,
+    "load_generator_users": 10,
+    "node_memory_pressure": false
+  },
+  "failed_phase": "scenario-matrix",
+  "failed_trial": "g02-scenario-17be4f2d29448bc4db49b71dafe005d7877cd99c-seed-g02-0013",
+  "fault_flag_after_cleanup": "off",
+  "http_failure": {
+    "marker": "FW_G02_STIMULUS_HTTP_ERROR",
+    "status": 504,
+    "trace_scope": ["frontend-proxy", "frontend", "checkout", "cart"]
+  },
+  "model_calls": 0,
+  "open_evidence": [],
+  "root_cause": "The upstream ten-user ambient load exceeded the dedicated lab resource envelope; readiness-only deployment checks admitted a fleet-wide 504/OOM state before the controlled Kafka checkout.",
+  "scenario_pass_count": 12,
+  "schema_version": "1.0.0"
+}

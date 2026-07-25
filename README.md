@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: A-G02-009
+active_iteration: C-G02-010
 next_iteration: null
 last_closed_gate: G01
 ---
@@ -32,8 +32,9 @@ deploy/inspect/relay/smoke 证据关闭。A-G02-004 在 `paymentUnreachable` 故
 因 Kafka fault runner 依赖偶发 load-generator 流量、未在冻结的 90 秒窗口内形成 consumer lag
 而终态失败；C-G02-008 已用定向测试和一次 candidate-bound Kafka checkout/lifecycle seam 关闭。
 A-G02-008 因 source-collection 命令未产出 observation、却被 runner 错误归为 `metric_fail` 而
-终态失败；C-G02-009 已用分类测试和一次 candidate-bound 只读 collection seam 关闭；
-A-G02-009 已在该候选上激活。任何终态记录都不会重开。
+终态失败；C-G02-009 已用分类测试和一次 candidate-bound 只读 collection seam 关闭。
+A-G02-009 因默认十用户 ambient load 造成全链路 HTTP 504、同时 `accounting` 第 62 次 OOM 而
+终态失败；C-G02-010 正在把专用 lab 的 ambient load 降到最小非零用户数。任何终态记录都不会重开。
 
 ## 权威资产
 

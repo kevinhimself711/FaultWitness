@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: A-G02-009
+active_iteration: C-G02-010
 next_iteration: null
 last_closed_gate: G01
 ---
@@ -36,7 +36,9 @@ is completed with targeted tests and one candidate-bound Kafka checkout/lifecycl
 is terminally failed because a source-collection command exited without producing an observation and
 the scenario runner incorrectly collapsed that infrastructure condition into `metric_fail`. C-G02-009
 is completed with classification tests and one candidate-bound read-only collection seam. A-G02-009
-is active on the infrastructure-classification candidate. No terminal work item may be reopened.
+is terminally failed because the default ten-user ambient load produced fleet-wide HTTP 504s while
+`accounting` reached its sixty-second OOM restart. C-G02-010 is active to reduce the dedicated lab's
+ambient load to the minimum nonzero user count. No terminal work item may be reopened.
 
 ## Source-of-truth order
 
@@ -107,10 +109,11 @@ PROJECT_STATE.yaml is the authority for the active Gate and work item, not for a
   prove ancestry, changed-path allowlisting, and unchanged subject digests instead of rebinding or
   redeploying the candidate.
 - When the orchestration worktree has advanced only for governance or evidence, candidate-bound
-  remote execution runs from a clean detached checkout at `candidate_sha`. Do not change the
-  candidate, rewrite a binding, or create another commit merely to make the orchestration HEAD
-  equal the candidate. Generated phase artifacts may be copied back after the candidate preflight;
-  they never become runtime inputs.
+  execution may run directly from that descendant after ancestry, changed-path scope, and every
+  phase-owned runtime/Eval subject digest are verified. Use a clean detached checkout only when the
+  current worktree contains uncommitted or non-allowlisted subject changes. Do not switch worktrees,
+  rewrite a binding, or create another commit merely to make orchestration HEAD equal the candidate.
+  Generated phase artifacts never become runtime inputs.
 - No tracked artifact may be required to contain the SHA of the commit that contains that artifact.
   A runner records the already-existing execution checkpoint it observed before producing output;
   the later evidence/closure commit is identified by Git history or its Gate tag and does not

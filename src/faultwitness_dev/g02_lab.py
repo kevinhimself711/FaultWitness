@@ -939,6 +939,11 @@ if '"emailMemoryLeak"' not in text:
     if text.count(needle) != 1:
         raise SystemExit("FW_G02_EMAIL_FLAG_ANCHOR_DRIFT")
     text = text.replace(needle, email_flag)
+load_users_anchor = '            - name: LOCUST_USERS\\n              value: "10"'
+load_users_minimum = '            - name: LOCUST_USERS\\n              value: "1"'
+if text.count(load_users_anchor) != 1:
+    raise SystemExit("FW_G02_LOAD_USERS_ANCHOR_DRIFT")
+text = text.replace(load_users_anchor, load_users_minimum)
 with open(path, "w", encoding="utf-8", newline="\\n") as target_file:
     target_file.write(text)
 PY

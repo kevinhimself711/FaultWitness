@@ -127,6 +127,14 @@ threshold failure.
 The destructive Gate scenario phase remains separately guarded and runs only once for an exact
 candidate, image, config, and environment cache key.
 
+The dedicated G02 manifest rewrites the upstream load generator from ten users to one user. One is
+the minimum nonzero ambient load that still supplies ordinary trace traffic for fault classes whose
+oracle observes existing journeys; ten users produced fleet-wide POST 504 responses and sixty-two
+`accounting` OOM restarts in A-G02-009. This lab-capacity correction does not change scenario N,
+fault injection, oracle windows, recovery requirements, quality/performance thresholds, or paid
+baseline samples. Because ambient traffic can affect every scenario observation, the first Gate
+attempt on this corrected lab executes all 32 seeds and does not inherit earlier scenario trials.
+
 ## Gate phase interfaces
 
 I-0017 owns executable handlers for both `lab-deploy-and-bind` and `scenario-matrix` before I-0020
