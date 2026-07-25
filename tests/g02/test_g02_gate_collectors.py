@@ -86,6 +86,63 @@ def test_remote_provisioning_contract_matches_local_digest_and_cross_boundary_po
     )
 
 
+@pytest.mark.parametrize(
+    ("cell", "returncode", "stderr", "required_command", "forbidden_commands", "outcome"),
+    [
+        (
+            {"target": "s3:g02/scenarios/", "probe": "canonical-owner"},
+            0,
+            "",
+            "mc cat probe/faultwitness-eval/g02/scenarios/deny-sentinel",
+            ("mc stat", "mc pipe"),
+            (True, "allowed"),
+        ),
+        (
+            {"target": "s3:g02/ground-truth/", "probe": "ordinary-developer"},
+            1,
+            "Access Denied",
+            "mc cat probe/faultwitness-eval/g02/ground-truth/deny-sentinel",
+            ("mc stat", "mc pipe"),
+            (False, "denied"),
+        ),
+        (
+            {"target": "s3:g02/evidence/", "probe": "canonical-owner"},
+            0,
+            "",
+            "mc pipe probe/faultwitness-eval/g02/evidence/probe-",
+            ("mc stat", "mc cat"),
+            (True, "allowed"),
+        ),
+    ],
+)
+def test_object_probe_uses_exact_getobject_and_preserves_denials_and_writes(
+    monkeypatch: pytest.MonkeyPatch,
+    cell: dict[str, str],
+    returncode: int,
+    stderr: str,
+    required_command: str,
+    forbidden_commands: tuple[str, ...],
+    outcome: tuple[bool, str],
+) -> None:
+    remote = _remote_probe_module()
+    scripts: list[str] = []
+
+    monkeypatch.setattr(remote, "secret_value", lambda *_args: "test-credential")
+
+    def fake_mc_script(script: str, *, check: bool = True):  # type: ignore[no-untyped-def]
+        scripts.append(script)
+        assert check is False
+        return remote.subprocess.CompletedProcess(
+            args=["mc"], returncode=returncode, stdout="", stderr=stderr
+        )
+
+    monkeypatch.setattr(remote, "mc_script", fake_mc_script)
+    assert remote.object_access({}, cell) == outcome
+    assert len(scripts) == 1
+    assert required_command in scripts[0]
+    assert all(command not in scripts[0] for command in forbidden_commands)
+
+
 def test_remote_probe_uses_python38_compatible_utc_semantics() -> None:
     source = (ROOT / "deploy/g02/gate_probe.py").read_text(encoding="utf-8")
     assert "from datetime import UTC" not in source

@@ -724,7 +724,7 @@ def object_access(request: dict[str, Any], cell: dict[str, Any]) -> tuple[bool, 
         )
     else:
         command += (
-            f"mc stat probe/faultwitness-eval/g02/{prefix}deny-sentinel >/dev/null\n"
+            f"mc cat probe/faultwitness-eval/g02/{prefix}deny-sentinel >/dev/null\n"
         )
     return command_outcome(mc_script(command, check=False))
 

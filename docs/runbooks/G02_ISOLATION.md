@@ -99,6 +99,23 @@ each stage or surface. A classified transport failure resumes only the failed/pe
 allow mismatch, missing stage, canary hit, binding drift, missing artifact, or provisioning defect
 is terminal for that candidate and has no retry or operator-pass route.
 
+## Exact GetObject seam proof
+
+Object-read cells use `mc cat <alias>/faultwitness-eval/g02/<prefix>/deny-sentinel >/dev/null`.
+`mc stat` and directory-listing operations are forbidden because they can require `ListBucket`
+before testing the frozen `GetObject` permission. Object-write cells continue to use `mc pipe`.
+
+C-G02-001 closes only after one targeted real-client proof against the existing private G02 lab:
+
+- `scenario-controller` reads the scenario sentinel through direct `mc cat` with the existing
+  `GetObject`-only policy and no `ListBucket` grant;
+- `ordinary-developer` invokes the same direct object operation and remains denied.
+
+The proof artifact records only candidate/environment identity, client version, sanitized target,
+allow/deny outcome, timestamps, and command/output digests. It never records credentials or object
+content. This pair is external-seam compatibility evidence, not Gate L2 N and not permission to
+skip or reduce the frozen 60-cell Gate matrix.
+
 These phases have no preset orchestration timeout. The rule changes only process supervision:
 matrix N, zero-tolerance semantics, quality/performance thresholds, and all Gate criteria remain
 unchanged.
