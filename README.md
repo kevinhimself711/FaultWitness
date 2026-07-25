@@ -1,8 +1,8 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: null
-next_iteration: I-0036
+active_iteration: I-0036
+next_iteration: I-0037
 last_closed_gate: G01
 ---
 
@@ -17,7 +17,7 @@ FaultWitness 是一个面向微服务事故调查、受控修复与持续优化�
 兼容性纠错并关闭；I-0031 因固定 probe 镜像未离线导入而终态失败。I-0032 已将两个固定
 probe 镜像纳入离线 staging/import inventory 并关闭；I-0033 因 containerd import alias
 解析缺陷终态失败。I-0034 已完成精确 alias corrective 并关闭；I-0035 随后证明对象读取
-probe 错用隐含 `ListBucket` 的 `mc stat`，现已终态失败。I-0036 是下一前向 corrective，
+probe 错用隐含 `ListBucket` 的 `mc stat`，现已终态失败。I-0036 是当前前向 corrective，
 I-0037 是其后的替代编排。
 任何终态记录都不会重开。
 

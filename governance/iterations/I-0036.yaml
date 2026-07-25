@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0036
 gate: G02
 title: Exact GetObject Probe Corrective
-status: planned
+status: in_progress
 iteration_type: corrective
 corrects: [I-0024, I-0035]
 scope:

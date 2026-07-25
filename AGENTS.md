@@ -1,8 +1,8 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: null
-next_iteration: I-0036
+active_iteration: I-0036
+next_iteration: I-0037
 last_closed_gate: G01
 ---
 
@@ -15,8 +15,9 @@ FaultWitness is a multi-tenant Agent Runtime for investigating microservice inci
 G00 and G01 are closed. G02 is `in_progress`. I-0016 through I-0019 and forward correctives I-0021,
 I-0022, I-0024, I-0026, I-0028, I-0030, I-0032, and I-0034 are completed with no open evidence. I-0020,
 I-0023, I-0025, I-0027, I-0029, I-0031, I-0033, and I-0035 are terminally failed with complete
-negative evidence. I-0036 is the next forward object-read probe corrective; I-0037 is the planned
-replacement orchestration. No terminal Iteration may be reopened.
+negative evidence. I-0036 is the active forward object-read probe corrective; I-0037 is the planned
+replacement orchestration. I-0036 may run only local deterministic work and may not run Gate L2,
+deployment, destructive, external-service, or model phases. No terminal Iteration may be reopened.
 
 ## Source-of-truth order
 

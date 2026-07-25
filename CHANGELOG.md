@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Activate I-0036 as the sole exact-GetObject probe corrective; I-0037 remains planned and no
+  Gate L2, deployment, destructive, external-service, or model phase is authorized in I-0036.
 - Preserve I-0035/EVAL-G02-020 as terminal after 24 passing database access cells and one
   deterministic object-read probe semantics failure; plan I-0036 exact-GetObject correction and
   I-0037/EVAL-G02-022 replacement without changing isolation permissions or Eval criteria.
