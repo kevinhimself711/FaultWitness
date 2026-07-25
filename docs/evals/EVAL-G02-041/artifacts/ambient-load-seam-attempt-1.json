@@ -1,0 +1,21 @@
+{
+  "candidate_sha": "3944f53b7ca58b3c85eda8085ab5d917cb7df224",
+  "conclusion": "Reducing ambient load to one user did not repair state retained by the long-lived namespace; candidate deployment must establish a clean lab boundary.",
+  "deployment_count": 24,
+  "explicit_http_failure": {
+    "marker": "FW_G02_STIMULUS_HTTP_ERROR",
+    "status": 504
+  },
+  "fault_flag_after_failure": "off",
+  "gate_l2_phases": 0,
+  "load_generator_users": 1,
+  "model_calls": 0,
+  "open_evidence": [],
+  "post_failure_accounting": {
+    "last_reason": "OOMKilled",
+    "restart_count": 62
+  },
+  "scenario_trials": 0,
+  "schema_version": "1.0.0",
+  "status": "fail"
+}

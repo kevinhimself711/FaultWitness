@@ -127,13 +127,19 @@ threshold failure.
 The destructive Gate scenario phase remains separately guarded and runs only once for an exact
 candidate, image, config, and environment cache key.
 
-The dedicated G02 manifest rewrites the upstream load generator from ten users to one user. One is
-the minimum nonzero ambient load that still supplies ordinary trace traffic for fault classes whose
-oracle observes existing journeys; ten users produced fleet-wide POST 504 responses and sixty-two
-`accounting` OOM restarts in A-G02-009. This lab-capacity correction does not change scenario N,
+Each candidate deployment deletes and naturally waits for the dedicated `fw-sut` namespace, creates
+it again, and applies the pinned manifest. Reapplying over the old namespace is insufficient: the
+first C-G02-010 seam still returned HTTP 504 at one user because Kafka/PostgreSQL and Pods retained
+the state accumulated across sixty-two `accounting` OOM restarts. The reset touches only the
+disposable fault-lab namespace; no wall-clock timeout is attached to deletion or readiness.
+
+The same manifest rewrites the upstream load generator from ten users to one user. One is the
+minimum nonzero ambient load that still supplies ordinary trace traffic for fault classes whose
+oracle observes existing journeys. The clean-state/load correction does not change scenario N,
 fault injection, oracle windows, recovery requirements, quality/performance thresholds, or paid
-baseline samples. Because ambient traffic can affect every scenario observation, the first Gate
-attempt on this corrected lab executes all 32 seeds and does not inherit earlier scenario trials.
+baseline samples. Because the namespace and ambient traffic affect every live surface and scenario
+observation, the first Gate attempt on this corrected lab reruns 60/6/22 and all 32 seeds rather than
+inheriting remote evidence from the contaminated namespace.
 
 ## Gate phase interfaces
 

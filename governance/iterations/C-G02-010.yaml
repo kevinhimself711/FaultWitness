@@ -9,11 +9,11 @@ root_cause:
   id: RC-G02-010
   source_eval: EVAL-G02-040
   phase: scenario-matrix
-  failure_mode: The upstream ten-user ambient load produced fleet-wide POST 504 responses and the accounting container's sixty-second OOM restart while readiness checks still passed.
+  failure_mode: Candidate deployment reused a long-lived namespace contaminated by ten-user ambient load persistent work and sixty-two accounting OOM restarts; readiness still passed and a one-user checkout remained HTTP 504.
 affected_validation_ids: [V-G02-006]
 verification_scope:
-  changed_seam: dedicated-lab ambient load manifest transform
-  semantic_branches: [minimum_nonzero_ambient_load, exact_anchor_fail_closed, candidate_bound_checkout]
+  changed_seam: dedicated-lab clean namespace boundary and ambient load manifest transform
+  semantic_branches: [clean_namespace_recreation, minimum_nonzero_ambient_load, exact_anchor_fail_closed, candidate_bound_checkout]
   reused_test_entrypoints: [tests/g02/test_g02_lab.py]
   real_seam_proof: required
   real_seam_runner: existing candidate-bound deployer and single-checkout Kafka stimulus
@@ -32,6 +32,7 @@ accounting_scope:
   gate_attempt_execution: excluded
   governance_sync: separate
 scope:
+  - Recreate and naturally wait for the disposable fw-sut namespace before applying each candidate manifest.
   - Rewrite the pinned upstream load-generator setting from ten users to the minimum nonzero one user in the dedicated G02 lab only.
   - Fail closed if the exact upstream manifest anchor drifts.
   - Reuse the existing deployer and one-checkout stimulus to prove the candidate-bound real seam without running Gate L2.

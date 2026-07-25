@@ -951,6 +951,8 @@ if grep -E '^[[:space:]]*image:[[:space:]]*' "$manifest" | grep -v '@sha256:'; t
   echo FW_G02_UNPINNED_IMAGE >&2
   exit 41
 fi
+/usr/local/bin/k3s kubectl delete namespace fw-sut --ignore-not-found --wait=true
+/usr/local/bin/k3s kubectl create namespace fw-sut
 /usr/local/bin/k3s kubectl apply -n fw-sut -f "$manifest"
 if ! /usr/local/bin/k3s kubectl -n fw-sut exec deployment/flagd -c flagd-ui -- \
   grep -q '"emailMemoryLeak"' /app/data/demo.flagd.json; then

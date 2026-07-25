@@ -537,6 +537,8 @@ def test_clean_clone_runner_is_pinned_and_candidate_bound() -> None:
     assert all(not image["reference"].startswith("docker.io/") for image in config["images"])
     assert "sha256sum -c" in script
     assert "namespace: fw-sut" in script
+    assert "delete namespace fw-sut --ignore-not-found --wait=true" in script
+    assert "create namespace fw-sut" in script
     assert "kubectl apply -n fw-sut" in script
     assert "readyReplicas" in script
     assert "grep -q '\"emailMemoryLeak\"'" in script
