@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: null
+active_iteration: A-G02-006
 next_iteration: null
 last_closed_gate: G01
 ---
@@ -26,8 +26,8 @@ and smoke evidence. A-G02-004 is terminally failed with complete payment-unreach
 evidence. C-G02-005 is completed with caller-trace attribution, targeted tests, and one restored
 real scenario. A-G02-005 is terminally failed after three scenario passes because the runner ignored
 the Master Plan's prior-recovery precondition rule. C-G02-006 is completed with targeted tests and
-one candidate-bound prior-recovery scenario seam. The next unified-candidate Gate attempt has not
-yet been activated. No terminal work item may be reopened.
+one candidate-bound prior-recovery scenario seam. A-G02-006 is the active unified-candidate Gate
+attempt. No terminal work item may be reopened.
 
 ## Source-of-truth order
 
