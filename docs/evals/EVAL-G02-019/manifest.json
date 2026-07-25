@@ -5,7 +5,7 @@
   "iteration": "I-0034",
   "candidate_sha": "1f366dc8bbe0e71611367b87ed72fb4e70db69cd",
   "evaluated_revision": "1f366dc8bbe0e71611367b87ed72fb4e70db69cd",
-  "evidence_head_sha": "1f366dc8bbe0e71611367b87ed72fb4e70db69cd",
+  "evidence_head_sha": "5468d132abd91bd3b99d0aaa2b254b2d64c5edfc",
   "status": "pass",
   "subject_digests": {
     "config/g02/gate-probes.yaml": "6fb0aec3a8a7122e34564ffaf1dc13612296576f2eb12f160da877cebb99332d",

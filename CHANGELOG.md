@@ -4,6 +4,10 @@
 
 ### Governance maintenance
 
+- Close I-0034 on candidate `1f366dc` with EVAL-G02-019 passing all three exact-digest alias
+  cases, frozen validation N=4/0/4/0, zero remote/model execution, and no open evidence.
+- Resolve only `docker.io`/`index.docker.io` imported aliases with exact repository and content
+  digest matching before tagging and verifying the frozen target reference.
 - Activate I-0034 as the sole containerd imported-reference alias corrective; I-0035 remains
   planned, and no remote Gate L2, deployment, destructive, external-service, or model work is authorized.
 - Preserve I-0033/EVAL-G02-018 as terminal negative evidence after containerd imported the exact

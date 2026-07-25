@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0034
 gate: G02
 title: Containerd Imported-Reference Alias Resolution Corrective
-status: in_progress
+status: completed
 iteration_type: corrective
 corrects: [I-0017, I-0032, I-0033]
 scope:
@@ -21,7 +21,7 @@ tests:
   - uv run python -m faultwitness_dev verify-fast
   - uv run python -m faultwitness_dev eval-changed
 eval_id: EVAL-G02-019
-commit: null
+commit: 1f366dc8bbe0e71611367b87ed72fb4e70db69cd
 changed_paths:
   - AGENTS.md
   - CHANGELOG.md

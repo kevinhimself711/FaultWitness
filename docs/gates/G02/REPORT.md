@@ -2,7 +2,7 @@
 document_id: FW-GATE-G02-REPORT
 gate: G02
 status: in_progress
-evaluated_candidate_sha: 1bc74b9d976cd5721eb9f57f4587a9fb83f35dc8
+evaluated_candidate_sha: 1f366dc8bbe0e71611367b87ed72fb4e70db69cd
 closed_on: null
 ---
 
@@ -39,9 +39,13 @@ while the verifier required a `docker.io` source before tagging. I-0033 is termi
 new-candidate deployment, all matrices, destructive scenarios, external-service probes, and model
 calls remained zero with `open_evidence: []`.
 
-I-0034 is the sole exact-digest alias-resolution corrective; I-0035/EVAL-G02-020 is the planned
-replacement orchestration. G02 has not passed, no waiver is present, and no closure or tag is
-authorized. All earlier failed Eval assets remain immutable history.
+I-0034/EVAL-G02-019 passed all three local deterministic alias-resolution cases. Exact requested
+source, alias-only exact digest, and wrong-digest fail-closed behavior all matched the frozen
+contract; V-G02-009/010/011/017 Iteration N remained 4/0/4/0, remote/model execution remained zero,
+and `open_evidence: []`.
+
+I-0035/EVAL-G02-020 is the next replacement orchestration. G02 has not passed, no waiver is present,
+and no closure or tag is authorized. All earlier failed Eval assets remain immutable history.
 
 Future reports must include `G01-SUPP-ACCESS-MATRIX`, `G01-SUPP-SIX-STAGE-SPANS`, and
 `G01-SUPP-ALL-SURFACE-CANARY` without modifying closed G01 evidence.

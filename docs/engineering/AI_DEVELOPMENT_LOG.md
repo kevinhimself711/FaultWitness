@@ -36,6 +36,14 @@ only the two Docker Hub host aliases with exact repository+digest matching; I-00
 the sole replacement. Validation N, thresholds, Ground Truth, locked tests, health windows, model
 route, and token/cost ceilings remain unchanged.
 
+I-0034 candidate `1f366dc8bbe0e71611367b87ed72fb4e70db69cd` then passed EVAL-G02-019.
+All three local deterministic cases passed: the requested exact-digest source is preferred, an
+alias-only exact-digest source resolves to the frozen target, and a wrong-digest alias fails closed.
+The resolver expands only the two Docker Hub host aliases and preserves the frozen repository,
+manifest digest, and 30-image SUT digest. V-G02-009/010/011/017 Iteration N remained 4/0/4/0;
+remote, Gate L2, deployment, destructive, external-service, and model execution remained zero. The
+Iteration closed with `open_evidence: []`; I-0035/EVAL-G02-020 is the sole forward replacement.
+
 ## 2026-07-24 — G02 EVAL-G02-014 Python 3.8 compatibility failure
 
 Candidate `cfafa5a6f1510a1a7c8fe2c9360284214c8734f2` passed four fail-fast preflights

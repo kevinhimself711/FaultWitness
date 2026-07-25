@@ -120,8 +120,9 @@ claims:
     evidence:
       - EVAL-G02-002
       - EVAL-G02-017
+      - EVAL-G02-019
     limitations:
-      - "Final fault-lab candidate 0d32648 proves Iteration N=4 live smoke, both owner Gate phase interfaces, and the dual-SHA checkout guard; I-0032/EVAL-G02-017 proves the two fixed probe images enter the shared offline archive inventory without changing the SUT digest. EVAL-G02-018 exposed exact-digest source-alias resolution before apply; replacement unified-candidate Gate N=32 remains reserved for EVAL-G02-020 after I-0034."
+      - "Final fault-lab candidate 0d32648 proves Iteration N=4 live smoke, both owner Gate phase interfaces, and the dual-SHA checkout guard; I-0032/EVAL-G02-017 proves the two fixed probe images enter the shared offline archive inventory without changing the SUT digest; I-0034/EVAL-G02-019 proves exact-digest import alias resolution. Replacement unified-candidate Gate N=32 remains reserved for EVAL-G02-020."
       - "No baseline, paid model, locked-test access matrix, or 160-case materialization is claimed."
   - id: CLAIM-EVAL-003
     statement: "G02 has a metadata-only 160-row preregistry and candidate-bound identity, namespace, package, and writer isolation contracts."
@@ -135,8 +136,9 @@ claims:
       - EVAL-G02-013
       - EVAL-G02-015
       - EVAL-G02-017
+      - EVAL-G02-019
     limitations:
-      - "I-0018 proves policy simulation and new-writer isolation; I-0022 proves the exact corrected observability policy; I-0024 proves candidate-bound provisioning and collectors locally; I-0028/EVAL-G02-013 proves byte-exact Windows transport; I-0030/EVAL-G02-015 proves the probe under actual Python 3.8.20; I-0032/EVAL-G02-017 proves both fixed probe images enter offline staging. EVAL-G02-018 stopped at deterministic import-alias resolution; the 60/6/22 live matrices remain reserved for EVAL-G02-020."
+      - "I-0018 proves policy simulation and new-writer isolation; I-0022 proves the exact corrected observability policy; I-0024 proves candidate-bound provisioning and collectors locally; I-0028/EVAL-G02-013 proves byte-exact Windows transport; I-0030/EVAL-G02-015 proves the probe under actual Python 3.8.20; I-0032/EVAL-G02-017 proves both fixed probe images enter offline staging; I-0034/EVAL-G02-019 proves exact-digest import alias resolution. The 60/6/22 live matrices remain reserved for EVAL-G02-020."
       - "No GT/locked case payload, baseline, or paid model execution is claimed."
   - id: CLAIM-EVAL-004
     statement: "G02 has three shared-packet diagnosis baselines, deterministic scoring, exact quality-floor measurement, clustered bootstrap aggregation, and trial-local paid-model resume."
