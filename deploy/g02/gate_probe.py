@@ -20,7 +20,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 
 UTC = timezone.utc
 
@@ -733,10 +733,19 @@ def observability_access(
     request: dict[str, Any], cell: dict[str, Any]
 ) -> tuple[bool, str]:
     target = cell["target"].split(":", 1)[1]
-    url = request["probe_config"]["observability_targets"][target]["url"]
+    target_config = request["probe_config"]["observability_targets"][target]
+    url = target_config["url"]
     probe = cell["probe"]
     pod = "g02-probe-" + probe
     namespace = request["probe_config"]["probe_pods"][probe]["namespace"]
+    if target == "langsmith":
+        host = urlsplit(url).hostname
+        port = target_config.get("port")
+        if not host or not isinstance(port, int):
+            raise BlockedFailure("observability_target_invalid")
+        operation = ["nc", "-z", host, str(port)]
+    else:
+        operation = ["wget", "-q", "-O", "/dev/null", url]
     result = kubectl(
         [
             "-n",
@@ -744,11 +753,7 @@ def observability_access(
             "exec",
             pod,
             "--",
-            "wget",
-            "-q",
-            "-O",
-            "/dev/null",
-            url,
+            *operation,
         ]
     )
     return command_outcome(result)

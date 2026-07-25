@@ -198,6 +198,91 @@ def test_langsmith_access_probe_uses_supported_attributable_read_contract(
     }
 
 
+@pytest.mark.parametrize(
+    ("target", "probe", "namespace", "returncode", "operation", "outcome"),
+    [
+        (
+            "langsmith",
+            "baseline-agent",
+            "fw-baseline",
+            0,
+            ["nc", "-z", "api.smith.langchain.com", "443"],
+            (True, "allowed"),
+        ),
+        (
+            "langsmith",
+            "ordinary-developer",
+            "fw-eval",
+            1,
+            ["nc", "-z", "api.smith.langchain.com", "443"],
+            (False, "denied"),
+        ),
+        (
+            "langsmith",
+            "cross-boundary",
+            "fw-eval",
+            1,
+            ["nc", "-z", "api.smith.langchain.com", "443"],
+            (False, "denied"),
+        ),
+        (
+            "prometheus",
+            "baseline-agent",
+            "fw-baseline",
+            0,
+            [
+                "wget",
+                "-q",
+                "-O",
+                "/dev/null",
+                "http://prometheus.fw-observability.svc.cluster.local:9090/metrics",
+            ],
+            (True, "allowed"),
+        ),
+    ],
+)
+def test_langsmith_tcp_probe_uses_transport_only_allow_and_reject_semantics(
+    monkeypatch: pytest.MonkeyPatch,
+    target: str,
+    probe: str,
+    namespace: str,
+    returncode: int,
+    operation: list[str],
+    outcome: tuple[bool, str],
+) -> None:
+    remote = _remote_probe_module()
+    calls: list[list[str]] = []
+
+    def fake_kubectl(arguments: list[str], **_kwargs: object):  # type: ignore[no-untyped-def]
+        calls.append(arguments)
+        return remote.subprocess.CompletedProcess(
+            args=arguments, returncode=returncode, stdout="", stderr=""
+        )
+
+    monkeypatch.setattr(remote, "kubectl", fake_kubectl)
+    request = {
+        "probe_config": {
+            "observability_targets": {
+                "langsmith": {
+                    "url": "https://api.smith.langchain.com/info",
+                    "port": 443,
+                },
+                "prometheus": {
+                    "url": "http://prometheus.fw-observability.svc.cluster.local:9090/metrics",
+                    "port": 9090,
+                },
+            },
+            "probe_pods": {probe: {"namespace": namespace}},
+        }
+    }
+    cell = {"target": f"obs:{target}", "probe": probe}
+
+    assert remote.observability_access(request, cell) == outcome
+    assert calls == [
+        ["-n", namespace, "exec", f"g02-probe-{probe}", "--", *operation]
+    ]
+
+
 def test_access_collector_is_exactly_60_cells_and_terminal_failure_is_not_retried(
     tmp_path: Path,
 ) -> None:

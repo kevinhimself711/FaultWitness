@@ -132,6 +132,23 @@ non-success result fails the corrective and never authorizes key replacement, ex
 relaxation, operator adjudication, or Gate L2 execution. The successful artifact path is
 `docs/evals/EVAL-G02-025/artifacts/langsmith-access-seam-proof.json`.
 
+## LangSmith TCP egress seam proof
+
+The pod-side LangSmith cell is a network-authorization assertion, so it uses
+`nc -z api.smith.langchain.com 443` and terminates on the transport connect result. It does not use
+an HTTP downloader, inspect a response body, or receive the LangSmith credential. Prometheus,
+Loki, and Tempo remain HTTP health operations through `wget`; the separate operator-side
+credential-authenticated LangSmith read remains unchanged.
+
+C-G02-003 first falsifies this transport abstraction on the existing probe pods, then repeats the
+same three branches against the corrective candidate: `baseline-agent` must connect, while
+`ordinary-developer` and `cross-boundary` must be rejected by the existing policy. The sanitized
+artifact records candidate and environment binding, source and command digests, timestamps,
+return classifications, and zero deployment/model accounting. It contains no credential, response
+body, Pod IP, private endpoint, or secret. This is targeted real-seam evidence, not execution or
+reduction of the 60-cell Gate matrix. The artifact path is
+`docs/evals/EVAL-G02-027/artifacts/langsmith-tcp-egress-seam-proof.json`.
+
 These phases have no preset orchestration timeout. The rule changes only process supervision:
 matrix N, zero-tolerance semantics, quality/performance thresholds, and all Gate criteria remain
 unchanged.
