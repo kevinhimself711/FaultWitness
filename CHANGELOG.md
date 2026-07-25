@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Activate I-0032 as the sole digest-pinned probe-image staging corrective; I-0033 remains planned,
+  and no remote Gate L2, destructive, external-service, or model work is authorized in I-0032.
 - Preserve I-0031/EVAL-G02-016 as terminal negative evidence after the exact pinned `minio/mc`
   image was absent from K3s; plan I-0032 offline staging and I-0033/EVAL-G02-018 replacement.
 - Activate I-0031 as the sole fifth replacement orchestration after I-0030 closed with actual

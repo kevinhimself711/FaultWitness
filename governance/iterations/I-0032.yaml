@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0032
 gate: G02
 title: Digest-Pinned Probe Image Offline Staging Corrective
-status: planned
+status: in_progress
 iteration_type: corrective
 corrects: [I-0017, I-0031]
 scope:
