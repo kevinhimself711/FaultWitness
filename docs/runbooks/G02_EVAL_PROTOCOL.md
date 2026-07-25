@@ -40,6 +40,12 @@ uv run python -m faultwitness_dev eval-g02-close --candidate-sha <SHA> --evidenc
   `infra_failed` 可在原 trial 续跑。
 - `scenario-matrix` 对同一 candidate/artifact/config/environment key 只执行一次。
 
+`lab-deploy-and-bind` 的通过条件同时包含 `fw-sut` 与候选绑定的
+`fw-control/trace-service`。handler 先调用既有 trace-service deploy/inspect seam，确认
+ConfigMap、Deployment、ClusterIP 与 exact candidate 一致，再允许 SUT bootstrap 结果通过；
+公开 lab summary 记录脱敏 image/bundle/readiness binding。trace rollout 正常进展时没有 preset
+wall-clock kill。该接线不执行 six-stage matrix，也不改变任何 Eval N、oracle、质量或性能裁决。
+
 ## Candidate-binding asset
 
 下一 `A-G02-003` Gate attempt 在 Gate Eval 前产生 EVAL-G02-028 目录下的

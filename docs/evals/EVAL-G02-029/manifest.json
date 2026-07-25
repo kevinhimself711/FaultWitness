@@ -7,7 +7,7 @@
   "status": "pending",
   "environments": ["planned-local-candidate-bound", "planned-private-trace-service"],
   "commands": [
-    "uv run pytest -q tests/g02/test_g02_eval_protocol.py tests/observability/test_deploy.py -k trace_service",
+    "three named pytest cases for current binding, stale binding, and rollout without a wall-clock kill",
     "existing deploy-trace-service inspect-trace-service and smoke-trace-service commands on <full-sha>"
   ],
   "artifacts": ["docs/evals/EVAL-G02-029/PLAN.md"],

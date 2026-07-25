@@ -124,3 +124,15 @@ G02 关闭后的重构候选：
 - **关闭后候选**：统一 command supervisor 默认不实施 wall-clock kill，并明确区分命令终态与
   orchestration wrapper 终态。
 - **指标影响**：无。
+
+### GOV-OBS-004 — 外层 timeout 禁用未覆盖内嵌工具 timeout
+
+- **状态**：confirmed implementation gap
+- **证据**：共享 `run_remote_script` 已忽略旧 `timeout=` 参数，但即将接入 G02 的
+  trace-service 脚本仍含 `kubectl rollout status --timeout=5m`。
+- **风险**：治理规则在外层成立，内层工具仍可把正常 rollout 按墙钟强杀，造成假失败。
+- **G02 内处置**：只移除当前 corrective 实际接入路径上的 rollout kill；不扩大为全仓重构，
+  不改变 HTTP 请求失败、Eval 指标或性能裁决。
+- **关闭后候选**：治理迁移增加 nested-command timeout inventory，规则验证必须覆盖最终执行的
+  子命令而不只检查 wrapper API。
+- **指标影响**：无。

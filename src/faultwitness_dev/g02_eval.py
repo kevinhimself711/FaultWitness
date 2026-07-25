@@ -565,6 +565,17 @@ def _owned_phase_handlers(
 
     def lab(context: PhaseContext, _journal: TrialJournal) -> Mapping[str, Any]:
         from faultwitness_dev.g02_lab import deploy_g02_lab
+        from faultwitness_dev.observability_deploy import (
+            deploy_trace_service,
+            inspect_trace_service,
+        )
+
+        trace_deployment = deploy_trace_service(root, context.candidate_sha)
+        if trace_deployment.get("candidate_sha") != context.candidate_sha:
+            raise GovernanceError("G02 trace service deployment binding drifted")
+        trace_readiness = inspect_trace_service(context.candidate_sha)
+        if trace_readiness.get("candidate_sha") != context.candidate_sha:
+            raise GovernanceError("G02 trace service readiness binding drifted")
 
         document = deploy_g02_lab(
             root,
@@ -573,6 +584,14 @@ def _owned_phase_handlers(
         )
         if document.get("image_set_digest") != context.sut_image_set_digest:
             raise GovernanceError("G02 deployed lab image-set binding drifted")
+        document["trace_service"] = {
+            "candidate_sha": context.candidate_sha,
+            "bundle_sha256": trace_deployment["bundle_sha256"],
+            "image": trace_deployment["image"],
+            "available": trace_readiness["available"],
+            "ready": trace_readiness["ready"],
+            "service_type": trace_readiness["service_type"],
+        }
         output = phase_output("lab-deploy-and-bind", "summary.json")
         _atomic_json(output, document)
         return {

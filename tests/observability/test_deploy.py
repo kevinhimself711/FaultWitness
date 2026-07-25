@@ -1,3 +1,4 @@
+import inspect
 from pathlib import Path
 
 import pytest
@@ -19,3 +20,8 @@ def test_trace_container_and_manifest_are_private_and_non_root() -> None:
     assert "@sha256:" in dockerfile.splitlines()[0]
     assert "USER 10001:10001" in dockerfile
     assert "--no-access-log" in dockerfile
+
+
+def test_trace_deploy_rollout_has_no_preset_wall_clock_kill() -> None:
+    source = inspect.getsource(deploy_trace_service)
+    assert "rollout status deployment/trace-service --timeout" not in source

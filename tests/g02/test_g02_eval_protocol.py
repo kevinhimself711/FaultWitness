@@ -179,6 +179,103 @@ def test_every_frozen_phase_has_an_owner_implemented_handler(tmp_path: Path) -> 
     assert set(handlers) == {phase.phase_id for phase in G02_PHASES}
 
 
+def test_lab_phase_binds_trace_service_before_sut_pass(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    context = _context()
+    calls: list[str] = []
+
+    def deploy_trace(_root: Path, candidate: str) -> dict[str, str]:
+        calls.append("deploy-trace")
+        return {
+            "candidate_sha": candidate,
+            "bundle_sha256": "8" * 64,
+            "image": f"docker.io/faultwitness/trace-service:{candidate}",
+        }
+
+    def inspect_trace(candidate: str) -> dict[str, object]:
+        calls.append("inspect-trace")
+        return {
+            "candidate_sha": candidate,
+            "available": 1,
+            "ready": 1,
+            "service_type": "ClusterIP",
+        }
+
+    def deploy_sut(
+        _root: Path, candidate: str, evidence_head_sha: str | None = None
+    ) -> dict[str, object]:
+        calls.append("deploy-sut")
+        assert candidate == context.candidate_sha
+        assert evidence_head_sha == context.candidate_sha
+        return {
+            "candidate_sha": candidate,
+            "image_set_digest": context.sut_image_set_digest,
+            "ready_deployments": {"sut": 1},
+        }
+
+    monkeypatch.setattr(
+        "faultwitness_dev.observability_deploy.deploy_trace_service", deploy_trace
+    )
+    monkeypatch.setattr(
+        "faultwitness_dev.observability_deploy.inspect_trace_service", inspect_trace
+    )
+    monkeypatch.setattr("faultwitness_dev.g02_lab.deploy_g02_lab", deploy_sut)
+    engine = PhaseEngine(G02_PHASES, context, tmp_path / "journal")
+    handler = _owned_phase_handlers(
+        tmp_path,
+        {"_eval_id": "EVAL-G02-029", "evidence_head_sha": context.candidate_sha},
+        engine,
+    )["lab-deploy-and-bind"]
+
+    result = handler(context, TrialJournal(tmp_path / "journal"))
+
+    assert calls == ["deploy-trace", "inspect-trace", "deploy-sut"]
+    assert result["status"] == "pass"
+    artifact = load_data(tmp_path / str(result["artifact_path"]))
+    assert artifact["trace_service"] == {
+        "candidate_sha": context.candidate_sha,
+        "bundle_sha256": "8" * 64,
+        "image": f"docker.io/faultwitness/trace-service:{context.candidate_sha}",
+        "available": 1,
+        "ready": 1,
+        "service_type": "ClusterIP",
+    }
+
+
+def test_lab_phase_rejects_stale_trace_deployment_before_sut(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    context = _context()
+    sut_called = False
+
+    monkeypatch.setattr(
+        "faultwitness_dev.observability_deploy.deploy_trace_service",
+        lambda _root, _candidate: {
+            "candidate_sha": "0" * 40,
+            "bundle_sha256": "8" * 64,
+            "image": "stale",
+        },
+    )
+
+    def deploy_sut(*_args: object, **_kwargs: object) -> dict[str, object]:
+        nonlocal sut_called
+        sut_called = True
+        return {}
+
+    monkeypatch.setattr("faultwitness_dev.g02_lab.deploy_g02_lab", deploy_sut)
+    engine = PhaseEngine(G02_PHASES, context, tmp_path / "journal")
+    handler = _owned_phase_handlers(
+        tmp_path,
+        {"_eval_id": "EVAL-G02-029", "evidence_head_sha": context.candidate_sha},
+        engine,
+    )["lab-deploy-and-bind"]
+
+    with pytest.raises(GovernanceError, match="trace service deployment binding drifted"):
+        handler(context, TrialJournal(tmp_path / "journal"))
+    assert not sut_called
+
+
 def test_manifest_schema_accepts_legacy_v1_and_requires_complete_v2() -> None:
     schema = load_data(ROOT / "schemas" / "governance" / "eval-manifest.schema.json")
     legacy = load_data(ROOT / "docs" / "evals" / "EVAL-G01-001" / "manifest.json")

@@ -11,7 +11,8 @@ commands once on the exact corrective candidate.
 - Local tests prove the lab handler establishes and verifies the exact trace candidate before its
   SUT result can pass, and rejects a stale deployment summary.
 - The real seam deploys the existing service, proves `1/1` Ready with `ClusterIP` and the exact
-  candidate binding, then completes the existing sanitized smoke with zero pending delivery.
+  candidate binding, then completes the existing sanitized smoke with zero pending delivery. The
+  rollout wait has no preset wall-clock kill.
 - The public artifact contains only candidate/environment binding, sanitized readiness/outcome,
   and artifact digests; no credential, response body, private trace, secret, or PII is retained.
 - Gate L2, six-stage/access/canary matrices, destructive scenarios, Bailian, model calls, tokens,

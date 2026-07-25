@@ -105,7 +105,7 @@ fi
 /usr/local/bin/k3s kubectl -n fw-control create secret generic fw-trace-env --from-env-file="$envfile" --dry-run=client -o yaml | /usr/local/bin/k3s kubectl apply -f - >/dev/null
 rm -f "$envfile"
 printf %s {manifest} | base64 -d | /usr/local/bin/k3s kubectl apply -f - >/dev/null
-/usr/local/bin/k3s kubectl -n fw-control rollout status deployment/trace-service --timeout=5m >/dev/null
+/usr/local/bin/k3s kubectl -n fw-control rollout status deployment/trace-service >/dev/null
 """
     run_remote_script(script, privileged=True, timeout=900)
     return {

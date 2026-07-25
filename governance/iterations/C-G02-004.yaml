@@ -40,15 +40,18 @@ non_goals:
   - Refactoring PhaseEngine relay transport observability storage or lifecycle governance or changing any N threshold permission oracle quality performance or failure semantic.
 dependencies: [I-0013, I-0017, I-0024, C-G02-003, A-G02-003]
 tests:
-  - uv run pytest -q tests/g02/test_g02_eval_protocol.py tests/observability/test_deploy.py -k trace_service
+  - uv run pytest -q tests/g02/test_g02_eval_protocol.py::test_lab_phase_binds_trace_service_before_sut_pass tests/g02/test_g02_eval_protocol.py::test_lab_phase_rejects_stale_trace_deployment_before_sut tests/observability/test_deploy.py::test_trace_deploy_rollout_has_no_preset_wall_clock_kill
   - uv run python -m faultwitness_dev verify-fast
   - uv run python -m faultwitness_dev eval-changed
 eval_id: EVAL-G02-029
 commit: null
 changed_paths:
   - src/faultwitness_dev/g02_eval.py
+  - src/faultwitness_dev/observability_deploy.py
   - tests/g02/test_g02_eval_protocol.py
+  - tests/observability/test_deploy.py
   - docs/runbooks/G02_EVAL_PROTOCOL.md
+  - docs/engineering/GOVERNANCE_REFACTOR_LESSONS_LOG.md
   - docs/evals/EVAL-G02-029
   - docs/roadmap/iterations/C-G02-004.md
   - governance/iterations/C-G02-004.yaml
@@ -58,4 +61,5 @@ docs_updated:
   - docs/evals/EVAL-G02-029/PLAN.md
   - docs/evals/EVAL-G02-029/REPORT.md
   - docs/runbooks/G02_EVAL_PROTOCOL.md
+  - docs/engineering/GOVERNANCE_REFACTOR_LESSONS_LOG.md
 threshold_changes: []
