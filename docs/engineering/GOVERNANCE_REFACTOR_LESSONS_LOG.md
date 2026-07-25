@@ -1,5 +1,26 @@
 # Governance Refactor Lessons Log
 
+## GOV-OBS-012 — Governance complexity, not CI compute, dominated G02 overhead
+
+- **Measured evidence:** the 2026-07-25 full local `verify-fast` plus `eval-changed` run checked 378
+  tests and 211 Markdown files in 28.7 seconds. The check runtime itself is not the dominant cost.
+- **Dominant cost:** per-work-item plan/activate/evidence/close commits, duplicated lifecycle state,
+  candidate/evidence/governance SHA coupling, manifest synchronization, and candidate-wide cache
+  invalidation multiplied each small defect into repeated orchestration and documentation work.
+- **Skill alignment:** basic tests, schema checks, resumable trial journals, and code/image/config/
+  dataset/artifact provenance support application, infrastructure, and algorithm/evaluation skills.
+  Repository ruleset simulation, per-Iteration SHA state machines, and repeated root-document mirrors
+  add little evidence for those three engineering narratives.
+- **G02 action:** do not refactor CI, schemas, or history during closure freeze. Keep the minimum
+  checks required by the frozen Gate, apply selective phase inheritance, and close G02 before a
+  governance migration. This entry is the final pre-candidate lesson update; later observations are
+  collected in the one-time closure synchronization so they cannot create another candidate chase.
+- **Post-G02 migration:** retain ordinary CI and experiment journals; replace the multi-SHA lifecycle
+  with one Gate/release manifest containing code commit, runtime image, configuration, dataset, and
+  result artifact digests. Documentation-only commits must never invalidate experimental evidence.
+- **Metric impact:** none; this changes no Gate N, threshold, permission, model route, token/cost
+  ceiling, health window, or failure semantics.
+
 ## GOV-OBS-011 — A global digest must not invalidate every phase
 
 - **Trigger:** C-G02-005 changed only the `paymentUnreachable` scenario observer, while the current
