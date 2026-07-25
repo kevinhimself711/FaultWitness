@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Activate I-0033 as the sole sixth replacement orchestration after I-0032 closed with exact
+  offline probe-image evidence and no open evidence; I-0033 may only run frozen Gate phases.
 - Close I-0032 on candidate `fc167c8` with EVAL-G02-017 passing all three offline-staging cases,
   frozen validation N=4/0/4/0, zero remote/model execution, and no open evidence.
 - Extend the existing digest-verified OCI staging/import inventory with the two exact frozen probe

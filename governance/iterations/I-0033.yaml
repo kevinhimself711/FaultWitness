@@ -2,7 +2,7 @@ schema_version: "1.0.0"
 id: I-0033
 gate: G02
 title: Sixth Replacement Unified Candidate Orchestration
-status: planned
+status: in_progress
 iteration_type: standard
 scope:
   - Freeze the post-I-0032 candidate and execute the fourteen unchanged Gate phases under EVAL-G02-018.
