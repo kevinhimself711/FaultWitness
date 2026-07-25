@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: C-G02-010
+active_iteration: null
 next_iteration: null
 last_closed_gate: G01
 ---
@@ -37,8 +37,9 @@ is terminally failed because a source-collection command exited without producin
 the scenario runner incorrectly collapsed that infrastructure condition into `metric_fail`. C-G02-009
 is completed with classification tests and one candidate-bound read-only collection seam. A-G02-009
 is terminally failed because the default ten-user ambient load produced fleet-wide HTTP 504s while
-`accounting` reached its sixty-second OOM restart. C-G02-010 is active to reduce the dedicated lab's
-ambient load to the minimum nonzero user count. No terminal work item may be reopened.
+`accounting` reached its sixty-second OOM restart. C-G02-010 is complete with a clean dedicated
+namespace, minimum nonzero ambient load, and one passing candidate-bound checkout seam. The next
+unified-candidate Gate attempt has not yet been activated. No terminal work item may be reopened.
 
 ## Source-of-truth order
 

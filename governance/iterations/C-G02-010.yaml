@@ -2,7 +2,7 @@ schema_version: "1.2.0"
 id: C-G02-010
 gate: G02
 title: Ambient Lab Load Corrective
-status: in_progress
+status: completed
 iteration_type: corrective
 corrects: [I-0017, A-G02-009]
 root_cause:
@@ -46,7 +46,7 @@ tests:
   - uv run python -m faultwitness_dev verify-fast
   - uv run python -m faultwitness_dev eval-changed
 eval_id: EVAL-G02-041
-commit: null
+commit: 9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9
 changed_paths:
   - src/faultwitness_dev/g02_lab.py
   - tests/g02/test_g02_lab.py

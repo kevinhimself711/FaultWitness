@@ -3,14 +3,19 @@
   "eval_id": "EVAL-G02-041",
   "gate": "G02",
   "iteration": "C-G02-010",
-  "evaluated_revision": "not-run",
-  "status": "pending",
-  "environments": ["local-candidate-bound", "private-k3s-live"],
+  "evaluated_revision": "9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9",
+  "status": "pass",
+  "environments": ["local-candidate-bound", "private-k3s-live", "clean-fw-sut", "24-of-24-ready", "ambient-users-1", "accounting-restarts-0", "bailian-not-run"],
   "commands": [
     "uv run pytest -q tests/g02/test_g02_lab.py -k ambient_load",
     "existing candidate-bound deployer and one-checkout stimulus"
   ],
-  "artifacts": ["docs/evals/EVAL-G02-041/PLAN.md"],
+  "artifacts": [
+    "docs/evals/EVAL-G02-041/PLAN.md",
+    "docs/evals/EVAL-G02-041/REPORT.md",
+    "docs/evals/EVAL-G02-041/artifacts/ambient-load-seam-attempt-1.json",
+    "docs/evals/EVAL-G02-041/artifacts/ambient-load-seam.json"
+  ],
   "evidence_urls": [],
   "integrations": {},
   "open_evidence": []

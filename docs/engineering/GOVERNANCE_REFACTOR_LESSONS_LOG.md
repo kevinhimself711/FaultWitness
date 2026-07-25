@@ -290,3 +290,18 @@ G02 关闭后的重构候选：
   worktree 位置和治理 HEAD 不再是执行语义。文档与状态资产不参与实验 cache identity。
 - **指标影响**：无；仍验证候选 ancestry、运行/Eval subject、镜像/config/dataset/environment digest，
   不改变 N、阈值、权限、模型路线、token/费用、health window 或失败语义。
+
+### GOV-OBS-012 — `kubectl apply` 与 Ready 不能证明候选实验环境干净
+
+- **状态**：confirmed implementation-boundary gap；targeted seam 已在 Gate attempt 前拦截
+- **证据**：A-G02-009 在 24/24 Ready 后遇到 fleet-wide POST 504，`accounting` 已累计 62 次
+  OOM。C-G02-010 第一候选把 ambient users 从 10 降为 1 后仍在单 checkout 返回 504；部署只是
+  apply 到旧 namespace。加入 `fw-sut` 自然等待式重建后，同一 seam 达到 restart 0、cart/checkout
+  200、24/24 Ready。
+- **避免的成本**：第一条 138 秒 real seam 拦住了又一次完整 Gate attempt、32 scenarios 与后续
+  baseline；失败证据直接收敛根因，没有新建第二个 corrective。
+- **G02 内处置**：只重建 disposable `fw-sut`，保留镜像/config/权限/阈值；新环境不继承任何
+  60/6/22 或 scenario live evidence。
+- **关闭后候选**：Master Plan 必须为每个 stateful/live environment 明确 `fresh`、`reused` 或
+  `restored` 语义及可机器检查的 epoch；Pod Ready 只能是就绪证据，不能替代 clean-state 证明。
+- **指标影响**：无；环境重建不降低 N、oracle、质量/性能阈值、安全边界或模型预算。

@@ -1,0 +1,37 @@
+{
+  "candidate_sha": "9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9",
+  "completed_at": "2026-07-25T22:48:13.534058+00:00",
+  "fallback_count": 0,
+  "gate_l2_phases": 0,
+  "image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+  "model_calls": 0,
+  "open_evidence": [],
+  "postcondition": {
+    "accounting_restart_count": 0,
+    "candidate_sha": "9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9",
+    "deployment_count": 24,
+    "kafka_flag": "off",
+    "load_generator_users": 1,
+    "ready_deployments": 24
+  },
+  "precondition": {
+    "accounting_restart_count": 0,
+    "candidate_sha": "9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9",
+    "deployment_count": 24,
+    "kafka_flag": "off",
+    "load_generator_users": 1,
+    "ready_deployments": 24
+  },
+  "ready_deployments": 24,
+  "scenario_trials": 0,
+  "schema_version": "1.0.0",
+  "started_at": "2026-07-25T22:45:55.479984+00:00",
+  "status": "pass",
+  "stimulus": {
+    "cart_status": 200,
+    "checkout_count": 1,
+    "checkout_status": 200,
+    "status": "pass"
+  },
+  "threshold_changes": []
+}
