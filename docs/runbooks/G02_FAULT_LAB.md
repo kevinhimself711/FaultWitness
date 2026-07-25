@@ -68,6 +68,15 @@ cannot satisfy the oracle. The value must still exceed its pre-injection baselin
 frozen observations. This is signal-source correction only and does not alter N, the 30-second
 spacing, the 90-second oracle window, or any performance or Gate threshold.
 
+For `paymentUnreachable`, the Jaeger query selects the `checkout` caller because an unreachable
+payment service cannot create a payment-service callee span. A fault observation requires one
+trace that contains all three signals: an errored checkout `PlaceOrder` server span, an errored
+checkout-side `oteldemo.PaymentService/Charge` client span identified by the standard
+`rpc.service`/`rpc.method` tags, and a connection-error status description. An unrelated checkout
+error, a description without the PaymentService client span, or a payment business error cannot
+satisfy the oracle. The two observations, 30-second spacing, 90-second oracle window, recovery
+contract, N, and all quality/performance thresholds remain unchanged.
+
 ## Failure and compatibility semantics
 
 - Source or image digest drift: blocking candidate failure; do not fetch a floating replacement.

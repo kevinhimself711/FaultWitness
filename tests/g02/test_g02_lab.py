@@ -13,6 +13,7 @@ from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.g02_lab import (
     ADAPTERS,
     FAMILIES,
+    TRACE_QUERY_SERVICES,
     LiveScenarioObserver,
     MemoryFlagClient,
     OracleState,
@@ -110,6 +111,49 @@ def test_kafka_observer_uses_exported_poll_lag_and_exact_fault_log() -> None:
     observation = observer._active_observation(sample)
     assert observation["consumer_lag"] > observation["baseline_lag"]
     assert observation["kafka_error"] is True
+
+
+def test_payment_unreachable_trace_query_uses_checkout_caller() -> None:
+    assert TRACE_QUERY_SERVICES["paymentUnreachable"] == "checkout"
+    assert TRACE_QUERY_SERVICES["paymentFailure"] == "payment"
+
+
+def test_payment_unreachable_observer_requires_correlated_caller_signals() -> None:
+    observer = LiveScenarioObserver("1" * 40, "paymentUnreachable")
+    observation = observer._active_observation(
+        {
+            "descriptions": [],
+            "error_spans": 2,
+            "checkout_error_spans": 1,
+            "payment_connection_errors": 1,
+        }
+    )
+    assert observation["checkout_failed"] is True
+    assert observation["connection_error"] is True
+
+
+def test_payment_unreachable_observer_rejects_uncorrelated_checkout_error() -> None:
+    observer = LiveScenarioObserver("1" * 40, "paymentUnreachable")
+    observation = observer._active_observation(
+        {
+            "descriptions": ["unavailable"],
+            "error_spans": 1,
+            "checkout_error_spans": 1,
+            "payment_connection_errors": 0,
+        }
+    )
+    assert observation["checkout_failed"] is True
+    assert observation["connection_error"] is False
+    assert fault_state("paymentUnreachable", [observation, observation]) is OracleState.HEALTHY
+
+
+def test_payment_unreachable_change_preserves_payment_failure_branch() -> None:
+    observer = LiveScenarioObserver("1" * 40, "paymentFailure")
+    observation = observer._active_observation(
+        {"descriptions": ["Payment rejected"], "error_spans": 1}
+    )
+    assert observation["checkout_failed"] is True
+    assert observation["payment_error"] is True
 
 
 def test_memory_observer_uses_working_set_signal() -> None:

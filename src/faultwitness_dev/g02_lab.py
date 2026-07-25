@@ -43,6 +43,14 @@ FAULT_CLASSES = (
     "paymentUnreachable",
     "kafkaQueueProblems",
 )
+TRACE_QUERY_SERVICES = {
+    "productCatalogFailure": "product-catalog",
+    "adHighCpu": "ad",
+    "emailMemoryLeak": "email",
+    "paymentFailure": "payment",
+    "paymentUnreachable": "checkout",
+    "kafkaQueueProblems": "fraud-detection",
+}
 FULL_DIGEST_REFERENCE = re.compile(r"^[^\s@]+@sha256:[0-9a-f]{64}$")
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
 PROBE_IMAGE_NAMES = ("busybox", "minio_mc")
@@ -200,6 +208,7 @@ class LiveScenarioObserver:
                 {
                     "candidate_sha": self.candidate_sha,
                     "fault_class": self.fault_class,
+                    "trace_service": TRACE_QUERY_SERVICES[self.fault_class],
                     "since_micros": int(since.timestamp() * 1_000_000),
                     "since_rfc3339": since.isoformat().replace("+00:00", "Z"),
                 }
@@ -267,16 +276,8 @@ consumer_lag = max(consumer_record_lag, consumer_poll_lag_seconds)
 
 jaeger = json.loads(kubectl("get", "endpoints", "jaeger-query", "-o", "json"))
 jaeger_ip = jaeger["subsets"][0]["addresses"][0]["ip"]
-service = {{
-    "productCatalogFailure": "product-catalog",
-    "adHighCpu": "ad",
-    "emailMemoryLeak": "email",
-    "paymentFailure": "payment",
-    "paymentUnreachable": "payment",
-    "kafkaQueueProblems": "fraud-detection",
-}}[request["fault_class"]]
 query = {{
-    "service": service,
+    "service": request["trace_service"],
     "limit": "100",
     "start": str(request["since_micros"]),
     "lookback": "custom",
@@ -285,13 +286,47 @@ url = "http://" + jaeger_ip + ":16686/jaeger/ui/api/traces?" + urllib.parse.urle
 traces = json.load(urllib.request.urlopen(url)).get("data") or []
 descriptions = []
 error_spans = 0
+checkout_error_spans = 0
+payment_connection_errors = 0
 for trace in traces:
+    processes = trace.get("processes", {{}})
+    trace_has_checkout_error = False
+    trace_has_payment_client_error = False
+    trace_has_connection_error = False
     for span in trace.get("spans", []):
         tags = {{tag["key"]: tag.get("value") for tag in span.get("tags", [])}}
-        if tags.get("error") is True or tags.get("otel.status_code") == "ERROR":
+        is_error = tags.get("error") is True or tags.get("otel.status_code") == "ERROR"
+        description = str(tags.get("otel.status_description", ""))
+        service_name = processes.get(span.get("processID"), {{}}).get("serviceName")
+        if is_error:
             error_spans += 1
-        if tags.get("otel.status_description"):
-            descriptions.append(str(tags["otel.status_description"]))
+            if (
+                service_name == "checkout"
+                and tags.get("rpc.service") == "oteldemo.CheckoutService"
+                and tags.get("rpc.method") == "PlaceOrder"
+            ):
+                checkout_error_spans += 1
+                trace_has_checkout_error = True
+            if (
+                service_name == "checkout"
+                and tags.get("rpc.service") == "oteldemo.PaymentService"
+                and tags.get("rpc.method") == "Charge"
+            ):
+                trace_has_payment_client_error = True
+        if description:
+            descriptions.append(description)
+            lowered = description.lower()
+            if any(token in lowered for token in (
+                "connection refused", "connection error", "unavailable",
+                "error while dialing", "connect:",
+            )):
+                trace_has_connection_error = True
+    if (
+        trace_has_checkout_error
+        and trace_has_payment_client_error
+        and trace_has_connection_error
+    ):
+        payment_connection_errors += 1
 
 logs = kubectl(
     "logs", "deployment/fraud-detection", "--since-time=" + request["since_rfc3339"],
@@ -309,6 +344,8 @@ print(json.dumps({{
     "consumer_poll_lag_seconds": consumer_poll_lag_seconds,
     "trace_count": len(traces),
     "error_spans": error_spans,
+    "checkout_error_spans": checkout_error_spans,
+    "payment_connection_errors": payment_connection_errors,
     "descriptions": descriptions,
     "kafka_log_error": "error" in logs.lower(),
     "kafka_fault_log": "FeatureFlag 'kafkaQueueProblems' is enabled, sleeping" in logs,
@@ -336,8 +373,11 @@ PY
             found = "Payment" in descriptions and sample["error_spans"] > 0
             return {**sample, "checkout_failed": found, "payment_error": found}
         if self.fault_class == "paymentUnreachable":
-            found = "payment" in descriptions.lower() and sample["error_spans"] > 0
-            return {**sample, "checkout_failed": found, "connection_error": found}
+            return {
+                **sample,
+                "checkout_failed": sample["checkout_error_spans"] > 0,
+                "connection_error": sample["payment_connection_errors"] > 0,
+            }
         if self.fault_class == "kafkaQueueProblems":
             return {
                 **sample,
