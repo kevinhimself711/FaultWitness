@@ -1,8 +1,8 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: C-G02-004
-next_iteration: A-G02-004
+active_iteration: A-G02-004
+next_iteration: null
 last_closed_gate: G01
 ---
 
@@ -21,8 +21,9 @@ evidence; A-G02-001 is terminally failed with complete LangSmith access evidence
 completed with an attributable real credential seam. A-G02-002 is terminally failed with complete
 expected-allow egress no-progress evidence. C-G02-003 is completed with targeted real TCP
 allow/reject evidence and no open evidence. A-G02-003 is terminally failed with complete
-trace-prerequisite evidence; C-G02-004 is the active single-root corrective and A-G02-004 is its
-separate next Gate attempt. No terminal work item may be reopened.
+trace-prerequisite evidence. C-G02-004 is completed with exact-candidate deploy, inspect, relay,
+and smoke evidence; A-G02-004 is the active separate Gate attempt. No terminal work item may be
+reopened.
 
 ## Source-of-truth order
 
