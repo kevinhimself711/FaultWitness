@@ -2,7 +2,7 @@ schema_version: "1.2.0"
 id: C-G02-007
 gate: G02
 title: Email-Memory Monotonic-Sample Corrective
-status: in_progress
+status: completed
 iteration_type: corrective
 corrects: [I-0017, A-G02-006]
 root_cause:
@@ -45,7 +45,7 @@ tests:
   - uv run python -m faultwitness_dev verify-fast
   - uv run python -m faultwitness_dev eval-changed
 eval_id: EVAL-G02-035
-commit: null
+commit: 0ef51cdb5987aa8b1c5cf17e712fe513f1d33b74
 changed_paths:
   - src/faultwitness_dev/g02_lab.py
   - tests/g02/test_g02_lab.py

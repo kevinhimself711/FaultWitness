@@ -3,14 +3,18 @@
   "eval_id": "EVAL-G02-035",
   "gate": "G02",
   "iteration": "C-G02-007",
-  "evaluated_revision": "not-run",
-  "status": "pending",
-  "environments": ["planned-local-targeted", "planned-private-k3s-single-scenario"],
+  "evaluated_revision": "0ef51cdb5987aa8b1c5cf17e712fe513f1d33b74",
+  "status": "pass",
+  "environments": ["local-candidate-bound", "private-k3s-candidate-bound-24-of-24", "private-k3s-single-scenario"],
   "commands": [
     "uv run pytest -q tests/g02/test_g02_lab.py -k memory",
     "existing run_scenario with SEED-G02-0008 and exact automatic restore"
   ],
-  "artifacts": ["docs/evals/EVAL-G02-035/PLAN.md"],
+  "artifacts": [
+    "docs/evals/EVAL-G02-035/PLAN.md",
+    "docs/evals/EVAL-G02-035/REPORT.md",
+    "docs/evals/EVAL-G02-035/artifacts/email-memory-monotonic-seam.json"
+  ],
   "evidence_urls": [],
   "integrations": {},
   "open_evidence": []
