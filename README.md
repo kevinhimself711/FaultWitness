@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: null
+active_iteration: A-G02-010
 next_iteration: null
 last_closed_gate: G01
 ---
@@ -35,7 +35,8 @@ A-G02-008 因 source-collection 命令未产出 observation、却被 runner 错�
 终态失败；C-G02-009 已用分类测试和一次 candidate-bound 只读 collection seam 关闭。
 A-G02-009 因默认十用户 ambient load 造成全链路 HTTP 504、同时 `accounting` 第 62 次 OOM 而
 终态失败；C-G02-010 已用干净专用 namespace、最小非零 ambient load 和一次 candidate-bound
-checkout seam 关闭。下一统一候选 Gate attempt 尚未激活，任何终态记录都不会重开。
+checkout seam 关闭；A-G02-010 已在 clean-lab 候选上激活，不继承旧 namespace 的远程矩阵或
+scenario 证据。任何终态记录都不会重开。
 
 ## 权威资产
 

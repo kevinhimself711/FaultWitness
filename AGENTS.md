@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: null
+active_iteration: A-G02-010
 next_iteration: null
 last_closed_gate: G01
 ---
@@ -38,8 +38,9 @@ the scenario runner incorrectly collapsed that infrastructure condition into `me
 is completed with classification tests and one candidate-bound read-only collection seam. A-G02-009
 is terminally failed because the default ten-user ambient load produced fleet-wide HTTP 504s while
 `accounting` reached its sixty-second OOM restart. C-G02-010 is complete with a clean dedicated
-namespace, minimum nonzero ambient load, and one passing candidate-bound checkout seam. The next
-unified-candidate Gate attempt has not yet been activated. No terminal work item may be reopened.
+namespace, minimum nonzero ambient load, and one passing candidate-bound checkout seam. A-G02-010
+is active on the clean-lab candidate and will not inherit any prior remote matrix or scenario
+evidence. No terminal work item may be reopened.
 
 ## Source-of-truth order
 
