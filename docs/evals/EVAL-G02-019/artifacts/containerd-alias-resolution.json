@@ -1,0 +1,40 @@
+{
+  "alias_case_count": 3,
+  "candidate_sha": "1f366dc8bbe0e71611367b87ed72fb4e70db69cd",
+  "cases": [
+    {
+      "case_id": "requested-source-exact-digest",
+      "selected_source": "docker.io/example/probe@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "status": "pass"
+    },
+    {
+      "case_id": "alias-only-source-exact-digest",
+      "selected_source": "index.docker.io/example/probe@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "status": "pass",
+      "target_reference": "docker.io/example/probe@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "case_id": "alias-wrong-digest-fails-closed",
+      "status": "pass"
+    }
+  ],
+  "deployments": 0,
+  "destructive_scenarios": 0,
+  "end_time": "2026-07-25T00:48:38.741653+00:00",
+  "external_service_calls": 0,
+  "frozen_validation_n": {
+    "V-G02-009": 4,
+    "V-G02-010": 0,
+    "V-G02-011": 4,
+    "V-G02-017": 0
+  },
+  "gate_l2_execution": 0,
+  "model_calls": 0,
+  "open_evidence": [],
+  "remote_execution": 0,
+  "schema_version": "1.0.0",
+  "start_time": "2026-07-25T00:48:38.730563+00:00",
+  "status": "pass",
+  "sut_image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+  "validation": "I-0034-containerd-imported-reference-alias-resolution"
+}

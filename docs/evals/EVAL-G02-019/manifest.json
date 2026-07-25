@@ -1,20 +1,63 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "eval_id": "EVAL-G02-019",
   "gate": "G02",
   "iteration": "I-0034",
-  "evaluated_revision": "not-run",
-  "status": "pending",
-  "environments": ["planned-local-deterministic-containerd-alias-resolution"],
-  "commands": [
-    "uv run python -m faultwitness_dev eval-iteration I-0034 --candidate-sha <full-sha>"
+  "candidate_sha": "1f366dc8bbe0e71611367b87ed72fb4e70db69cd",
+  "evaluated_revision": "1f366dc8bbe0e71611367b87ed72fb4e70db69cd",
+  "evidence_head_sha": "1f366dc8bbe0e71611367b87ed72fb4e70db69cd",
+  "status": "pass",
+  "subject_digests": {
+    "config/g02/gate-probes.yaml": "6fb0aec3a8a7122e34564ffaf1dc13612296576f2eb12f160da877cebb99332d",
+    "config/g02/lab.yaml": "1adf8d580f62aa5471aae742a48b714dc5bc226c5b085566f622fa8ac86fba71",
+    "docs/evals/EVAL-G02-019/PLAN.md": "1229a23c0fac8c2448832adf3ccefdfab1ca266c55065aa276cf4eb483ed83e4",
+    "docs/runbooks/G02_FAULT_LAB.md": "c81bfa810283a6c28bdfcb9f722c046e6404f2482430c94d417d76b295d71005",
+    "governance/iterations/I-0034.yaml": "6b766949e4275e27ec6b867c9f2e3ec5c0724824ab44bd68c208828516fe1f92",
+    "src/faultwitness_dev/evals.py": "f826afa7c8dabf4d0990a38622b8ced56945c81f2e9bf13ba11c833529a80bc8",
+    "src/faultwitness_dev/g02_lab.py": "18450e4755370e8eb3e3ac82ad9b84681f555e9a2a4bd63d11d4a34c9898097f",
+    "tests/g02/test_g02_lab.py": "61457230c2ddfb0d2e095c411d9f96a2b552c1f6dcb93e43e1926ecb6301af3f"
+  },
+  "environment_fingerprint": "6868aefb418dda882b61fb41e867b84bae6c6d7090e7c055a157812e46d114ae",
+  "phases": [
+    {
+      "phase_id": "containerd-imported-reference-alias-resolution",
+      "status": "pass",
+      "start_time": "2026-07-25T00:48:38.730563+00:00",
+      "end_time": "2026-07-25T00:48:38.741653+00:00",
+      "cache_key": "acbce34855e93f382e3aa06a611d6aa850be0d9611a5322139ca90eec68aca8d",
+      "artifact_digest": "76badf2dd43a27484177181ef75bdc9a100af561f7f4fae2af2c1af78a61fea2",
+      "artifact_path": "docs/evals/EVAL-G02-019/artifacts/containerd-alias-resolution.json",
+      "private_artifact_uri": null,
+      "execution_count": 1,
+      "inherited_from_manifest": null
+    }
   ],
-  "artifacts": ["docs/evals/EVAL-G02-019/PLAN.md"],
+  "environments": ["windows-11-local-deterministic-containerd-alias-resolution"],
+  "commands": [
+    "uv run pytest -q tests/g02/test_g02_lab.py",
+    "uv run python -m faultwitness_dev eval-iteration I-0034 --candidate-sha 1f366dc8bbe0e71611367b87ed72fb4e70db69cd",
+    "uv run python -m faultwitness_dev verify-fast",
+    "uv run python -m faultwitness_dev eval-changed"
+  ],
+  "artifacts": [
+    "docs/evals/EVAL-G02-019/PLAN.md",
+    "docs/evals/EVAL-G02-019/REPORT.md",
+    "docs/evals/EVAL-G02-019/artifacts/containerd-alias-resolution.json"
+  ],
   "evidence_urls": [],
   "integrations": {
-    "private_server": {"status": "not_applicable", "reason": "I-0034 performs only local deterministic alias-resolution proof."},
-    "bailian": {"status": "not_applicable", "reason": "I-0034 performs no model call."},
-    "langsmith": {"status": "not_applicable", "reason": "I-0034 performs no external-service phase."}
+    "private_server": {
+      "status": "not_applicable",
+      "reason": "I-0034 performed only local deterministic alias-resolution proof."
+    },
+    "bailian": {
+      "status": "not_applicable",
+      "reason": "I-0034 performed no model call."
+    },
+    "langsmith": {
+      "status": "not_applicable",
+      "reason": "I-0034 performed no external-service phase."
+    }
   },
   "open_evidence": []
 }
