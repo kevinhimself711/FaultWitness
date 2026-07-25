@@ -1,8 +1,8 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: I-0031
-next_iteration: null
+active_iteration: null
+next_iteration: I-0032
 last_closed_gate: G01
 ---
 
@@ -14,7 +14,8 @@ FaultWitness 是一个面向微服务事故调查、受控修复与持续优化�
 确定性失败终态关闭且负面证据完整；I-0024 与 I-0026 已完成前两轮 runner/transport
 纠错。I-0028 已用真实 Windows child process 证明 byte-exact transport 并关闭；I-0029 因
 远端 Python 3.8 compatibility 缺陷终态失败。I-0030 已用实际受管 Python 3.8.20 完成
-兼容性纠错并关闭；I-0031 是当前替代编排。任何终态记录都不会重开。
+兼容性纠错并关闭；I-0031 因固定 probe 镜像未离线导入而终态失败。I-0032 是下一项
+probe-image staging 纠错，I-0033 是计划中的替代编排。任何终态记录都不会重开。
 
 ## 权威资产
 
@@ -36,6 +37,7 @@ FaultWitness 是一个面向微服务事故调查、受控修复与持续优化�
   十四个 Gate phase、matrix cell、破坏性实验和模型调用均为 0。EVAL-G02-013 已通过 4/4
   本地 byte-exact cases。EVAL-G02-014 随后证明 `gate_probe.py` 与远端 Python 3.8 不兼容；
   访问 cell、破坏性实验和模型调用仍为 0。EVAL-G02-015 已通过真实 Python 3.8 import 与
-  UTC-aware timestamp 两个本地 cases；I-0031 才可再次编排冻结 phase。
+  UTC-aware timestamp 两个本地 cases。EVAL-G02-016 随后证明固定 `minio/mc` probe 镜像
+  未进入 K3s 且节点 Docker Hub pull 超时；访问 cell、破坏性实验和模型调用仍为 0。
 
 代码、API、Schema 和标识符使用英文；设计、评测和复盘文档以中文为主。

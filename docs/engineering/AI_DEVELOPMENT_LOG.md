@@ -1,5 +1,19 @@
 # AI Development Log
 
+## 2026-07-24 — G02 EVAL-G02-016 pinned probe-image failure
+
+Candidate `0f3e83b871c8c69cfdb2c2321cc96e4894975d56` passed four fail-fast preflights
+and `lab-deploy-and-bind`. Candidate-bound provisioning then returned deterministic
+`mc_admin_pod_deterministic_wait`. One bounded read-only diagnostic proved that the exact pinned
+`minio/mc` image was absent from K3s; the node's Docker Hub manifest request timed out and the Pod
+entered `ImagePullBackOff`.
+
+I-0031 and EVAL-G02-016 are terminal with `open_evidence: []`; provisioning, all 60 access cells,
+trace/canary/scenario phases, external-service probes, and model calls remained zero. I-0032 must
+add both frozen probe images to the existing digest-verified offline staging/import inventory.
+I-0033/EVAL-G02-018 is the only replacement orchestration. Validation N, thresholds, Ground Truth,
+locked tests, health windows, model route, and token/cost ceilings remain unchanged.
+
 ## 2026-07-24 — G02 EVAL-G02-014 Python 3.8 compatibility failure
 
 Candidate `cfafa5a6f1510a1a7c8fe2c9360284214c8734f2` passed four fail-fast preflights

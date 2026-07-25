@@ -24,6 +24,9 @@ pinned crane binary and imported into K3s before apply; this is the registered p
 host's Docker Hub reachability failure. OCI-layout archives preserve the upstream manifest digest
 through K3s import; converted tarball digests are rejected. Remote archives are cached by their own
 OCI tar digest, so an unrelated image-set change cannot invalidate and retransmit every archive.
+I-0032 extends this same inventory with exactly the two digest-pinned helper images declared by
+`config/g02/gate-probes.yaml`. SUT and probe references share one deduplicated OCI staging/import
+contract; probe Pods must never depend on a later direct registry pull from the private node.
 The runner replaces complete image scalar values
 with their registered digests, applies every namespaced resource to `fw-sut`, waits for all
 Deployments and OpenSearch, and writes `fw-g02-candidate-binding`.

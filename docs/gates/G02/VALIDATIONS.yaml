@@ -28,7 +28,7 @@ validation_items:
     owning_iteration: I-0016
     runner: g02.candidate_binding
     negative_fixture: tests/fixtures/g02/candidate_non_evidence_descendant.json
-    artifact_paths: [docs/evals/EVAL-G02-016/artifacts/phases/preflight-candidate-binding/summary.json]
+    artifact_paths: [docs/evals/EVAL-G02-018/artifacts/phases/preflight-candidate-binding/summary.json]
     zero_tolerance: true
     enumeration_kind: one_time
   - id: V-G02-003
@@ -43,7 +43,7 @@ validation_items:
     owning_iteration: I-0016
     runner: g02.manifest_debt
     negative_fixture: tests/fixtures/g02/manifest_open_evidence.json
-    artifact_paths: [docs/evals/EVAL-G02-016/artifacts/phases/preflight-manifests/manifest-debt.json]
+    artifact_paths: [docs/evals/EVAL-G02-018/artifacts/phases/preflight-manifests/manifest-debt.json]
     zero_tolerance: true
     enumeration_kind: category_exhaustive
   - id: V-G02-004
@@ -90,7 +90,7 @@ validation_items:
     negative_fixture: tests/fixtures/g02/fault_restore_noop.yaml
     artifact_paths:
       - docs/evals/EVAL-G02-002/artifacts/scenario-smoke.json
-      - docs/evals/EVAL-G02-016/artifacts/phases/scenario-matrix/summary.json
+      - docs/evals/EVAL-G02-018/artifacts/phases/scenario-matrix/summary.json
     zero_tolerance: false
     enumeration_kind: none
   - id: V-G02-007
@@ -137,7 +137,7 @@ validation_items:
     negative_fixture: tests/fixtures/g02/access_wrong_allow.yaml
     artifact_paths:
       - docs/evals/EVAL-G02-003/artifacts/access-policy-simulation.json
-      - docs/evals/EVAL-G02-016/artifacts/phases/isolation-access-matrix/matrix.json
+      - docs/evals/EVAL-G02-018/artifacts/phases/isolation-access-matrix/matrix.json
     zero_tolerance: true
     enumeration_kind: none
   - id: V-G02-010
@@ -152,7 +152,7 @@ validation_items:
     owning_iteration: I-0024
     runner: g02.stage_matrix
     negative_fixture: tests/fixtures/g02/trace_missing_stage.json
-    artifact_paths: [docs/evals/EVAL-G02-016/artifacts/phases/trace-six-stage-matrix/matrix.json]
+    artifact_paths: [docs/evals/EVAL-G02-018/artifacts/phases/trace-six-stage-matrix/matrix.json]
     zero_tolerance: true
     enumeration_kind: category_exhaustive
   - id: V-G02-011
@@ -169,7 +169,7 @@ validation_items:
     negative_fixture: tests/fixtures/g02/canary_leaked_artifact.json
     artifact_paths:
       - docs/evals/EVAL-G02-003/artifacts/writer-canary.json
-      - docs/evals/EVAL-G02-016/artifacts/phases/all-surface-canary/matrix.json
+      - docs/evals/EVAL-G02-018/artifacts/phases/all-surface-canary/matrix.json
     zero_tolerance: true
     enumeration_kind: none
   - id: V-G02-012
@@ -216,7 +216,7 @@ validation_items:
     negative_fixture: tests/fixtures/g02/deterministic_wrong_root.json
     artifact_paths:
       - docs/evals/EVAL-G02-004/artifacts/deterministic-smoke.json
-      - docs/evals/EVAL-G02-016/artifacts/phases/baseline-deterministic/results.json
+      - docs/evals/EVAL-G02-018/artifacts/phases/baseline-deterministic/results.json
     zero_tolerance: false
     enumeration_kind: none
   - id: V-G02-015
@@ -234,8 +234,8 @@ validation_items:
     negative_fixture: tests/fixtures/g02/journal_partial_transport.json
     artifact_paths:
       - docs/evals/EVAL-G02-004/artifacts/live-smoke.json
-      - docs/evals/EVAL-G02-016/artifacts/phases/baseline-live/journal-index.json
-      - docs/evals/EVAL-G02-016/artifacts/phases/baseline-aggregate/metrics.json
+      - docs/evals/EVAL-G02-018/artifacts/phases/baseline-live/journal-index.json
+      - docs/evals/EVAL-G02-018/artifacts/phases/baseline-aggregate/metrics.json
     zero_tolerance: false
     enumeration_kind: none
   - id: V-G02-016
@@ -250,7 +250,7 @@ validation_items:
     owning_iteration: I-0016
     runner: g02.reconciliation
     negative_fixture: tests/fixtures/g02/reconciliation_pending.json
-    artifact_paths: [docs/evals/EVAL-G02-016/artifacts/phases/candidate-reconciliation/summary.json]
+    artifact_paths: [docs/evals/EVAL-G02-018/artifacts/phases/candidate-reconciliation/summary.json]
     zero_tolerance: true
     enumeration_kind: one_time
   - id: V-G02-017
@@ -265,6 +265,6 @@ validation_items:
     owning_iteration: I-0017
     runner: g02.lab_bootstrap
     negative_fixture: tests/fixtures/g02/lab_unpinned_image.yaml
-    artifact_paths: [docs/evals/EVAL-G02-016/artifacts/phases/lab-deploy-and-bind/summary.json]
+    artifact_paths: [docs/evals/EVAL-G02-018/artifacts/phases/lab-deploy-and-bind/summary.json]
     zero_tolerance: true
     enumeration_kind: one_time

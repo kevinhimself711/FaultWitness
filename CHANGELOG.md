@@ -4,6 +4,8 @@
 
 ### Governance maintenance
 
+- Preserve I-0031/EVAL-G02-016 as terminal negative evidence after the exact pinned `minio/mc`
+  image was absent from K3s; plan I-0032 offline staging and I-0033/EVAL-G02-018 replacement.
 - Activate I-0031 as the sole fifth replacement orchestration after I-0030 closed with actual
   Python 3.8 compatibility evidence and no open evidence; I-0031 may only run frozen Gate phases.
 - Close I-0030 on candidate `89cf591` with EVAL-G02-015 passing both actual Python 3.8

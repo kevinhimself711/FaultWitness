@@ -40,8 +40,8 @@ uv run python -m faultwitness_dev eval-g02-close --candidate-sha <SHA> --evidenc
 ## Candidate-binding asset
 
 当前 standard orchestration Iteration 在 Gate Eval 前产生其 `eval_id` 对应目录下的
-`candidate-binding.json`。I-0031 对应 EVAL-G02-016；I-0020/EVAL-G02-005、
-I-0023/EVAL-G02-008 与 I-0025/EVAL-G02-010 是不可变失败历史。
+`candidate-binding.json`。I-0033 对应 EVAL-G02-018；I-0020/EVAL-G02-005、
+I-0023/EVAL-G02-008、I-0025/EVAL-G02-010 与后续 012/014/016 是不可变失败历史。
 binding 记录：
 
 - `candidate_sha` 与 `evidence_head_sha`。
@@ -52,7 +52,7 @@ binding 记录：
   root；不同 Eval 或 candidate 绝不共用或覆盖 journal。
 - zero waiver/open-evidence/backlog/DLQ/fallback counters。
 
-EVAL-G02-016 binding 不得含 `phase_inputs`。`isolation-access-matrix`、
+EVAL-G02-018 binding 不得含 `phase_inputs`。`isolation-access-matrix`、
 `trace-six-stage-matrix` 与 `all-surface-canary` 必须由 handler 直接调用 I-0024 collector；
 任何操作员预制 matrix 都会在 phase 启动前被拒绝。
 

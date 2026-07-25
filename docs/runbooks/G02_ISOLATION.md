@@ -69,12 +69,15 @@ reference before atomically writing its reviewable matrix under the active stand
 Eval asset. A missing capability, wrong allow, missing stage, leaked canary, missing artifact
 reference, or binding mismatch is blocking with no operator pass path.
 
-EVAL-G02-005, EVAL-G02-008, EVAL-G02-010, EVAL-G02-012, and EVAL-G02-014 are immutable failed
-history. Replacement orchestration writes new Gate artifacts only under `EVAL-G02-016`; no runner may select a terminal
-Eval or overwrite its phase records.
+EVAL-G02-005, EVAL-G02-008, EVAL-G02-010, EVAL-G02-012, EVAL-G02-014, and EVAL-G02-016 are
+immutable failed history. Replacement orchestration writes new Gate artifacts only under
+`EVAL-G02-018`; no runner may select a terminal Eval or overwrite its phase records.
 
 Provisioning is derived from `config/g02/gate-probes.yaml` and is checked by one identical local and
 remote plan digest before any credential is created. The two probe images are digest pinned.
+Both probe images must already have passed the same owner-host OCI archive, verified transfer, and
+K3s containerd import path as the SUT images before provisioning starts. A direct Docker Hub pull
+from the private node is not an accepted bootstrap dependency.
 Credential values are generated on the private host, stored only in four candidate/environment-
 bound Kubernetes Secrets, and never returned to the operator or written to Git. A stale candidate
 binding disables the old MinIO user and PostgreSQL login before rotating it. Reprovisioning the

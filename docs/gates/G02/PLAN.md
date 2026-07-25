@@ -23,7 +23,9 @@ transport exceeded the Windows child-process command-line limit before the first
 Terminal I-0025 was followed by bounded-transport corrective I-0026. EVAL-G02-012 then proved that
 Windows text-mode stdin changed LF script bytes to CRLF before the remote shell. I-0028 corrected
 that defect, but EVAL-G02-014 then exposed a deterministic Python 3.8 probe incompatibility.
-I-0029 is terminal; compatibility corrective I-0030 and replacement I-0031 are the sole forward path.
+I-0030 corrected that defect; EVAL-G02-016 then proved that the two frozen probe images were absent
+from the offline staging inventory. I-0031 is terminal; staging corrective I-0032 and replacement
+I-0033 are the sole forward path.
 Estimates include Iteration Eval and are observability data, never kill timeouts.
 
 | Work | Expected duration |
@@ -44,9 +46,11 @@ Estimates include Iteration Eval and are observability data, never kill timeouts
 | I-0029 fourth replacement orchestration, excluding Gate Eval | 0h30 |
 | I-0030 Python 3.8 probe compatibility corrective | 0h45 |
 | I-0031 fifth replacement orchestration, excluding Gate Eval | 0h30 |
-| Iteration total including forward corrections | **25h45** |
+| I-0032 digest-pinned probe-image offline staging corrective | 1h15 |
+| I-0033 sixth replacement orchestration, excluding Gate Eval | 0h30 |
+| Iteration total including forward corrections | **27h30** |
 | Gate Eval | **2h33** |
-| Total | **28h18** |
+| Total | **30h03** |
 
 The normal estimates above are planning observability, not execution stop conditions. There is no
 fixed retry-count or contingency-duration ceiling: external waiting and every attributable retry
@@ -327,6 +331,8 @@ to satisfy these future Agent floors.
 | I-0029 Fourth Replacement Unified Candidate Orchestration | Freeze the post-I-0028 candidate and run the same fourteen phases in EVAL-G02-014 | I-0016–I-0019, I-0021, I-0022, I-0024, I-0026, I-0028 | 0h30 excluding Gate Eval | The candidate passes using only preimplemented runners and immutable phase evidence. | No new L2 |
 | I-0030 Python 3.8 Probe Compatibility Corrective | Replace the Python 3.11-only UTC import and execute probe import/timestamp under actual Python 3.8 | I-0016, I-0021, I-0024, I-0028, terminal I-0029 | 0h45 | The frozen probe imports and produces a UTC-aware timestamp under Python 3.8. | No new L2; repairs V-G02-009/010/011 probe bootstrap |
 | I-0031 Fifth Replacement Unified Candidate Orchestration | Freeze the post-I-0030 candidate and run the same fourteen phases in EVAL-G02-016 | I-0016–I-0019, I-0021, I-0022, I-0024, I-0026, I-0028, I-0030 | 0h30 excluding Gate Eval | The candidate passes using only preimplemented runners and immutable phase evidence. | No new L2 |
+| I-0032 Digest-Pinned Probe Image Offline Staging Corrective | Add the two exact probe images to the existing verified OCI staging/import inventory | I-0016, I-0017, I-0021, I-0024, I-0028, I-0030, terminal I-0031 | 1h15 | Three local cases prove exact inventory union, registry normalization, and digest-preserving deduplication. | No new L2; repairs V-G02-017 bootstrap completeness |
+| I-0033 Sixth Replacement Unified Candidate Orchestration | Freeze the post-I-0032 candidate and run the same fourteen phases in EVAL-G02-018 | I-0016–I-0019, I-0021, I-0022, I-0024, I-0026, I-0028, I-0030, I-0032 | 0h30 excluding Gate Eval | The candidate passes using only preimplemented runners and immutable phase evidence. | No new L2 |
 
 Every Iteration closes with `open_evidence: []`. L2 work is recorded as `owned_l2_ready`, not as
 open Iteration evidence: its owner must already have implemented and unit-tested the runner,
@@ -371,16 +377,16 @@ view is frozen below.
 | ID | Validation and excluded failure | Layer and reason | Iter N | Gate N | 3–5 audit | Owner | Runner | Negative fixture | Artifact paths |
 | --- | --- | --- | ---: | ---: | --- | --- | --- | --- | --- |
 | V-G02-001 | Phase/DAG/resume; excludes repeated pass, lost trial, stale cache | L1; deterministic state fixtures | 5 | 0 | Reduced to five transitions | I-0016 | `g02.phase_contract` | `phase_stale_cache.json` | `EVAL-G02-001/artifacts/phase-contract.json` |
-| V-G02-002 | Double SHA/binding; excludes false candidate and stale inheritance | L2; unified candidate only | 0 | 1 | One-time bootstrap | I-0016 | `g02.candidate_binding` | `candidate_non_evidence_descendant.json` | `EVAL-G02-016/.../preflight-candidate-binding/summary.json` |
-| V-G02-003 | Manifest debt; excludes fail-late remote work | L2; full manifest set exists only at Gate | 0 | 13 | All 9 G01 + 4 G02 manifests required | I-0016 | `g02.manifest_debt` | `manifest_open_evidence.json` | `EVAL-G02-016/.../preflight-manifests/manifest-debt.json` |
+| V-G02-002 | Double SHA/binding; excludes false candidate and stale inheritance | L2; unified candidate only | 0 | 1 | One-time bootstrap | I-0016 | `g02.candidate_binding` | `candidate_non_evidence_descendant.json` | `EVAL-G02-018/.../preflight-candidate-binding/summary.json` |
+| V-G02-003 | Manifest debt; excludes fail-late remote work | L2; full manifest set exists only at Gate | 0 | 13 | All 9 G01 + 4 G02 manifests required | I-0016 | `g02.manifest_debt` | `manifest_open_evidence.json` | `EVAL-G02-018/.../preflight-manifests/manifest-debt.json` |
 | V-G02-004 | DSL/seed registry; excludes count and allocation drift | L1; closed schema/enumeration | 32 | 0 | All seeds are deliverables | I-0017 | `g02.dsl_registry` | `scenario_unknown_action.yaml` | `EVAL-G02-002/artifacts/seed-registry.json` |
 | V-G02-005 | Six adapters/oracles; excludes missing state semantics | L1; category-exhaustive contracts | 6 | 0 | All six classes required | I-0017 | `g02.fault_oracle_contract` | `oracle_false_green.yaml` | `EVAL-G02-002/artifacts/fault-oracle-contract.json` |
 | V-G02-006 | Live inject/detect/recover; excludes false green and restore drift | L3; family smoke then all seeds | 4 | 32 | Three would omit a family | I-0017 | `g02.scenario_matrix` | `fault_restore_noop.yaml` | Iteration smoke and Gate scenario summary |
 | V-G02-007 | 160-row preregistry; excludes premature G07 materialization | L1; deterministic registry/object check | 160 | 0 | All rows are the deliverable | I-0018 | `g02.preregistry` | `prereg_materialized_case.yaml` | `EVAL-G02-003/artifacts/preregistry.json` |
 | V-G02-008 | Package exclusion; excludes embedded GT/locked data | L1; digest-pinned content scan | 3 | 0 | Three images are exhaustive | I-0018 | `g02.sealed_package_scan` | `image_contains_ground_truth.txt` | `EVAL-G02-003/artifacts/sealed-package-scan.json` |
-| V-G02-009 | Access matrix; excludes Agent/developer/evaluator/controller privilege drift | L3; four policy identities then 60 live cells | 4 | 60 | All four identities required | I-0024 | `g02.access_matrix` | `access_wrong_allow.yaml` | I-0018 policy simulation plus EVAL-G02-016 Gate matrix |
-| V-G02-010 | G01 six-stage spans; excludes missing correlated stage evidence | L2; complete stack required | 0 | 6 | Six stages are exhaustive | I-0024 | `g02.stage_matrix` | `trace_missing_stage.json` | EVAL-G02-016 Gate six-stage matrix |
-| V-G02-011 | G01 all-surface canary; excludes Secret/PII leakage | L3; four new writers then 22 live cells | 4 | 22 | All four writers required | I-0024 | `g02.canary_matrix` | `canary_leaked_artifact.json` | I-0018 writer proof plus EVAL-G02-016 Gate matrix |
+| V-G02-009 | Access matrix; excludes Agent/developer/evaluator/controller privilege drift | L3; four policy identities then 60 live cells | 4 | 60 | All four identities required | I-0024 | `g02.access_matrix` | `access_wrong_allow.yaml` | I-0018 policy simulation plus EVAL-G02-018 Gate matrix |
+| V-G02-010 | G01 six-stage spans; excludes missing correlated stage evidence | L2; complete stack required | 0 | 6 | Six stages are exhaustive | I-0024 | `g02.stage_matrix` | `trace_missing_stage.json` | EVAL-G02-018 Gate six-stage matrix |
+| V-G02-011 | G01 all-surface canary; excludes Secret/PII leakage | L3; four new writers then 22 live cells | 4 | 22 | All four writers required | I-0024 | `g02.canary_matrix` | `canary_leaked_artifact.json` | I-0018 writer proof plus EVAL-G02-018 Gate matrix |
 | V-G02-012 | Scorer semantics; excludes mis-scored malformed/unsupported output | L1; pure algorithm | 5 | 0 | Five fixtures cover all branches | I-0019 | `g02.scorer_contract` | `score_unsupported_claim.json` | `EVAL-G02-004/artifacts/scorer-contract.json` |
 | V-G02-013 | Seven thresholds; excludes omission or decrease | L1; exact constant registry | 7 | 0 | All seven values required | I-0019 | `g02.threshold_registry` | `threshold_decrease.yaml` | `EVAL-G02-004/artifacts/threshold-registry.json` |
 | V-G02-014 | Deterministic baseline; excludes GT access and nondeterminism | L3; three behavior fixtures then 32 seeds | 3 | 32 | Correct/wrong/malformed are minimum | I-0019 | `g02.deterministic_baseline` | `deterministic_wrong_root.json` | Iteration smoke and Gate results |
@@ -573,10 +579,31 @@ The fifth forward decision is complete:
 - I-0030 replaces only the version-specific UTC dependency and executes import plus timestamp under
   an actual managed Python 3.8 interpreter. It runs no remote provisioning or Gate L2 phase and
   keeps V-G02-009/010/011 Iteration N at 4/0/4.
-- I-0031/EVAL-G02-016 runs the same fourteen phases on a new candidate. Final artifact paths move
-  forward to EVAL-G02-016; old failed artifacts remain unchanged.
+- I-0031/EVAL-G02-016 was assigned to run the same fourteen phases on a new candidate; its later
+  failure is recorded in Section 14.7. Old failed artifacts remain unchanged.
 - A runner targeting a remote interpreter must execute its minimum runtime path under that actual
   version before owner closure; current-version local imports are insufficient.
+- No validation N, threshold, Ground Truth, locked test, health-oracle window, model route,
+  token/cost ceiling, destructive-once rule, or failure semantic changes.
+
+### 14.7 EVAL-G02-016 pinned probe-image failure and sixth replacement
+
+EVAL-G02-016 passed four fail-fast preflights and `lab-deploy-and-bind`, then stopped during
+candidate-bound provisioning before the first access cell. The exact pinned `minio/mc` image was
+absent from K3s containerd; the node's Docker Hub manifest request ended in an I/O timeout and the
+pod entered `ImagePullBackOff`. The frozen runner classifies that terminal wait as deterministic
+`blocked`, so the same candidate cannot resume or receive an operator pass.
+
+The sixth forward decision is complete:
+
+- I-0031 is terminal `failed`; EVAL-G02-016 and its zero-cell negative evidence are immutable.
+- I-0032 extends the existing digest-verified OCI archive staging/import inventory with exactly the
+  two frozen probe images. It changes no image reference or digest, executes no Gate L2 phase, and
+  keeps V-G02-009/010/011 Iteration N at 4/0/4 and V-G02-017 Iteration N at 0.
+- I-0033/EVAL-G02-018 runs the same fourteen phases on a new candidate. Final artifact paths move
+  forward to EVAL-G02-018; old failed artifacts remain unchanged.
+- Every helper/probe image needed after bootstrap must be staged with the SUT images; a private
+  node's later direct registry access is never assumed.
 - No validation N, threshold, Ground Truth, locked test, health-oracle window, model route,
   token/cost ceiling, destructive-once rule, or failure semantic changes.
 

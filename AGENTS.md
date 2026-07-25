@@ -1,8 +1,8 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: I-0031
-next_iteration: null
+active_iteration: null
+next_iteration: I-0032
 last_closed_gate: G01
 ---
 
@@ -14,10 +14,9 @@ FaultWitness is a multi-tenant Agent Runtime for investigating microservice inci
 
 G00 and G01 are closed. G02 is `in_progress`. I-0016 through I-0019 and forward correctives I-0021,
 I-0022, I-0024, I-0026, I-0028, and I-0030 are completed with no open evidence. I-0020, I-0023,
-I-0025, I-0027, and I-0029 are terminally failed with complete negative evidence. I-0031 is the
-active replacement orchestration and may only execute and reconcile the fourteen frozen Gate phases;
-it may not add implementation, fixtures, test semantics, thresholds, workflows, or a test framework.
-No terminal Iteration may be reopened.
+I-0025, I-0027, I-0029, and I-0031 are terminally failed with complete negative evidence. I-0032
+is the next digest-pinned probe-image staging corrective and I-0033 is its planned replacement
+orchestration. No terminal Iteration may be reopened.
 
 ## Source-of-truth order
 
@@ -99,6 +98,9 @@ PROJECT_STATE.yaml is the authority for the active Gate and iteration, not for a
 - A runner shipped to a remote or sealed environment must execute its import and minimum runtime
   path under that environment's actual interpreter version before its owning Iteration closes.
   Local current-version imports and syntax-only checks are insufficient compatibility evidence.
+- Every digest-pinned helper or probe image required after lab deployment must enter the same
+  digest-verified offline staging and containerd-import path as the SUT images. A later in-cluster
+  registry pull is not candidate bootstrap evidence and may not be assumed available.
 - Do not commit or push unless the user explicitly requests it.
 
 Planning-only commits may create or refine future Iteration and Eval assets without activating them. They never authorize product behavior, infrastructure mutation, credential use, or live evaluation.
