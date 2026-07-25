@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-018",
+  "iteration": "I-0033",
+  "candidate_sha": "1bc74b9d976cd5721eb9f57f4587a9fb83f35dc8",
+  "phase_id": "lab-deploy-and-bind",
+  "final_status": "blocked",
+  "classification": "deterministic_containerd_import_reference_normalization_failure",
+  "root_cause": "minio_mc_import_materialized_under_index_docker_io_but_runner_required_docker_io_source_reference",
+  "requested_image": "docker.io/minio/mc@sha256:eb4ea9884b77704230e2423e9004d2fa738dc272876b9cc41a297d29443b8780",
+  "observed_imported_image": "index.docker.io/minio/mc@sha256:eb4ea9884b77704230e2423e9004d2fa738dc272876b9cc41a297d29443b8780",
+  "observed_imported_digest": "sha256:eb4ea9884b77704230e2423e9004d2fa738dc272876b9cc41a297d29443b8780",
+  "requested_source_reference_present": false,
+  "probe_busybox_target_present": true,
+  "probe_minio_archive_bytes": 29859840,
+  "probe_busybox_archive_bytes": 2160640,
+  "remote_candidate_binding_after_failure": "0f3e83b871c8c69cfdb2c2321cc96e4894975d56",
+  "remote_ready_deployments_after_failure": 24,
+  "attempts": {
+    "runner_attempts": 1,
+    "bounded_read_only_diagnostics": 1,
+    "total_remote_invocations": 2
+  },
+  "execution_counts": {
+    "probe_archives_pulled": 2,
+    "probe_archives_transferred": 2,
+    "new_candidate_deployments": 0,
+    "access_cells": 0,
+    "trace_stages": 0,
+    "canary_surfaces": 0,
+    "destructive_scenarios": 0,
+    "deterministic_baselines": 0,
+    "external_service_probes": 0,
+    "model_calls": 0
+  },
+  "runner_phase_start_time": "2026-07-25T00:27:12.777000+00:00",
+  "runner_phase_end_time": "2026-07-25T00:28:43.000000+00:00",
+  "diagnosis_end_time": "2026-07-25T00:30:53.000000+00:00",
+  "retry_allowed_on_same_candidate": false,
+  "open_evidence": []
+}
