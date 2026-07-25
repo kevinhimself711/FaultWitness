@@ -1,5 +1,24 @@
 # Governance Refactor Lessons Log
 
+## GOV-OBS-013 — Corrective impact analysis must follow workload supply, not only changed files
+
+- **Trigger:** C-G02-010 safely reduced ambient load from ten users to one and proved one no-fault
+  checkout, but A-G02-010 then found that both payment fault observers still depended on incidental
+  checkout timing. The 90-second oracle correctly failed because no correlated request trace existed.
+- **Why the earlier seam was insufficient:** readiness, restart count zero, and one healthy checkout
+  proved a clean lab but did not prove that every workload-dependent fault branch could generate its
+  own diagnostic input. The changed ambient-workload supply affected payment oracles even though
+  their source files were not modified by C-G02-010.
+- **G02 action:** preserve the valid one-user/OOM correction. C-G02-011 adds one deterministic
+  candidate-bound checkout for both payment variants and proves one real `paymentUnreachable` seam;
+  no Gate L2 matrix or model call is folded into the corrective.
+- **Post-G02 migration:** affected-dependency calculation must include declared runtime inputs such
+  as ambient traffic, queues, clocks, credentials, and observability producers. A corrective that
+  changes one of them needs one real proof per distinct dependent protocol, not a whole Gate replay
+  and not a generic readiness smoke.
+- **Metric impact:** none; N, 30-second spacing, 90-second window, trace oracle, cleanup, recovery,
+  quality/performance thresholds, permissions, model route, and token/cost limits remain frozen.
+
 ## GOV-OBS-012 — Governance complexity, not CI compute, dominated G02 overhead
 
 - **Measured evidence:** the 2026-07-25 full local `verify-fast` plus `eval-changed` run checked 378

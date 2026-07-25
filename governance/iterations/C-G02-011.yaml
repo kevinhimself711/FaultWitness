@@ -1,0 +1,62 @@
+schema_version: "1.2.0"
+id: C-G02-011
+gate: G02
+title: Deterministic Payment Workload Corrective
+status: in_progress
+iteration_type: corrective
+corrects: [I-0017, A-G02-010]
+root_cause:
+  id: RC-G02-011
+  source_eval: EVAL-G02-042
+  phase: scenario-matrix
+  failure_mode: The payment fault observers relied on incidental ambient checkout traffic, so the clean one-user lab produced no correlated checkout trace inside the frozen observation window.
+affected_validation_ids: [V-G02-006]
+verification_scope:
+  changed_seam: candidate-bound payment fault workload stimulus
+  semantic_branches: [payment_failure_stimulus, payment_unreachable_stimulus, expected_http_fault_response, exactly_one_checkout, transport_classification]
+  reused_test_entrypoints: [tests/g02/test_g02_lab.py]
+  real_seam_proof: required
+  real_seam_runner: existing run_scenario with RemoteFlagClient and LiveScenarioObserver for one paymentUnreachable seed
+  real_seam_artifact: docs/evals/EVAL-G02-043/artifacts/payment-workload-seam.json
+  gate_l2_execution: 0
+  full_gate_eval: false
+cost_boundary:
+  root_cause_count: 1
+  bespoke_eval_harness: false
+  gate_attempt_included: false
+  targeted_verification_separate: true
+  global_sync_deferred: true
+accounting_scope:
+  corrective_engineering: included
+  targeted_verification: separate
+  gate_attempt_execution: excluded
+  governance_sync: separate
+scope:
+  - Send exactly one candidate-bound cart and checkout request immediately after injecting either payment fault.
+  - Accept an HTTP fault response as proof that the expected failing checkout request reached the candidate while retaining no-result transport failures as infrastructure failures.
+  - Preserve the frozen trace oracle two-observation sample spacing observation window recovery and cleanup semantics.
+  - Prove one paymentUnreachable scenario through the existing real runner without executing Gate L2 or model phases.
+non_goals:
+  - Running the full scenario access trace canary baseline or model matrices.
+  - Restoring ten-user ambient load increasing resources or changing pinned images.
+  - Changing scenario N fault variants oracle thresholds health windows permissions Ground Truth locked tests quality performance model route token or cost.
+dependencies: [I-0017, C-G02-010, A-G02-010]
+tests:
+  - uv run pytest -q tests/g02/test_g02_lab.py -k payment
+  - uv run python -m faultwitness_dev verify-fast
+  - uv run python -m faultwitness_dev eval-changed
+eval_id: EVAL-G02-043
+commit: null
+changed_paths:
+  - src/faultwitness_dev/g02_lab.py
+  - tests/g02/test_g02_lab.py
+  - docs/runbooks/G02_FAULT_LAB.md
+  - docs/evals/EVAL-G02-043
+  - docs/roadmap/iterations/C-G02-011.md
+  - governance/iterations/C-G02-011.yaml
+behavior_change: true
+docs_updated:
+  - docs/runbooks/G02_FAULT_LAB.md
+  - docs/evals/EVAL-G02-043/PLAN.md
+  - docs/roadmap/iterations/C-G02-011.md
+threshold_changes: []

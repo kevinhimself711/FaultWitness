@@ -1,0 +1,608 @@
+{
+  "candidate_sha": "9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9",
+  "cells": [
+    {
+      "actual_allow": true,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:incident|canonical-owner/fe59b5644b273dae70dfd073b5fc27d6351cc7123d53c32e82cc134658b879ad",
+      "cell_id": "schema:incident|canonical-owner",
+      "expected_allow": true,
+      "outcome": "allowed",
+      "probe": "canonical-owner",
+      "status": "pass",
+      "target": "schema:incident"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:incident|baseline-agent/17f594b5b99ac65c146129cae8bf0cd634ec7bccb5b77e0638fb6e6389dcdb53",
+      "cell_id": "schema:incident|baseline-agent",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "baseline-agent",
+      "status": "pass",
+      "target": "schema:incident"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:incident|ordinary-developer/bc4b313d8b77a74ac939ad4f9c65612047a1244f5f2a3f7a85a6273dc73d90d4",
+      "cell_id": "schema:incident|ordinary-developer",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "ordinary-developer",
+      "status": "pass",
+      "target": "schema:incident"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:incident|cross-boundary/58413977fb4239466f4451ff5a649d6a09c31e79d5160f6ec8ecdc10fe7b4aed",
+      "cell_id": "schema:incident|cross-boundary",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "cross-boundary",
+      "status": "pass",
+      "target": "schema:incident"
+    },
+    {
+      "actual_allow": true,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:runtime|canonical-owner/bd518bc8d8743927d82f50603d299ed4227a4084bb868778da3355584312e857",
+      "cell_id": "schema:runtime|canonical-owner",
+      "expected_allow": true,
+      "outcome": "allowed",
+      "probe": "canonical-owner",
+      "status": "pass",
+      "target": "schema:runtime"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:runtime|baseline-agent/f715d88b57a552d862934f6eac0be799594e1732231c0e9d57f403a231e5d812",
+      "cell_id": "schema:runtime|baseline-agent",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "baseline-agent",
+      "status": "pass",
+      "target": "schema:runtime"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:runtime|ordinary-developer/d69389cfbea127058828c249460a1ccdfad589d670088f54f9bc7bb0cff33dfd",
+      "cell_id": "schema:runtime|ordinary-developer",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "ordinary-developer",
+      "status": "pass",
+      "target": "schema:runtime"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:runtime|cross-boundary/a61a5ce71a89e3a5ad500a5d0d3ea46b5315fc4b3d2063b9be5ecc32596a066d",
+      "cell_id": "schema:runtime|cross-boundary",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "cross-boundary",
+      "status": "pass",
+      "target": "schema:runtime"
+    },
+    {
+      "actual_allow": true,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:checkpoint|canonical-owner/ada179fcd202a674026970ad3105c21eff0875f9112cc510d59f78ed37a1b6b2",
+      "cell_id": "schema:checkpoint|canonical-owner",
+      "expected_allow": true,
+      "outcome": "allowed",
+      "probe": "canonical-owner",
+      "status": "pass",
+      "target": "schema:checkpoint"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:checkpoint|baseline-agent/0c12794ed02fc189a0649b7799a75d291cbe5e56ffe5c343ed86a859bc355e5a",
+      "cell_id": "schema:checkpoint|baseline-agent",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "baseline-agent",
+      "status": "pass",
+      "target": "schema:checkpoint"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:checkpoint|ordinary-developer/1812cec0c509980cc85852024d8b810a98c69f993b418e20ab9b3f06b3ba4e3a",
+      "cell_id": "schema:checkpoint|ordinary-developer",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "ordinary-developer",
+      "status": "pass",
+      "target": "schema:checkpoint"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:checkpoint|cross-boundary/9761db82c757ce8397a7907e9bc2b7556cd4222c97afd96d31de4ca36550e96f",
+      "cell_id": "schema:checkpoint|cross-boundary",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "cross-boundary",
+      "status": "pass",
+      "target": "schema:checkpoint"
+    },
+    {
+      "actual_allow": true,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:action|canonical-owner/9c472c1c597f77a007c9b9c46df903c02c2eb02983df1b286f67ae7d7b8db06b",
+      "cell_id": "schema:action|canonical-owner",
+      "expected_allow": true,
+      "outcome": "allowed",
+      "probe": "canonical-owner",
+      "status": "pass",
+      "target": "schema:action"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:action|baseline-agent/7bf0423e19350e1e64c10af1b5ee735661b9d1fb65284218fc1c99f5a3bbdadf",
+      "cell_id": "schema:action|baseline-agent",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "baseline-agent",
+      "status": "pass",
+      "target": "schema:action"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:action|ordinary-developer/1254a28641a295f533c75129bd60813a9ea0f8f884dc008a48f5883b8c9e9642",
+      "cell_id": "schema:action|ordinary-developer",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "ordinary-developer",
+      "status": "pass",
+      "target": "schema:action"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:action|cross-boundary/0c1dd47dd3fe43d3bef0d42eef34964ec572df4b56cd179cf7eb8fb305bb4d55",
+      "cell_id": "schema:action|cross-boundary",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "cross-boundary",
+      "status": "pass",
+      "target": "schema:action"
+    },
+    {
+      "actual_allow": true,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:delivery|canonical-owner/c451a1c6791cfbdeaf8efba1692ee3216dd3c255689dba7fca2d4582d037312c",
+      "cell_id": "schema:delivery|canonical-owner",
+      "expected_allow": true,
+      "outcome": "allowed",
+      "probe": "canonical-owner",
+      "status": "pass",
+      "target": "schema:delivery"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:delivery|baseline-agent/7547b28000d89801cb5635985c81f24fee3975d58778644d89aee9724f7f6b0d",
+      "cell_id": "schema:delivery|baseline-agent",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "baseline-agent",
+      "status": "pass",
+      "target": "schema:delivery"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:delivery|ordinary-developer/82315b8a83c53d70f43911231ff50bc898d9ad2ddd71cdcb296df90c45126915",
+      "cell_id": "schema:delivery|ordinary-developer",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "ordinary-developer",
+      "status": "pass",
+      "target": "schema:delivery"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:delivery|cross-boundary/de12c5addc018128a7825f7122b237f21044b3998b149b09590ba3cb6cf7ebaa",
+      "cell_id": "schema:delivery|cross-boundary",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "cross-boundary",
+      "status": "pass",
+      "target": "schema:delivery"
+    },
+    {
+      "actual_allow": true,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:trace_buffer|canonical-owner/5d1ee02d1bc61a1f3be3170f5db25aff2f742041480051df818bc9a971997f0b",
+      "cell_id": "schema:trace_buffer|canonical-owner",
+      "expected_allow": true,
+      "outcome": "allowed",
+      "probe": "canonical-owner",
+      "status": "pass",
+      "target": "schema:trace_buffer"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:trace_buffer|baseline-agent/e62a9275a5320224496973401d2edac6c51b76a0b962496193c336851ae1e00b",
+      "cell_id": "schema:trace_buffer|baseline-agent",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "baseline-agent",
+      "status": "pass",
+      "target": "schema:trace_buffer"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:trace_buffer|ordinary-developer/8dc07645d7f329ecc4bb1b116e7d4bed677da10bcf6b353427d523eabd7c154c",
+      "cell_id": "schema:trace_buffer|ordinary-developer",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "ordinary-developer",
+      "status": "pass",
+      "target": "schema:trace_buffer"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/schema:trace_buffer|cross-boundary/232553fcf0769a6a240f38b28399bfadc517b0197f8c1f24fa995f9abbcee98d",
+      "cell_id": "schema:trace_buffer|cross-boundary",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "cross-boundary",
+      "status": "pass",
+      "target": "schema:trace_buffer"
+    },
+    {
+      "actual_allow": true,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/s3:g02/scenarios/|canonical-owner/467e83378508c0fed74d84f9075988f183b9db367e52d3190bd67dcf1cb9d16d",
+      "cell_id": "s3:g02/scenarios/|canonical-owner",
+      "expected_allow": true,
+      "outcome": "allowed",
+      "probe": "canonical-owner",
+      "status": "pass",
+      "target": "s3:g02/scenarios/"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/s3:g02/scenarios/|baseline-agent/8bbff8fcd5e270ffaf8aa7db01fc5769046e56c108a2ded922c0a77bc08a8307",
+      "cell_id": "s3:g02/scenarios/|baseline-agent",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "baseline-agent",
+      "status": "pass",
+      "target": "s3:g02/scenarios/"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/s3:g02/scenarios/|ordinary-developer/07567f118e91d2041204f180ec73b983e5babb8245852124d3ce41cd5eb667ea",
+      "cell_id": "s3:g02/scenarios/|ordinary-developer",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "ordinary-developer",
+      "status": "pass",
+      "target": "s3:g02/scenarios/"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/s3:g02/scenarios/|cross-boundary/bf93cf5b26fb64e677e87d278a053b2f24d94e10f4c0b2a1448c3968b5652ed4",
+      "cell_id": "s3:g02/scenarios/|cross-boundary",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "cross-boundary",
+      "status": "pass",
+      "target": "s3:g02/scenarios/"
+    },
+    {
+      "actual_allow": true,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/s3:g02/trials/|canonical-owner/8520fb31e5e2e3d6083b161ef0241f75c5fb047957077486b7a78b78fb6ed86d",
+      "cell_id": "s3:g02/trials/|canonical-owner",
+      "expected_allow": true,
+      "outcome": "allowed",
+      "probe": "canonical-owner",
+      "status": "pass",
+      "target": "s3:g02/trials/"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/s3:g02/trials/|baseline-agent/a20c21635ae355081a6bcca6c8a75b874a7db5c4d0a265d8409454df050a7224",
+      "cell_id": "s3:g02/trials/|baseline-agent",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "baseline-agent",
+      "status": "pass",
+      "target": "s3:g02/trials/"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/s3:g02/trials/|ordinary-developer/1109649251a37612106ff940f15e4716e8a1e5b3099fcb03a023d8c52f2804e8",
+      "cell_id": "s3:g02/trials/|ordinary-developer",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "ordinary-developer",
+      "status": "pass",
+      "target": "s3:g02/trials/"
+    },
+    {
+      "actual_allow": true,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/s3:g02/trials/|cross-boundary/64e32778be1aa01f850d32a0e221caf97f468d8e8b9ae244c180a422ac4c4f7d",
+      "cell_id": "s3:g02/trials/|cross-boundary",
+      "expected_allow": true,
+      "outcome": "allowed",
+      "probe": "cross-boundary",
+      "status": "pass",
+      "target": "s3:g02/trials/"
+    },
+    {
+      "actual_allow": true,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/s3:g02/ground-truth/|canonical-owner/dc2f434f30bc39f543624e3bd691b50de61765b03fb741be10183c67b3afded1",
+      "cell_id": "s3:g02/ground-truth/|canonical-owner",
+      "expected_allow": true,
+      "outcome": "allowed",
+      "probe": "canonical-owner",
+      "status": "pass",
+      "target": "s3:g02/ground-truth/"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/s3:g02/ground-truth/|baseline-agent/3f77614d49c1f36ee89411a3147d8d95d5b2683fcc8ea139715aff069323323a",
+      "cell_id": "s3:g02/ground-truth/|baseline-agent",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "baseline-agent",
+      "status": "pass",
+      "target": "s3:g02/ground-truth/"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/s3:g02/ground-truth/|ordinary-developer/35fc70e123fa6144b3cea14d1f4aa65e0720c87a5f6513815148a5d351bfc120",
+      "cell_id": "s3:g02/ground-truth/|ordinary-developer",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "ordinary-developer",
+      "status": "pass",
+      "target": "s3:g02/ground-truth/"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/s3:g02/ground-truth/|cross-boundary/abb603eae327a53d68689b756dde0f52c6dc077f923a928a44cb9bc2fe0f73d2",
+      "cell_id": "s3:g02/ground-truth/|cross-boundary",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "cross-boundary",
+      "status": "pass",
+      "target": "s3:g02/ground-truth/"
+    },
+    {
+      "actual_allow": true,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/s3:g02/locked-tests/|canonical-owner/9f1b48667a58eead6d814feb2f8d73f54361863b86ada529e9d581b4fdf50a94",
+      "cell_id": "s3:g02/locked-tests/|canonical-owner",
+      "expected_allow": true,
+      "outcome": "allowed",
+      "probe": "canonical-owner",
+      "status": "pass",
+      "target": "s3:g02/locked-tests/"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/s3:g02/locked-tests/|baseline-agent/a2a7a1826a593589d6eeba4bd9cad2cbde86574d23282c042a6f74031c9fd5a8",
+      "cell_id": "s3:g02/locked-tests/|baseline-agent",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "baseline-agent",
+      "status": "pass",
+      "target": "s3:g02/locked-tests/"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/s3:g02/locked-tests/|ordinary-developer/d725fb1a374cc598e804a1b49030c73e96c51e16b2365c6780c76515a5213323",
+      "cell_id": "s3:g02/locked-tests/|ordinary-developer",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "ordinary-developer",
+      "status": "pass",
+      "target": "s3:g02/locked-tests/"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/s3:g02/locked-tests/|cross-boundary/3431a06ce546aa4eefca288b4926de044b93471e5b1112899a978b1dd5857b26",
+      "cell_id": "s3:g02/locked-tests/|cross-boundary",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "cross-boundary",
+      "status": "pass",
+      "target": "s3:g02/locked-tests/"
+    },
+    {
+      "actual_allow": true,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/s3:g02/evidence/|canonical-owner/787f874c1c4458f209109691e58c56f29149aeb5a296199c7e0074b60b9a8cc0",
+      "cell_id": "s3:g02/evidence/|canonical-owner",
+      "expected_allow": true,
+      "outcome": "allowed",
+      "probe": "canonical-owner",
+      "status": "pass",
+      "target": "s3:g02/evidence/"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/s3:g02/evidence/|baseline-agent/f10dbdeb3837e2f95e2c4ca3b31d3938b900f0a012f9b318635e3b8c8045bd99",
+      "cell_id": "s3:g02/evidence/|baseline-agent",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "baseline-agent",
+      "status": "pass",
+      "target": "s3:g02/evidence/"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/s3:g02/evidence/|ordinary-developer/f3c4839add9a3f854d0dd31bfc1f1ab8b92f8f9038e60327d285c588978621aa",
+      "cell_id": "s3:g02/evidence/|ordinary-developer",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "ordinary-developer",
+      "status": "pass",
+      "target": "s3:g02/evidence/"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/s3:g02/evidence/|cross-boundary/8d0fc731aa65be9963a9c7dce09a35d544f2831c9f70064d7554ff0681379fa1",
+      "cell_id": "s3:g02/evidence/|cross-boundary",
+      "expected_allow": false,
+      "outcome": "denied",
+      "probe": "cross-boundary",
+      "status": "pass",
+      "target": "s3:g02/evidence/"
+    },
+    {
+      "actual_allow": true,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/obs:prometheus|canonical-owner/e137af18732c0e6d623643862b14ee0d8cfa63f3e83d689cc99d23374b7a3e48",
+      "cell_id": "obs:prometheus|canonical-owner",
+      "expected_allow": true,
+      "outcome": "allowed",
+      "probe": "canonical-owner",
+      "status": "pass",
+      "target": "obs:prometheus"
+    },
+    {
+      "actual_allow": true,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/obs:prometheus|baseline-agent/0a788f7513f717b29fdba2cdcbedae4f1fe2425395e6941e4bd4ca6fad6aee28",
+      "cell_id": "obs:prometheus|baseline-agent",
+      "expected_allow": true,
+      "outcome": "allowed",
+      "probe": "baseline-agent",
+      "status": "pass",
+      "target": "obs:prometheus"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/obs:prometheus|ordinary-developer/4aed0a8bd15c8bb76855e876b1d8ab1048e09740ded84819a1c1648a365b6e07",
+      "cell_id": "obs:prometheus|ordinary-developer",
+      "expected_allow": false,
+      "outcome": "infrastructure",
+      "probe": "ordinary-developer",
+      "status": "pass",
+      "target": "obs:prometheus"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/obs:prometheus|cross-boundary/7e3c3ed01cc05ddf2b4bafd1a5391f2ca1502300b8419b17829acd46137380dd",
+      "cell_id": "obs:prometheus|cross-boundary",
+      "expected_allow": false,
+      "outcome": "infrastructure",
+      "probe": "cross-boundary",
+      "status": "pass",
+      "target": "obs:prometheus"
+    },
+    {
+      "actual_allow": true,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/obs:loki|canonical-owner/58b1cbffede0cf28851f49ca7daee3c1f07730f6c800111929a8276c4f45a7c7",
+      "cell_id": "obs:loki|canonical-owner",
+      "expected_allow": true,
+      "outcome": "allowed",
+      "probe": "canonical-owner",
+      "status": "pass",
+      "target": "obs:loki"
+    },
+    {
+      "actual_allow": true,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/obs:loki|baseline-agent/dd5b2588bf17350f2d4a675465d51e6b626c7bae4dae1dc4ecf144f44ec0f3b1",
+      "cell_id": "obs:loki|baseline-agent",
+      "expected_allow": true,
+      "outcome": "allowed",
+      "probe": "baseline-agent",
+      "status": "pass",
+      "target": "obs:loki"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/obs:loki|ordinary-developer/99c01a1865060632e3203974f481df7659b1776ca7216f6111968af81a0fd443",
+      "cell_id": "obs:loki|ordinary-developer",
+      "expected_allow": false,
+      "outcome": "infrastructure",
+      "probe": "ordinary-developer",
+      "status": "pass",
+      "target": "obs:loki"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/obs:loki|cross-boundary/b38c809a46dc89a39890a242575a1561cbcf90f75a8a9ee177aa3388e6387834",
+      "cell_id": "obs:loki|cross-boundary",
+      "expected_allow": false,
+      "outcome": "infrastructure",
+      "probe": "cross-boundary",
+      "status": "pass",
+      "target": "obs:loki"
+    },
+    {
+      "actual_allow": true,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/obs:tempo|canonical-owner/c7e763fa521da3e9ca2dd625b3fb6bfe08eb5a65fa81b79cc60742ee476d0047",
+      "cell_id": "obs:tempo|canonical-owner",
+      "expected_allow": true,
+      "outcome": "allowed",
+      "probe": "canonical-owner",
+      "status": "pass",
+      "target": "obs:tempo"
+    },
+    {
+      "actual_allow": true,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/obs:tempo|baseline-agent/d5378af72e7497eae06a77eb2893d10f4286431af48632047aec03cb04507c97",
+      "cell_id": "obs:tempo|baseline-agent",
+      "expected_allow": true,
+      "outcome": "allowed",
+      "probe": "baseline-agent",
+      "status": "pass",
+      "target": "obs:tempo"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/obs:tempo|ordinary-developer/5ec2f5937d3468216852def3d39f63a28b9ac72f8e12e108dfc3f9c5a665d60a",
+      "cell_id": "obs:tempo|ordinary-developer",
+      "expected_allow": false,
+      "outcome": "infrastructure",
+      "probe": "ordinary-developer",
+      "status": "pass",
+      "target": "obs:tempo"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/obs:tempo|cross-boundary/c6b4690234582683406b21ba5623883c43e539bb84cbdc9eeccb36969bf0872b",
+      "cell_id": "obs:tempo|cross-boundary",
+      "expected_allow": false,
+      "outcome": "infrastructure",
+      "probe": "cross-boundary",
+      "status": "pass",
+      "target": "obs:tempo"
+    },
+    {
+      "actual_allow": true,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/obs:langsmith|canonical-owner/8c9477e126b6a5d33f848affe846ffa52654f4f8b3fc74482897e73f506b8ddf",
+      "cell_id": "obs:langsmith|canonical-owner",
+      "credential_http_status": 200,
+      "credential_response_class": "success",
+      "expected_allow": true,
+      "probe": "canonical-owner",
+      "target": "obs:langsmith"
+    },
+    {
+      "actual_allow": true,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/obs:langsmith|baseline-agent/de1a29e420b3057ff5ac2b8a6daa686a83ee41274e7878dab5d8ef37a8225a75",
+      "cell_id": "obs:langsmith|baseline-agent",
+      "credential_http_status": 200,
+      "credential_response_class": "success",
+      "expected_allow": true,
+      "probe": "baseline-agent",
+      "target": "obs:langsmith"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/obs:langsmith|ordinary-developer/304ac45e12d9e42345d5916d0835316191ea6e37a9fb7d99662f25d9903de1b7",
+      "cell_id": "obs:langsmith|ordinary-developer",
+      "credential_http_status": null,
+      "credential_response_class": "not_invoked",
+      "expected_allow": false,
+      "probe": "ordinary-developer",
+      "target": "obs:langsmith"
+    },
+    {
+      "actual_allow": false,
+      "artifact_ref": "private://faultwitness/g02/9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9/access/obs:langsmith|cross-boundary/07b5543e9ff426e9db8e694dd72805fad1cc288ca0175c9ad70d5b9f039e427c",
+      "cell_id": "obs:langsmith|cross-boundary",
+      "credential_http_status": null,
+      "credential_response_class": "not_invoked",
+      "expected_allow": false,
+      "probe": "cross-boundary",
+      "target": "obs:langsmith"
+    }
+  ],
+  "environment_fingerprint": "32a012ad672a808004e7beb1e41fff66cf87578fbfa470a89dcff47a2b0b80a2",
+  "schema_version": "1.0.0",
+  "status": "pass"
+}

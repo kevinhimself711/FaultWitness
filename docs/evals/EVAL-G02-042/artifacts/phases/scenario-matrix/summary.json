@@ -1,0 +1,194 @@
+{
+  "failed_trial": "g02-scenario-9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9-seed-g02-0002",
+  "scenario_count": 1,
+  "status": "metric_fail",
+  "trials": [
+    {
+      "attempt": 2,
+      "payload": {
+        "fault_class": "kafkaQueueProblems",
+        "observation_packet": {
+          "case_id": "SEED-G02-0001",
+          "observations": [
+            {
+              "baseline_lag": 0.0,
+              "checkout_error_spans": 0,
+              "consumer_lag": 30.0,
+              "consumer_poll_lag_seconds": 30.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.007404880959168771,
+              "descriptions": [],
+              "error_spans": 0,
+              "id": "SEED-G02-0001-OBS-01",
+              "journey_status": 200,
+              "kafka_error": true,
+              "kafka_fault_log": true,
+              "kafka_log_error": false,
+              "kafka_stimulus": {
+                "cart_status": 200,
+                "checkout_count": 1,
+                "checkout_status": 200,
+                "status": "pass"
+              },
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T23:04:31.010889+00:00",
+              "trace_count": 2,
+              "working_set": 48250880.0
+            },
+            {
+              "baseline_lag": 0.0,
+              "checkout_error_spans": 0,
+              "consumer_lag": 30.0,
+              "consumer_poll_lag_seconds": 30.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0017577689007357566,
+              "descriptions": [],
+              "error_spans": 0,
+              "id": "SEED-G02-0001-OBS-02",
+              "journey_status": 200,
+              "kafka_error": true,
+              "kafka_fault_log": true,
+              "kafka_log_error": false,
+              "kafka_stimulus": {
+                "cart_status": 200,
+                "checkout_count": 1,
+                "checkout_status": 200,
+                "status": "pass"
+              },
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T23:05:03.883706+00:00",
+              "trace_count": 2,
+              "working_set": 48164864.0
+            }
+          ],
+          "packet_digest": "5c28e7ccb8b1ce294a8ec88a91367b41a4250521901d746746809743a7b51383",
+          "problem_brief": "Investigate the hard service incident using only the provided canonical observation packet.",
+          "schema_version": "1.0.0"
+        },
+        "result": {
+          "family": "runtime_data",
+          "fault_class": "kafkaQueueProblems",
+          "fault_observations": [
+            {
+              "baseline_lag": 0.0,
+              "checkout_error_spans": 0,
+              "consumer_lag": 30.0,
+              "consumer_poll_lag_seconds": 30.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.007404880959168771,
+              "descriptions": [],
+              "error_spans": 0,
+              "journey_status": 200,
+              "kafka_error": true,
+              "kafka_fault_log": true,
+              "kafka_log_error": false,
+              "kafka_stimulus": {
+                "cart_status": 200,
+                "checkout_count": 1,
+                "checkout_status": 200,
+                "status": "pass"
+              },
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T23:04:31.010889+00:00",
+              "trace_count": 2,
+              "working_set": 48250880.0
+            },
+            {
+              "baseline_lag": 0.0,
+              "checkout_error_spans": 0,
+              "consumer_lag": 30.0,
+              "consumer_poll_lag_seconds": 30.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0017577689007357566,
+              "descriptions": [],
+              "error_spans": 0,
+              "journey_status": 200,
+              "kafka_error": true,
+              "kafka_fault_log": true,
+              "kafka_log_error": false,
+              "kafka_stimulus": {
+                "cart_status": 200,
+                "checkout_count": 1,
+                "checkout_status": 200,
+                "status": "pass"
+              },
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T23:05:03.883706+00:00",
+              "trace_count": 2,
+              "working_set": 48164864.0
+            }
+          ],
+          "original_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+          "precondition_source": "control-observation",
+          "recovery_observations": [
+            {
+              "checkout_error_spans": 0,
+              "consumer_lag": 30.0,
+              "consumer_poll_lag_seconds": 30.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0017577689007357566,
+              "descriptions": [],
+              "error_spans": 0,
+              "journey_healthy": true,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T23:05:13.172873+00:00",
+              "signal_not_worsening": true,
+              "trace_count": 0,
+              "working_set": 48164864.0
+            },
+            {
+              "checkout_error_spans": 0,
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "cpu_rate": 0.0017577689007357566,
+              "descriptions": [],
+              "error_spans": 0,
+              "journey_healthy": true,
+              "journey_status": 200,
+              "kafka_fault_log": false,
+              "kafka_log_error": false,
+              "payment_connection_errors": 0,
+              "ready": true,
+              "recorded_at": "2026-07-25T23:05:46.168276+00:00",
+              "signal_not_worsening": true,
+              "trace_count": 0,
+              "working_set": 48164864.0
+            }
+          ],
+          "restored_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+          "scenario_id": "SEED-G02-0001",
+          "state_sequence": [
+            "HEALTHY",
+            "FAULT_ACTIVE",
+            "HEALTHY"
+          ]
+        },
+        "scenario_id": "SEED-G02-0001"
+      },
+      "recorded_at": "2026-07-25T23:05:49.009495+00:00",
+      "status": "pass",
+      "trial_id": "g02-scenario-9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9-seed-g02-0001"
+    },
+    {
+      "attempt": 2,
+      "payload": {
+        "fault_class": "paymentUnreachable",
+        "reason": "fault oracle did not reach FAULT_ACTIVE",
+        "scenario_id": "SEED-G02-0002"
+      },
+      "recorded_at": "2026-07-25T23:09:54.637122+00:00",
+      "status": "metric_fail",
+      "trial_id": "g02-scenario-9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9-seed-g02-0002"
+    }
+  ],
+  "validation": "V-G02-006"
+}

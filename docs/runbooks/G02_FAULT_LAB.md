@@ -75,6 +75,15 @@ load-generator timing. The runner records the cart and checkout success statuses
 and never sends a second checkout for the same scenario. This does not alter the two-observation N,
 30-second spacing, 90-second deadline, lag threshold, recovery semantics, or Gate sample count.
 
+Immediately after either payment fault is read back, the same candidate-bound path also sends exactly
+one cart and checkout request. `paymentFailure` and `paymentUnreachable` are expected to make that
+checkout return a non-2xx response, so receipt of the HTTP response proves request delivery but does
+not itself prove the fault. The unchanged correlated trace oracle still requires both frozen fault
+observations to satisfy the fault-specific signals. A missing transport result remains
+`infra_failed`; an uncorrelated response remains a blocking metric failure. This removes reliance on
+incidental ambient checkout timing without changing N, 30-second spacing, the 90-second window,
+recovery, cleanup, quality, or performance semantics.
+
 For the first seed, the controller obtains an explicit healthy control observation. For each later
 seed, the immediately preceding passed trial's two healthy recovery observations are the frozen
 precondition evidence, as permitted by the Master Plan. The runner validates both recovery records

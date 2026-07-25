@@ -1,0 +1,34 @@
+{
+  "candidate_sha": "9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9",
+  "eval_id": "EVAL-G02-042",
+  "failed_trial": "g02-scenario-9f51ddaf8c6d2168ef6676ccb8e8b133599cd2a9-seed-g02-0002",
+  "fault_class": "paymentUnreachable",
+  "frozen_result": {
+    "reason": "fault oracle did not reach FAULT_ACTIVE",
+    "scenario_count_before_failure": 1,
+    "status": "metric_fail"
+  },
+  "post_failure_read_only_observation": {
+    "checkout_error_spans": 0,
+    "error_spans": 0,
+    "frontend_status": 200,
+    "payment_connection_errors": 0,
+    "payment_failure_variant": "off",
+    "payment_unreachable_variant": "off",
+    "ready": true,
+    "trace_count": 0
+  },
+  "root_cause": "The clean lab retained only one ambient load user, while both payment fault observer branches still depended on incidental checkout traffic and had no explicit candidate-bound workload stimulus.",
+  "source_comparison": {
+    "kafka_branch_has_explicit_single_checkout": true,
+    "payment_branches_have_explicit_checkout": false,
+    "prior_ten_user_candidates_seed_2_passed": [
+      "EVAL-G02-032",
+      "EVAL-G02-034",
+      "EVAL-G02-036",
+      "EVAL-G02-038",
+      "EVAL-G02-040"
+    ]
+  },
+  "threshold_or_sample_change": false
+}

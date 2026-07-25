@@ -202,6 +202,7 @@ class LiveScenarioObserver:
         self.fault_samples: list[dict[str, Any]] = []
         self.recovery_samples: list[dict[str, Any]] = []
         self.kafka_stimulus: dict[str, Any] | None = None
+        self.payment_stimulus: dict[str, Any] | None = None
 
     def _sample(self, since: datetime) -> dict[str, Any]:
         payload = base64.b64encode(
@@ -364,7 +365,7 @@ PY
             ) from error
         return json.loads(output)
 
-    def _stimulate_kafka_fault(self) -> dict[str, Any]:
+    def _stimulate_checkout(self, *, allow_checkout_http_error: bool) -> dict[str, Any]:
         user_id = (
             f"faultwitness-g02-{self.candidate_sha[:12]}-"
             + datetime.now(UTC).strftime("%Y%m%d%H%M%S%f")
@@ -373,6 +374,7 @@ PY
             json.dumps(
                 {
                     "candidate_sha": self.candidate_sha,
+                    "allow_checkout_http_error": allow_checkout_http_error,
                     "user_id": user_id,
                     "product_id": "0PUK6V6EV0",
                     "checkout": {
@@ -425,7 +427,7 @@ frontend = json.loads(subprocess.run(
 ).stdout)
 endpoint = "http://" + frontend["spec"]["clusterIP"] + ":8080"
 
-def post(path, document):
+def post(path, document, *, allow_http_error=False):
     body = json.dumps(document, separators=(",", ":")).encode()
     call = urllib.request.Request(
         endpoint + path,
@@ -438,9 +440,12 @@ def post(path, document):
             status = response.status
             response.read()
     except urllib.error.HTTPError as error:
-        print("FW_G02_STIMULUS_HTTP_ERROR status=" + str(error.code), file=sys.stderr)
-        raise SystemExit(42)
-    if status < 200 or status >= 300:
+        status = error.code
+        error.read()
+        if not allow_http_error:
+            print("FW_G02_STIMULUS_HTTP_ERROR status=" + str(error.code), file=sys.stderr)
+            raise SystemExit(42)
+    if not allow_http_error and (status < 200 or status >= 300):
         raise SystemExit("checkout stimulus returned non-success")
     return status
 
@@ -450,7 +455,10 @@ cart_status = post("/api/cart", {{
 }})
 checkout = dict(request["checkout"])
 checkout["userId"] = request["user_id"]
-checkout_status = post("/api/checkout", checkout)
+allow_checkout_http_error = request["allow_checkout_http_error"]
+checkout_status = post(
+    "/api/checkout", checkout, allow_http_error=allow_checkout_http_error
+)
 print(json.dumps({{
     "status": "pass",
     "checkout_count": 1,
@@ -469,12 +477,21 @@ PY
             if any(marker in str(error) for marker in deterministic):
                 raise
             raise InfrastructureFailure(
-                f"Kafka workload stimulus produced no result: {error}"
+                f"checkout workload stimulus produced no result: {error}"
             ) from error
         document = json.loads(output)
         if document.get("status") != "pass" or document.get("checkout_count") != 1:
-            raise GovernanceError("Kafka workload stimulus did not complete exactly one checkout")
+            raise GovernanceError("workload stimulus did not complete exactly one checkout")
         return document
+
+    def _stimulate_kafka_fault(self) -> dict[str, Any]:
+        return self._stimulate_checkout(allow_checkout_http_error=False)
+
+    def _stimulate_payment_fault(self) -> dict[str, Any]:
+        # A payment fault is expected to make checkout return an HTTP error. The
+        # response still proves that exactly one request reached the candidate;
+        # the fault oracle remains responsible for proving the correlated trace.
+        return self._stimulate_checkout(allow_checkout_http_error=True)
 
     def _active_observation(self, sample: Mapping[str, Any]) -> dict[str, Any]:
         descriptions = "\n".join(str(item) for item in sample["descriptions"])
@@ -529,6 +546,8 @@ PY
                 self.fault_started = datetime.now(UTC)
                 if self.fault_class == "kafkaQueueProblems":
                     self.kafka_stimulus = self._stimulate_kafka_fault()
+                elif self.fault_class in {"paymentFailure", "paymentUnreachable"}:
+                    self.payment_stimulus = self._stimulate_payment_fault()
             elif self.fault_samples:
                 time.sleep(30)
             deadline = time.monotonic() + 90

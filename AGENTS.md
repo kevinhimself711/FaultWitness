@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: A-G02-010
+active_iteration: C-G02-011
 next_iteration: null
 last_closed_gate: G01
 ---
@@ -39,8 +39,10 @@ is completed with classification tests and one candidate-bound read-only collect
 is terminally failed because the default ten-user ambient load produced fleet-wide HTTP 504s while
 `accounting` reached its sixty-second OOM restart. C-G02-010 is complete with a clean dedicated
 namespace, minimum nonzero ambient load, and one passing candidate-bound checkout seam. A-G02-010
-is active on the clean-lab candidate and will not inherit any prior remote matrix or scenario
-evidence. No terminal work item may be reopened.
+then passed real 60/6/22 matrices and scenario seed 1 but terminally failed on seed 2 because both
+payment fault branches still relied on incidental ambient checkout traffic. C-G02-011 is active to
+add one deterministic candidate-bound payment checkout without changing the frozen oracle, N,
+window, recovery, or thresholds. No terminal work item may be reopened.
 
 ## Source-of-truth order
 
@@ -158,6 +160,10 @@ PROJECT_STATE.yaml is the authority for the active Gate and work item, not for a
   image path, interpreter path, or protocol seam must exercise the changed operation once through
   the real tool/environment before the corrective closes. This is targeted seam evidence, not a
   full Gate matrix and not permission to increase the corrective sample.
+- A correction that changes ambient traffic, load generation, or other workload supply must list
+  every oracle branch that depends on that supply as affected. Before the corrective closes, each
+  distinct request protocol it changes receives one deterministic real-seam proof; readiness and a
+  no-fault smoke alone cannot stand in for a fault-producing workload input.
 - Every future Master Plan Iteration declares each external client/platform/credential/image/
   interpreter/protocol operation it introduces, plus a real-seam runner, a predeclared read-only
   failure diagnostic, and an artifact path. A memory backend, mock, schema check, or matrix-shape

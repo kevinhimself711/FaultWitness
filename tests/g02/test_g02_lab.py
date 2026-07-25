@@ -177,8 +177,61 @@ def test_kafka_stimulus_is_candidate_bound_and_exactly_one_checkout(
     assert result["checkout_count"] == 1
     assert captured["privileged"] is True
     assert "fw-g02-candidate-binding" in captured["script"]
-    assert captured["script"].count('post("/api/checkout"') == 1
+    assert captured["script"].count('"/api/checkout", checkout') == 1
     assert captured["script"].count('post("/api/cart"') == 1
+
+
+def test_payment_stimulus_accepts_fault_response_but_still_sends_exactly_one_checkout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    observer = LiveScenarioObserver("1" * 40, "paymentUnreachable")
+    captured: dict[str, Any] = {}
+
+    def remote(script: str, *, privileged: bool) -> str:
+        captured["script"] = script
+        captured["privileged"] = privileged
+        return '{"cart_status":200,"checkout_count":1,"checkout_status":500,"status":"pass"}'
+
+    monkeypatch.setattr(g02_lab, "run_remote_script", remote)
+    result = observer._stimulate_payment_fault()
+
+    assert result["checkout_count"] == 1
+    assert result["checkout_status"] == 500
+    assert captured["privileged"] is True
+    assert "fw-g02-candidate-binding" in captured["script"]
+    assert captured["script"].count('"/api/checkout", checkout') == 1
+    assert captured["script"].count('post("/api/cart"') == 1
+    assert 'allow_checkout_http_error = request["allow_checkout_http_error"]' in captured["script"]
+
+
+@pytest.mark.parametrize("fault_class", ["paymentFailure", "paymentUnreachable"])
+def test_payment_observer_stimulates_once_before_two_frozen_samples(
+    fault_class: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    observer = LiveScenarioObserver("1" * 40, fault_class)
+    stimuli: list[str] = []
+    sleeps: list[float] = []
+    sample = {
+        "descriptions": ["Payment rejected"],
+        "error_spans": 2,
+        "checkout_error_spans": 1,
+        "payment_connection_errors": 1,
+    }
+    monkeypatch.setattr(
+        observer,
+        "_stimulate_payment_fault",
+        lambda: stimuli.append("checkout") or {"status": "pass", "checkout_count": 1},
+    )
+    monkeypatch.setattr(observer, "_sample", lambda _since: sample)
+    monkeypatch.setattr(g02_lab.time, "sleep", sleeps.append)
+
+    first = observer("fault", fault_class)
+    second = observer("fault", fault_class)
+
+    assert stimuli == ["checkout"]
+    assert sleeps == [30]
+    assert observer.payment_stimulus == {"status": "pass", "checkout_count": 1}
+    assert fault_state(fault_class, [first, second]) is OracleState.FAULT_ACTIVE
 
 
 def test_kafka_observer_stimulates_once_before_two_frozen_samples(
