@@ -2,7 +2,7 @@
 document_id: FW-GATE-G02-REPORT
 gate: G02
 status: in_progress
-evaluated_candidate_sha: 2c51413fecf1a4c5a707b11c9744f87ab91b927e
+evaluated_candidate_sha: 91c2ce4dc27d6e7e661b9fa6315605ba44124a97
 closed_on: null
 ---
 
@@ -52,8 +52,11 @@ Read-only diagnosis proved the user enabled, candidate policy attached, sentinel
 phases, destructive scenarios, external-service probes, and model calls remained zero.
 
 I-0036/I-0037 and EVAL-G02-021/022 are terminal naming-migration records with no implementation or
-execution. C-G02-001/EVAL-G02-023 owns only the exact-GetObject corrective and targeted proof;
-A-G02-001/EVAL-G02-024 owns the later unified-candidate Gate attempt. G02 has not passed, no waiver
+execution. C-G02-001/EVAL-G02-023 owns only the exact-GetObject corrective and targeted proof.
+A-G02-001/EVAL-G02-024 then passed four preflights, real deployment, and 57 live access cells before
+the stale LangSmith read contract returned a deterministic canonical-owner deny. C-G02-002/
+EVAL-G02-025 repaired only that contract and passed a real credential-authenticated read seam.
+A-G02-002/EVAL-G02-026 owns the next unified-candidate Gate attempt. G02 has not passed, no waiver
 is present, and no closure or tag is authorized. All earlier failed Eval assets remain immutable.
 
 Future reports must include `G01-SUPP-ACCESS-MATRIX`, `G01-SUPP-SIX-STAGE-SPANS`, and

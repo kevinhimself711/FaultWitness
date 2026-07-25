@@ -2,7 +2,7 @@ schema_version: "1.2.0"
 id: A-G02-002
 gate: G02
 title: Post-LangSmith Unified Candidate Gate Attempt
-status: planned
+status: in_progress
 iteration_type: gate_attempt
 attempt_of: G02
 attempt_scope:
@@ -35,7 +35,8 @@ changed_paths:
   - README.md
   - docs/claims/CLAIMS.yaml
   - docs/evals/EVAL-G02-026
-  - docs/gates/G02/REPORT.md
+  - docs/gates/G02
+  - docs/runbooks/G02_EVAL_PROTOCOL.md
   - docs/roadmap/PHASES.md
   - docs/roadmap/iterations/A-G02-002.md
   - governance/gates/G02.yaml
@@ -45,4 +46,7 @@ docs_updated:
   - docs/roadmap/iterations/A-G02-002.md
   - docs/roadmap/PHASES.md
   - docs/evals/EVAL-G02-026/PLAN.md
+  - docs/gates/G02/PLAN.md
+  - docs/gates/G02/REPORT.md
+  - docs/runbooks/G02_EVAL_PROTOCOL.md
 threshold_changes: []

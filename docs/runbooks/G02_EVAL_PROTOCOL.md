@@ -6,7 +6,7 @@
 部署、故障注入、live service 或模型调用。只有一个 `in_progress` 的 G02 Gate attempt
 (`A-G##-###`)、其 `eval_id`、完整十四-phase PLAN 和 candidate-binding 资产彼此一致时，
 `eval-g02` 才能运行 Gate phase。终态 work item 永远不能再次选择其 Eval 资产。当前执行
-入口是 `A-G02-001` / `EVAL-G02-024`。
+入口是 `A-G02-002` / `EVAL-G02-026`。
 
 ## Iteration Eval
 
@@ -41,7 +41,7 @@ uv run python -m faultwitness_dev eval-g02-close --candidate-sha <SHA> --evidenc
 
 ## Candidate-binding asset
 
-当前 `A-G02-001` Gate attempt 在 Gate Eval 前产生 EVAL-G02-024 目录下的
+当前 `A-G02-002` Gate attempt 在 Gate Eval 前产生 EVAL-G02-026 目录下的
 `candidate-binding.json`。I-0033 对应 EVAL-G02-018；I-0020/EVAL-G02-005、
 I-0023/EVAL-G02-008、I-0025/EVAL-G02-010 与后续 012/014/016 是不可变失败历史。
 binding 记录：

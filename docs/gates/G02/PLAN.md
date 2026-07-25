@@ -29,8 +29,9 @@ containerd may register an imported Docker Hub reference under the `index.docker
   the verifier requires `docker.io`. I-0034 corrected alias resolution, but EVAL-G02-020 then
   proved that the object-read probe used `mc stat`, which implicitly required `ListBucket` despite
   the frozen policy granting only `GetObject`. I-0035 is terminal; exact-GetObject corrective
-  I-0036/I-0037 were retired before implementation. C-G02-001 and A-G02-001 are the sole forward
-  corrective and Gate-attempt path under AMD-0005.
+  I-0036/I-0037 were retired before implementation. A-G02-001 later failed at the real LangSmith
+  canonical-owner cell; C-G02-002 repaired that single request-contract root cause and A-G02-002 is
+  the separate forward Gate-attempt path under AMD-0005.
 Estimates are observability data, never kill timeouts. Corrective engineering is no longer rolled
 into the frozen Iteration budget or mixed with Gate-attempt execution.
 
@@ -41,7 +42,9 @@ into the frozen Iteration budget or mixed with Gate-attempt execution.
 | Original frozen total | **17h33** |
 | C-G02-001 root-cause fix plus targeted proof | 0h30 |
 | A-G02-001 attempt setup, excluding Gate Eval | 0h15 |
-| Current forward work including Gate Eval | **3h18** |
+| C-G02-002 root-cause fix plus targeted proof | 0h35 |
+| A-G02-002 attempt setup, excluding Gate Eval | 0h15 |
+| Remaining A-G02-002 work including Gate Eval | **2h48** |
 
 Legacy corrective and failed-attempt overhead is reported as actual historical cost in
 `docs/engineering/G02_CORRECTIVE_COST_POSTMORTEM.md`; it is not relabelled as planned Iteration work.
@@ -335,6 +338,8 @@ to satisfy these future Agent floors.
 | I-0037 Retired Legacy Gate-Attempt Identifier | Never activated; terminal naming-migration record | I-0036 | 0h00 engineering | Gate attempts do not continue the frozen I sequence. | No L2 |
 | C-G02-001 Exact GetObject Probe Corrective | Change only object-read semantics; reuse pytest and execute a minimum real-client seam proof | I-0024, terminal I-0035 | 0h30 | Three changed branches and one real seam proof exclude implicit ListBucket without running Gate N. | No L2; repairs V-G02-009 seam |
 | A-G02-001 Unified Candidate Gate Attempt | Freeze the post-C-G02-001 candidate and run fourteen phases in EVAL-G02-024 | Frozen owners plus C-G02-001 | 0h15 excluding Gate Eval | The candidate passes using only frozen runners and immutable evidence. | No new L2 |
+| C-G02-002 LangSmith Access Probe Contract Corrective | Replace only the stale opaque LangSmith read contract; reuse pytest and execute a minimum real-credential seam proof | I-0024, terminal A-G02-001 | 0h35 | Three changed branches and one successful real seam prove an attributable credential-authenticated read without Gate N. | No L2; repairs V-G02-009 seam |
+| A-G02-002 Post-LangSmith Unified Candidate Gate Attempt | Freeze the post-C-G02-002 candidate and run the affected access phase, required dependencies, and downstream phases in EVAL-G02-026 | Frozen owners plus C-G02-002 | 0h15 excluding Gate Eval | The candidate passes using only frozen runners and immutable evidence. | No new L2 |
 
 Every implementation work item closes with `open_evidence: []`. L2 work is recorded as
 `owned_l2_ready`, not as open work-item evidence: its owner must already have implemented and
@@ -379,16 +384,16 @@ view is frozen below.
 | ID | Validation and excluded failure | Layer and reason | Iter N | Gate N | 3–5 audit | Owner | Runner | Negative fixture | Artifact paths |
 | --- | --- | --- | ---: | ---: | --- | --- | --- | --- | --- |
 | V-G02-001 | Phase/DAG/resume; excludes repeated pass, lost trial, stale cache | L1; deterministic state fixtures | 5 | 0 | Reduced to five transitions | I-0016 | `g02.phase_contract` | `phase_stale_cache.json` | `EVAL-G02-001/artifacts/phase-contract.json` |
-| V-G02-002 | Double SHA/binding; excludes false candidate and stale inheritance | L2; unified candidate only | 0 | 1 | One-time bootstrap | I-0016 | `g02.candidate_binding` | `candidate_non_evidence_descendant.json` | `EVAL-G02-024/.../preflight-candidate-binding/summary.json` |
-| V-G02-003 | Manifest debt; excludes fail-late remote work | L2; full manifest set exists only at Gate | 0 | 13 | All 9 G01 + 4 G02 manifests required | I-0016 | `g02.manifest_debt` | `manifest_open_evidence.json` | `EVAL-G02-024/.../preflight-manifests/manifest-debt.json` |
+| V-G02-002 | Double SHA/binding; excludes false candidate and stale inheritance | L2; unified candidate only | 0 | 1 | One-time bootstrap | I-0016 | `g02.candidate_binding` | `candidate_non_evidence_descendant.json` | `EVAL-G02-026/.../preflight-candidate-binding/summary.json` |
+| V-G02-003 | Manifest debt; excludes fail-late remote work | L2; full manifest set exists only at Gate | 0 | 13 | All 9 G01 + 4 G02 manifests required | I-0016 | `g02.manifest_debt` | `manifest_open_evidence.json` | `EVAL-G02-026/.../preflight-manifests/manifest-debt.json` |
 | V-G02-004 | DSL/seed registry; excludes count and allocation drift | L1; closed schema/enumeration | 32 | 0 | All seeds are deliverables | I-0017 | `g02.dsl_registry` | `scenario_unknown_action.yaml` | `EVAL-G02-002/artifacts/seed-registry.json` |
 | V-G02-005 | Six adapters/oracles; excludes missing state semantics | L1; category-exhaustive contracts | 6 | 0 | All six classes required | I-0017 | `g02.fault_oracle_contract` | `oracle_false_green.yaml` | `EVAL-G02-002/artifacts/fault-oracle-contract.json` |
 | V-G02-006 | Live inject/detect/recover; excludes false green and restore drift | L3; family smoke then all seeds | 4 | 32 | Three would omit a family | I-0017 | `g02.scenario_matrix` | `fault_restore_noop.yaml` | Iteration smoke and Gate scenario summary |
 | V-G02-007 | 160-row preregistry; excludes premature G07 materialization | L1; deterministic registry/object check | 160 | 0 | All rows are the deliverable | I-0018 | `g02.preregistry` | `prereg_materialized_case.yaml` | `EVAL-G02-003/artifacts/preregistry.json` |
 | V-G02-008 | Package exclusion; excludes embedded GT/locked data | L1; digest-pinned content scan | 3 | 0 | Three images are exhaustive | I-0018 | `g02.sealed_package_scan` | `image_contains_ground_truth.txt` | `EVAL-G02-003/artifacts/sealed-package-scan.json` |
-| V-G02-009 | Access matrix; excludes Agent/developer/evaluator/controller privilege drift | L3; four policy identities then 60 live cells | 4 | 60 | All four identities required | I-0024 | `g02.access_matrix` | `access_wrong_allow.yaml` | I-0018 policy simulation plus EVAL-G02-024 Gate matrix |
-| V-G02-010 | G01 six-stage spans; excludes missing correlated stage evidence | L2; complete stack required | 0 | 6 | Six stages are exhaustive | I-0024 | `g02.stage_matrix` | `trace_missing_stage.json` | EVAL-G02-024 Gate six-stage matrix |
-| V-G02-011 | G01 all-surface canary; excludes Secret/PII leakage | L3; four new writers then 22 live cells | 4 | 22 | All four writers required | I-0024 | `g02.canary_matrix` | `canary_leaked_artifact.json` | I-0018 writer proof plus EVAL-G02-024 Gate matrix |
+| V-G02-009 | Access matrix; excludes Agent/developer/evaluator/controller privilege drift | L3; four policy identities then 60 live cells | 4 | 60 | All four identities required | I-0024 | `g02.access_matrix` | `access_wrong_allow.yaml` | I-0018 policy simulation plus EVAL-G02-026 Gate matrix |
+| V-G02-010 | G01 six-stage spans; excludes missing correlated stage evidence | L2; complete stack required | 0 | 6 | Six stages are exhaustive | I-0024 | `g02.stage_matrix` | `trace_missing_stage.json` | EVAL-G02-026 Gate six-stage matrix |
+| V-G02-011 | G01 all-surface canary; excludes Secret/PII leakage | L3; four new writers then 22 live cells | 4 | 22 | All four writers required | I-0024 | `g02.canary_matrix` | `canary_leaked_artifact.json` | I-0018 writer proof plus EVAL-G02-026 Gate matrix |
 | V-G02-012 | Scorer semantics; excludes mis-scored malformed/unsupported output | L1; pure algorithm | 5 | 0 | Five fixtures cover all branches | I-0019 | `g02.scorer_contract` | `score_unsupported_claim.json` | `EVAL-G02-004/artifacts/scorer-contract.json` |
 | V-G02-013 | Seven thresholds; excludes omission or decrease | L1; exact constant registry | 7 | 0 | All seven values required | I-0019 | `g02.threshold_registry` | `threshold_decrease.yaml` | `EVAL-G02-004/artifacts/threshold-registry.json` |
 | V-G02-014 | Deterministic baseline; excludes GT access and nondeterminism | L3; three behavior fixtures then 32 seeds | 3 | 32 | Correct/wrong/malformed are minimum | I-0019 | `g02.deterministic_baseline` | `deterministic_wrong_root.json` | Iteration smoke and Gate results |
@@ -647,6 +652,17 @@ The eighth forward decision is complete:
 - V-G02-009/010/011 Iteration N stays 4/0/4 and every Gate N remains unchanged.
 - No isolation permission, validation threshold, Ground Truth, locked test, health-oracle window,
   model route, token/cost ceiling, destructive-once rule, or failure semantic changes.
+
+The ninth forward decision is complete:
+
+- A-G02-001/EVAL-G02-024 is terminal `failed`; its four preflights, real deployment, 57 passing
+  access cells, and one LangSmith metric failure remain immutable.
+- C-G02-002 changes only the operator-side LangSmith read request contract and response attribution;
+  its three local branches and real credential seam pass with zero Gate L2.
+- A-G02-002/EVAL-G02-026 is the separate unified-candidate attempt. Final artifact paths move
+  forward to EVAL-G02-026; EVAL-G02-024 is never rebound or overwritten.
+- V-G02-009 remains Gate N=60 and every other N, permission, threshold, Ground Truth, locked test,
+  route, token/cost ceiling, destructive-once rule, and failure semantic remains unchanged.
 
 ## 15. Gate pass criteria
 
