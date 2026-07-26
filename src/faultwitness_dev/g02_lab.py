@@ -204,6 +204,7 @@ class LiveScenarioObserver:
         self.ad_fault_stimulus: dict[str, Any] | None = None
         self.ad_recovery_stimulus: dict[str, Any] | None = None
         self.product_stimulus: dict[str, Any] | None = None
+        self.email_runtime_reset: dict[str, Any] | None = None
         self.email_fault_stimuli: list[dict[str, Any]] = []
         self.email_recovery_stimulus: dict[str, Any] | None = None
         self.kafka_stimulus: dict[str, Any] | None = None
@@ -622,6 +623,77 @@ PY
             raise GovernanceError("email workload stimulus did not complete exactly one request")
         return document
 
+    def _reset_email_runtime(self) -> dict[str, Any]:
+        script = """set -eu
+python3 - <<'PY'
+import json
+import subprocess
+import time
+
+kubectl = ["/usr/local/bin/k3s", "kubectl", "-n", "fw-sut"]
+
+def email_pods():
+    items = json.loads(subprocess.run(
+        [*kubectl, "get", "pods", "-o", "json"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout)["items"]
+    return [item for item in items if item["metadata"]["name"].startswith("email-")]
+
+before = email_pods()
+if len(before) != 1:
+    raise SystemExit("email runtime reset requires exactly one source pod")
+old_name = before[0]["metadata"]["name"]
+old_uid = before[0]["metadata"]["uid"]
+subprocess.run(
+    [*kubectl, "delete", "pod", old_name, "--wait=true"],
+    check=True,
+    stdout=subprocess.DEVNULL,
+)
+while True:
+    current = email_pods()
+    if len(current) == 1:
+        pod = current[0]
+        waiting = [
+            state.get("state", {}).get("waiting", {}).get("reason")
+            for state in pod.get("status", {}).get("containerStatuses", [])
+        ]
+        terminal = {"CrashLoopBackOff", "ErrImagePull", "ImagePullBackOff", "CreateContainerError"}
+        if any(reason in terminal for reason in waiting):
+            raise SystemExit("replacement email pod entered a terminal waiting state")
+        ready = any(
+            condition.get("type") == "Ready" and condition.get("status") == "True"
+            for condition in pod.get("status", {}).get("conditions", [])
+        )
+        if ready and pod["metadata"]["uid"] != old_uid:
+            break
+    time.sleep(2)
+print(json.dumps({
+    "status": "pass",
+    "reset_count": 1,
+    "old_pod_uid": old_uid,
+    "new_pod_uid": pod["metadata"]["uid"],
+    "ready": True,
+}, sort_keys=True))
+PY
+"""
+        try:
+            output = run_remote_script(script, privileged=True)
+        except GovernanceError as error:
+            raise InfrastructureFailure(
+                f"email runtime reset produced no result: {error}"
+            ) from error
+        document = json.loads(output)
+        if (
+            document.get("status") != "pass"
+            or document.get("reset_count") != 1
+            or document.get("ready") is not True
+            or document.get("old_pod_uid") == document.get("new_pod_uid")
+        ):
+            raise GovernanceError("email runtime reset did not replace one Ready pod")
+        return document
+
     def _stimulate_ad_request(self) -> dict[str, Any]:
         script = """set -eu
 python3 - <<'PY'
@@ -706,11 +778,14 @@ PY
                 observation["ad_stimulus"] = dict(self.ad_fault_stimulus)
             return observation
         if self.fault_class == "emailMemoryLeak":
-            return {
+            observation = {
                 **sample,
                 "working_set": sample["working_set"],
                 "email_stimulus_count": len(self.email_fault_stimuli),
             }
+            if self.email_runtime_reset is not None:
+                observation["email_runtime_reset"] = dict(self.email_runtime_reset)
+            return observation
         if self.fault_class == "paymentFailure":
             found = "Payment" in descriptions and sample["error_spans"] > 0
             return {**sample, "checkout_failed": found, "payment_error": found}
@@ -752,6 +827,8 @@ PY
                     self.ad_fault_stimulus = self._stimulate_ad_request()
                 elif self.fault_class == "productCatalogFailure":
                     self.product_stimulus = self._stimulate_product_fault()
+                elif self.fault_class == "emailMemoryLeak":
+                    self.email_runtime_reset = self._reset_email_runtime()
                 elif self.fault_class == "kafkaQueueProblems":
                     self.kafka_stimulus = self._stimulate_kafka_fault()
                 elif self.fault_class in {"paymentFailure", "paymentUnreachable"}:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sys
 from collections.abc import Mapping
 from pathlib import Path
@@ -270,6 +271,35 @@ def test_email_stimulus_calls_the_synchronous_service_once(
     assert captured["script"].count("urllib.request.urlopen(request)") == 1
 
 
+def test_email_runtime_reset_replaces_exactly_one_ready_pod(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    observer = LiveScenarioObserver("1" * 40, "emailMemoryLeak")
+    captured: dict[str, Any] = {}
+
+    def remote(script: str, *, privileged: bool) -> str:
+        captured["script"] = script
+        captured["privileged"] = privileged
+        return json.dumps(
+            {
+                "status": "pass",
+                "reset_count": 1,
+                "old_pod_uid": "old",
+                "new_pod_uid": "new",
+                "ready": True,
+            }
+        )
+
+    monkeypatch.setattr(g02_lab, "run_remote_script", remote)
+    result = observer._reset_email_runtime()
+
+    assert result["reset_count"] == 1
+    assert result["ready"] is True
+    assert captured["privileged"] is True
+    assert '"delete", "pod", old_name, "--wait=true"' in captured["script"]
+    assert "time.sleep(2)" in captured["script"]
+
+
 def test_ad_observer_stimulates_once_after_fault_on_and_restore_off(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -531,11 +561,24 @@ def test_memory_observer_retains_first_sample_and_uses_second_growth(
     )
     sleeps: list[float] = []
     stimuli: list[bool] = []
+    resets: list[str] = []
+    monkeypatch.setattr(
+        observer,
+        "_reset_email_runtime",
+        lambda: resets.append("reset")
+        or {
+            "status": "pass",
+            "reset_count": 1,
+            "old_pod_uid": "old",
+            "new_pod_uid": "new",
+            "ready": True,
+        },
+    )
     monkeypatch.setattr(
         observer,
         "_stimulate_email_request",
         lambda: stimuli.append(False)
-        or {"status": "pass", "checkout_count": 1},
+        or {"status": "pass", "request_count": 1},
     )
     monkeypatch.setattr(observer, "_sample", lambda _since: next(samples))
     monkeypatch.setattr(g02_lab.time, "sleep", sleeps.append)
@@ -551,7 +594,9 @@ def test_memory_observer_retains_first_sample_and_uses_second_growth(
     assert second_recovery["signal_not_worsening"] is True
     assert first["email_stimulus_count"] == 1
     assert second["email_stimulus_count"] == 2
-    assert first_recovery["email_recovery_stimulus"]["checkout_count"] == 1
+    assert first_recovery["email_recovery_stimulus"]["request_count"] == 1
+    assert first["email_runtime_reset"]["reset_count"] == 1
+    assert resets == ["reset"]
     assert stimuli == [False, False, False]
     assert sleeps == [30, 30]
 
@@ -570,10 +615,21 @@ def test_memory_non_growth_keeps_cleanup_comparator(
     clock = iter((0.0, 0.0, 91.0, 0.0))
     monkeypatch.setattr(
         observer,
+        "_reset_email_runtime",
+        lambda: {
+            "status": "pass",
+            "reset_count": 1,
+            "old_pod_uid": "old",
+            "new_pod_uid": "new",
+            "ready": True,
+        },
+    )
+    monkeypatch.setattr(
+        observer,
         "_stimulate_email_request",
         lambda: {
             "status": "pass",
-            "checkout_count": 1,
+            "request_count": 1,
         },
     )
     monkeypatch.setattr(observer, "_sample", lambda _since: next(samples))
