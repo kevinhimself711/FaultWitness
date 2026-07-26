@@ -201,6 +201,8 @@ class LiveScenarioObserver:
         self.recovery_started: datetime | None = None
         self.fault_samples: list[dict[str, Any]] = []
         self.recovery_samples: list[dict[str, Any]] = []
+        self.ad_fault_stimulus: dict[str, Any] | None = None
+        self.ad_recovery_stimulus: dict[str, Any] | None = None
         self.kafka_stimulus: dict[str, Any] | None = None
         self.payment_stimulus: dict[str, Any] | None = None
 
@@ -487,6 +489,61 @@ PY
     def _stimulate_kafka_fault(self) -> dict[str, Any]:
         return self._stimulate_checkout(allow_checkout_http_error=False)
 
+    def _stimulate_ad_request(self) -> dict[str, Any]:
+        script = """set -eu
+python3 - <<'PY'
+import json
+import subprocess
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+
+kubectl = ["/usr/local/bin/k3s", "kubectl", "-n", "fw-sut"]
+frontend = json.loads(subprocess.run(
+    [*kubectl, "get", "service", "frontend-proxy", "-o", "json"],
+    check=True,
+    capture_output=True,
+    text=True,
+).stdout)
+endpoint = "http://" + frontend["spec"]["clusterIP"] + ":8080/api/data?" + urllib.parse.urlencode(
+    {"contextKeys": "binoculars"}
+)
+try:
+    with urllib.request.urlopen(endpoint) as response:
+        status = response.status
+        response.read()
+except urllib.error.HTTPError as error:
+    error.read()
+    print("FW_G02_STIMULUS_HTTP_ERROR status=" + str(error.code), file=sys.stderr)
+    raise SystemExit(42)
+if status != 200:
+    print("FW_G02_STIMULUS_HTTP_ERROR status=" + str(status), file=sys.stderr)
+    raise SystemExit(42)
+print(json.dumps({
+    "status": "pass",
+    "request_count": 1,
+    "response_status": status,
+}, sort_keys=True))
+PY
+"""
+        try:
+            output = run_remote_script(script, privileged=True)
+        except GovernanceError as error:
+            if "FW_G02_STIMULUS_HTTP_ERROR" in str(error):
+                raise
+            raise InfrastructureFailure(
+                f"ad workload stimulus produced no result: {error}"
+            ) from error
+        document = json.loads(output)
+        if (
+            document.get("status") != "pass"
+            or document.get("request_count") != 1
+            or document.get("response_status") != 200
+        ):
+            raise GovernanceError("ad workload stimulus did not complete exactly one request")
+        return document
+
     def _stimulate_payment_fault(self) -> dict[str, Any]:
         # A payment fault is expected to make checkout return an HTTP error. The
         # response still proves that exactly one request reached the candidate;
@@ -499,12 +556,15 @@ PY
             found = "Product Catalog Fail Feature Flag Enabled" in descriptions
             return {**sample, "journey_failed": found, "correlated_error": found}
         if self.fault_class == "adHighCpu":
-            return {
+            observation = {
                 **sample,
                 "cpu_rate": sample["cpu_rate"],
                 "baseline_cpu_max": self.baseline_cpu,
                 "correlated_span": sample["trace_count"] > 0,
             }
+            if self.ad_fault_stimulus is not None:
+                observation["ad_stimulus"] = dict(self.ad_fault_stimulus)
+            return observation
         if self.fault_class == "emailMemoryLeak":
             return {**sample, "working_set": sample["working_set"]}
         if self.fault_class == "paymentFailure":
@@ -544,7 +604,9 @@ PY
         if phase == "fault":
             if self.fault_started is None:
                 self.fault_started = datetime.now(UTC)
-                if self.fault_class == "kafkaQueueProblems":
+                if self.fault_class == "adHighCpu":
+                    self.ad_fault_stimulus = self._stimulate_ad_request()
+                elif self.fault_class == "kafkaQueueProblems":
                     self.kafka_stimulus = self._stimulate_kafka_fault()
                 elif self.fault_class in {"paymentFailure", "paymentUnreachable"}:
                     self.payment_stimulus = self._stimulate_payment_fault()
@@ -571,6 +633,8 @@ PY
         if phase == "recovery":
             if self.recovery_started is None:
                 self.recovery_started = datetime.now(UTC)
+                if self.fault_class == "adHighCpu":
+                    self.ad_recovery_stimulus = self._stimulate_ad_request()
             elif self.recovery_samples:
                 time.sleep(30)
             deadline = time.monotonic() + 90
@@ -595,6 +659,10 @@ PY
                     "journey_healthy": sample["journey_status"] == 200,
                     "signal_not_worsening": signal_ok,
                 }
+                if self.ad_recovery_stimulus is not None:
+                    observation["ad_recovery_stimulus"] = dict(
+                        self.ad_recovery_stimulus
+                    )
                 required = ("ready", "journey_healthy", "signal_not_worsening")
                 if all(observation[key] for key in required):
                     self.recovery_samples.append(observation)

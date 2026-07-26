@@ -181,6 +181,77 @@ def test_kafka_stimulus_is_candidate_bound_and_exactly_one_checkout(
     assert captured["script"].count('post("/api/cart"') == 1
 
 
+def test_ad_stimulus_uses_the_pinned_locust_route_exactly_once(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    observer = LiveScenarioObserver("1" * 40, "adHighCpu")
+    captured: dict[str, Any] = {}
+
+    def remote(script: str, *, privileged: bool) -> str:
+        captured["script"] = script
+        captured["privileged"] = privileged
+        return '{"request_count":1,"response_status":200,"status":"pass"}'
+
+    monkeypatch.setattr(g02_lab, "run_remote_script", remote)
+    result = observer._stimulate_ad_request()
+
+    assert result == {"request_count": 1, "response_status": 200, "status": "pass"}
+    assert captured["privileged"] is True
+    assert captured["script"].count('"contextKeys": "binoculars"') == 1
+    assert captured["script"].count("urllib.request.urlopen(endpoint)") == 1
+
+
+def test_ad_observer_stimulates_once_after_fault_on_and_restore_off(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    observer = LiveScenarioObserver("1" * 40, "adHighCpu")
+    observer.baseline_cpu = 0.01
+    stimuli: list[str] = []
+    sleeps: list[float] = []
+    samples = iter(
+        (
+            {"cpu_rate": 1.0, "trace_count": 1, "descriptions": []},
+            {"cpu_rate": 1.0, "trace_count": 1, "descriptions": []},
+            {
+                "cpu_rate": 0.01,
+                "trace_count": 1,
+                "ready": True,
+                "journey_status": 200,
+                "descriptions": [],
+            },
+            {
+                "cpu_rate": 0.01,
+                "trace_count": 1,
+                "ready": True,
+                "journey_status": 200,
+                "descriptions": [],
+            },
+        )
+    )
+
+    def stimulate() -> dict[str, Any]:
+        phase = "fault" if not stimuli else "recovery"
+        stimuli.append(phase)
+        return {"status": "pass", "request_count": 1, "response_status": 200}
+
+    monkeypatch.setattr(observer, "_stimulate_ad_request", stimulate)
+    monkeypatch.setattr(observer, "_sample", lambda _since: next(samples))
+    monkeypatch.setattr(g02_lab.time, "sleep", sleeps.append)
+
+    first = observer("fault", "adHighCpu")
+    second = observer("fault", "adHighCpu")
+    first_recovery = observer("recovery", "adHighCpu")
+    second_recovery = observer("recovery", "adHighCpu")
+
+    assert stimuli == ["fault", "recovery"]
+    assert sleeps == [30, 30]
+    assert first["ad_stimulus"]["request_count"] == 1
+    assert second["ad_stimulus"]["request_count"] == 1
+    assert first_recovery["ad_recovery_stimulus"]["request_count"] == 1
+    assert second_recovery["ad_recovery_stimulus"]["request_count"] == 1
+    assert fault_state("adHighCpu", [first, second]) is OracleState.FAULT_ACTIVE
+
+
 def test_payment_stimulus_accepts_fault_response_but_still_sends_exactly_one_checkout(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
