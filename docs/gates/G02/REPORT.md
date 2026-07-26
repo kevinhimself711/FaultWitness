@@ -1,68 +1,76 @@
 ---
 document_id: FW-GATE-G02-REPORT
 gate: G02
-status: in_progress
-evaluated_candidate_sha: 91c2ce4dc27d6e7e661b9fa6315605ba44124a97
-closed_on: null
+status: passed
+evaluated_candidate_sha: 86a459c0bec1bcf3e583fd1280fbca2667479d2e
+evaluator_revision: e419e073695015441d90f92bc4469f49310f9893
+closed_on: "2026-07-26"
 ---
 
-# G02 Gate Report
+# G02 Gate Report — 故障实验室与基线
 
 ## Decision
 
-Current decision: `NOT_READY_FORWARD_CORRECTIVE`.
+G02 is `PASSED` without waiver. EVAL-G02-046 passed all fourteen phases and the read-only closure
+inspector confirmed fourteen immutable phase records. Final reconciliation reported backlog 0,
+DLQ 0, and `open_evidence=0`.
 
-The decision-complete G02 Master Plan remains frozen as `G02-master-plan-v1`. EVAL-G02-012 stopped
-during candidate-binding preparation: Windows text-mode subprocess input changed LF script bytes
-to CRLF and remote `/bin/sh` returned exit 2. A real local child-process byte probe reproduced the
-mutation. Candidate binding and all fourteen Gate phase executions remained zero.
+## Delivered scope
 
-I-0028/EVAL-G02-013 passed all 4 byte-exact transport cases. EVAL-G02-014 then passed four preflights
-and lab deployment before proving that `gate_probe.py` cannot import Python 3.11-only `datetime.UTC`
-on the private host's Python 3.8. I-0029 is terminal `failed`; provisioning, all 60 access cells,
-later remote phases, and model calls remained zero with `open_evidence: []`.
+- Four Scenario DSL families, six fault classes, and 32 executable seed scenarios with exact
+  injection, detection, restoration, and recovery evidence.
+- A metadata-only 160-row dev/validation/locked preregistry. No G07 case payload or answer was
+  materialized.
+- Identity, namespace, storage-prefix, package, Ground Truth, and locked-test isolation contracts.
+- Deterministic, Naive ReAct, and no-RAG baselines on shared observation packets, plus 95% clustered
+  bootstrap confidence intervals.
+- The seven authoritative future Agent quality floors were preserved exactly; G02 measures
+  baselines and does not require a baseline to attain those floors.
 
-I-0030/EVAL-G02-015 passed both actual managed-Python 3.8 compatibility cases. EVAL-G02-016 then
-passed four preflights and lab deployment before the exact pinned `minio/mc` helper Pod entered
-`ImagePullBackOff`: the image was absent from K3s and the node's Docker Hub request timed out.
-I-0031 is terminal `failed`; provisioning, all 60 access cells, later phases, and model calls
-remained zero with `open_evidence: []`.
+## Final evidence
 
-I-0032/EVAL-G02-017 passed all three local deterministic staging cases. The five existing Docker
-Hub SUT archives now share the same digest-verified path with exactly two namespaced probe archives;
-the frozen 30-image SUT digest is unchanged. V-G02-009/010/011/017 Iteration N remained 4/0/4/0,
-remote and model execution remained zero, and `open_evidence: []`.
+| Evidence | Result |
+|---|---|
+| Preflight phases | 4/4 pass |
+| Lab deployment checkpoint | pass, inherited with execution count 0 |
+| `G01-SUPP-ACCESS-MATRIX` | 60/60 pass, inherited with execution count 0 |
+| `G01-SUPP-SIX-STAGE-SPANS` | 6/6 pass |
+| `G01-SUPP-ALL-SURFACE-CANARY` | 22/22 pass |
+| Scenario matrix | 32/32 pass |
+| Deterministic baseline | N=32 pass; Core E2E 0.500 |
+| Naive ReAct live baseline | N=96; Core E2E 0.000; evidence precision 1.000; schema validity 1.000 |
+| no-RAG live baseline | N=96; Core E2E 0.000; evidence precision 1.000; schema validity 1.000 |
+| Bootstrap aggregate | 32 case clusters, B=2,000, confidence=95% |
+| Live usage | 195,377 tokens; 0.697396 CNY; fallback 0 |
+| Reconciliation and close-readiness | pass; 255 trial journals; backlog 0; DLQ 0; open evidence 0 |
 
-EVAL-G02-018 then passed four preflights before `lab-deploy-and-bind` exposed deterministic
-containerd reference alias behavior: the exact `minio/mc` digest existed under `index.docker.io`,
-while the verifier required a `docker.io` source before tagging. I-0033 is terminal `failed`;
-new-candidate deployment, all matrices, destructive scenarios, external-service probes, and model
-calls remained zero with `open_evidence: []`.
+The two live baselines both measured Root-cause Top-3 at 0.000 and unsupported critical claims at
+0.000. This negative quality result is retained honestly; it is a comparison baseline for later
+Agent Gates, not a G02 quality-floor waiver.
 
-I-0034/EVAL-G02-019 passed all three local deterministic alias-resolution cases. Exact requested
-source, alias-only exact digest, and wrong-digest fail-closed behavior all matched the frozen
-contract; V-G02-009/010/011/017 Iteration N remained 4/0/4/0, remote/model execution remained zero,
-and `open_evidence: []`.
+## Validation registry
 
-EVAL-G02-020 then passed the four preflights and deployment with 24 ready Deployments. The first
-24 database access cells passed; `s3:g02/scenarios/|canonical-owner` failed because the frozen
-runner used `mc stat`, which attempted `ListBucket` before exercising the exact `GetObject` grant.
-Read-only diagnosis proved the user enabled, candidate policy attached, sentinel present, and no
-`ListBucket` permission. I-0035 is terminal `failed`; 35 remaining access cells and all downstream
-phases, destructive scenarios, external-service probes, and model calls remained zero.
+All seventeen items in `docs/gates/G02/VALIDATIONS.yaml` passed under their frozen L1/L2/L3
+ownership. Zero-tolerance items retained named runners, negative fixtures, and reviewable artifact
+paths. No N, threshold, permission, Ground Truth, locked test, model route, token/cost ceiling,
+health window, or failure semantic was lowered.
 
-I-0036/I-0037 and EVAL-G02-021/022 are terminal naming-migration records with no implementation or
-execution. C-G02-001/EVAL-G02-023 owns only the exact-GetObject corrective and targeted proof.
-A-G02-001/EVAL-G02-024 then passed four preflights, real deployment, and 57 live access cells before
-the stale LangSmith read contract returned a deterministic canonical-owner deny. C-G02-002/
-EVAL-G02-025 repaired only that contract and passed a real credential-authenticated read seam.
-A-G02-002/EVAL-G02-026 then passed four preflights, real deployment, and 57 live access cells,
-including the corrected LangSmith canonical-owner credential cell. The expected-allow
-`obs:langsmith|baseline-agent` operation made no TCP-policy-observable progress and was recorded as
-`infra_failed` after verified no progress; all downstream, destructive, Bailian, token, and cost
-work remained zero. C-G02-003 owns only that TCP egress probe seam, and A-G02-003/EVAL-G02-028 is
-the separate planned unified-candidate attempt. G02 has not passed, no waiver is present, and no
-closure or tag is authorized. All earlier failed Eval assets remain immutable.
+The three G01 carry-in matrices above are closed forward without modifying G01 audit assets. G01's
+production Agent-stage wall-time reconciliation remains explicitly not covered by G02 because the
+production Agent stage waterfall begins later; G02 does not misrepresent phase timestamps as that
+evidence.
 
-Future reports must include `G01-SUPP-ACCESS-MATRIX`, `G01-SUPP-SIX-STAGE-SPANS`, and
-`G01-SUPP-ALL-SURFACE-CANARY` without modifying closed G01 evidence.
+## Execution lesson
+
+The final scenario phase used the project-owner-authorized short debug loop: read the failed trial,
+fix one existing-runner root cause, run the existing targeted tests, and replay only the affected
+semantic branch and real dependencies. It introduced no new framework, fixture family, metric,
+threshold, sample, or waiver. This removed repeated corrective/attempt governance without changing
+experimental rigor; the post-G02 overhaul lessons are preserved in
+`docs/engineering/GOVERNANCE_REFACTOR_LESSONS_LOG.md`.
+
+## Handoff
+
+G03 is handed off as `not_started`. Its placeholder is not a Master Plan and authorizes no
+implementation. G03 must first freeze a decision-complete plan for the read-only Agent vertical
+slice.

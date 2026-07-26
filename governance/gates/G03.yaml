@@ -1,0 +1,16 @@
+schema_version: "1.0.0"
+id: G03
+title: Read-Only Agent Vertical Slice
+status: planned
+plan: docs/gates/G03/PLAN.md
+report: docs/gates/G03/REPORT.md
+iterations: []
+frozen_iterations: []
+work_items: []
+pass_criteria:
+  - A decision-complete G03 Master Plan is frozen before any G03 implementation Iteration begins.
+  - Validation E2E exceeds the best G02 baseline by at least 5 percentage points.
+  - Every critical conclusion is traceable to an EvidenceRef.
+  - Worker and SSE recovery loses or duplicates no state.
+waivers: []
+amendments: []

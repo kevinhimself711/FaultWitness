@@ -3,6 +3,7 @@
 # G01 retrospective: ADR-0009 separates behavior identity from evidence synchronization identity.
 # G02 planning review: ADR-0010 through ADR-0013 freeze the lab, isolation, baseline, and phase protocols.
 # G02 corrective-cost review: ADR-0014 separates frozen Iterations, correctives, and Gate attempts.
+# G02 closure review: accepted ADRs remain recorded; implementation-road simplification changes no Eval metric or architecture invariant.
 schema_version: "1.0.0"
 adrs:
   - {id: ADR-0001, title: "Integrate three engineering planes behind five logical responsibility planes", status: accepted, decision_date: "2026-07-22", path: docs/adr/ADR-0001.md, supersedes: null}

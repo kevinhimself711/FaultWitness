@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### G02 Gate closure
+
+- Close G02 without waiver on runtime candidate `86a459c0bec1bcf3e583fd1280fbca2667479d2e` and
+  evaluator revision `e419e07`: 14/14 phases, 32/32 scenarios, 60/6/22 safety matrices,
+  deterministic N=32, live N=192, 95% clustered bootstrap aggregation, and close-readiness pass
+  with fallback 0 and `open_evidence=0`.
+- Record 195,377 live tokens and 0.697396 CNY. Preserve the live baselines' negative diagnosis
+  quality honestly; no frozen future Agent quality floor is lowered or waived.
+- Hand off to G03 in `not_started` state. Its placeholder authorizes planning only.
+
 ### Governance maintenance
 
 - Separate frozen Iterations (`I-*`), single-root-cause correctives (`C-G##-*`), and unified Gate

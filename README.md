@@ -1,78 +1,34 @@
 ---
-active_gate: G02
-active_gate_status: in_progress
-active_iteration: A-G02-012
+active_gate: G03
+active_gate_status: not_started
+active_iteration: null
 next_iteration: null
-last_closed_gate: G01
+last_closed_gate: G02
 ---
 
 # FaultWitness
 
 FaultWitness 是一个面向微服务事故调查、受控修复与持续优化的多租户 Agent Runtime 项目。
 
-当前状态：G00、G01 已关闭；G02 正在执行。I-0020、I-0023、I-0025 与 I-0027 均已因
-确定性失败终态关闭且负面证据完整；I-0024 与 I-0026 已完成前两轮 runner/transport
-纠错。I-0028 已用真实 Windows child process 证明 byte-exact transport 并关闭；I-0029 因
-远端 Python 3.8 compatibility 缺陷终态失败。I-0030 已用实际受管 Python 3.8.20 完成
-兼容性纠错并关闭；I-0031 因固定 probe 镜像未离线导入而终态失败。I-0032 已将两个固定
-probe 镜像纳入离线 staging/import inventory 并关闭；I-0033 因 containerd import alias
-解析缺陷终态失败。I-0034 已完成精确 alias corrective 并关闭；I-0035 随后证明对象读取
-probe 错用隐含 `ListBucket` 的 `mc stat`，现已终态失败。未实施的 I-0036/I-0037 已按新
-命名治理退役；C-G02-001 已以真实 GetObject 对照证据关闭。A-G02-001 的真实访问矩阵在
-LangSmith canonical-owner cell 确定性失败并终态关闭；C-G02-002 已用真实 credential read
-seam 完成单根因修复。A-G02-002 在 expected-allow baseline-agent egress seam 无进展后终态
-失败；C-G02-003 已以真实 TCP allow/reject 对照证据关闭。A-G02-003 在 60/60 access 通过后
-暴露 trace-service 候选绑定前置缺口并终态失败；C-G02-004 已用 exact-candidate
-deploy/inspect/relay/smoke 证据关闭。A-G02-004 在 `paymentUnreachable` 故障 oracle 上确定性
-失败；C-G02-005 已用 caller-trace 归因、定向测试和一次精确恢复的真实场景关闭。A-G02-005
-在三个场景通过后暴露 prior-recovery 前置证据未被 runner 消费的问题并终态失败；C-G02-006
-已用定向测试和一次 candidate-bound SEED-G02-0004 real seam 关闭。A-G02-006 在 seeds 1–7
-通过后因 `emailMemoryLeak` 双样本 observer 的空列表 cleanup 缺陷终态失败；C-G02-007 已用
-定向测试和一次 candidate-bound email-memory real seam 关闭。A-G02-007 在十二个场景通过后，
-因 Kafka fault runner 依赖偶发 load-generator 流量、未在冻结的 90 秒窗口内形成 consumer lag
-而终态失败；C-G02-008 已用定向测试和一次 candidate-bound Kafka checkout/lifecycle seam 关闭。
-A-G02-008 因 source-collection 命令未产出 observation、却被 runner 错误归为 `metric_fail` 而
-终态失败；C-G02-009 已用分类测试和一次 candidate-bound 只读 collection seam 关闭。
-A-G02-009 因默认十用户 ambient load 造成全链路 HTTP 504、同时 `accounting` 第 62 次 OOM 而
-终态失败；C-G02-010 已用干净专用 namespace、最小非零 ambient load 和一次 candidate-bound
-checkout seam 关闭。A-G02-010 的真实 60/6/22 矩阵与 seed 1 通过，但 seed 2 暴露 payment
-fault 仍依赖偶发 ambient checkout，现已终态失败；C-G02-011 已用一次确定性 candidate-bound
-payment checkout 完成真实故障与恢复生命周期并关闭。A-G02-011 的 60-cell access 全过，但
-deterministic trace ID 在重入时携带了新的 wall-clock payload，触发持久化冲突并终态失败；
-C-G02-012 已把 candidate timestamp 归一化为严格 UTC，并用两次真实调用证明六阶段 exact
-replay 后关闭。A-G02-012 正在该候选上执行；未受影响的 A-G02-011 60-cell access 以执行次数
-0 继承，其余受影响 phase 新跑。任何终态记录都不会重开。
+当前状态：G00、G01、G02 已无豁免关闭。G02 在 EVAL-G02-046 中完成 14 个 phase、32 个可执行
+故障场景、60/6/22 安全与可观测性矩阵、N=32 deterministic baseline、N=192 live baseline、
+95% clustered bootstrap CI、reconciliation 与 close-readiness，`open_evidence=0`。
+
+G03“只读 Agent 纵切”尚未开始。当前占位资产只授权制定 decision-complete Master Plan；在该计划
+冻结前，不实施 G03 产品代码、基础设施变更或 live evaluation。
 
 ## 权威资产
 
 - [最终项目规划](docs/blueprint/FINAL_PLAN.md)
-- [G01 Gate Report](docs/gates/G01/REPORT.md)
-- [G02 Master Plan](docs/gates/G02/PLAN.md)
+- [G02 Gate Report](docs/gates/G02/REPORT.md)
+- [G03 占位计划](docs/gates/G03/PLAN.md)
 - [阶段索引](docs/roadmap/PHASES.md)
 - [项目状态](PROJECT_STATE.yaml)
 - [协作规则](AGENTS.md)
-- [AI 开发与复盘日志](docs/engineering/AI_DEVELOPMENT_LOG.md)
 
-## 当前边界
+## 边界
 
-- 不把 G01 平台地基包装为已经完成的 Agent 产品。
-- 不提交原始 JD、面经、密钥、私有 Trace 或受限数据。
-- I-0018 已交付 locked-test/ground-truth 隔离、160 行预登记和三个验证接口；I-0024
-  已前向补齐并单测 EVAL-G02-008 证明缺失的 candidate-bound provisioner/collector。
-- EVAL-G02-012 在 candidate-binding 准备时证明 Windows text-mode 将 LF 改写为 CRLF；
-  十四个 Gate phase、matrix cell、破坏性实验和模型调用均为 0。EVAL-G02-013 已通过 4/4
-  本地 byte-exact cases。EVAL-G02-014 随后证明 `gate_probe.py` 与远端 Python 3.8 不兼容；
-  访问 cell、破坏性实验和模型调用仍为 0。EVAL-G02-015 已通过真实 Python 3.8 import 与
-  UTC-aware timestamp 两个本地 cases。EVAL-G02-016 随后证明固定 `minio/mc` probe 镜像
-  未进入 K3s 且节点 Docker Hub pull 超时；访问 cell、破坏性实验和模型调用仍为 0。
-  EVAL-G02-017 已通过 3/3 本地 staging cases，保持 30-image SUT digest 不变；I-0033 才可
-  再次编排冻结 phase。EVAL-G02-018 的四个 preflight 通过，但 `minio/mc` import 只产生
-  `index.docker.io` source alias，冻结 verifier 查找 `docker.io` source 时确定性失败；后续
-  matrix、破坏性实验和模型调用均为 0。
-  EVAL-G02-019 已通过 3/3 本地 alias-resolution cases，wrong-digest alias 保持 fail closed。
-  EVAL-G02-020 的四个 preflight 与 deployment 通过，前 24 个 database access cells 通过；
-  第一个对象读取 cell 因 `mc stat` 隐含需要未授权的 `ListBucket` 而确定性失败。后续 phase
-  与模型调用为 0；C-G02-001 已将读取修正为精确 `GetObject` probe，3/3 本地分支与真实
-  `minio/mc` allow/deny 对照均通过。
-
-代码、API、Schema 和标识符使用英文；设计、评测和复盘文档以中文为主。
+- G02 只交付 32 个种子场景和 160 行 metadata-only 预登记；160 case 的实际物化仍属于 G07。
+- G02 baseline 是对照测量，不声称 Naive ReAct 或 no-RAG 达到未来 Agent 的冻结质量下限。
+- Ground Truth 与 locked tests 保持对 Agent runtime 不可访问。
+- 不提交原始 JD、面经、密钥、私有 Trace、模型私有推理或受限数据。

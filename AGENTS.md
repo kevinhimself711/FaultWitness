@@ -1,9 +1,9 @@
 ---
-active_gate: G02
-active_gate_status: in_progress
-active_iteration: A-G02-012
+active_gate: G03
+active_gate_status: not_started
+active_iteration: null
 next_iteration: null
-last_closed_gate: G01
+last_closed_gate: G02
 ---
 
 # FaultWitness Repository Instructions
@@ -12,43 +12,12 @@ last_closed_gate: G01
 
 FaultWitness is a multi-tenant Agent Runtime for investigating microservice incidents, proposing bounded remediations, executing approved actions, and producing auditable evaluation and training assets.
 
-G00 and G01 are closed. G02 is `in_progress`. I-0016 through I-0019 and forward correctives I-0021,
-I-0022, I-0024, I-0026, I-0028, I-0030, I-0032, and I-0034 are completed with no open evidence. I-0020,
-I-0023, I-0025, I-0027, I-0029, I-0031, I-0033, and I-0035 are terminally failed with complete
-negative evidence. Legacy I-0036/I-0037 were retired before implementation when work-item
-namespaces were separated. C-G02-001 is completed with targeted real-client evidence and no open
-evidence; A-G02-001 is terminally failed with complete LangSmith access evidence. C-G02-002 is
-completed with an attributable real credential seam. A-G02-002 is terminally failed with complete
-expected-allow egress no-progress evidence. C-G02-003 is completed with targeted real TCP
-allow/reject evidence and no open evidence. A-G02-003 is terminally failed with complete
-trace-prerequisite evidence. C-G02-004 is completed with exact-candidate deploy, inspect, relay,
-and smoke evidence. A-G02-004 is terminally failed with complete payment-unreachable oracle
-evidence. C-G02-005 is completed with caller-trace attribution, targeted tests, and one restored
-real scenario. A-G02-005 is terminally failed after three scenario passes because the runner ignored
-the Master Plan's prior-recovery precondition rule. C-G02-006 is completed with targeted tests and
-one candidate-bound prior-recovery scenario seam. A-G02-006 is terminally failed after seeds 1–7
-passed because the `emailMemoryLeak` observer could not retain its first monotonic sample and its
-cleanup path indexed an empty fault-sample list. C-G02-007 is completed with targeted monotonic and
-non-growth tests plus one candidate-bound email-memory scenario seam. A-G02-007 is terminally
-failed after twelve scenario passes because the Kafka fault runner relied on incidental load-generator
-traffic and did not produce consumer lag inside the frozen 90-second observation deadline. C-G02-008
-is completed with targeted tests and one candidate-bound Kafka checkout/lifecycle seam. A-G02-008
-is terminally failed because a source-collection command exited without producing an observation and
-the scenario runner incorrectly collapsed that infrastructure condition into `metric_fail`. C-G02-009
-is completed with classification tests and one candidate-bound read-only collection seam. A-G02-009
-is terminally failed because the default ten-user ambient load produced fleet-wide HTTP 504s while
-`accounting` reached its sixty-second OOM restart. C-G02-010 is complete with a clean dedicated
-namespace, minimum nonzero ambient load, and one passing candidate-bound checkout seam. A-G02-010
-then passed real 60/6/22 matrices and scenario seed 1 but terminally failed on seed 2 because both
-payment fault branches still relied on incidental ambient checkout traffic. C-G02-011 completed one
-deterministic candidate-bound payment checkout and full real lifecycle without changing the frozen
-oracle, N, window, recovery, or thresholds. A-G02-011 then ran on that candidate and current clean
-namespace epoch. Its 60-cell access matrix passed, but the trace collection terminally failed when a
-deterministic trace reference was replayed with new wall-clock timestamps. C-G02-012 then normalized
-the immutable candidate timestamp to strict UTC and proved two byte-equivalent real trace operations
-with all six stages. A-G02-012 is active on that candidate; it inherits the unchanged A-G02-011
-60-cell access evidence with execution count zero and executes affected phases fresh. No terminal
-work item may be reopened.
+G00, G01, and G02 are closed without waiver. EVAL-G02-046 passed fourteen phases, 32 executable
+fault scenarios, 60/6/22 safety and observability matrices, deterministic N=32, live-model N=192,
+clustered 95% bootstrap aggregation, reconciliation, and close-readiness with no open evidence.
+G03 is `not_started`; its placeholder authorizes planning only. A decision-complete G03 Master Plan
+must be frozen before any G03 implementation begins. Historical failed and completed G02 records
+remain immutable, but their high-overhead lifecycle ceremony is not a template for future debugging.
 
 ## Source-of-truth order
 
@@ -64,23 +33,21 @@ PROJECT_STATE.yaml is the authority for the active Gate and work item, not for a
 
 ## Required workflow
 
-- No behavioral change may begin without a planned `I-####` or `C-G##-###` work-item plan.
-- A new `C-G##-###` or `A-G##-###` record may be created directly as the sole `in_progress`
-  work item in the same commit that records its complete plan. A separate planned-only activation
-  commit is forbidden; standard `I-####` Iterations must still begin as `planned`.
+- Planned feature work begins from a bounded Iteration in the active Gate Master Plan. A defect
+  discovered while executing an existing runner may be fixed directly without creating a new
+  corrective/attempt lifecycle when the change is minimal, preserves frozen semantics, uses the
+  existing targeted test or real seam, and reruns only affected trials and real dependencies.
+- Do not create planning, activation, evidence-head, or closure commits around a small debug fix.
+  Record the root cause, changed semantic branch, targeted verification, and affected replay once
+  in the final Gate/release report.
 - A Gate Master Plan must be frozen before its implementation iterations start.
-- `I-####` is reserved for Iterations frozen before Gate execution. Execution-time root-cause work
-  uses `C-G##-###`; a unified-candidate Gate run uses `A-G##-###`. Never continue the planned
-  Iteration sequence to disguise emergent corrective work or a Gate retry.
-- A corrective owns exactly one named root cause. It includes only the fix, changed semantic
-  branches, any required minimum real-seam proof, and its own evidence. It executes no Gate L2 or full
-  Gate Eval, reuses the existing test entrypoint, adds no bespoke per-corrective Eval harness, and
-  defers Master Plan, Validation-final-path, Claims, and Gate Report synchronization to the
-  Gate-attempt or closure boundary. Engineering, targeted verification, Gate execution, and
-  governance synchronization are accounted separately.
-- A Gate attempt is not an Iteration and is not corrective engineering cost. It may only orchestrate
-  frozen runners and evidence; `src/`, `deploy/`, `tests/`, `config/`, and `schemas/` changes are
-  forbidden while an `A-G##-###` work item is active.
+- Historical `I-*`, `C-G##-*`, and `A-G##-*` identifiers remain immutable audit records. They do not
+  require future Gates to reproduce the G02 corrective/attempt state machine.
+- A debug fix owns one verified root cause, changes only its semantic branch, uses the existing test
+  entrypoint, and adds no bespoke Eval framework. Gate Report synchronization is deferred to closure.
+- Gate execution is an experiment sequence, not a separate mandatory work-item lifecycle. Existing
+  runner repairs are allowed under the short-loop rule above; new product scope or a substantial new
+  framework still returns to a planned Iteration.
 - Governance and status documents may be amended during a Gate attempt when a provenance rule
   blocks execution without protecting product behavior, Eval semantics, or an experimental
   subject. Such amendments remain evidence-only, do not create a new business candidate, and must
@@ -91,10 +58,9 @@ PROJECT_STATE.yaml is the authority for the active Gate and work item, not for a
 - Do not lower a Gate threshold, modify locked tests, or alter ground truth in an implementation commit.
 - Failed Gates, negative experiments, and rejected architectures must remain in the repository history.
 - Gate closure is a separate asset-only commit evaluated against an immutable candidate SHA.
-- A final `A-G##-###` Gate attempt may only orchestrate frozen checks, reverify one candidate,
-  and synchronize evidence. It may not add product behavior or a substantial Eval framework;
-  missing owning-runner work creates a new forward `C-G##-###` assigned to that domain and produces
-  a new candidate; a completed work-item record is not reopened.
+- Final Gate execution may repair a defect in an existing runner under the short-loop rule, but may
+  not add product scope or a substantial Eval framework. The changed branch and affected dependency
+  closure must pass before execution continues; completed historical records are never reopened.
 - Expensive Evals must be decomposed into attributable phases whose immutable results are
   keyed by code candidate, runtime artifact/config digests, and environment fingerprint.
 - Eval runners that invoke destructive, long-running, or external-service work must support
@@ -128,18 +94,16 @@ PROJECT_STATE.yaml is the authority for the active Gate and work item, not for a
   A runner records the already-existing execution checkpoint it observed before producing output;
   the later evidence/closure commit is identified by Git history or its Gate tag and does not
   rewrite the producing revision to chase its own SHA.
-- Completed work-item records are immutable. A defect discovered after completion is owned by a new
-  forward `C-G##-###` corrective that links to the affected record; governance must not change the
-  completed work item back to `in_progress` or move lifecycle state backward. A corrective may
-  block the next Gate attempt, but it does not erase or reopen history.
+- Completed work-item records are immutable. A later defect is fixed forward and linked in the final
+  report; it never changes the completed record back to `in_progress`. A separate corrective record
+  is optional and justified only when the work is large enough to need an independently planned scope.
 - `verify-fast` scans every work-item transition from the machine policy epoch as well as the
   current worktree. It rejects terminal-record deletion/reactivation even when a later commit hides
   the regression. New C/A records use their dedicated namespace; legacy I correctives retain their
   same-Gate terminal links through the machine-readable legacy registry.
 - Candidate readiness is the deterministic front of Gate Eval, not a separate open-ended audit.
-  Transient infrastructure failures resume the same phase/trial. An implementation, policy,
-  zero-tolerance, cleanup, metric, quality, or performance failure makes that orchestration
-  attempt terminally failed; correction uses the next C ID and reevaluation uses the next A ID.
+  Transient infrastructure failures resume the same phase/trial. A deterministic failure blocks
+  progress until its root cause is fixed; then only the failed branch and affected dependencies rerun.
 - SHA and evidence-inheritance rules are provenance controls only. They must not alter Eval N,
   locked tests, Ground Truth, quality or performance thresholds, health-oracle windows, token/cost
   ceilings, or failure semantics.
@@ -198,9 +162,9 @@ Planning-only commits may create or refine future work-item and Eval assets with
 - The same validation may not run at both layers with the same N. If equal N is the only meaningful
   design, classify it as L2 and do not run it in the Iteration.
 - Every L2 item names an owning Iteration. That Iteration implements and unit-tests the runner,
-  negative fixture, phase interface, and candidate/environment binding before it closes. The final
-  Gate attempt may only orchestrate frozen runners and may not add product behavior, fixtures, or
-  a test framework.
+  negative fixture, and phase interface before it closes. Final Gate execution may make a minimal
+  repair to that existing runner under the short-loop rule, but may not introduce a new framework,
+  fixture family, metric, threshold, or sample design.
 - An Iteration that adds a persistence surface, egress surface, trace stage, identity principal, or
   storage namespace proves the new surface's leakage, authorization, and observability properties
   in that same Iteration.
