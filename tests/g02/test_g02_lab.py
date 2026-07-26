@@ -286,6 +286,7 @@ def test_email_runtime_reset_replaces_exactly_one_ready_pod(
                 "reset_count": 1,
                 "old_pod_uid": "old",
                 "new_pod_uid": "new",
+                "new_pod_name": "email-new",
                 "ready": True,
             }
         )
@@ -295,6 +296,7 @@ def test_email_runtime_reset_replaces_exactly_one_ready_pod(
 
     assert result["reset_count"] == 1
     assert result["ready"] is True
+    assert result["new_pod_name"] == "email-new"
     assert captured["privileged"] is True
     assert '"delete", "pod", old_name, "--wait=true"' in captured["script"]
     assert "time.sleep(2)" in captured["script"]
@@ -571,6 +573,7 @@ def test_memory_observer_retains_first_sample_and_uses_second_growth(
             "reset_count": 1,
             "old_pod_uid": "old",
             "new_pod_uid": "new",
+            "new_pod_name": "email-new",
             "ready": True,
         },
     )
@@ -621,6 +624,7 @@ def test_memory_non_growth_keeps_cleanup_comparator(
             "reset_count": 1,
             "old_pod_uid": "old",
             "new_pod_uid": "new",
+            "new_pod_name": "email-new",
             "ready": True,
         },
     )

@@ -216,6 +216,11 @@ class LiveScenarioObserver:
                 {
                     "candidate_sha": self.candidate_sha,
                     "fault_class": self.fault_class,
+                    "email_pod": (
+                        self.email_runtime_reset.get("new_pod_name")
+                        if self.email_runtime_reset is not None
+                        else None
+                    ),
                     "trace_service": TRACE_QUERY_SERVICES[self.fault_class],
                     "since_micros": int(since.timestamp() * 1_000_000),
                     "since_rfc3339": since.isoformat().replace("+00:00", "Z"),
@@ -272,8 +277,16 @@ def promql(query):
 cpu_rate = promql(
     'sum(rate(container_cpu_usage_seconds_total{{namespace="fw-sut",pod=~"ad-.*",container="ad"}}[2m]))'
 )
+email_pod = request.get("email_pod")
+email_selector = (
+    'pod="' + email_pod + '"'
+    if isinstance(email_pod, str) and email_pod.startswith("email-")
+    else 'pod=~"email-.*"'
+)
 working_set = promql(
-    'max(container_memory_working_set_bytes{{namespace="fw-sut",pod=~"email-.*",container="email"}})'
+    'max(container_memory_working_set_bytes{{namespace="fw-sut",'
+    + email_selector
+    + ',container="email"}})'
 )
 consumer_record_lag = promql(
     'max(kafka_consumer_records_lag{{service_name="fraud-detection"}})'
@@ -674,6 +687,7 @@ print(json.dumps({
     "reset_count": 1,
     "old_pod_uid": old_uid,
     "new_pod_uid": pod["metadata"]["uid"],
+    "new_pod_name": pod["metadata"]["name"],
     "ready": True,
 }, sort_keys=True))
 PY
@@ -690,6 +704,7 @@ PY
             or document.get("reset_count") != 1
             or document.get("ready") is not True
             or document.get("old_pod_uid") == document.get("new_pod_uid")
+            or not str(document.get("new_pod_name", "")).startswith("email-")
         ):
             raise GovernanceError("email runtime reset did not replace one Ready pod")
         return document
