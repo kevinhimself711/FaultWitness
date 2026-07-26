@@ -201,6 +201,55 @@ def test_ad_stimulus_uses_the_pinned_locust_route_exactly_once(
     assert captured["script"].count("urllib.request.urlopen(endpoint)") == 1
 
 
+def test_product_stimulus_uses_the_pinned_failure_product_exactly_once(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    observer = LiveScenarioObserver("1" * 40, "productCatalogFailure")
+    captured: dict[str, Any] = {}
+
+    def remote(script: str, *, privileged: bool) -> str:
+        captured["script"] = script
+        captured["privileged"] = privileged
+        return '{"request_count":1,"response_status":500,"status":"pass"}'
+
+    monkeypatch.setattr(g02_lab, "run_remote_script", remote)
+    result = observer._stimulate_product_fault()
+
+    assert result == {"request_count": 1, "response_status": 500, "status": "pass"}
+    assert captured["privileged"] is True
+    assert captured["script"].count("/api/products/OLJCESPC7Z") == 1
+    assert captured["script"].count("urllib.request.urlopen(endpoint)") == 1
+
+
+def test_product_observer_stimulates_once_before_two_frozen_samples(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    observer = LiveScenarioObserver("1" * 40, "productCatalogFailure")
+    stimuli: list[str] = []
+    sleeps: list[float] = []
+    sample = {
+        "descriptions": ["Error: Product Catalog Fail Feature Flag Enabled"],
+        "trace_count": 1,
+    }
+    monkeypatch.setattr(
+        observer,
+        "_stimulate_product_fault",
+        lambda: stimuli.append("product")
+        or {"status": "pass", "request_count": 1, "response_status": 500},
+    )
+    monkeypatch.setattr(observer, "_sample", lambda _since: sample)
+    monkeypatch.setattr(g02_lab.time, "sleep", sleeps.append)
+
+    first = observer("fault", "productCatalogFailure")
+    second = observer("fault", "productCatalogFailure")
+
+    assert stimuli == ["product"]
+    assert sleeps == [30]
+    assert first["product_stimulus"]["request_count"] == 1
+    assert second["product_stimulus"]["request_count"] == 1
+    assert fault_state("productCatalogFailure", [first, second]) is OracleState.FAULT_ACTIVE
+
+
 def test_ad_observer_stimulates_once_after_fault_on_and_restore_off(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -461,6 +510,13 @@ def test_memory_observer_retains_first_sample_and_uses_second_growth(
         )
     )
     sleeps: list[float] = []
+    stimuli: list[bool] = []
+    monkeypatch.setattr(
+        observer,
+        "_stimulate_checkout",
+        lambda *, allow_checkout_http_error: stimuli.append(allow_checkout_http_error)
+        or {"status": "pass", "checkout_count": 1},
+    )
     monkeypatch.setattr(observer, "_sample", lambda _since: next(samples))
     monkeypatch.setattr(g02_lab.time, "sleep", sleeps.append)
 
@@ -473,6 +529,10 @@ def test_memory_observer_retains_first_sample_and_uses_second_growth(
     assert fault_state("emailMemoryLeak", [first, second]) is OracleState.FAULT_ACTIVE
     assert first_recovery["signal_not_worsening"] is True
     assert second_recovery["signal_not_worsening"] is True
+    assert first["email_stimulus_count"] == 1
+    assert second["email_stimulus_count"] == 2
+    assert first_recovery["email_recovery_stimulus"]["checkout_count"] == 1
+    assert stimuli == [False, False, False]
     assert sleeps == [30, 30]
 
 
@@ -488,6 +548,14 @@ def test_memory_non_growth_keeps_cleanup_comparator(
         )
     )
     clock = iter((0.0, 0.0, 91.0, 0.0))
+    monkeypatch.setattr(
+        observer,
+        "_stimulate_checkout",
+        lambda *, allow_checkout_http_error: {
+            "status": "pass",
+            "checkout_count": 1,
+        },
+    )
     monkeypatch.setattr(observer, "_sample", lambda _since: next(samples))
     monkeypatch.setattr(g02_lab.time, "sleep", lambda _seconds: None)
     monkeypatch.setattr(g02_lab.time, "monotonic", lambda: next(clock))
