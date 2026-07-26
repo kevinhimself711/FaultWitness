@@ -343,3 +343,16 @@ G02 关闭后的重构候选：
 - **关闭后候选**：Master Plan 必须为每个 stateful/live environment 明确 `fresh`、`reused` 或
   `restored` 语义及可机器检查的 epoch；Pod Ready 只能是就绪证据，不能替代 clean-state 证明。
 - **指标影响**：无；环境重建不降低 N、oracle、质量/性能阈值、安全边界或模型预算。
+
+### GOV-OBS-013 — 自洽性单测不能替代下游严格契约验证
+
+- **状态**：confirmed implementation-test gap；在 C-G02-012 关闭前修复。
+- **证据**：最初单测只证明同一 `-04:00` 输入生成两份相同 envelope，但冻结的
+  `TraceEnvelope` 只接受 UTC `+00:00`。真实接缝首次提交因此被 422 拒绝；将同一 envelope
+  送入严格契约解析后，根因在本地一次复现。
+- **不必要成本**：一次 trace-service 部署、一次 provisioning 和一次必然失败的远程提交。
+- **G02 内处置**：不新建 corrective；当前 corrective 尚未关闭，直接把 commit timestamp
+  归一化为 UTC，并要求 replay 单测同时通过 byte equality 与真实下游 contract parser。
+- **关闭后候选**：所有 runner 形状/重放测试必须调用下一跳的冻结 parser、validator 或协议
+  adapter；只验证自己的输出相等、schema-like 字段或 mock 接收，不构成 real-seam readiness。
+- **指标影响**：无；不改变 trace N、stage、阈值、权限、模型路线或失败语义。

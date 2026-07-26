@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 
 import httpx
 import pytest
 
+from faultwitness.contracts.models import TraceEnvelope
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.g02_collectors import (
     CandidateProbeBackend,
@@ -166,13 +168,35 @@ def test_remote_trace_envelope_is_exactly_replayable_for_one_candidate() -> None
 
     first = remote.trace_envelope(request)
     second = remote.trace_envelope(request)
+    strict = TraceEnvelope.model_validate_json(json.dumps(first))
 
     assert first == second
-    assert first["emitted_at"] == request["candidate_timestamp"]
+    assert first["emitted_at"] == "2026-07-25T23:30:00+00:00"
     assert {span["started_at"] for span in first["spans"]} == {
-        request["candidate_timestamp"]
+        "2026-07-25T23:30:00+00:00"
     }
-    assert {span["ended_at"] for span in first["spans"]} == {request["candidate_timestamp"]}
+    assert {span["ended_at"] for span in first["spans"]} == {
+        "2026-07-25T23:30:00+00:00"
+    }
+    assert strict.emitted_at.isoformat() == "2026-07-25T23:30:00+00:00"
+    assert len(strict.spans) == 6
+
+
+def test_candidate_backend_normalizes_commit_timestamp_to_strict_utc(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    backend = CandidateProbeBackend(ROOT, {})
+    monkeypatch.setattr(
+        "faultwitness_dev.g02_collectors.subprocess.run",
+        lambda *_args, **_kwargs: subprocess.CompletedProcess(
+            args=["git"],
+            returncode=0,
+            stdout="2026-07-25T19:30:00-04:00\n",
+            stderr="",
+        ),
+    )
+
+    assert backend._candidate_timestamp(_context()) == "2026-07-25T23:30:00+00:00"
 
 
 @pytest.mark.parametrize(

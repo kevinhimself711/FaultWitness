@@ -33,7 +33,7 @@ accounting_scope:
   governance_sync: separate
 scope:
   - Derive trace and canary envelope timestamps from the immutable candidate commit timestamp instead of a fresh remote wall clock.
-  - Validate that the candidate timestamp is timezone-aware before constructing any trace envelope.
+  - Normalize the candidate timestamp to strict UTC +00:00 and validate it before constructing any trace envelope.
   - Preserve the existing candidate and environment derived trace ID and every six-stage trace field.
   - Invoke the same existing real trace operation twice and prove byte-equivalent envelopes and successful duplicate handling.
 non_goals:

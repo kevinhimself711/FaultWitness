@@ -95,8 +95,9 @@ surfaces, PostgreSQL, Redis, MinIO, decoded Kubernetes objects, OTLP storage, Gi
 the public preregistry. Only canary digests and hit counts enter the matrix.
 
 The trace reference and every timestamp in its envelope are replay-stable. The controller reads the
-candidate commit timestamp once and includes it in trace/canary requests; the remote probe validates
-that it is timezone-aware and uses it for `emitted_at`, `started_at`, and `ended_at`. Re-entering the
+candidate commit timestamp once, normalizes it to the strict contract's UTC `+00:00` form, and
+includes it in trace/canary requests; the remote probe validates that it is timezone-aware,
+normalizes defensively to UTC, and uses it for `emitted_at`, `started_at`, and `ended_at`. Re-entering the
 same candidate/environment operation therefore submits byte-equivalent content under the same trace
 reference and receives the existing idempotent duplicate behavior instead of a payload conflict.
 Access and provisioning requests do not depend on this timestamp. This changes no six-stage N,

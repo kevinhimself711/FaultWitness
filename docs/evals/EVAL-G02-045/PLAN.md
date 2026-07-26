@@ -7,7 +7,9 @@ matrix.
 
 ## Scope
 
-1. Run the existing G02 collector tests, including byte-equivalent envelope replay.
+1. Run the existing G02 collector tests, including byte-equivalent envelope replay. The immutable
+   commit timestamp must be normalized to UTC and accepted by the strict `TraceEnvelope` contract
+   before remote execution.
 2. Deploy the committed corrective trace-service candidate and provision its existing probe binding.
 3. Invoke the same existing candidate-bound trace operation twice.
 4. Verify both invocations return the same six trace IDs/stages and the second produces no payload

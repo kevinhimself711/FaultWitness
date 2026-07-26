@@ -818,7 +818,7 @@ def trace_envelope(request: dict[str, Any], *, canary: str | None = None) -> dic
         ).encode()
     ).digest()
     suffix = crockford(seed[:17])
-    base = str(request["candidate_timestamp"])
+    base = candidate_timestamp.astimezone(UTC).isoformat()
     stages = (
         ("api.g02-probe", "api"),
         ("state.persistence", "state_transition"),

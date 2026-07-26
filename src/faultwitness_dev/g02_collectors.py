@@ -640,7 +640,13 @@ class CandidateProbeBackend:
         )
         if timestamp.returncode or not timestamp.stdout.strip():
             raise ProbeBlockedError("candidate_timestamp_unavailable")
-        return timestamp.stdout.strip()
+        try:
+            parsed = datetime.fromisoformat(timestamp.stdout.strip().replace("Z", "+00:00"))
+        except ValueError as error:
+            raise ProbeBlockedError("candidate_timestamp_invalid") from error
+        if parsed.tzinfo is None:
+            raise ProbeBlockedError("candidate_timestamp_invalid")
+        return parsed.astimezone(UTC).isoformat()
 
     def _invoke(
         self, action: str, context: ContextLike, extra: Mapping[str, Any] | None = None
