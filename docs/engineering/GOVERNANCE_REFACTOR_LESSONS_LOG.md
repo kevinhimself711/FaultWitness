@@ -356,3 +356,41 @@ G02 关闭后的重构候选：
 - **关闭后候选**：所有 runner 形状/重放测试必须调用下一跳的冻结 parser、validator 或协议
   adapter；只验证自己的输出相等、schema-like 字段或 mock 接收，不构成 real-seam readiness。
 - **指标影响**：无；不改变 trace N、stage、阈值、权限、模型路线或失败语义。
+
+### GOV-OBS-014 — 已通过的 real seam 被 lifecycle 资产阻塞六小时
+
+- C-G02-012 的 real trace seam 在 `2026-07-26T00:12:16.247479+00:00` 通过，直到
+  `2026-07-26T06:13:23+00:00` 才完成 corrective-close/A-G02-012 activation commit。
+- 该过渡 commit 触碰 16 个文件、增加 362 行，却没有推进任何 Gate phase、scenario、baseline
+  trial 或模型调用。
+- 一个 targeted test、一个 real-seam artifact 和一个 active pointer 已足够。REPORT、manifest、
+  状态镜像与 activation prose 应在 closure 汇总一次，不能阻塞下一个信息生产实验。
+
+### GOV-OBS-015 — 缺失 selective inheritance 实现导致一次性 adapter
+
+- 四个 preflight 通过后，编排层编写了约 9.9 KB 的 private Python 脚本，仅用于验证未变化的
+  SUT checkpoint、修改 provenance ConfigMap label，并把已通过的 60-cell access phase
+  materialize 到 candidate-wide cache key。
+- 脚本首次还错误地从 Deployment 而不是 Pod 读取 restart count。真实运行只需 16 秒，编写与
+  复核耗时却更长，且没有新增 access evidence。
+- provenance 不应要求 runtime mutation；phase inheritance 应是按 phase-owned subject 绑定的
+  小型 release-level reference，而不是每次 attempt 的临时代码。
+
+### GOV-OBS-016 — 经验账本存在，但没有控制编排
+
+- GOV-OBS-008、010、011 已指出 candidate-wide invalidation、inheritance tooling 缺失和
+  binding/SHA churn，下一轮仍重复同一模式。
+- 经验账本若没有 stop rule，只是归档文本。后续采用两动作触发器：连续两项动作若只生成
+  governance/provenance 状态且没有 runtime observation，立即停止仪式，执行下一个受影响 phase
+  或删除 blocker。
+
+### GOV-OBS-017 — semantic-branch resume 比 corrective lifecycle 更严谨且更便宜
+
+- email-memory 修复只影响同一 fault branch。既有 44-test entrypoint 通过后，仅归档并重跑
+  seeds 8、12、19；seeds 1–7、9–11、13–18 的 pass journals 保留，随后继续 20–32。
+- 实时 Prometheus 历史证明旧 Pod 52.6 MB 时序遮蔽新 Pod 50.43→50.54 MB 增长；将采样锁定到
+  reset 返回的新 Pod 后，8/12/19 全部通过，32-scenario matrix 随即完成。
+- 整个闭环没有重跑 60-cell access、six-stage trace、22-surface canary，也没有新建 corrective、
+  activation、evidence-head 或 closure 状态链。实验 N、oracle、90 秒窗口和恢复语义完全不变。
+- 后续默认闭环应是“失败 artifact → 单根因最小修复 → 既有 targeted test/real seam → 受影响
+  trial 与真实依赖续跑”；工作项文档只在最终 release/closure 汇总一次。
