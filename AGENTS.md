@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: C-G02-012
+active_iteration: A-G02-012
 next_iteration: null
 last_closed_gate: G01
 ---
@@ -44,8 +44,10 @@ payment fault branches still relied on incidental ambient checkout traffic. C-G0
 deterministic candidate-bound payment checkout and full real lifecycle without changing the frozen
 oracle, N, window, recovery, or thresholds. A-G02-011 then ran on that candidate and current clean
 namespace epoch. Its 60-cell access matrix passed, but the trace collection terminally failed when a
-deterministic trace reference was replayed with new wall-clock timestamps. C-G02-012 is active to
-make the trace envelope byte-equivalent on replay without changing any stage or metric. No terminal
+deterministic trace reference was replayed with new wall-clock timestamps. C-G02-012 then normalized
+the immutable candidate timestamp to strict UTC and proved two byte-equivalent real trace operations
+with all six stages. A-G02-012 is active on that candidate; it inherits the unchanged A-G02-011
+60-cell access evidence with execution count zero and executes affected phases fresh. No terminal
 work item may be reopened.
 
 ## Source-of-truth order

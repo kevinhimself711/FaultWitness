@@ -3,14 +3,22 @@
   "eval_id": "EVAL-G02-045",
   "gate": "G02",
   "iteration": "C-G02-012",
-  "evaluated_revision": "pending",
-  "status": "pending",
-  "environments": ["local-targeted", "private-k3s-live", "bailian-not-run"],
+  "evaluated_revision": "86a459c0bec1bcf3e583fd1280fbca2667479d2e",
+  "status": "pass",
+  "environments": ["local-strict-contract", "private-k3s-live", "trace-service-1-of-1-ready", "exact-replay-2-of-2", "bailian-not-run"],
   "commands": [
     "uv run pytest -q tests/g02/test_g02_gate_collectors.py",
-    "existing CandidateProbeBackend trace operation invoked twice on one exact candidate"
+    "uv run python -m faultwitness_dev verify-fast",
+    "uv run python -m faultwitness_dev eval-changed",
+    "uv run python -m faultwitness_dev deploy-trace-service --candidate-sha 86a459c0bec1bcf3e583fd1280fbca2667479d2e",
+    "uv run python -m faultwitness_dev inspect-trace-service --candidate-sha 86a459c0bec1bcf3e583fd1280fbca2667479d2e",
+    "existing CandidateProbeBackend provision plus trace operation invoked twice on one exact candidate"
   ],
-  "artifacts": ["docs/evals/EVAL-G02-045/PLAN.md"],
+  "artifacts": [
+    "docs/evals/EVAL-G02-045/PLAN.md",
+    "docs/evals/EVAL-G02-045/REPORT.md",
+    "docs/evals/EVAL-G02-045/artifacts/trace-replay-seam.json"
+  ],
   "evidence_urls": [],
   "integrations": {},
   "open_evidence": []

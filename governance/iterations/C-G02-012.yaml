@@ -2,7 +2,7 @@ schema_version: "1.2.0"
 id: C-G02-012
 gate: G02
 title: Replay-Stable Trace Envelope Corrective
-status: in_progress
+status: completed
 iteration_type: corrective
 corrects: [I-0024, A-G02-011]
 root_cause:
@@ -46,7 +46,7 @@ tests:
   - uv run python -m faultwitness_dev verify-fast
   - uv run python -m faultwitness_dev eval-changed
 eval_id: EVAL-G02-045
-commit: null
+commit: 86a459c0bec1bcf3e583fd1280fbca2667479d2e
 changed_paths:
   - deploy/g02/gate_probe.py
   - src/faultwitness_dev/g02_collectors.py

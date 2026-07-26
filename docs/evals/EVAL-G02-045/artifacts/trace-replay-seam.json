@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0.0",
+  "eval_id": "EVAL-G02-045",
+  "candidate_sha": "86a459c0bec1bcf3e583fd1280fbca2667479d2e",
+  "environment_fingerprint": "32a012ad672a808004e7beb1e41fff66cf87578fbfa470a89dcff47a2b0b80a2",
+  "candidate_timestamp": "2026-07-26T00:07:48+00:00",
+  "started_at": "2026-07-26T00:11:48.988547+00:00",
+  "ended_at": "2026-07-26T00:12:16.247479+00:00",
+  "deployment": {
+    "available": 1,
+    "ready": 1,
+    "service_type": "ClusterIP",
+    "bundle_sha256": "e6c463834b8140d00e4081ce8a0cc095b6baf10e79585a3ff73f8906f180aa42",
+    "image": "docker.io/faultwitness/trace-service:86a459c0bec1bcf3e583fd1280fbca2667479d2e"
+  },
+  "provision": {
+    "status": "pass",
+    "principal_count": 4,
+    "prefix_count": 5,
+    "credential_secret_count": 4,
+    "plan_digest": "ffb82b062125272b1cb8b74ff7619cc15db60008d17330fdcdfeba46d0578d36",
+    "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/provisioning/binding/23876ff1fa78901882ccd30a34c95d24589f40266dae37dfc20194aa026aa6d5"
+  },
+  "first": {
+    "start_time": "2026-07-26T00:12:04.900149+00:00",
+    "end_time": "2026-07-26T00:12:09.074618+00:00",
+    "status": "pass"
+  },
+  "second": {
+    "start_time": "2026-07-26T00:12:09.075950+00:00",
+    "end_time": "2026-07-26T00:12:13.148480+00:00",
+    "status": "pass"
+  },
+  "stages": [
+    "api",
+    "persistence",
+    "outbox",
+    "checkpoint",
+    "model-stub",
+    "export"
+  ],
+  "trace_id": "0049f0a807ee0e0a07b9d4baa93fa2b2",
+  "assertions": {
+    "first_stage_count": 6,
+    "second_stage_count": 6,
+    "all_stages_observed": true,
+    "same_trace_ids": true,
+    "byte_equivalent_result": true,
+    "payload_conflict": false
+  },
+  "execution_counts": {
+    "provision": 1,
+    "trace": 2,
+    "access": 0,
+    "canary": 0,
+    "scenario": 0,
+    "baseline": 0,
+    "gate_l2": 0,
+    "model_calls": 0
+  },
+  "predecessor_failure": {
+    "candidate_sha": "bc09446905f97650fd2dd1f55475fb7bea5d784f",
+    "reason_code": "trace_ingest_rejected",
+    "attribution": "The immutable commit timestamp was replay-stable but had not been normalized to the strict UTC +00:00 contract form."
+  },
+  "status": "pass",
+  "open_evidence": []
+}

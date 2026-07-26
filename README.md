@@ -1,7 +1,7 @@
 ---
 active_gate: G02
 active_gate_status: in_progress
-active_iteration: C-G02-012
+active_iteration: A-G02-012
 next_iteration: null
 last_closed_gate: G01
 ---
@@ -39,7 +39,9 @@ checkout seam 关闭。A-G02-010 的真实 60/6/22 矩阵与 seed 1 通过，但
 fault 仍依赖偶发 ambient checkout，现已终态失败；C-G02-011 已用一次确定性 candidate-bound
 payment checkout 完成真实故障与恢复生命周期并关闭。A-G02-011 的 60-cell access 全过，但
 deterministic trace ID 在重入时携带了新的 wall-clock payload，触发持久化冲突并终态失败；
-C-G02-012 正把整个 trace envelope 改为 exact replay，不改变 stage、N 或阈值。任何终态记录都不会重开。
+C-G02-012 已把 candidate timestamp 归一化为严格 UTC，并用两次真实调用证明六阶段 exact
+replay 后关闭。A-G02-012 正在该候选上执行；未受影响的 A-G02-011 60-cell access 以执行次数
+0 继承，其余受影响 phase 新跑。任何终态记录都不会重开。
 
 ## 权威资产
 
