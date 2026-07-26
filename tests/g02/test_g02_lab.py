@@ -250,6 +250,26 @@ def test_product_observer_stimulates_once_before_two_frozen_samples(
     assert fault_state("productCatalogFailure", [first, second]) is OracleState.FAULT_ACTIVE
 
 
+def test_email_stimulus_calls_the_synchronous_service_once(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    observer = LiveScenarioObserver("1" * 40, "emailMemoryLeak")
+    captured: dict[str, Any] = {}
+
+    def remote(script: str, *, privileged: bool) -> str:
+        captured["script"] = script
+        captured["privileged"] = privileged
+        return '{"request_count":1,"response_status":200,"status":"pass"}'
+
+    monkeypatch.setattr(g02_lab, "run_remote_script", remote)
+    result = observer._stimulate_email_request()
+
+    assert result == {"request_count": 1, "response_status": 200, "status": "pass"}
+    assert captured["privileged"] is True
+    assert captured["script"].count("/send_order_confirmation") == 1
+    assert captured["script"].count("urllib.request.urlopen(request)") == 1
+
+
 def test_ad_observer_stimulates_once_after_fault_on_and_restore_off(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -513,8 +533,8 @@ def test_memory_observer_retains_first_sample_and_uses_second_growth(
     stimuli: list[bool] = []
     monkeypatch.setattr(
         observer,
-        "_stimulate_checkout",
-        lambda *, allow_checkout_http_error: stimuli.append(allow_checkout_http_error)
+        "_stimulate_email_request",
+        lambda: stimuli.append(False)
         or {"status": "pass", "checkout_count": 1},
     )
     monkeypatch.setattr(observer, "_sample", lambda _since: next(samples))
@@ -550,8 +570,8 @@ def test_memory_non_growth_keeps_cleanup_comparator(
     clock = iter((0.0, 0.0, 91.0, 0.0))
     monkeypatch.setattr(
         observer,
-        "_stimulate_checkout",
-        lambda *, allow_checkout_http_error: {
+        "_stimulate_email_request",
+        lambda: {
             "status": "pass",
             "checkout_count": 1,
         },

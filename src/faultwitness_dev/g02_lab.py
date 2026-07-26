@@ -538,6 +538,90 @@ PY
             raise GovernanceError("product workload stimulus did not complete exactly one request")
         return document
 
+    def _stimulate_email_request(self) -> dict[str, Any]:
+        payload = base64.b64encode(
+            json.dumps(
+                {
+                    "email": "faultwitness-g02@example.com",
+                    "order": {
+                        "order_id": "faultwitness-g02-memory",
+                        "shipping_tracking_id": "faultwitness-g02-tracking",
+                        "shipping_cost": {
+                            "units": 1,
+                            "nanos": 0,
+                            "currency_code": "USD",
+                        },
+                        "shipping_address": {
+                            "street_address_1": "1600 Amphitheatre Parkway",
+                            "street_address_2": "",
+                            "city": "Mountain View",
+                            "country": "United States",
+                            "zip_code": "94043",
+                        },
+                        "items": [],
+                    },
+                },
+                separators=(",", ":"),
+            ).encode()
+        ).decode("ascii")
+        script = f"""set -eu
+python3 - <<'PY'
+import base64
+import json
+import subprocess
+import urllib.error
+import urllib.request
+
+document = json.loads(base64.b64decode({payload!r}))
+kubectl = ["/usr/local/bin/k3s", "kubectl", "-n", "fw-sut"]
+service = json.loads(subprocess.run(
+    [*kubectl, "get", "service", "email", "-o", "json"],
+    check=True,
+    capture_output=True,
+    text=True,
+).stdout)
+endpoint = (
+    "http://" + service["spec"]["clusterIP"] + ":"
+    + str(service["spec"]["ports"][0]["port"])
+    + "/send_order_confirmation"
+)
+request = urllib.request.Request(
+    endpoint,
+    data=json.dumps(document, separators=(",", ":")).encode(),
+    headers={{"content-type": "application/json"}},
+    method="POST",
+)
+try:
+    with urllib.request.urlopen(request) as response:
+        status = response.status
+        response.read()
+except urllib.error.HTTPError as error:
+    error.read()
+    status = error.code
+if status != 200:
+    raise SystemExit("email stimulus returned non-success")
+print(json.dumps({{
+    "status": "pass",
+    "request_count": 1,
+    "response_status": status,
+}}, sort_keys=True))
+PY
+"""
+        try:
+            output = run_remote_script(script, privileged=True)
+        except GovernanceError as error:
+            raise InfrastructureFailure(
+                f"email workload stimulus produced no result: {error}"
+            ) from error
+        document = json.loads(output)
+        if (
+            document.get("status") != "pass"
+            or document.get("request_count") != 1
+            or document.get("response_status") != 200
+        ):
+            raise GovernanceError("email workload stimulus did not complete exactly one request")
+        return document
+
     def _stimulate_ad_request(self) -> dict[str, Any]:
         script = """set -eu
 python3 - <<'PY'
@@ -676,7 +760,7 @@ PY
                 time.sleep(30)
             if self.fault_class == "emailMemoryLeak":
                 self.email_fault_stimuli.append(
-                    self._stimulate_checkout(allow_checkout_http_error=False)
+                    self._stimulate_email_request()
                 )
             deadline = time.monotonic() + 90
             while True:
@@ -702,9 +786,7 @@ PY
                 if self.fault_class == "adHighCpu":
                     self.ad_recovery_stimulus = self._stimulate_ad_request()
                 elif self.fault_class == "emailMemoryLeak":
-                    self.email_recovery_stimulus = self._stimulate_checkout(
-                        allow_checkout_http_error=False
-                    )
+                    self.email_recovery_stimulus = self._stimulate_email_request()
             elif self.recovery_samples:
                 time.sleep(30)
             deadline = time.monotonic() + 90
