@@ -16,7 +16,6 @@ from fastapi.testclient import TestClient
 import faultwitness_dev.checks as active_checks
 from faultwitness.api.app import create_app
 from faultwitness.identity.oidc import AuthenticatedPrincipal, AuthenticationError
-from faultwitness_dev.cli import parser
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.experiment import (
     ExperimentRunner,
@@ -27,7 +26,6 @@ from faultwitness_dev.g02_baselines import (
     score_result,
 )
 from faultwitness_dev.infra import _remote_process
-from faultwitness_dev.schemas import load_data
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -636,4 +634,5 @@ def test_verify_fast_invokes_only_active_local_checks(
     forbidden = ("git log", "rev-list", "eval-changed", "gate eval", "ssh", "kubectl")
     rendered = "\n".join(" ".join(command).lower() for command in commands)
     assert not any(value in rendered for value in forbidden)
+
 
