@@ -1,0 +1,872 @@
+{
+  "N": 32,
+  "candidate_sha": "86a459c0bec1bcf3e583fd1280fbca2667479d2e",
+  "rows": [
+    {
+      "case_id": "SEED-G02-0001",
+      "core_e2e": 0.0,
+      "evidence_precision": 1.0,
+      "failure_class": "wrong_root_cause",
+      "family": "runtime_data",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0001",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0001-OBS-01",
+          "SEED-G02-0001-OBS-02"
+        ],
+        "root_cause": "emailMemoryLeak",
+        "root_cause_candidates": [
+          "emailMemoryLeak"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 0.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0002",
+      "core_e2e": 0.0,
+      "evidence_precision": 1.0,
+      "failure_class": "wrong_root_cause",
+      "family": "dependency_network",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0002",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0002-OBS-01",
+          "SEED-G02-0002-OBS-02"
+        ],
+        "root_cause": "emailMemoryLeak",
+        "root_cause_candidates": [
+          "emailMemoryLeak"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 0.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0003",
+      "core_e2e": 1.0,
+      "evidence_precision": 1.0,
+      "failure_class": null,
+      "family": "resource_capacity",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0003",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0003-OBS-01",
+          "SEED-G02-0003-OBS-02"
+        ],
+        "root_cause": "adHighCpu",
+        "root_cause_candidates": [
+          "adHighCpu"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 1.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0004",
+      "core_e2e": 1.0,
+      "evidence_precision": 1.0,
+      "failure_class": null,
+      "family": "change_config",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0004",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0004-OBS-01",
+          "SEED-G02-0004-OBS-02"
+        ],
+        "root_cause": "productCatalogFailure",
+        "root_cause_candidates": [
+          "productCatalogFailure"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 1.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0005",
+      "core_e2e": 0.0,
+      "evidence_precision": 1.0,
+      "failure_class": "wrong_root_cause",
+      "family": "dependency_network",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0005",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0005-OBS-01",
+          "SEED-G02-0005-OBS-02"
+        ],
+        "root_cause": "emailMemoryLeak",
+        "root_cause_candidates": [
+          "emailMemoryLeak"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 0.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0006",
+      "core_e2e": 0.0,
+      "evidence_precision": 1.0,
+      "failure_class": "wrong_root_cause",
+      "family": "dependency_network",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0006",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0006-OBS-01",
+          "SEED-G02-0006-OBS-02"
+        ],
+        "root_cause": "emailMemoryLeak",
+        "root_cause_candidates": [
+          "emailMemoryLeak"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 0.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0007",
+      "core_e2e": 0.0,
+      "evidence_precision": 1.0,
+      "failure_class": "wrong_root_cause",
+      "family": "dependency_network",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0007",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0007-OBS-01",
+          "SEED-G02-0007-OBS-02"
+        ],
+        "root_cause": "emailMemoryLeak",
+        "root_cause_candidates": [
+          "emailMemoryLeak"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 0.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0008",
+      "core_e2e": 1.0,
+      "evidence_precision": 1.0,
+      "failure_class": null,
+      "family": "resource_capacity",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0008",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0008-OBS-01",
+          "SEED-G02-0008-OBS-02"
+        ],
+        "root_cause": "emailMemoryLeak",
+        "root_cause_candidates": [
+          "emailMemoryLeak"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 1.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0009",
+      "core_e2e": 1.0,
+      "evidence_precision": 1.0,
+      "failure_class": null,
+      "family": "change_config",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0009",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0009-OBS-01",
+          "SEED-G02-0009-OBS-02"
+        ],
+        "root_cause": "productCatalogFailure",
+        "root_cause_candidates": [
+          "productCatalogFailure"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 1.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0010",
+      "core_e2e": 0.0,
+      "evidence_precision": 1.0,
+      "failure_class": "wrong_root_cause",
+      "family": "runtime_data",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0010",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0010-OBS-01",
+          "SEED-G02-0010-OBS-02"
+        ],
+        "root_cause": "emailMemoryLeak",
+        "root_cause_candidates": [
+          "emailMemoryLeak"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 0.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0011",
+      "core_e2e": 1.0,
+      "evidence_precision": 1.0,
+      "failure_class": null,
+      "family": "resource_capacity",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0011",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0011-OBS-01",
+          "SEED-G02-0011-OBS-02"
+        ],
+        "root_cause": "adHighCpu",
+        "root_cause_candidates": [
+          "adHighCpu"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 1.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0012",
+      "core_e2e": 1.0,
+      "evidence_precision": 1.0,
+      "failure_class": null,
+      "family": "resource_capacity",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0012",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0012-OBS-01",
+          "SEED-G02-0012-OBS-02"
+        ],
+        "root_cause": "emailMemoryLeak",
+        "root_cause_candidates": [
+          "emailMemoryLeak"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 1.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0013",
+      "core_e2e": 0.0,
+      "evidence_precision": 1.0,
+      "failure_class": "wrong_root_cause",
+      "family": "runtime_data",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0013",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0013-OBS-01",
+          "SEED-G02-0013-OBS-02"
+        ],
+        "root_cause": "emailMemoryLeak",
+        "root_cause_candidates": [
+          "emailMemoryLeak"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 0.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0014",
+      "core_e2e": 1.0,
+      "evidence_precision": 1.0,
+      "failure_class": null,
+      "family": "resource_capacity",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0014",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0014-OBS-01",
+          "SEED-G02-0014-OBS-02"
+        ],
+        "root_cause": "adHighCpu",
+        "root_cause_candidates": [
+          "adHighCpu"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 1.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0015",
+      "core_e2e": 1.0,
+      "evidence_precision": 1.0,
+      "failure_class": null,
+      "family": "resource_capacity",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0015",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0015-OBS-01",
+          "SEED-G02-0015-OBS-02"
+        ],
+        "root_cause": "adHighCpu",
+        "root_cause_candidates": [
+          "adHighCpu"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 1.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0016",
+      "core_e2e": 1.0,
+      "evidence_precision": 1.0,
+      "failure_class": null,
+      "family": "change_config",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0016",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0016-OBS-01",
+          "SEED-G02-0016-OBS-02"
+        ],
+        "root_cause": "productCatalogFailure",
+        "root_cause_candidates": [
+          "productCatalogFailure"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 1.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0017",
+      "core_e2e": 0.0,
+      "evidence_precision": 1.0,
+      "failure_class": "wrong_root_cause",
+      "family": "runtime_data",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0017",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0017-OBS-01",
+          "SEED-G02-0017-OBS-02"
+        ],
+        "root_cause": "emailMemoryLeak",
+        "root_cause_candidates": [
+          "emailMemoryLeak"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 0.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0018",
+      "core_e2e": 1.0,
+      "evidence_precision": 1.0,
+      "failure_class": null,
+      "family": "change_config",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0018",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0018-OBS-01",
+          "SEED-G02-0018-OBS-02"
+        ],
+        "root_cause": "productCatalogFailure",
+        "root_cause_candidates": [
+          "productCatalogFailure"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 1.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0019",
+      "core_e2e": 1.0,
+      "evidence_precision": 1.0,
+      "failure_class": null,
+      "family": "resource_capacity",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0019",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0019-OBS-01",
+          "SEED-G02-0019-OBS-02"
+        ],
+        "root_cause": "emailMemoryLeak",
+        "root_cause_candidates": [
+          "emailMemoryLeak"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 1.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0020",
+      "core_e2e": 0.0,
+      "evidence_precision": 1.0,
+      "failure_class": "wrong_root_cause",
+      "family": "runtime_data",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0020",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0020-OBS-01",
+          "SEED-G02-0020-OBS-02"
+        ],
+        "root_cause": "emailMemoryLeak",
+        "root_cause_candidates": [
+          "emailMemoryLeak"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 0.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0021",
+      "core_e2e": 1.0,
+      "evidence_precision": 1.0,
+      "failure_class": null,
+      "family": "resource_capacity",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0021",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0021-OBS-01",
+          "SEED-G02-0021-OBS-02"
+        ],
+        "root_cause": "emailMemoryLeak",
+        "root_cause_candidates": [
+          "emailMemoryLeak"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 1.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0022",
+      "core_e2e": 1.0,
+      "evidence_precision": 1.0,
+      "failure_class": null,
+      "family": "change_config",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0022",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0022-OBS-01",
+          "SEED-G02-0022-OBS-02"
+        ],
+        "root_cause": "productCatalogFailure",
+        "root_cause_candidates": [
+          "productCatalogFailure"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 1.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0023",
+      "core_e2e": 1.0,
+      "evidence_precision": 1.0,
+      "failure_class": null,
+      "family": "change_config",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0023",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0023-OBS-01",
+          "SEED-G02-0023-OBS-02"
+        ],
+        "root_cause": "productCatalogFailure",
+        "root_cause_candidates": [
+          "productCatalogFailure"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 1.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0024",
+      "core_e2e": 1.0,
+      "evidence_precision": 1.0,
+      "failure_class": null,
+      "family": "change_config",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0024",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0024-OBS-01",
+          "SEED-G02-0024-OBS-02"
+        ],
+        "root_cause": "productCatalogFailure",
+        "root_cause_candidates": [
+          "productCatalogFailure"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 1.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0025",
+      "core_e2e": 0.0,
+      "evidence_precision": 1.0,
+      "failure_class": "wrong_root_cause",
+      "family": "dependency_network",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0025",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0025-OBS-01",
+          "SEED-G02-0025-OBS-02"
+        ],
+        "root_cause": "emailMemoryLeak",
+        "root_cause_candidates": [
+          "emailMemoryLeak"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 0.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0026",
+      "core_e2e": 0.0,
+      "evidence_precision": 1.0,
+      "failure_class": "wrong_root_cause",
+      "family": "dependency_network",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0026",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0026-OBS-01",
+          "SEED-G02-0026-OBS-02"
+        ],
+        "root_cause": "emailMemoryLeak",
+        "root_cause_candidates": [
+          "emailMemoryLeak"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 0.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0027",
+      "core_e2e": 0.0,
+      "evidence_precision": 1.0,
+      "failure_class": "wrong_root_cause",
+      "family": "dependency_network",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0027",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0027-OBS-01",
+          "SEED-G02-0027-OBS-02"
+        ],
+        "root_cause": "emailMemoryLeak",
+        "root_cause_candidates": [
+          "emailMemoryLeak"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 0.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0028",
+      "core_e2e": 0.0,
+      "evidence_precision": 1.0,
+      "failure_class": "wrong_root_cause",
+      "family": "runtime_data",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0028",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0028-OBS-01",
+          "SEED-G02-0028-OBS-02"
+        ],
+        "root_cause": "emailMemoryLeak",
+        "root_cause_candidates": [
+          "emailMemoryLeak"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 0.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0029",
+      "core_e2e": 0.0,
+      "evidence_precision": 1.0,
+      "failure_class": "wrong_root_cause",
+      "family": "runtime_data",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0029",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0029-OBS-01",
+          "SEED-G02-0029-OBS-02"
+        ],
+        "root_cause": "emailMemoryLeak",
+        "root_cause_candidates": [
+          "emailMemoryLeak"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 0.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0030",
+      "core_e2e": 1.0,
+      "evidence_precision": 1.0,
+      "failure_class": null,
+      "family": "change_config",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0030",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0030-OBS-01",
+          "SEED-G02-0030-OBS-02"
+        ],
+        "root_cause": "productCatalogFailure",
+        "root_cause_candidates": [
+          "productCatalogFailure"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 1.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0031",
+      "core_e2e": 0.0,
+      "evidence_precision": 1.0,
+      "failure_class": "wrong_root_cause",
+      "family": "runtime_data",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0031",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0031-OBS-01",
+          "SEED-G02-0031-OBS-02"
+        ],
+        "root_cause": "emailMemoryLeak",
+        "root_cause_candidates": [
+          "emailMemoryLeak"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 0.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    },
+    {
+      "case_id": "SEED-G02-0032",
+      "core_e2e": 0.0,
+      "evidence_precision": 1.0,
+      "failure_class": "wrong_root_cause",
+      "family": "dependency_network",
+      "ground_truth_access": false,
+      "result": {
+        "baseline": "deterministic",
+        "case_id": "SEED-G02-0032",
+        "claims": [],
+        "evidence": [
+          "SEED-G02-0032-OBS-01",
+          "SEED-G02-0032-OBS-02"
+        ],
+        "root_cause": "emailMemoryLeak",
+        "root_cause_candidates": [
+          "emailMemoryLeak"
+        ],
+        "schema_version": "1.0.0",
+        "status": "ok"
+      },
+      "root_cause_top3": 0.0,
+      "status": "scored",
+      "tool_schema_validity": 1.0,
+      "unsupported_critical_claim": 0.0
+    }
+  ],
+  "status": "pass",
+  "validation": "V-G02-014"
+}

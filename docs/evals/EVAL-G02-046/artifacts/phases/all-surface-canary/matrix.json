@@ -1,0 +1,140 @@
+{
+  "candidate_sha": "86a459c0bec1bcf3e583fd1280fbca2667479d2e",
+  "environment_fingerprint": "32a012ad672a808004e7beb1e41fff66cf87578fbfa470a89dcff47a2b0b80a2",
+  "schema_version": "1.0.0",
+  "status": "pass",
+  "surfaces": [
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/git-worktree/8090aa9ff9358fa1d00d3202522bf14cae0095599ca562ec566416e8e20cd8d5",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "git-worktree"
+    },
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/git-history/8f133754318e170ea56bedc2d8c6e697c442bf8a7c8ec5d58b0c52b0520c93cf",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "git-history"
+    },
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/process-stdout/060e7ea28533fbfa538f84698f9f7c928a6ce865d8b222680fd87e428946e7d6",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "process-stdout"
+    },
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/process-stderr/8cb184bdbb9e477015470bce726231067cff932672a5631c54fb64c9908121b1",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "process-stderr"
+    },
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/control-http/2cacfee2e2946e9dbc0ad9713434ca2c6c03b765725ac79562ef431f8c4c0855",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "control-http"
+    },
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/control-sse/d524e5ddb78e8b36981263096f56c1a2063d3a48f16143e7b969585b874140aa",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "control-sse"
+    },
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/model-prompt/5d8013a334f12584da39845572c2bcebf06938ddb16118fe9ef26d86d0f2b90e",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "model-prompt"
+    },
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/application-log/adca3dfe4a94c6114155eadc303a35c862213ac2eda4ea2e57b82207cde1d811",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "application-log"
+    },
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/trace-buffer/2a9e4534cd381e95a55acf1d156d6d82c421800273fb0a9a8f8b0365577feedd",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "trace-buffer"
+    },
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/redis-stream/2e265d41a6a0eb041f9f5a9aa9561d590b17ecaf08d17420fcd379d909000f07",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "redis-stream"
+    },
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/postgresql-state/75916890117c5cd6ee3f5c091a2a61490230f3a45ae4c035f9af951ea5e82a19",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "postgresql-state"
+    },
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/minio-archive/53028525489049407608dc7b5cac5b105eb83355d8bbef52f856553eb8e6a998",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "minio-archive"
+    },
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/kubernetes-object/e1a70a228c381f280a46658d5648363bb882238e22a6bd13162362ce6fda1efb",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "kubernetes-object"
+    },
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/eval-artifact/da34621e8862e4555b004fe9bf804431e6decc7c9e65dd28bf029168b34b2ce5",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "eval-artifact"
+    },
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/langsmith-export/628918124e4b24134e77938e62f76d61ff5514e59d20d03b0e1d246e2d5eb5fc",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "langsmith-export"
+    },
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/otlp-trace/2b9cb462994027cd84d15e34835aa047ec4de778787f9a6975ac07c39ee63bd1",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "otlp-trace"
+    },
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/otlp-metric/499c2105388e39bec55f2d0b9c88f39ec33952bffa82a5da41aba5fd9cbdb925",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "otlp-metric"
+    },
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/otlp-log/505baef2c415d1ed2b7133f29aa59cbd83c80fb2b77791900dbeed96938ca3de",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "otlp-log"
+    },
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/g02-scenario-object/711837582bff4c947bd5a85d29b9f1fd9b9e96a68f9d14c7081624f3be08f32f",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "g02-scenario-object"
+    },
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/g02-trial-object/77744a958b647b32ded6f77fda44fda77f0435e8d3372c2a01c93614b0620ac4",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "g02-trial-object"
+    },
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/g02-evidence-object/30ac65479887993f3daf170e1ec8e0aabd4df2138911bb5a3156ef7ecb534a36",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "g02-evidence-object"
+    },
+    {
+      "artifact_ref": "private://faultwitness/g02/86a459c0bec1bcf3e583fd1280fbca2667479d2e/canary/g02-preregistry-publication/8090aa9ff9358fa1d00d3202522bf14cae0095599ca562ec566416e8e20cd8d5",
+      "canary_digest": "b4a499b3c5b5784b4ee849b777f994bf0e998ba27972d3085b62f5761a39f08b",
+      "hit_count": 0,
+      "surface": "g02-preregistry-publication"
+    }
+  ]
+}
