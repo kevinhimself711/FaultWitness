@@ -12,4 +12,6 @@ ignores:
   - "node_modules/**"
   # Review inputs are preserved byte-for-byte and are not active repository contracts.
   - "docs/audit/**"
+  # Frozen G00–G02 process assets are preserved byte-for-byte and are not active templates.
+  - "docs/_archive/**"
   - "大厂Agent项目立项要求与决策报告.md"

@@ -23,4 +23,4 @@
 - 负向 baseline 结果可以通过 Gate，前提是实验预注册、执行完整、结论真实。
 - 安全、租户隔离、Ground Truth、locked-test、质量与性能标准不得因实施简化而放宽。
 - G03 起采用[轻量治理 v2](../governance/GOVERNANCE_V2.md)；G00–G02 的 I/C/A 与 Eval
-  生命周期属于[只读遗留 epoch](../governance/LEGACY_GOVERNANCE_EPOCH.md)。
+  生命周期属于[只读遗留 epoch](../_archive/LEGACY_GOVERNANCE_EPOCH.md)。
