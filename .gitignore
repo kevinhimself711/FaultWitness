@@ -21,6 +21,8 @@ build/
 
 .dvc/cache/
 artifacts/
+!docs/evals/**/artifacts/
+!docs/evals/**/artifacts/**
 data/raw/
 /models/
 
@@ -43,3 +45,4 @@ Thumbs.db
 # Operator-local execution conventions (internal host addresses, fallback endpoints).
 # The durable lessons live in the committed AGENTS.md and docs/governance/GOVERNANCE_V2.md.
 /CLAUDE.md
+
