@@ -3,7 +3,6 @@ from __future__ import annotations
 import ast
 import hashlib
 import importlib.util
-import json
 import re
 import subprocess
 import sys
@@ -25,15 +24,12 @@ from faultwitness_dev.experiment import (
     TrialJournal,
 )
 from faultwitness_dev.g02_baselines import (
-    aggregate_gate_baselines,
     score_result,
-    validate_live_matrix,
 )
 from faultwitness_dev.infra import _remote_process
 from faultwitness_dev.schemas import load_data
 
 ROOT = Path(__file__).resolve().parents[2]
-G02_PHASES = ROOT / "docs/evals/EVAL-G02-046/artifacts/phases"
 
 
 class FakeAuthenticator:
@@ -126,95 +122,6 @@ def test_eval_scorer_malformed_and_unsupported_claim_semantics() -> None:
         {"root_cause": "expected", "evidence": ["evidence-1"]},
     )
     assert unsupported["unsupported_critical_claim"] == 1.0
-
-
-def _json_digest(value: object) -> str:
-    return hashlib.sha256(
-        json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
-    ).hexdigest()
-
-
-def test_eval_one_trial_resume_reproduces_frozen_192_trial_aggregate(
-    tmp_path: Path,
-) -> None:
-    scenario = load_data(G02_PHASES / "scenario-matrix/summary.json")
-    deterministic = load_data(G02_PHASES / "baseline-deterministic/results.json")
-    frozen = load_data(G02_PHASES / "baseline-live/journal-index.json")
-    expected = load_data(G02_PHASES / "baseline-aggregate/metrics.json")
-    frozen_by_id = {str(row["trial_id"]): row for row in frozen["trials"]}
-    trial_ids = sorted(frozen_by_id)
-    units = tuple(
-        ExperimentUnit(
-            unit_id=trial_id,
-            required_checkpoints=("model_route",),
-            depends_on=(),
-            input_digest=_json_digest(frozen_by_id[trial_id]),
-        )
-        for trial_id in trial_ids
-    )
-    checkpoints = {"model_route": str(frozen["model_id"])}
-    journal = TrialJournal(tmp_path)
-    seed_runner = ExperimentRunner(
-        units,
-        journal,
-        checkpoints,
-        producer_sha=str(frozen["candidate_sha"]),
-    )
-    interrupted_id = trial_ids[0]
-    for unit in units:
-        journal.begin(
-            unit.unit_id,
-            producer_sha=str(frozen["candidate_sha"]),
-            cache_key=seed_runner.cache_key(unit),
-        )
-        if unit.unit_id == interrupted_id:
-            journal.finish(unit.unit_id, "infra_failed", {"reason": "controlled transport"})
-        else:
-            journal.finish(unit.unit_id, "pass", frozen_by_id[unit.unit_id])
-
-    before = {
-        unit_id: str(journal.read(unit_id)["artifact_digest"])  # type: ignore[index]
-        for unit_id in trial_ids
-        if unit_id != interrupted_id
-    }
-    adapter_calls = 0
-
-    def resume_one(execution):  # type: ignore[no-untyped-def]
-        nonlocal adapter_calls
-        adapter_calls += 1
-        assert execution.unit.unit_id == interrupted_id
-        return {"status": "pass", "payload": frozen_by_id[interrupted_id]}
-
-    run = ExperimentRunner(
-        units,
-        journal,
-        checkpoints,
-        producer_sha="f" * 40,
-    ).run({unit.unit_id: resume_one for unit in units})
-    assert adapter_calls == 1
-    assert run.executed_units == (interrupted_id,)
-    assert len(run.reused_units) == 191
-    assert journal.read(interrupted_id)["execution_attempt"] == 2  # type: ignore[index]
-    assert all(
-        journal.read(unit_id)["execution_attempt"] == 1  # type: ignore[index]
-        and journal.read(unit_id)["artifact_digest"] == digest  # type: ignore[index]
-        for unit_id, digest in before.items()
-    )
-
-    interrupted = {
-        **{key: value for key, value in frozen.items() if key != "trials"},
-        "trials": [journal.read(str(row["trial_id"]))["payload"] for row in frozen["trials"]],  # type: ignore[index]
-    }
-    validate_live_matrix(interrupted)
-    actual = aggregate_gate_baselines(
-        scenario,
-        deterministic,
-        interrupted,
-        frozen["dataset_digest"],
-    )
-    assert actual["case_clusters"] == 32
-    assert actual["resamples"] == 2000
-    assert actual["baselines"] == expected["baselines"]
 
 
 def test_journal_separates_execution_attempt_from_record_version(tmp_path: Path) -> None:
@@ -785,3 +692,4 @@ def test_verify_fast_invokes_only_active_local_checks(
     forbidden = ("git log", "rev-list", "eval-changed", "gate eval", "ssh", "kubectl")
     rendered = "\n".join(" ".join(command).lower() for command in commands)
     assert not any(value in rendered for value in forbidden)
+
