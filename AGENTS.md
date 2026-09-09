@@ -18,7 +18,7 @@ Changes to these invariants require an ADR, migration/replay analysis, and targe
 - 每轮只做 PLAN.md 里一个未完成项,完成即 commit 并退出; 每轮结束:勾掉完成项;本轮踩到的坑追加到 PLAN.md 的「已知坑」<br>**完成一个工作单元就 commit,不要攒。**单次超过 30 个文件说明单元切太大; 在语义分支工作,不直接推 main
 - 连续两次纯治理动作而没有新的运行时观测 = 死锁,绕过非语义阻塞点继续; G00–G02 资产不可变,复现走 `gate/G##-v#` tag<br>**治理检查不阻塞代码变更。**`verify-docs` 手动跑;CI 只跑 ruff + pytest + eval 证据检查; **eval 产物必须入 git。**运行产生的 artifact 不入库 = 证据不存在
 
-## 3. 文档政策
+## 文档政策
 
 判据一句话:**能从 git diff 或代码里读出来的,不要写;只存在于人脑里的,必须写。**
 
