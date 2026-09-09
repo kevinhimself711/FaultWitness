@@ -676,6 +676,7 @@ def test_verify_fast_invokes_only_active_local_checks(
     monkeypatch.setattr(active_checks, "check_local_links", lambda *_args: None)
     monkeypatch.setattr(active_checks, "validate_repository_schemas", lambda _root: {})
     monkeypatch.setattr(active_checks, "validate_current_state", lambda _root: None)
+    monkeypatch.setattr(active_checks, "check_release_evidence", lambda _root: None)
     monkeypatch.setattr(
         active_checks,
         "run_repository_audit",
