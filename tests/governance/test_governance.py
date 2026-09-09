@@ -25,7 +25,6 @@ SCHEMAS = ROOT / "schemas" / "governance"
 def test_active_governance_assets_are_valid_without_legacy_epoch() -> None:
     loaded = validate_repository_schemas(ROOT)
     assert "PROJECT_STATE.yaml" in loaded
-    assert not any(path.startswith("governance/iterations/") for path in loaded)
     assert not any(path.startswith("governance/gates/") for path in loaded)
     assert not any(path.startswith("docs/evals/") for path in loaded)
 

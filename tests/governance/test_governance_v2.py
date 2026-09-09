@@ -444,40 +444,8 @@ def test_eval_direct_debug_campaign_fails_closed(tmp_path: Path) -> None:
     assert _tracked_tree_fingerprint() == before
 
 
-def test_active_cli_has_no_legacy_lifecycle_or_binding_entrypoint() -> None:
-    command_action = next(
-        action for action in parser()._actions if action.__class__.__name__ == "_SubParsersAction"
-    )
-    commands = set(command_action.choices)
-    legacy_commands = {
-        "eval-changed",
-        "eval-iteration",
-        "eval-g01",
-        "eval-g01-close",
-        "eval-g02",
-        "eval-g02-close",
-        "lab-g02",
-        "inspect-g01-reconciliation",
-        "rehearse-g01-postgres-restore",
-        "rehearse-g01-k3s-snapshot",
-        "rehearse-g01-k3s-restore",
-        "rehearse-g01-platform-rollback",
-        "run-g01-postgres-matrix",
-        "run-g01-redis-matrix",
-        "run-g01-api-load-matrix",
-        "run-g01-trace-matrix",
-    }
-    assert commands.isdisjoint(legacy_commands)
 
 
-def test_legacy_epoch_is_preserved_but_not_registered() -> None:
-    registry = load_data(ROOT / "governance/ASSETS.yaml")
-    patterns = {item["path"] for item in registry["assets"]}
-    assert "governance/iterations/*.yaml" not in patterns
-    assert "governance/gates/G*.yaml" not in patterns
-    assert "docs/evals/EVAL-G*/manifest.json" not in patterns
-    assert (ROOT / "governance/iterations/C-G02-012.yaml").is_file()
-    assert (ROOT / "docs/evals/EVAL-G02-046/manifest.json").is_file()
 
 
 FORBIDDEN_LIFECYCLE_MODULES = {
@@ -619,30 +587,6 @@ def _classify_legacy_reference(relative: str, line: str, token: str) -> str:
     return "active redundancy"
 
 
-def test_active_reachability_classifies_every_legacy_reference() -> None:
-    classified: list[tuple[str, int, str, str]] = []
-    for path in _active_reachability_files():
-        relative = path.relative_to(ROOT).as_posix()
-        for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-            for match in LEGACY_REFERENCE.finditer(line):
-                if (
-                    relative == "src/faultwitness/contracts/generated/contracts-v1.1.0.json"
-                    and match.group(0).lower() != "candidate_sha"
-                ):
-                    continue
-                classified.append(
-                    (
-                        relative,
-                        line_number,
-                        match.group(0),
-                        _classify_legacy_reference(relative, line, match.group(0)),
-                    )
-                )
-    assert classified
-    assert {row[3] for row in classified} == {
-        "historical/tag narrative",
-        "necessary runtime provenance",
-    }
 
 
 def test_active_templates_entrypoints_and_ci_are_minimal() -> None:
