@@ -18,12 +18,14 @@ from faultwitness_dev.bootstrap import (
     finalize_handoff,
     host_key_fingerprint,
     migrate_handoff,
+    parse_endpoint_handoff,
     parse_handoff,
     remote_probe_failure_category,
+    rotate_server_endpoint,
     ssh_failure_category,
+    validate_capability_baseline,
 )
 from faultwitness_dev.errors import GovernanceError
-from faultwitness_dev.evals import validate_capability_baseline
 from faultwitness_dev.schemas import load_data
 
 
@@ -109,6 +111,166 @@ def test_existing_password_can_be_secured_without_mutating_its_value() -> None:
     legacy = handoff_text().replace("x" * 32, "weak", 1)
     parsed = parse_handoff(legacy)
     assert parsed.server_password == "weak"
+
+
+def endpoint_handoff_text() -> str:
+    return "\n".join(
+        [
+            "内网ip:192.0.2.50",
+            "ssh 端口: 22",
+            "frpc ip:198.51.100.7",
+            "ssh 端口: 40760",
+            "",
+            "user: replacement",
+            "pwd: " + "z" * 24,
+        ]
+    )
+
+
+def test_endpoint_handoff_prefers_lan_and_binds_each_port_to_its_own_address() -> None:
+    endpoints = parse_endpoint_handoff(endpoint_handoff_text())
+    assert [item.label for item in endpoints] == ["lan", "relay"]
+    assert (endpoints[0].host, endpoints[0].port) == ("192.0.2.50", 22)
+    assert (endpoints[1].host, endpoints[1].port) == ("198.51.100.7", 40760)
+    assert endpoints[0].username == "replacement"
+    assert "z" * 20 not in repr(endpoints[0])
+
+
+def test_endpoint_handoff_rejects_an_address_without_a_port() -> None:
+    text = "\n".join(["内网ip:192.0.2.50", "user: replacement", "pwd: secret"])
+    with pytest.raises(GovernanceError, match="no port for the lan address"):
+        parse_endpoint_handoff(text)
+
+
+def test_endpoint_handoff_rejects_missing_login_without_echoing_it() -> None:
+    text = "\n".join(["内网ip:192.0.2.50", "ssh 端口: 22", "pwd: " + "z" * 24])
+    with pytest.raises(GovernanceError, match="username or password") as raised:
+        parse_endpoint_handoff(text)
+    assert "z" * 20 not in str(raised.value)
+
+
+def _rotation_paths(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> BootstrapPaths:
+    paths = BootstrapPaths.under(tmp_path / "private")
+    paths.identity_file.parent.mkdir(parents=True)
+    paths.identity_file.write_text("identity fixture", encoding="utf-8")
+    paths.encrypted_store.parent.mkdir(parents=True, exist_ok=True)
+    paths.encrypted_store.write_text("sops: old fixture\n", encoding="utf-8")
+    paths.known_hosts_file.parent.mkdir(parents=True, exist_ok=True)
+    paths.known_hosts_file.write_text("[192.0.2.10]:2222 ssh-ed25519 AAAA\n", encoding="utf-8")
+    paths.metadata_file.parent.mkdir(parents=True, exist_ok=True)
+    paths.metadata_file.write_text(
+        json.dumps(
+            {
+                "encrypted_round_trip": "pass",
+                "host_key_verified": True,
+                "ssh_key_verified": True,
+                "capability_reprobe_match": True,
+                "host_key_verification_method": "operator_out_of_band",
+                "credential_verification": {
+                    "server.password": "verified_login",
+                    "bailian.api_key": "verified_live_I-0014",
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "faultwitness_dev.bootstrap.derive_age_recipient", lambda *_: "age1" + "q" * 58
+    )
+    monkeypatch.setattr(
+        "faultwitness_dev.bootstrap.encrypt_bundle", lambda *_: "sops: rotated fixture\n"
+    )
+    return paths
+
+
+def test_rotation_retains_api_keys_and_clears_the_stale_host_pin(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    paths = _rotation_paths(tmp_path, monkeypatch)
+    captured: dict[str, SecretBundle] = {}
+
+    def fake_encrypt(payload: SecretBundle, *_: object) -> str:
+        captured["bundle"] = payload
+        return "sops: rotated fixture\n"
+
+    monkeypatch.setattr("faultwitness_dev.bootstrap.encrypt_bundle", fake_encrypt)
+    monkeypatch.setattr(
+        "faultwitness_dev.bootstrap.decrypt_bundle",
+        lambda *_: captured.get("bundle", bundle()),
+    )
+
+    metadata = rotate_server_endpoint(
+        paths,
+        tmp_path / "sops",
+        tmp_path / "age-keygen",
+        host="192.0.2.50",
+        port=22,
+        username="replacement",
+        password="w" * 24,
+        reason="original host is physically unrecoverable",
+        now=datetime(2026, 8, 11, tzinfo=UTC),
+    )
+
+    rotated = captured["bundle"]
+    assert (rotated.server_host, rotated.server_port) == ("192.0.2.50", 22)
+    assert rotated.server_username == "replacement"
+    # Host-independent credentials survive so their live verification stays meaningful.
+    assert rotated.bailian_api_key == bundle().bailian_api_key
+    assert rotated.langsmith_api_key == bundle().langsmith_api_key
+    # A new machine must re-earn trust rather than inherit it.
+    assert metadata["host_key_verified"] is False
+    assert metadata["ssh_key_verified"] is False
+    assert metadata["capability_reprobe_match"] is False
+    assert "host_key_verification_method" not in metadata
+    assert metadata["credential_verification"]["server.password"] == "pending_login"
+    assert metadata["credential_verification"]["bailian.api_key"] == "verified_live_I-0014"
+    assert not paths.known_hosts_file.exists()
+    assert paths.encrypted_store.read_text(encoding="utf-8") == "sops: rotated fixture\n"
+    rotations = metadata["server_endpoint_rotations"]
+    assert len(rotations) == 1
+    assert rotations[0]["reason"] == "original host is physically unrecoverable"
+    # The endpoint is recorded as a digest, never as a readable address.
+    assert "192.0.2.50" not in paths.metadata_file.read_text(encoding="utf-8")
+    assert "w" * 20 not in paths.metadata_file.read_text(encoding="utf-8")
+
+
+def test_rotation_refuses_when_round_trip_evidence_is_absent(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    paths = _rotation_paths(tmp_path, monkeypatch)
+    paths.metadata_file.write_text(json.dumps({"encrypted_round_trip": "fail"}), encoding="utf-8")
+    with pytest.raises(GovernanceError, match="round-trip evidence must pass"):
+        rotate_server_endpoint(
+            paths,
+            tmp_path / "sops",
+            tmp_path / "age-keygen",
+            host="192.0.2.50",
+            port=22,
+            username="replacement",
+            password="w" * 24,
+            reason="unrecoverable host",
+        )
+
+
+def test_rotation_aborts_without_writing_when_round_trip_mismatches(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    paths = _rotation_paths(tmp_path, monkeypatch)
+    # Decrypt returns a different bundle than was encrypted: the store must stay untouched.
+    monkeypatch.setattr("faultwitness_dev.bootstrap.decrypt_bundle", lambda *_: bundle())
+    with pytest.raises(GovernanceError, match="rotated secret round-trip"):
+        rotate_server_endpoint(
+            paths,
+            tmp_path / "sops",
+            tmp_path / "age-keygen",
+            host="192.0.2.50",
+            port=22,
+            username="replacement",
+            password="w" * 24,
+            reason="unrecoverable host",
+        )
+    assert paths.encrypted_store.read_text(encoding="utf-8") == "sops: old fixture\n"
+    assert paths.known_hosts_file.exists()
 
 
 def test_migration_writes_ciphertext_and_metadata_but_retains_source(

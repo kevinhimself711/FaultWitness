@@ -77,20 +77,22 @@ def test_redis_recovery_matrix_rejects_counter_drift(
         run_redis_recovery_matrix("a" * 40)
 
 
-def test_control_api_load_manifest_is_private_and_candidate_bound() -> None:
-    manifest = _control_api_load_manifest("a" * 40)
+def test_control_api_load_manifest_uses_observed_image_and_producer() -> None:
+    image = "docker.io/faultwitness/control-api:observed"
+    manifest = _control_api_load_manifest(image, "a" * 40)
     assert "event_count" in manifest
     assert "range(9_999)" in manifest
     assert "g01-api-load-egress" in manifest
     assert "imagePullPolicy: Never" in manifest
-    assert "docker.io/faultwitness/control-api:" + "a" * 40 in manifest
+    assert image in manifest
+    assert '"producer_sha":"' + "a" * 40 in manifest
 
 
 def test_control_api_load_matrix_accepts_all_frozen_counters(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     result = {
-        "candidate_sha": "a" * 40,
+        "producer_sha": "a" * 40,
         "event_count": 10_000,
         "ordered": True,
         "reconnects": 100,
@@ -99,8 +101,14 @@ def test_control_api_load_matrix_accepts_all_frozen_counters(
         "slow_consumer_closed": True,
         "remaining_rows": 0,
     }
+    responses = iter(
+        [
+            "docker.io/faultwitness/control-api:observed\n" + "a" * 40 + "\n",
+            json.dumps(result),
+        ]
+    )
     monkeypatch.setattr(
         "faultwitness_dev.g01_failure_eval.run_remote_script",
-        lambda *args, **kwargs: json.dumps(result),
+        lambda *args, **kwargs: next(responses),
     )
-    assert run_control_api_load_matrix("a" * 40)["status"] == "pass"
+    assert run_control_api_load_matrix()["status"] == "pass"

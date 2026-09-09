@@ -1,15 +1,6 @@
----
-document_id: FW-ROADMAP-001
-version: 1.6.0
-status: planned
-active_gate: G03
-active_gate_status: not_started
-active_iteration: null
-next_iteration: null
-last_closed_gate: G02
----
-
 # Gate Roadmap
+
+本页是导航视图，不是状态源；当前状态只读取 [PROJECT_STATE.yaml](../../PROJECT_STATE.yaml)。
 
 | Gate | 主题 | 状态 | 权威计划 |
 |---|---|---|---|
@@ -31,3 +22,5 @@ last_closed_gate: G02
 - 每个 Gate 在实施前必须冻结 decision-complete Master Plan。
 - 负向 baseline 结果可以通过 Gate，前提是实验预注册、执行完整、结论真实。
 - 安全、租户隔离、Ground Truth、locked-test、质量与性能标准不得因实施简化而放宽。
+- G03 起采用[轻量治理 v2](../governance/GOVERNANCE_V2.md)；G00–G02 的 I/C/A 与 Eval
+  生命周期属于[只读遗留 epoch](../governance/LEGACY_GOVERNANCE_EPOCH.md)。

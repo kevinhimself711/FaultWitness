@@ -6,9 +6,10 @@ ROOT = Path(__file__).resolve().parents[2]
 SHA = "a" * 40
 
 
-def test_model_gateway_deployment_is_private_candidate_bound_and_non_root() -> None:
-    manifest = _manifest(SHA, f"docker.io/faultwitness/model-gateway:{SHA}")
-    assert f'candidate_sha: "{SHA}"' in manifest
+def test_model_gateway_deployment_has_observed_provenance_and_is_non_root() -> None:
+    manifest = _manifest(SHA, "b" * 64, f"docker.io/faultwitness/model-gateway:{SHA}")
+    assert f'faultwitness.io/producer-sha: "{SHA}"' in manifest
+    assert "fw-model-candidate" not in manifest
     assert "type: ClusterIP" in manifest
     assert "readOnlyRootFilesystem: true" in manifest
     assert "allowPrivilegeEscalation: false" in manifest

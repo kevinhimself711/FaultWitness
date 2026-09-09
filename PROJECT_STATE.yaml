@@ -1,22 +1,12 @@
-schema_version: "0.1.0"
-project_name: FaultWitness
-repository_visibility: public
-
-plan_version: "G02-master-plan-v1"
-architecture_version: "1.0.0"
-requirements_version: "1.0.0"
-contracts_version: "1.0.0"
-governance_schema_version: "1.2.0"
-
+governance_version: "2.0"
 active_gate: G03
 active_gate_status: not_started
-active_iteration: null
-next_iteration: null
 last_closed_gate: G02
-latest_eval_run: EVAL-G02-046
-
-authoritative_plan: docs/blueprint/FINAL_PLAN.md
-active_gate_plan: docs/gates/G03/PLAN.md
-active_gate_report: docs/gates/G03/REPORT.md
-
-updated_on: "2026-07-26"
+active_plan: docs/gates/G03/PLAN.md
+active_report: docs/gates/G03/REPORT.md
+latest_release:
+  gate: G02
+  tag: gate/G02-v1
+  release_commit: 4622470a6afebc77e71519ee905d461fb0e86635
+  producer_commit: 86a459c0bec1bcf3e583fd1280fbca2667479d2e
+  evidence_manifest: docs/evals/EVAL-G02-046/manifest.json

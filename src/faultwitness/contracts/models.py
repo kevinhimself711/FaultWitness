@@ -236,7 +236,7 @@ class SourceVersionRef(ContractModel):
 class VersionBundle(ContractModel):
     contracts_version: SemVer
     architecture_version: SemVer
-    candidate_sha: GitSha
+    producer_sha: GitSha
 
 
 class ResourceRef(ContractModel):
@@ -421,7 +421,7 @@ class TrajectoryIR(ContractModel):
 
 class EvalResult(ContractModel):
     eval_id: EvalId
-    candidate_sha: GitSha
+    producer_sha: GitSha
     metrics: dict[str, float]
     artifact_digest: Sha256
 

@@ -1,10 +1,9 @@
-"""Candidate-bound, project-scoped G01 recovery rehearsals."""
+"""Project-scoped recovery rehearsals retained for their infrastructure semantics."""
 
 from __future__ import annotations
 
 import base64
 import re
-import time
 from pathlib import Path
 from typing import Any
 
@@ -17,21 +16,14 @@ FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
 
 def _verify_fresh_ssh_session() -> int:
     """Require a new SSH session after disruptive host-level recovery."""
-    for attempt in range(1, 7):
-        try:
-            run_remote_script("set -eu\nprintf 'fresh-session\\n'\n", privileged=True, timeout=30)
-            return attempt
-        except GovernanceError as error:
-            if "connection_timeout" not in str(error) or attempt == 6:
-                raise
-            time.sleep(2)
-    raise AssertionError("unreachable")
+    run_remote_script("set -eu\nprintf 'fresh-session\\n'\n", privileged=True)
+    return 1
 
 
-def run_postgres_restore_rehearsal(candidate_sha: str) -> dict[str, Any]:
+def run_postgres_restore_rehearsal(producer_sha: str) -> dict[str, Any]:
     """Restore the project database into a fresh temporary target and compare digests."""
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+    if not FULL_SHA.fullmatch(producer_sha):
+        raise GovernanceError("producer SHA must contain 40 lowercase hexadecimal characters")
     inner = r"""set -eu
 target=fw_g01_restore_eval
 dump=/tmp/fw-g01-restore.dump
@@ -72,15 +64,12 @@ printf '%s\n%s\n' "$source_schema_sha" "$source_data_sha"
 """
     encoded = base64.b64encode(inner.encode()).decode()
     script = f"""set -eu
-binding=$(/usr/local/bin/k3s kubectl -n fw-system get configmap \
-  fw-runtime-candidate-binding -o jsonpath='{{.data.candidate_sha}}')
-test "$binding" = {candidate_sha}
 printf %s {encoded} | base64 -d | \
   /usr/local/bin/k3s kubectl -n fw-data exec -i postgres-0 -- sh -s
 """
     lines = [
         line.strip()
-        for line in run_remote_script(script, privileged=True, timeout=300).splitlines()
+        for line in run_remote_script(script, privileged=True).splitlines()
         if line.strip()
     ]
     if len(lines) != 2 or any(
@@ -89,7 +78,7 @@ printf %s {encoded} | base64 -d | \
     ):
         raise GovernanceError("PostgreSQL restore rehearsal returned invalid sanitized digests")
     return {
-        "candidate_sha": candidate_sha,
+        "producer_sha": producer_sha,
         "status": "pass",
         "fresh_target": True,
         "schema_sha256": lines[0],
@@ -98,15 +87,12 @@ printf %s {encoded} | base64 -d | \
     }
 
 
-def run_k3s_snapshot_rehearsal(candidate_sha: str) -> dict[str, Any]:
-    """Create and inventory a candidate-bound embedded-etcd snapshot."""
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
-    name = f"faultwitness-g01-{candidate_sha[:12]}"
+def run_k3s_snapshot_rehearsal(producer_sha: str) -> dict[str, Any]:
+    """Create and inventory a producer-attributed embedded-etcd snapshot."""
+    if not FULL_SHA.fullmatch(producer_sha):
+        raise GovernanceError("producer SHA must contain 40 lowercase hexadecimal characters")
+    name = f"faultwitness-recovery-{producer_sha[:12]}"
     script = f"""set -eu
-binding=$(/usr/local/bin/k3s kubectl -n fw-system get configmap \
-  fw-platform-candidate-binding -o jsonpath='{{.data.candidate_sha}}')
-test "$binding" = {candidate_sha}
 /usr/local/bin/k3s etcd-snapshot save --name {name} >/dev/null
 snapshot=$(find /var/lib/rancher/k3s/server/db/snapshots -maxdepth 1 \
   -type f -name '{name}*' -printf '%T@ %p\\n' | sort -nr | head -1 | cut -d' ' -f2-)
@@ -118,7 +104,7 @@ stat -c %s "$snapshot"
 """
     lines = [
         line.strip()
-        for line in run_remote_script(script, privileged=True, timeout=180).splitlines()
+        for line in run_remote_script(script, privileged=True).splitlines()
         if line.strip()
     ]
     if (
@@ -134,7 +120,7 @@ stat -c %s "$snapshot"
     if size_bytes <= 0:
         raise GovernanceError("K3s snapshot is empty")
     return {
-        "candidate_sha": candidate_sha,
+        "producer_sha": producer_sha,
         "status": "pass",
         "snapshot_name": name,
         "snapshot_sha256": lines[0],
@@ -143,15 +129,12 @@ stat -c %s "$snapshot"
     }
 
 
-def run_k3s_restore_rehearsal(candidate_sha: str) -> dict[str, Any]:
-    """Restore the exact candidate snapshot on the single project-owned K3s node."""
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
-    name = f"faultwitness-g01-{candidate_sha[:12]}"
+def run_k3s_restore_rehearsal(producer_sha: str) -> dict[str, Any]:
+    """Restore the exact producer-attributed snapshot on the project-owned K3s node."""
+    if not FULL_SHA.fullmatch(producer_sha):
+        raise GovernanceError("producer SHA must contain 40 lowercase hexadecimal characters")
+    name = f"faultwitness-recovery-{producer_sha[:12]}"
     script = f"""set -eu
-binding=$(/usr/local/bin/k3s kubectl -n fw-system get configmap \
-  fw-platform-candidate-binding -o jsonpath='{{.data.candidate_sha}}')
-test "$binding" = {candidate_sha}
 test "$(/usr/local/bin/k3s kubectl get nodes --no-headers | wc -l)" -eq 1
 snapshot=$(find /var/lib/rancher/k3s/server/db/snapshots -maxdepth 1 \
   -type f -name '{name}*' -printf '%T@ %p\\n' | sort -nr | head -1 | cut -d' ' -f2-)
@@ -164,11 +147,11 @@ snapshot_sha=$(sha256sum "$snapshot" | awk '{{print $1}}')
 recover() {{ systemctl start k3s >/dev/null 2>&1 || true; }}
 trap recover EXIT HUP INT TERM
 systemctl stop k3s
-timeout 300 /usr/local/bin/k3s server --cluster-reset \
+/usr/local/bin/k3s server --cluster-reset \
   --cluster-reset-restore-path="$snapshot" >/dev/null 2>&1
 systemctl start k3s
 ready=false
-for attempt in $(seq 1 120); do
+while :; do
   if /usr/local/bin/k3s kubectl get --raw=/readyz >/dev/null 2>&1; then
     ready=true
     break
@@ -176,16 +159,13 @@ for attempt in $(seq 1 120); do
   sleep 2
 done
 test "$ready" = true
-restored=$(/usr/local/bin/k3s kubectl -n fw-system get configmap \
-  fw-platform-candidate-binding -o jsonpath='{{.data.candidate_sha}}')
-test "$restored" = {candidate_sha}
 test "$(/usr/local/bin/k3s kubectl get nodes --no-headers | \
   awk '$2 == "Ready" {{count++}} END {{print count+0}}')" -eq 1
 printf '%s\n1\n' "$snapshot_sha"
 """
     lines = [
         line.strip()
-        for line in run_remote_script(script, privileged=True, timeout=480).splitlines()
+        for line in run_remote_script(script, privileged=True).splitlines()
         if line.strip()
     ]
     if (
@@ -197,7 +177,7 @@ printf '%s\n1\n' "$snapshot_sha"
         raise GovernanceError("K3s restore rehearsal returned invalid sanitized evidence")
     fresh_session_attempts = _verify_fresh_ssh_session()
     return {
-        "candidate_sha": candidate_sha,
+        "producer_sha": producer_sha,
         "status": "pass",
         "snapshot_name": name,
         "snapshot_sha256": lines[0],
@@ -207,14 +187,11 @@ printf '%s\n1\n' "$snapshot_sha"
     }
 
 
-def run_platform_rollback_rehearsal(root: Path, candidate_sha: str) -> dict[str, Any]:
-    """Rollback only the FaultWitness Helm release, then idempotently reinstall HEAD."""
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
-    script = f"""set -eu
-binding=$(/usr/local/bin/k3s kubectl -n fw-system get configmap \
-  fw-platform-candidate-binding -o jsonpath='{{.data.candidate_sha}}')
-test "$binding" = {candidate_sha}
+def run_platform_rollback_rehearsal(root: Path, producer_sha: str) -> dict[str, Any]:
+    """Rollback only the FaultWitness Helm release, then idempotently reinstall it."""
+    if not FULL_SHA.fullmatch(producer_sha):
+        raise GovernanceError("producer SHA must contain 40 lowercase hexadecimal characters")
+    script = """set -eu
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 history=$(/usr/local/bin/helm history fw-platform -n fw-system -o json)
 revisions=$(printf %s "$history" | python3 -c \
@@ -224,13 +201,12 @@ previous=$(printf '%s\n' $revisions | tail -2 | head -1)
 test -n "$current"
 test -n "$previous"
 test "$current" != "$previous"
-/usr/local/bin/helm rollback fw-platform "$previous" -n fw-system \
-  --wait --timeout 15m >/dev/null
+/usr/local/bin/helm rollback fw-platform "$previous" -n fw-system >/dev/null
 printf '%s\n%s\n' "$current" "$previous"
 """
     lines = [
         line.strip()
-        for line in run_remote_script(script, privileged=True, timeout=960).splitlines()
+        for line in run_remote_script(script, privileged=True).splitlines()
         if line.strip()
     ]
     if len(lines) != 2:
@@ -241,11 +217,11 @@ printf '%s\n%s\n' "$current" "$previous"
         raise GovernanceError("platform rollback returned invalid revisions") from error
     if current_revision <= rollback_revision or rollback_revision < 1:
         raise GovernanceError("platform rollback revision order is invalid")
-    deployment = deploy_platform(root, candidate_sha)
-    readiness = inspect_platform_readiness(root, candidate_sha, stability_seconds=0)
-    coexistence = audit_runtime_coexistence(root, candidate_sha)
+    deployment = deploy_platform(root)
+    readiness = inspect_platform_readiness(root, stability_seconds=0)
+    coexistence = audit_runtime_coexistence(root)
     return {
-        "candidate_sha": candidate_sha,
+        "producer_sha": producer_sha,
         "status": "pass",
         "rolled_back_from_revision": current_revision,
         "rolled_back_to_revision": rollback_revision,

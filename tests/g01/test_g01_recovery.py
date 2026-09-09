@@ -75,28 +75,19 @@ def test_k3s_restore_rehearsal_accepts_exact_snapshot_and_ready_node(
     assert result["fresh_session_attempts"] == 1
 
 
-def test_fresh_ssh_session_retries_only_connection_timeout(
+def test_fresh_ssh_session_exposes_transport_failure_to_experiment_runner(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    attempts = iter(
-        [
-            GovernanceError("remote infrastructure command failed (connection_timeout; exit=255)"),
-            "fresh-session\n",
-        ]
-    )
-
     observed: list[dict[str, object]] = []
 
     def remote(*args: object, **kwargs: object) -> str:
         observed.append(kwargs)
-        result = next(attempts)
-        if isinstance(result, Exception):
-            raise result
-        return result
+        raise GovernanceError("remote infrastructure command failed (connection_timeout; exit=255)")
 
     monkeypatch.setattr("faultwitness_dev.g01_recovery.run_remote_script", remote)
-    monkeypatch.setattr("faultwitness_dev.g01_recovery.time.sleep", lambda seconds: None)
-    assert _verify_fresh_ssh_session() == 2
+    with pytest.raises(GovernanceError, match="connection_timeout"):
+        _verify_fresh_ssh_session()
+    assert len(observed) == 1
     assert all(call["privileged"] is True for call in observed)
 
 
@@ -120,7 +111,7 @@ def test_k3s_restore_rehearsal_rejects_invalid_evidence(
         run_k3s_restore_rehearsal("c" * 40)
 
 
-def test_platform_rollback_reinstalls_candidate_and_checks_coexistence(
+def test_platform_rollback_reinstalls_observed_workload_and_checks_coexistence(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     monkeypatch.setattr(

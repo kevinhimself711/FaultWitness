@@ -1,0 +1,21 @@
+schema_version: 1.0.0
+metric_version: 3
+model_id: qwen3.7-plus-2026-05-26
+budgets:
+  cumulative_input_tokens: 65536
+  cumulative_output_tokens: 8192
+  max_completion_tokens: 2048
+arms:
+  no_rag:
+    min_turns: 1
+    max_turns: 1
+    registered: true
+  naive_react:
+    min_turns: 2
+    max_turns: 4
+    registered: true
+  naive_react_single:
+    min_turns: 1
+    max_turns: 1
+    registered: false
+max_tool_calls: 6

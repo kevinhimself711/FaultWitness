@@ -202,10 +202,10 @@ types:
     version: "1.0.0"
     fields:
       - {name: eval_id, type: EvalId, required: true, source: system, sensitive: false}
-      - {name: candidate_sha, type: GitSha, required: true, source: reference, sensitive: false}
+      - {name: producer_sha, type: GitSha, required: true, source: reference, sensitive: false}
       - {name: metrics, type: "map<MetricId,MetricValue>", required: true, source: derived, sensitive: false}
       - {name: artifact_digest, type: Sha256, required: true, source: reference, sensitive: false}
-    invariants: ["Result is attributable to immutable inputs evaluator and candidate revision."]
+    invariants: ["Result is attributable to immutable inputs, evaluator, and producer revision."]
   - name: DomainEvent
     owner_component: CMP-TRACE-INSTRUMENTATION
     authoritative_store: STORE-LANGSMITH

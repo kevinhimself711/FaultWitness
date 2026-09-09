@@ -3,10 +3,10 @@
   "$id": "https://faultwitness.local/schemas/bootstrap/capability-baseline.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "candidate_sha", "capabilities", "normalized_sha256"],
+  "required": ["schema_version", "producer_sha", "capabilities", "normalized_sha256"],
   "properties": {
     "schema_version": {"const": "1.0.0"},
-    "candidate_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "producer_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
     "normalized_sha256": {"$ref": "#/$defs/sha256"},
     "capabilities": {
       "type": "object",

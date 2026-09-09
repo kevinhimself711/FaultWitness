@@ -6,7 +6,8 @@ body:
   - type: input
     id: eval
     attributes:
-      label: Eval ID and candidate SHA
+      label: Eval/run ID and observed producer provenance
+      description: Include the actual subject, configuration, dataset, model, and environment digests that identify the failed trial.
     validations:
       required: true
   - type: textarea

@@ -1,18 +1,13 @@
 import inspect
 from pathlib import Path
 
-import pytest
-
-from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.observability_deploy import deploy_trace_service, inspect_trace_service
 
 
-@pytest.mark.parametrize("candidate", ["", "abc", "A" * 40, "0" * 39])
-def test_trace_deploy_rejects_invalid_candidate(candidate: str) -> None:
-    with pytest.raises(GovernanceError, match="candidate SHA"):
-        deploy_trace_service(Path.cwd(), candidate)
-    with pytest.raises(GovernanceError, match="candidate SHA"):
-        inspect_trace_service(candidate)
+def test_trace_deploy_uses_observed_provenance_without_binding() -> None:
+    source = inspect.getsource(deploy_trace_service) + inspect.getsource(inspect_trace_service)
+    assert "producer_provenance" in source
+    assert "fw-trace-candidate" not in source
 
 
 def test_trace_container_and_manifest_are_private_and_non_root() -> None:

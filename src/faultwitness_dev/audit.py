@@ -148,9 +148,7 @@ def python_components() -> list[Component]:
         if not expression:
             classifiers = distribution.metadata.get_all("Classifier") or []
             expressions = [
-                item.rsplit("::", 1)[-1].strip()
-                for item in classifiers
-                if "License ::" in item
+                item.rsplit("::", 1)[-1].strip() for item in classifiers if "License ::" in item
             ]
             expression = " OR ".join(expressions)
         components.append(
@@ -244,6 +242,11 @@ def _secret_patterns() -> list[tuple[str, re.Pattern[str]]]:
             re.compile(
                 r"(?i)(?:password|passwd|api[_-]?key|access[_-]?token|client[_-]?secret)"
                 r"\s*[:=]\s*['\"]?(?!example|placeholder|not_applicable|none|null)"
+                # A bare attribute or subscript reference names where a value comes from
+                # and carries no secret, so a keyword argument bound to one is not a match.
+                # A quoted or bare literal value still is.
+                r"(?![A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*|\[)"
+                r"[A-Za-z0-9_.\[\]'\"-]*\s*[,)]?\s*$)"
                 r"[A-Za-z0-9_+/.=-]{12,}"
             ),
         ),
@@ -270,7 +273,7 @@ def scan_publication_boundary(root: Path, paths: list[Path] | None = None) -> No
         raise GovernanceError("publication boundary violations: " + ", ".join(violations))
 
 
-def build_sbom(components: list[Component], candidate_sha: str) -> dict[str, Any]:
+def build_sbom(components: list[Component], producer_sha: str) -> dict[str, Any]:
     unique = {item.bom_ref: item for item in components}
     if len(unique) != len(components):
         duplicates = sorted(
@@ -279,13 +282,12 @@ def build_sbom(components: list[Component], candidate_sha: str) -> dict[str, Any
             if sum(component.bom_ref == ref for component in components) > 1
         )
         raise GovernanceError("duplicate SBOM components: " + ", ".join(duplicates))
-    serial = hashlib.sha256(candidate_sha.encode()).hexdigest()
+    serial = hashlib.sha256(producer_sha.encode()).hexdigest()
     return {
         "bomFormat": "CycloneDX",
         "specVersion": "1.6",
         "serialNumber": (
-            f"urn:uuid:{serial[:8]}-{serial[8:12]}-{serial[12:16]}-"
-            f"{serial[16:20]}-{serial[20:32]}"
+            f"urn:uuid:{serial[:8]}-{serial[8:12]}-{serial[12:16]}-{serial[16:20]}-{serial[20:32]}"
         ),
         "version": 1,
         "metadata": {
@@ -294,7 +296,7 @@ def build_sbom(components: list[Component], candidate_sha: str) -> dict[str, Any
                 "type": "application",
                 "name": "faultwitness",
                 "version": "0.0.0",
-                "properties": [{"name": "faultwitness:candidate-sha", "value": candidate_sha}],
+                "properties": [{"name": "faultwitness:producer-sha", "value": producer_sha}],
             },
         },
         "components": [
@@ -322,11 +324,11 @@ def validate_sbom(document: dict[str, Any]) -> None:
         raise GovernanceError("every SBOM component needs a version and license")
 
 
-def candidate_sha(root: Path) -> str:
-    configured = os.environ.get("FW_CANDIDATE_SHA")
+def producer_sha(root: Path) -> str:
+    configured = os.environ.get("FW_PRODUCER_SHA")
     if configured:
         if not FULL_SHA.fullmatch(configured):
-            raise GovernanceError("FW_CANDIDATE_SHA must be a full 40-character commit SHA")
+            raise GovernanceError("FW_PRODUCER_SHA must be a full 40-character commit SHA")
         return configured
     result = subprocess.run(
         ["git", "rev-parse", "HEAD"],
@@ -347,7 +349,7 @@ def audit_repository(root: Path, output_dir: Path | None = None) -> dict[str, An
     validate_source_ownership(root)
     components = python_components() + node_components(root)
     validate_licenses(components)
-    revision = candidate_sha(root)
+    revision = producer_sha(root)
     sbom = build_sbom(components, revision)
     validate_sbom(sbom)
     output = output_dir or root / ".audit"
@@ -356,7 +358,7 @@ def audit_repository(root: Path, output_dir: Path | None = None) -> dict[str, An
         json.dumps(sbom, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
     summary = {
-        "candidate_sha": revision,
+        "producer_sha": revision,
         "status": "pass",
         "checks": {
             "action_sha_pins": "pass",
@@ -372,98 +374,3 @@ def audit_repository(root: Path, output_dir: Path | None = None) -> dict[str, An
         json.dumps(summary, indent=2) + "\n", encoding="utf-8"
     )
     return summary
-
-
-def validate_g00_closure_documents(
-    state: dict[str, Any],
-    gate: dict[str, Any],
-    iterations: list[dict[str, Any]],
-    manifests: list[dict[str, Any]],
-) -> None:
-    if state.get("active_gate") != "G00" or state.get("active_gate_status") != "in_progress":
-        raise GovernanceError("G00 closure requires the active Gate to be in progress")
-    if state.get("active_iteration") is not None or state.get("next_iteration") is not None:
-        raise GovernanceError("G00 closure requires no active or pending Iteration")
-    if gate.get("status") != "in_progress":
-        raise GovernanceError("G00 Gate record must be in progress before closure")
-    if gate.get("waivers"):
-        raise GovernanceError("G00 closure does not permit waivers")
-
-    expected = set(gate["iterations"])
-    records = {record["id"]: record for record in iterations}
-    if set(records) != expected:
-        raise GovernanceError("G00 closure requires exactly the Iterations declared by the Gate")
-    incomplete = sorted(
-        iteration_id
-        for iteration_id, record in records.items()
-        if record.get("status") != "completed" or not record.get("commit")
-    )
-    if incomplete:
-        raise GovernanceError("G00 has incomplete Iterations: " + ", ".join(incomplete))
-
-    manifest_by_iteration: dict[str, dict[str, Any]] = {}
-    for manifest in manifests:
-        iteration_id = manifest["iteration"]
-        if iteration_id in manifest_by_iteration:
-            raise GovernanceError(f"G00 has duplicate Eval manifests for {iteration_id}")
-        manifest_by_iteration[iteration_id] = manifest
-    if set(manifest_by_iteration) != expected:
-        raise GovernanceError("G00 closure requires one Eval manifest per Iteration")
-    unresolved = sorted(
-        iteration_id
-        for iteration_id, manifest in manifest_by_iteration.items()
-        if manifest.get("status") != "pass" or manifest.get("open_evidence")
-    )
-    if unresolved:
-        raise GovernanceError("G00 has unresolved Eval evidence: " + ", ".join(unresolved))
-
-
-def validate_g00_closure_readiness(root: Path) -> str:
-    from faultwitness_dev.schemas import load_data
-
-    state = load_data(root / "PROJECT_STATE.yaml")
-    gate = load_data(root / "governance" / "gates" / "G00.yaml")
-    iterations = [
-        load_data(root / "governance" / "iterations" / f"{iteration_id}.yaml")
-        for iteration_id in gate["iterations"]
-    ]
-    manifests = [
-        load_data(root / "docs" / "evals" / f"EVAL-G00-{number:03d}" / "manifest.json")
-        for number in range(1, len(gate["iterations"]) + 1)
-    ]
-    validate_g00_closure_documents(state, gate, iterations, manifests)
-    return f"{len(iterations)} completed Iterations and {len(manifests)} passing Evals"
-
-
-def check_external_links(root: Path, output_dir: Path | None = None) -> dict[str, Any]:
-    import urllib.error
-    import urllib.request
-
-    urls: set[str] = set()
-    pattern = re.compile(r"https?://[^\s)>]+")
-    for path in repository_files(root):
-        if path.suffix.lower() != ".md":
-            continue
-        text = path.read_text(encoding="utf-8")
-        urls.update(value.rstrip(".,") for value in pattern.findall(text))
-    results = []
-    for url in sorted(urls):
-        status: int | str
-        try:
-            request = urllib.request.Request(
-                url,
-                method="HEAD",
-                headers={"User-Agent": "FaultWitness-link-audit/1.0"},
-            )
-            with urllib.request.urlopen(request, timeout=10) as response:
-                status = response.status
-        except (urllib.error.URLError, TimeoutError) as error:
-            status = type(error).__name__
-        results.append({"url": url, "status": status})
-    report = {"blocking": False, "checked": len(results), "results": results}
-    output = output_dir or root / ".audit"
-    output.mkdir(parents=True, exist_ok=True)
-    (output / "external-links.json").write_text(
-        json.dumps(report, indent=2) + "\n", encoding="utf-8"
-    )
-    return report

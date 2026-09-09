@@ -4,17 +4,14 @@ import fnmatch
 import hashlib
 import json
 import re
-import subprocess
 from collections import Counter
 from collections.abc import Mapping, Sequence
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import yaml
 
 from faultwitness_dev.errors import GovernanceError
-from faultwitness_dev.schemas import validate_repository_schemas
 
 FAMILIES = ("change_config", "resource_capacity", "dependency_network", "runtime_data")
 DIFFICULTIES = ("Easy", "Medium", "Hard", "OOD", "Adversarial")
@@ -98,11 +95,6 @@ PUBLIC_HTTPS_EXCLUSIONS = (
 def _digest(value: Any) -> str:
     encoded = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
     return hashlib.sha256(encoded).hexdigest()
-
-
-def _write_json(path: Path, value: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def load_isolation_config(root: Path) -> dict[str, Any]:
@@ -462,11 +454,11 @@ def prove_writer_canaries(config: Mapping[str, Any]) -> list[dict[str, Any]]:
     return results
 
 
-def _bound(document: Mapping[str, Any], candidate_sha: str, environment_fingerprint: str) -> None:
-    if document.get("candidate_sha") != candidate_sha:
-        raise GovernanceError("G02 matrix candidate binding drifted")
+def _bound(document: Mapping[str, Any], producer_sha: str, environment_fingerprint: str) -> None:
+    if document.get("producer_sha") != producer_sha:
+        raise GovernanceError("G02 matrix producer provenance drifted")
     if document.get("environment_fingerprint") != environment_fingerprint:
-        raise GovernanceError("G02 matrix environment binding drifted")
+        raise GovernanceError("G02 matrix environment fingerprint drifted")
 
 
 def access_cell_contract() -> list[dict[str, Any]]:
@@ -494,9 +486,9 @@ def access_cell_contract() -> list[dict[str, Any]]:
 
 
 def validate_live_access_matrix(
-    document: Mapping[str, Any], candidate_sha: str, environment_fingerprint: str
+    document: Mapping[str, Any], producer_sha: str, environment_fingerprint: str
 ) -> dict[str, Any]:
-    _bound(document, candidate_sha, environment_fingerprint)
+    _bound(document, producer_sha, environment_fingerprint)
     expected = {cell["cell_id"]: cell for cell in access_cell_contract()}
     cells = document.get("cells")
     if not isinstance(cells, list) or len(cells) != 60:
@@ -514,9 +506,9 @@ def validate_live_access_matrix(
 
 
 def validate_stage_matrix(
-    document: Mapping[str, Any], candidate_sha: str, environment_fingerprint: str
+    document: Mapping[str, Any], producer_sha: str, environment_fingerprint: str
 ) -> dict[str, Any]:
-    _bound(document, candidate_sha, environment_fingerprint)
+    _bound(document, producer_sha, environment_fingerprint)
     stages = document.get("stages")
     if not isinstance(stages, list) or [stage.get("stage") for stage in stages] != list(
         TRACE_STAGES
@@ -531,9 +523,9 @@ def validate_stage_matrix(
 
 
 def validate_all_surface_canary(
-    document: Mapping[str, Any], candidate_sha: str, environment_fingerprint: str
+    document: Mapping[str, Any], producer_sha: str, environment_fingerprint: str
 ) -> dict[str, Any]:
-    _bound(document, candidate_sha, environment_fingerprint)
+    _bound(document, producer_sha, environment_fingerprint)
     surfaces = document.get("surfaces")
     if not isinstance(surfaces, list) or [item.get("surface") for item in surfaces] != list(
         CANARY_SURFACES
@@ -549,98 +541,3 @@ def validate_all_surface_canary(
                 f"G01 supplemental canary leaked or lacks evidence: {item.get('surface')}"
             )
     return {"status": "pass", "surface_count": 22, "validation": "V-G02-011"}
-
-
-def evaluate_i0018(root: Path, candidate_sha: str) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("EVAL-G02-003 requires a full candidate SHA")
-    head = subprocess.run(
-        ["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True, text=True
-    ).stdout.strip()
-    if head != candidate_sha:
-        raise GovernanceError("EVAL-G02-003 candidate SHA must equal checked-out HEAD")
-    if subprocess.run(["git", "status", "--porcelain"], cwd=root, capture_output=True).stdout:
-        raise GovernanceError("EVAL-G02-003 requires a clean candidate worktree")
-    loaded = validate_repository_schemas(root)
-    state = loaded["PROJECT_STATE.yaml"]
-    iteration = loaded["governance/iterations/I-0018.yaml"]
-    if (
-        state.get("active_gate") != "G02"
-        or state.get("active_gate_status") != "in_progress"
-        or state.get("active_iteration") != "I-0018"
-        or iteration.get("status") != "in_progress"
-    ):
-        raise GovernanceError("EVAL-G02-003 requires I-0018 as the sole active Iteration")
-
-    started_at = datetime.now(UTC).isoformat()
-    config = load_isolation_config(root)
-    rows = build_preregistry()
-    validate_preregistry(rows)
-    packages = scan_runtime_packages(root, config)
-    policies = simulate_identity_policies(config)
-    namespace_isolation = validate_namespace_isolation_manifest(root)
-    writers = prove_writer_canaries(config)
-    artifact_dir = root / "docs/evals/EVAL-G02-003/artifacts"
-    _write_json(
-        artifact_dir / "preregistry.json",
-        {
-            "schema_version": "1.0.0",
-            "candidate_sha": candidate_sha,
-            "validation": "V-G02-007",
-            "iteration_n": 160,
-            "materialized_object_count": 0,
-            "rows": rows,
-            "status": "pass",
-        },
-    )
-    _write_json(
-        artifact_dir / "sealed-package-scan.json",
-        {
-            "schema_version": "1.0.0",
-            "candidate_sha": candidate_sha,
-            "validation": "V-G02-008",
-            "iteration_n": 3,
-            "packages": packages,
-            "status": "pass",
-        },
-    )
-    _write_json(
-        artifact_dir / "access-policy-simulation.json",
-        {
-            "schema_version": "1.0.0",
-            "candidate_sha": candidate_sha,
-            "validation": "V-G02-009",
-            "iteration_n": 4,
-            "identities": policies,
-            "namespace_isolation": namespace_isolation,
-            "owned_l2_ready": ["g02.access_matrix", "g02.stage_matrix", "g02.canary_matrix"],
-            "status": "pass",
-        },
-    )
-    _write_json(
-        artifact_dir / "writer-canary.json",
-        {
-            "schema_version": "1.0.0",
-            "candidate_sha": candidate_sha,
-            "validation": "V-G02-011",
-            "iteration_n": 4,
-            "writers": writers,
-            "start_time": started_at,
-            "end_time": datetime.now(UTC).isoformat(),
-            "status": "pass",
-            "open_evidence": [],
-        },
-    )
-    return {
-        "eval_id": "EVAL-G02-003",
-        "candidate_sha": candidate_sha,
-        "status": "pass",
-        "checks": {
-            "preregistry": "pass",
-            "sealed_package_scan": "pass",
-            "access_policy_simulation": "pass",
-            "writer_canary": "pass",
-            "owned_gate_runners": "pass",
-        },
-        "open_evidence": [],
-    }

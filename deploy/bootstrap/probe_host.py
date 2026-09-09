@@ -66,8 +66,21 @@ def seccomp_supported(
 def docker_state() -> tuple[int, int]:
     if not shutil.which("docker"):
         return 0, 0
-    statuses = command_output(["docker", "ps", "--format", "{{.Status}}"])
-    rows = [row for row in statuses.splitlines() if row.strip()]
+    # command_output() returns "" for any non-zero exit, so a permission-denied
+    # docker.sock would otherwise be indistinguishable from a host with no
+    # containers -- and would report a clean zero-unhealthy count it never
+    # measured. Probe the daemon explicitly and fail closed instead.
+    result = subprocess.run(
+        ["docker", "ps", "--format", "{{.Status}}"],
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    if result.returncode != 0:
+        raise RuntimeError("docker is installed but its API is unreachable")
+    rows = [row for row in result.stdout.splitlines() if row.strip()]
     unhealthy = sum("unhealthy" in row.casefold() for row in rows)
     return len(rows), unhealthy
 
@@ -88,9 +101,12 @@ def protected_ports_in_use() -> bool:
 def docker_cidr_conflict() -> bool:
     if not shutil.which("docker"):
         return False
+    # Docker always owns bridge/host/none, so an installed daemon that lists no
+    # networks is an unreachable daemon, not a conflict-free one. Report the
+    # conflict rather than clearing a reservation that was never inspected.
     identifiers = command_output(["docker", "network", "ls", "-q"]).splitlines()
     if not identifiers:
-        return False
+        return True
     text = command_output(["docker", "network", "inspect", *identifiers])
     try:
         networks = json.loads(text)

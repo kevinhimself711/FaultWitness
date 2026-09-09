@@ -1,25 +1,22 @@
-## Iteration
+## Semantic change
 
-- Iteration: `I-____`
-- Gate: `G__`
-- Candidate SHA: filled after commit
+- Observable behavior or invariant:
+- Gate scope, when applicable: `G__`
 
-## Scope and evidence
+## Boundaries
 
-- [ ] The change stays inside the frozen Iteration scope and non-goals.
-- [ ] Behavioral changes include tests and documentation in the same commit.
-- [ ] Requirement, Claim, Eval, Changelog, and project-state assets are updated as applicable.
+- [ ] The change stays inside the frozen Gate scope and non-goals when a Gate is active.
 - [ ] No locked test or ground-truth asset was modified.
 - [ ] No Gate threshold was lowered.
 
 ## Verification
 
 - [ ] `make verify-fast`
-- [ ] `make eval-changed`
-- [ ] Iteration-specific Eval commands
+- [ ] Targeted tests and, when applicable, one real external-seam proof
+- [ ] Only affected trials and dependencies were replayed
 - [ ] Security, tenant, approval, uncertainty, and publication boundaries reviewed
 
-## Asset sync
+## Experiment evidence, when applicable
 
-- [ ] Cross-platform CI evidence is recorded after the candidate commit.
-- [ ] Evidence-only synchronization contains no implementation or threshold change.
+- [ ] Trial journals record execution attempts separately from document versions.
+- [ ] Runtime evidence records producer and subject digests without binding to governance HEAD.

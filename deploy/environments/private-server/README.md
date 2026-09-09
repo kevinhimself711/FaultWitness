@@ -5,8 +5,7 @@ Install or reconcile the private ClusterIP-only platform release:
 ```sh
 helm upgrade --install fw-platform deploy/charts/faultwitness-platform \
   --namespace fw-system --create-namespace \
-  -f deploy/environments/private-server/values.yaml \
-  --atomic --timeout 15m
+  -f deploy/environments/private-server/values.yaml
 ```
 
 Secrets are created outside Helm and referenced by stable names documented in

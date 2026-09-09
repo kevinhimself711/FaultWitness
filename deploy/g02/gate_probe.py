@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import quote, urlsplit
 
-UTC = timezone.utc
+UTC = timezone.utc  # noqa: UP017 -- the remote host still runs Python 3.8
 
 KUBECTL = "/usr/local/bin/k3s kubectl"
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
@@ -130,16 +130,16 @@ def emit(document: dict[str, Any]) -> None:
 
 def artifact(request: dict[str, Any], phase: str, unit: str, evidence: Any) -> str:
     return (
-        f"private://faultwitness/g02/{request['candidate_sha']}/{phase}/{unit}/"
+        f"private://faultwitness/isolation/{request['producer_sha']}/{phase}/{unit}/"
         f"{digest(evidence)}"
     )
 
 
 def validate_request(request: dict[str, Any]) -> None:
-    if not FULL_SHA.fullmatch(str(request.get("candidate_sha", ""))):
-        raise BlockedFailure("candidate_binding_invalid")
+    if not FULL_SHA.fullmatch(str(request.get("producer_sha", ""))):
+        raise BlockedFailure("producer_provenance_invalid")
     if not DIGEST.fullmatch(str(request.get("environment_fingerprint", ""))):
-        raise BlockedFailure("environment_binding_invalid")
+        raise BlockedFailure("environment_fingerprint_invalid")
     config = request.get("probe_config")
     if not isinstance(config, dict):
         raise BlockedFailure("probe_config_missing")
@@ -148,14 +148,14 @@ def validate_request(request: dict[str, Any]) -> None:
         raise BlockedFailure("probe_image_not_pinned")
 
 
-def binding_suffix(request: dict[str, Any]) -> str:
-    return str(request["candidate_sha"])[:12]
+def semantic_suffix(request: dict[str, Any]) -> str:
+    return str(request["environment_fingerprint"])[:12]
 
 
 def canaries(request: dict[str, Any]) -> tuple[str, str]:
     seed = hashlib.sha256(
         (
-            f"{request['candidate_sha']}|{request['environment_fingerprint']}|g02-canary-v1"
+            f"{request['environment_fingerprint']}|g02-canary-v1"
         ).encode()
     ).hexdigest()[:24]
     return f"FW_SECRET_CANARY_{seed}", f"fw_pii_canary_{seed}@example.invalid"
@@ -165,7 +165,7 @@ def plan_resources(request: dict[str, Any]) -> dict[str, Any]:
     config = request["probe_config"]
     return {
         "schema_version": "1.0.0",
-        "candidate_sha": request["candidate_sha"],
+        "producer_sha": request["producer_sha"],
         "environment_fingerprint": request["environment_fingerprint"],
         "principals": list(PRINCIPALS),
         "prefixes": [
@@ -208,7 +208,7 @@ def apply_isolation(request: dict[str, Any]) -> None:
         )
 
 
-def existing_secret_binding(namespace: str, name: str) -> tuple[str, str] | None:
+def existing_secret_semantics(namespace: str, name: str) -> tuple[str, str] | None:
     result = kubectl(["-n", namespace, "get", "secret", name, "-o", "json"])
     if result.returncode:
         return None
@@ -216,8 +216,8 @@ def existing_secret_binding(namespace: str, name: str) -> tuple[str, str] | None
     data = document.get("data", {})
     try:
         return (
-            base64.b64decode(data["CANDIDATE_SHA"]).decode(),
             base64.b64decode(data["ENVIRONMENT_FINGERPRINT"]).decode(),
+            base64.b64decode(data["PLAN_DIGEST"]).decode(),
         )
     except (KeyError, ValueError, UnicodeDecodeError) as error:
         raise BlockedFailure("existing_probe_secret_unbound") from error
@@ -231,8 +231,8 @@ def ensure_principal_secret(request: dict[str, Any], principal: str) -> tuple[st
         "ordinary-developer": "fw-eval",
     }[principal]
     name = f"g02-{principal}-probe"
-    expected = (request["candidate_sha"], request["environment_fingerprint"])
-    current = existing_secret_binding(namespace, name)
+    expected = (request["environment_fingerprint"], str(request["plan_digest"]))
+    current = existing_secret_semantics(namespace, name)
     if current is not None and current != expected:
         old_access = secret_value(namespace, name, "MINIO_ACCESS_KEY")
         old_role = secret_value(namespace, name, "POSTGRES_USER")
@@ -242,14 +242,14 @@ def ensure_principal_secret(request: dict[str, Any], principal: str) -> tuple[st
         current = None
     if current is None:
         role = "fw_g02_" + principal.replace("-", "_")
-        access = "fwg02" + principal.replace("-", "")[:8] + binding_suffix(request)[:6]
+        access = "fwg02" + principal.replace("-", "")[:8] + semantic_suffix(request)[:6]
         values = {
             "MINIO_ACCESS_KEY": access,
             "MINIO_SECRET_KEY": secrets.token_urlsafe(32),
             "POSTGRES_USER": role,
             "POSTGRES_PASSWORD": secrets.token_urlsafe(32),
-            "CANDIDATE_SHA": request["candidate_sha"],
             "ENVIRONMENT_FINGERPRINT": request["environment_fingerprint"],
+            "PLAN_DIGEST": str(request["plan_digest"]),
         }
         arguments = ["-n", namespace, "create", "secret", "generic", name]
         for key, value in values.items():
@@ -377,7 +377,7 @@ def policy_document(principal: str) -> dict[str, Any]:
 def provision_minio(request: dict[str, Any], credentials: dict[str, tuple[str, str]]) -> None:
     mc_script("mc mb --ignore-existing root/faultwitness-eval >/dev/null\n")
     for principal, (access, secret) in credentials.items():
-        policy_name = "g02-" + principal + "-" + binding_suffix(request)
+        policy_name = "g02-" + principal + "-" + semantic_suffix(request)
         policy_value = policy_document(principal)
         script = (
             f"mc admin user remove root {shlex.quote(access)} >/dev/null 2>&1 || true\n"
@@ -562,53 +562,34 @@ def provision(request: dict[str, Any]) -> dict[str, Any]:
     provision_minio(request, credentials)
     provision_postgres(postgres_logins)
     ensure_probe_pods(request)
-    binding = {
-        "candidate_sha": request["candidate_sha"],
+    semantics = {
         "environment_fingerprint": request["environment_fingerprint"],
         "plan_digest": request.get("plan_digest"),
     }
-    arguments = [
-        "-n",
-        "fw-eval",
-        "create",
-        "configmap",
-        "g02-probe-binding",
-        "--from-literal",
-        f"candidate_sha={binding['candidate_sha']}",
-        "--from-literal",
-        f"environment_fingerprint={binding['environment_fingerprint']}",
-        "--from-literal",
-        f"plan_digest={binding['plan_digest']}",
-        "--dry-run=client",
-        "-o",
-        "yaml",
-    ]
-    rendered = kubectl(arguments, check=True).stdout
-    kubectl(["apply", "-f", "-"], input_text=rendered, check=True)
     return {
         "status": "pass",
-        "candidate_sha": request["candidate_sha"],
+        "producer_sha": request["producer_sha"],
         "environment_fingerprint": request["environment_fingerprint"],
         "plan_digest": request.get("plan_digest"),
         "principal_count": 4,
         "prefix_count": 5,
         "credential_secret_count": 4,
-        "artifact_ref": artifact(request, "provisioning", "binding", binding),
+        "artifact_ref": artifact(request, "provisioning", "semantics", semantics),
     }
 
 
 def assert_provisioned(request: dict[str, Any]) -> None:
-    result = kubectl(
-        ["-n", "fw-eval", "get", "configmap", "g02-probe-binding", "-o", "json"],
-        check=True,
-    )
-    data = json.loads(result.stdout).get("data", {})
-    if (
-        data.get("candidate_sha") != request["candidate_sha"]
-        or data.get("environment_fingerprint") != request["environment_fingerprint"]
-        or data.get("plan_digest") != digest(plan_resources(request))
-    ):
-        raise BlockedFailure("probe_binding_drifted")
+    expected = (request["environment_fingerprint"], digest(plan_resources(request)))
+    namespaces = {
+        "scenario-controller": "fw-sut",
+        "baseline-agent": "fw-baseline",
+        "sealed-evaluator": "fw-eval",
+        "ordinary-developer": "fw-eval",
+    }
+    for principal, namespace in namespaces.items():
+        actual = existing_secret_semantics(namespace, f"g02-{principal}-probe")
+        if actual != expected:
+            raise BlockedFailure("probe_semantics_drifted")
 
 
 def command_outcome(result: subprocess.CompletedProcess[str]) -> tuple[bool, str]:
@@ -779,7 +760,7 @@ def access(request: dict[str, Any]) -> dict[str, Any]:
         "cell_id": cell["cell_id"],
         "actual_allow": allowed,
         "outcome": outcome,
-        "candidate_sha": request["candidate_sha"],
+        "producer_sha": request["producer_sha"],
         "environment_fingerprint": request["environment_fingerprint"],
     }
     return {
@@ -803,22 +784,21 @@ def crockford(value: bytes) -> str:
 
 def trace_envelope(request: dict[str, Any], *, canary: str | None = None) -> dict[str, Any]:
     try:
-        candidate_timestamp = datetime.fromisoformat(
-            str(request.get("candidate_timestamp", "")).replace("Z", "+00:00")
+        producer_timestamp = datetime.fromisoformat(
+            str(request.get("producer_timestamp", "")).replace("Z", "+00:00")
         )
     except ValueError as error:
-        raise BlockedFailure("candidate_timestamp_invalid") from error
-    if candidate_timestamp.tzinfo is None:
-        raise BlockedFailure("candidate_timestamp_invalid")
+        raise BlockedFailure("producer_timestamp_invalid") from error
+    if producer_timestamp.tzinfo is None:
+        raise BlockedFailure("producer_timestamp_invalid")
     seed = hashlib.sha256(
         (
-            request["candidate_sha"]
-            + request["environment_fingerprint"]
+            request["environment_fingerprint"]
             + (canary or "trace")
         ).encode()
     ).digest()
     suffix = crockford(seed[:17])
-    base = candidate_timestamp.astimezone(UTC).isoformat()
+    base = producer_timestamp.astimezone(UTC).isoformat()
     stages = (
         ("api.g02-probe", "api"),
         ("state.persistence", "state_transition"),
@@ -855,7 +835,9 @@ def trace_envelope(request: dict[str, Any], *, canary: str | None = None) -> dic
         "task_id": None,
         "action_id": None,
         "contracts_version": "1.1.0",
-        "candidate_sha": request["candidate_sha"],
+        # The immutable trace envelope still calls this field candidate_sha. Its value is
+        # runtime producer provenance; it is never used as an experiment cache key.
+        "candidate_sha": request["producer_sha"],
         "spans": spans,
         "emitted_at": base,
     }

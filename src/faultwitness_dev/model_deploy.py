@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import base64
 import json
-import re
 from pathlib import Path
 from typing import Any
 
@@ -14,15 +13,13 @@ from faultwitness_dev.bootstrap import (
     load_secret_bundle,
 )
 from faultwitness_dev.control_api_deploy import (
-    _assert_candidate,
     _context,
     _stage_base_image,
     _stage_file,
 )
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.infra import run_remote_script
-
-FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
+from faultwitness_dev.provenance import producer_provenance
 
 
 def _tracked_files(root: Path) -> list[Path]:
@@ -37,28 +34,33 @@ def _tracked_files(root: Path) -> list[Path]:
     return files
 
 
-def deploy_model_gateway(root: Path, candidate_sha: str) -> dict[str, Any]:
+def deploy_model_gateway(root: Path) -> dict[str, Any]:
     files = _tracked_files(root)
-    _assert_candidate(root, candidate_sha, files)
+    provenance = producer_provenance(root, files)
     payload, bundle_digest = _context(root, files)
     paths = BootstrapPaths.defaults()
-    artifact = paths.config_root / "artifacts" / "I-0015" / "model-context.tgz"
+    artifact = paths.config_root / "artifacts" / "model-gateway" / "context.tgz"
     artifact.parent.mkdir(parents=True, exist_ok=True)
     artifact.write_bytes(payload)
     _stage_base_image(root)
-    _stage_file(artifact, "faultwitness-i0015-model-context.tgz")
+    _stage_file(artifact, "faultwitness-model-gateway-context.tgz")
     secret = load_secret_bundle(paths, default_sops_executable())
     credential_encoded = base64.b64encode(secret.bailian_api_key.encode()).decode()
-    image = f"docker.io/faultwitness/model-gateway:{candidate_sha}"
-    manifest = base64.b64encode(_manifest(candidate_sha, image).encode()).decode()
+    image = (
+        "docker.io/faultwitness/model-gateway:"
+        f"{provenance.producer_sha[:12]}-{bundle_digest[:12]}"
+    )
+    manifest = base64.b64encode(
+        _manifest(provenance.producer_sha, bundle_digest, image).encode()
+    ).decode()
     script = f"""set -eu
-work=$(mktemp -d /tmp/faultwitness-i0015-model.XXXXXX)
+work=$(mktemp -d /tmp/faultwitness-model-gateway.XXXXXX)
 trap 'rm -rf "$work"' EXIT HUP INT TERM
-docker load -i /tmp/faultwitness-i0012-python-base.tar >/dev/null
-install -m 0600 /tmp/faultwitness-i0015-model-context.tgz "$work/context.tgz"
+docker load -i /tmp/faultwitness-control-api-python-base.tar >/dev/null
+install -m 0600 /tmp/faultwitness-model-gateway-context.tgz "$work/context.tgz"
 test "$(sha256sum "$work/context.tgz" | awk '{{print $1}}')" = {bundle_digest}
 tar -xzf "$work/context.tgz" -C "$work"
-docker build --pull=false --label faultwitness.candidate={candidate_sha} -t {image} -f "$work/deploy/model-gateway/Dockerfile" "$work" >/dev/null
+docker build --pull=false --label faultwitness.producer={provenance.producer_sha} --label faultwitness.source-digest={bundle_digest} -t {image} -f "$work/deploy/model-gateway/Dockerfile" "$work" >/dev/null
 docker save {image} -o "$work/model-gateway.tar"
 /usr/local/bin/k3s ctr images import "$work/model-gateway.tar" >/dev/null
 umask 077
@@ -76,64 +78,72 @@ rm -f "$work/credential"
 /usr/local/bin/k3s kubectl -n fw-control create secret generic fw-model-env --from-env-file="$work/model.env" --dry-run=client -o yaml | /usr/local/bin/k3s kubectl apply -f - >/dev/null
 rm -f "$work/model.env"
 printf %s {manifest} | base64 -d | /usr/local/bin/k3s kubectl apply -f - >/dev/null
-/usr/local/bin/k3s kubectl -n fw-control rollout status deployment/model-gateway --timeout=5m >/dev/null
+/usr/local/bin/k3s kubectl -n fw-control rollout status deployment/model-gateway >/dev/null
 """
-    run_remote_script(script, privileged=True, timeout=900)
+    run_remote_script(script, privileged=True)
     return {
-        "candidate_sha": candidate_sha,
+        "producer_sha": provenance.producer_sha,
+        "source_digest": provenance.source_digest,
+        "dirty": provenance.dirty,
         "bundle_sha256": bundle_digest,
         "image": image,
     }
 
 
-def inspect_model_gateway(candidate_sha: str) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+def inspect_model_gateway() -> dict[str, Any]:
     output = run_remote_script(
-        f"""set -eu
-available=$(/usr/local/bin/k3s kubectl -n fw-control get deployment model-gateway -o jsonpath='{{.status.availableReplicas}}')
-ready=$(/usr/local/bin/k3s kubectl -n fw-control get deployment model-gateway -o jsonpath='{{.status.readyReplicas}}')
-binding=$(/usr/local/bin/k3s kubectl -n fw-control get configmap fw-model-candidate -o jsonpath='{{.data.candidate_sha}}')
-service_type=$(/usr/local/bin/k3s kubectl -n fw-control get service model-gateway -o jsonpath='{{.spec.type}}')
+        r"""set -eu
+available=$(/usr/local/bin/k3s kubectl -n fw-control get deployment model-gateway -o jsonpath='{.status.availableReplicas}')
+ready=$(/usr/local/bin/k3s kubectl -n fw-control get deployment model-gateway -o jsonpath='{.status.readyReplicas}')
+service_type=$(/usr/local/bin/k3s kubectl -n fw-control get service model-gateway -o jsonpath='{.spec.type}')
+image=$(/usr/local/bin/k3s kubectl -n fw-control get deployment model-gateway -o jsonpath='{.spec.template.spec.containers[0].image}')
+producer=$(/usr/local/bin/k3s kubectl -n fw-control get deployment model-gateway -o jsonpath='{.spec.template.metadata.annotations.faultwitness\.io/producer-sha}')
+source_digest=$(/usr/local/bin/k3s kubectl -n fw-control get deployment model-gateway -o jsonpath='{.spec.template.metadata.annotations.faultwitness\.io/source-digest}')
 status=$(/usr/local/bin/k3s kubectl -n fw-control exec deployment/model-gateway -- python -c 'import httpx; print(httpx.get("http://127.0.0.1:8002/health/ready",timeout=5).status_code)')
 test "$available" = 1
 test "$ready" = 1
-test "$binding" = {candidate_sha}
 test "$service_type" = ClusterIP
 test "$status" = 200
-printf '%s %s %s\n' "$available" "$ready" "$service_type"
+printf '%s %s %s %s %s %s\n' "$available" "$ready" "$service_type" "$image" "$producer" "$source_digest"
 """,
         privileged=True,
     ).strip()
-    if output != "1 1 ClusterIP":
+    fields = output.split()
+    if len(fields) != 6 or fields[:3] != ["1", "1", "ClusterIP"]:
         raise GovernanceError("Model Gateway deployment is not Ready")
     return {
-        "candidate_sha": candidate_sha,
         "available": 1,
         "ready": 1,
         "service_type": "ClusterIP",
+        "image": fields[3],
+        "producer_sha": fields[4],
+        "source_digest": fields[5],
     }
 
 
-def run_model_gateway_smoke(candidate_sha: str) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
-    encoded = base64.b64encode(_smoke_manifest(candidate_sha).encode()).decode()
+def run_model_gateway_smoke() -> dict[str, Any]:
+    image = run_remote_script(
+        "/usr/local/bin/k3s kubectl -n fw-control get deployment model-gateway "
+        "-o jsonpath='{.spec.template.spec.containers[0].image}'\n",
+        privileged=True,
+    ).strip()
+    if not image:
+        raise GovernanceError("Model Gateway workload has no observed image")
+    encoded = base64.b64encode(_smoke_manifest(image).encode()).decode()
     script = f"""set -eu
 /usr/local/bin/k3s kubectl -n fw-system get secret fw-synthetic-users -o json | python3 -c 'import json,sys; d=json.load(sys.stdin); d["metadata"]={{"name":"fw-model-smoke-users","namespace":"fw-control"}}; d.pop("type",None); print(json.dumps(d))' | /usr/local/bin/k3s kubectl apply -f - >/dev/null
 /usr/local/bin/k3s kubectl -n fw-control delete job model-gateway-smoke --ignore-not-found --wait=true >/dev/null
 printf %s {encoded} | base64 -d | /usr/local/bin/k3s kubectl apply -f - >/dev/null
-for attempt in $(seq 1 120); do
+while :; do
   succeeded=$(/usr/local/bin/k3s kubectl -n fw-control get job model-gateway-smoke -o jsonpath='{{.status.succeeded}}')
   failed=$(/usr/local/bin/k3s kubectl -n fw-control get job model-gateway-smoke -o jsonpath='{{.status.failed}}')
   test "$succeeded" = 1 && break
   test "$failed" = 1 && exit 1
   sleep 2
 done
-test "$succeeded" = 1
 /usr/local/bin/k3s kubectl -n fw-control logs job/model-gateway-smoke
 """
-    output = run_remote_script(script, privileged=True, timeout=300).strip()
+    output = run_remote_script(script, privileged=True).strip()
     try:
         result = json.loads(output.splitlines()[-1])
     except (IndexError, json.JSONDecodeError) as error:
@@ -145,16 +155,11 @@ test "$succeeded" = 1
         "usage_attributed": True,
     }:
         raise GovernanceError("Model Gateway smoke did not satisfy its frozen outcome")
-    return {"candidate_sha": candidate_sha, **result}
+    return {"image": image, **result}
 
 
-def _manifest(candidate_sha: str, image: str) -> str:
+def _manifest(producer_sha: str, source_digest: str, image: str) -> str:
     return f"""apiVersion: v1
-kind: ConfigMap
-metadata: {{name: fw-model-candidate, namespace: fw-control}}
-data: {{candidate_sha: "{candidate_sha}"}}
----
-apiVersion: v1
 kind: ServiceAccount
 metadata: {{name: model-gateway, namespace: fw-control}}
 automountServiceAccountToken: false
@@ -166,7 +171,11 @@ spec:
   replicas: 1
   selector: {{matchLabels: {{app.kubernetes.io/name: model-gateway}}}}
   template:
-    metadata: {{labels: {{app.kubernetes.io/name: model-gateway, faultwitness.io/candidate: "{candidate_sha}"}}}}
+    metadata:
+      labels: {{app.kubernetes.io/name: model-gateway}}
+      annotations:
+        faultwitness.io/producer-sha: "{producer_sha}"
+        faultwitness.io/source-digest: "{source_digest}"
     spec:
       serviceAccountName: model-gateway
       automountServiceAccountToken: false
@@ -217,7 +226,7 @@ spec:
 """
 
 
-def _smoke_manifest(candidate_sha: str) -> str:
+def _smoke_manifest(image: str) -> str:
     return f"""apiVersion: v1
 kind: ConfigMap
 metadata: {{name: model-gateway-smoke, namespace: fw-control}}
@@ -225,15 +234,13 @@ data:
   smoke.py: |
     import json, os, time, httpx
     identity = "http://keycloak.fw-system.svc.cluster.local:8080/realms/faultwitness/protocol/openid-connect/token"
-    for attempt in range(30):
+    while True:
       try:
         token_response = httpx.post(identity, data={{"grant_type":"password","client_id":"faultwitness-api","username":"tenant-a-operator","password":os.environ["TENANT_A_OPERATOR"]}}, timeout=10)
         token_response.raise_for_status()
         token = token_response.json()["access_token"]
         break
       except httpx.TransportError:
-        if attempt == 29:
-          raise
         time.sleep(1)
     body = {{"correlation_id":"corr_01ARZ3NDEKTSV4RRFFQ69G5FAV","model_family":"qwen","messages":[{{"role":"user","content":"Reply with exactly OK."}}],"target_json_schema":None,"tool_schemas":[]}}
     response = httpx.post("http://model-gateway.fw-control.svc.cluster.local:8002/internal/v1/models/complete", headers={{"Authorization":"Bearer "+token}}, json=body, timeout=180)
@@ -266,7 +273,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: smoke
-          image: docker.io/faultwitness/model-gateway:{candidate_sha}
+          image: {image}
           imagePullPolicy: Never
           command: [python, /config/smoke.py]
           env:

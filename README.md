@@ -1,11 +1,3 @@
----
-active_gate: G03
-active_gate_status: not_started
-active_iteration: null
-next_iteration: null
-last_closed_gate: G02
----
-
 # FaultWitness
 
 FaultWitness 是一个面向微服务事故调查、受控修复与持续优化的多租户 Agent Runtime 项目。
@@ -25,6 +17,8 @@ G03“只读 Agent 纵切”尚未开始。当前占位资产只授权制定 dec
 - [阶段索引](docs/roadmap/PHASES.md)
 - [项目状态](PROJECT_STATE.yaml)
 - [协作规则](AGENTS.md)
+- [轻量治理 v2](docs/governance/GOVERNANCE_V2.md)
+- [G02 治理复盘](docs/engineering/G02_GOVERNANCE_RETROSPECTIVE.md)
 
 ## 边界
 

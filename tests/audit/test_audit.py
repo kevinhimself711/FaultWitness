@@ -11,7 +11,6 @@ from faultwitness_dev.audit import (
     build_sbom,
     scan_publication_boundary,
     validate_action_pins,
-    validate_g00_closure_documents,
     validate_licenses,
     validate_sbom,
     validate_source_ownership,
@@ -35,6 +34,33 @@ def test_langsmith_key_is_rejected_without_embedding_a_fixture_secret(tmp_path: 
         scan_publication_boundary(tmp_path, [fixture])
 
 
+def test_credential_literal_assignment_is_rejected(tmp_path: Path) -> None:
+    fixture = tmp_path / "config.py"
+    fixture.write_text("pass" + 'word = "' + "a" * 20 + '"\n', encoding="utf-8")
+    with pytest.raises(GovernanceError, match="credential-assignment"):
+        scan_publication_boundary(tmp_path, [fixture])
+
+
+def test_credential_attribute_reference_is_not_a_violation(tmp_path: Path) -> None:
+    """A bare attribute or subscript reference carries no secret value.
+
+    Such a keyword argument names where the value comes from; flagging it would force
+    unrelated renames to satisfy the scanner rather than remove any secret.
+    """
+    fixture = tmp_path / "wiring.py"
+    key = "api" + "_key"
+    secret = "pass" + "word"
+    fixture.write_text(
+        "bundle = SecretBundle(\n"
+        f"    server_{secret}=preferred.{secret},\n"
+        f"    bailian_{key}=previous.bailian_{key},\n"
+        f'    langsmith_{key}=config["langsmith_{key}"],\n'
+        ")\n",
+        encoding="utf-8",
+    )
+    scan_publication_boundary(tmp_path, [fixture])
+
+
 def test_absolute_local_source_path_is_rejected(tmp_path: Path) -> None:
     fixture = tmp_path / "source.md"
     fixture.write_text("source: C:\\Users\\candidate\\interviews\n", encoding="utf-8")
@@ -45,9 +71,7 @@ def test_absolute_local_source_path_is_rejected(tmp_path: Path) -> None:
 def test_unpinned_github_action_is_rejected(tmp_path: Path) -> None:
     workflows = tmp_path / ".github" / "workflows"
     workflows.mkdir(parents=True)
-    (workflows / "bad.yml").write_text(
-        "steps:\n  - uses: actions/checkout@v4\n", encoding="utf-8"
-    )
+    (workflows / "bad.yml").write_text("steps:\n  - uses: actions/checkout@v4\n", encoding="utf-8")
     with pytest.raises(GovernanceError, match="full commit SHAs"):
         validate_action_pins(tmp_path)
 
@@ -96,45 +120,3 @@ def test_source_ownership_accepts_registered_roots_and_rejects_unknown_package(
     unknown.write_text("", encoding="utf-8")
     with pytest.raises(GovernanceError, match="unowned source files"):
         validate_source_ownership(tmp_path)
-
-
-def _closure_documents() -> tuple[dict, dict, list[dict], list[dict]]:
-    state = {
-        "active_gate": "G00",
-        "active_gate_status": "in_progress",
-        "active_iteration": None,
-        "next_iteration": None,
-    }
-    gate = {
-        "status": "in_progress",
-        "iterations": ["I-0001", "I-0002"],
-        "waivers": [],
-    }
-    iterations = [
-        {"id": "I-0001", "status": "completed", "commit": "a" * 40},
-        {"id": "I-0002", "status": "completed", "commit": "b" * 40},
-    ]
-    manifests = [
-        {"iteration": "I-0001", "status": "pass", "open_evidence": []},
-        {"iteration": "I-0002", "status": "pass", "open_evidence": []},
-    ]
-    return state, gate, iterations, manifests
-
-
-def test_g00_closure_readiness_accepts_complete_evidence() -> None:
-    validate_g00_closure_documents(*_closure_documents())
-
-
-@pytest.mark.parametrize("failure_kind", ["iteration", "eval", "open_evidence", "waiver"])
-def test_g00_closure_readiness_rejects_unresolved_evidence(failure_kind: str) -> None:
-    state, gate, iterations, manifests = _closure_documents()
-    if failure_kind == "iteration":
-        iterations[1]["status"] = "in_progress"
-    elif failure_kind == "eval":
-        manifests[1]["status"] = "fail"
-    elif failure_kind == "open_evidence":
-        manifests[1]["open_evidence"] = ["missing CI"]
-    else:
-        gate["waivers"] = ["temporary waiver"]
-    with pytest.raises(GovernanceError):
-        validate_g00_closure_documents(state, gate, iterations, manifests)

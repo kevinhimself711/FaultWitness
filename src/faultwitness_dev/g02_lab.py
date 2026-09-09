@@ -3,6 +3,7 @@ from __future__ import annotations
 import base64
 import copy
 import hashlib
+import inspect
 import json
 import re
 import shlex
@@ -22,18 +23,23 @@ import yaml
 
 from faultwitness_dev.bootstrap import BootstrapPaths, ssh_failure_category
 from faultwitness_dev.errors import GovernanceError, InfrastructureFailure
+from faultwitness_dev.experiment import semantic_cache_key
 from faultwitness_dev.infra import (
     InfraPaths,
     _ensure_crane,
     _remote_arguments,
     run_remote_script,
 )
-from faultwitness_dev.schemas import validate_repository_schemas
+from faultwitness_dev.provenance import producer_provenance
 
 SUT_RELEASE = "2.2.0"
 SUT_COMMIT = "b74a7bc7bbe66099c61951f42b24dab8b6f02d18"
 SEED_DOMAIN = "G02-seed-id-v1"
 FAMILIES = ("change_config", "resource_capacity", "dependency_network", "runtime_data")
+AD_CPU_ACTIVE_MIN_CORES = 0.5
+AD_CPU_ACTIVE_MULTIPLIER = 5.0
+EMAIL_MEMORY_MIN_GROWTH_BYTES = 1024 * 1024
+EMAIL_MEMORY_MIN_GROWTH_RATIO = 0.05
 DIFFICULTIES = ("Easy", "Medium", "Hard", "OOD", "Adversarial")
 FAULT_CLASSES = (
     "productCatalogFailure",
@@ -51,6 +57,44 @@ TRACE_QUERY_SERVICES = {
     "paymentUnreachable": "checkout",
     "kafkaQueueProblems": "fraud-detection",
 }
+V3_TRACE_QUERY_SERVICES = (
+    "ad",
+    "checkout",
+    "email",
+    "fraud-detection",
+    "payment",
+    "product-catalog",
+)
+V3_READINESS_COLLECTOR_CHECKPOINT = "g03-readiness-v3-label-blind-six-group-collector-v6"
+V3_READINESS_COLLECTOR_SOURCE_SHA256 = (
+    "b831184cf2d95d04ee8528fb47aefa93fa64f691732a07878ccb97fec6bac93a"
+)
+V3_READINESS_OBSERVER_SOURCE_SHA256 = (
+    "9a918f3aaaf2c30db40669a65f1f9b68ce5182ca0582a6998cd67bfac378e2ac"
+)
+V3_FAULT_SAMPLE_INTERVAL_SECONDS = 65
+# AMD-0007 appendix 3. The 90-second *activation* deadline below is frozen. The
+# recovery observation deadline and the spacing between the two recovery samples
+# were never pre-registered and were inconsistent with the 65-second fault
+# spacing; naming them here makes both auditable without touching any predicate.
+FAULT_ACTIVATION_DEADLINE_SECONDS = 90
+FAULT_POLL_INTERVAL_SECONDS = 5
+V3_RECOVERY_OBSERVATION_DEADLINE_SECONDS = 240
+V3_RECOVERY_SAMPLE_INTERVAL_SECONDS = 65
+# AMD-0007 appendix 4. The ad CPU query is a 2-minute `rate()`, and `recovery_state`
+# only requires that the signal is not worsening -- not that it returned to rest --
+# so an adHighCpu case ends with the pod still mid-decay. A later adHighCpu case that
+# samples its baseline inside that lookback inherits an inflated `baseline_cpu`, and
+# because the predicate multiplies the baseline by AD_CPU_ACTIVE_MULTIPLIER the
+# activation bar can move out of physical reach. The baseline must therefore be
+# measured on a quiesced pod. This is a false-negative removal only: the predicate,
+# AD_CPU_ACTIVE_MIN_CORES, and AD_CPU_ACTIVE_MULTIPLIER are all unchanged.
+V3_AD_CPU_QUIESCENT_MAX_CORES = 0.25
+V3_AD_CPU_QUIESCENCE_DEADLINE_SECONDS = 240
+# Bootstrap-only bound: a lab deploy that stops making progress must report which workload is
+# pending instead of blocking forever. This governs infrastructure setup, not any measurement,
+# so it is not one of the frozen metric deadlines above.
+LAB_READINESS_DEADLINE_SECONDS = 1800
 FULL_DIGEST_REFERENCE = re.compile(r"^[^\s@]+@sha256:[0-9a-f]{64}$")
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
 PROBE_IMAGE_NAMES = ("busybox", "minio_mc")
@@ -109,7 +153,10 @@ ADAPTERS = {
         "resource_capacity", "adHighCpu", "on", ("cpu_rate", "baseline_cpu_max", "correlated_span")
     ),
     "emailMemoryLeak": FaultAdapter(
-        "resource_capacity", "emailMemoryLeak", "100x", ("working_set",)
+        "resource_capacity",
+        "emailMemoryLeak",
+        "100x",
+        ("working_set", "baseline_working_set"),
     ),
     "paymentFailure": FaultAdapter(
         "dependency_network", "paymentFailure", "100%", ("checkout_failed", "payment_error")
@@ -135,34 +182,70 @@ class FlagDocumentClient(Protocol):
 class TrialJournalProtocol(Protocol):
     def read(self, trial_id: str) -> dict[str, Any] | None: ...
 
-    def write(self, trial_id: str, status: str, payload: Mapping[str, Any]) -> dict[str, Any]: ...
+    def begin(
+        self,
+        trial_id: str,
+        *,
+        producer_sha: str,
+        cache_key: str,
+        payload: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]: ...
+
+    def finish(self, trial_id: str, status: str, payload: Mapping[str, Any]) -> dict[str, Any]: ...
 
 
 Observation = Mapping[str, Any]
 Observer = Callable[[str, str], Observation]
 
+# Transport retry for the flag control plane. `run_remote_script` opens three SSH sessions with
+# ConnectTimeout=10 and no retry, and each privileged call decrypts the SOPS store; a concurrent
+# decrypt or a momentary SSH refusal therefore fails the whole scenario on its first flag read,
+# before any measurement has been taken. AMD-0003 already classifies that as an attributable
+# infrastructure failure and authorizes a retry, so retrying here spends seconds instead of
+# discarding a case and re-measuring it.
+#
+# This governs transport only. It is not one of the frozen metric deadlines, it never retries a
+# measurement or an oracle evaluation, and it cannot mask a real fault: a read that keeps failing
+# still raises InfrastructureFailure with the same reason. Deliberately not applied to `write`,
+# where a retry could double-apply a mutation.
+FLAG_TRANSPORT_ATTEMPTS = 4
+FLAG_TRANSPORT_RETRY_DELAY_SECONDS = 6.0
+
 
 class RemoteFlagClient:
-    def __init__(self, candidate_sha: str) -> None:
-        if not FULL_SHA.fullmatch(candidate_sha):
-            raise GovernanceError("remote flag client requires a full candidate SHA")
-        self.candidate_sha = candidate_sha
+    def __init__(self, producer_sha: str) -> None:
+        if not FULL_SHA.fullmatch(producer_sha):
+            raise GovernanceError("remote flag client requires a full producer SHA")
+        self.producer_sha = producer_sha
 
     def _prelude(self) -> str:
-        candidate = shlex.quote(self.candidate_sha)
-        return f"""set -eu
-binding=$(/usr/local/bin/k3s kubectl -n fw-sut \
-  get configmap fw-g02-candidate-binding -o jsonpath='{{.data.candidate_sha}}')
-test "$binding" = {candidate}
+        return """set -eu
 cluster_ip=$(/usr/local/bin/k3s kubectl -n fw-sut \
-  get service flagd -o jsonpath='{{.spec.clusterIP}}')
+  get service flagd -o jsonpath='{.spec.clusterIP}')
 endpoint="http://$cluster_ip:4000"
 """
 
     def read(self) -> dict[str, Any]:
-        output = run_remote_script(
-            self._prelude() + 'curl -fsS "$endpoint/api/read"\n', privileged=True
-        )
+        last_error: GovernanceError | None = None
+        for attempt in range(1, FLAG_TRANSPORT_ATTEMPTS + 1):
+            try:
+                output = run_remote_script(
+                    self._prelude() + 'curl -fsS "$endpoint/api/read"\n',
+                    privileged=True,
+                )
+                break
+            except GovernanceError as error:
+                last_error = error
+                if attempt == FLAG_TRANSPORT_ATTEMPTS:
+                    raise InfrastructureFailure(
+                        f"remote flag read produced no result after "
+                        f"{FLAG_TRANSPORT_ATTEMPTS} attempts: {error}"
+                    ) from error
+                time.sleep(FLAG_TRANSPORT_RETRY_DELAY_SECONDS)
+        else:  # pragma: no cover - loop always breaks or raises
+            raise InfrastructureFailure(
+                f"remote flag read produced no result: {last_error}"
+            )
         try:
             document = json.loads(output)
         except json.JSONDecodeError as error:
@@ -175,14 +258,17 @@ endpoint="http://$cluster_ip:4000"
         body = base64.b64encode(
             json.dumps({"data": document}, separators=(",", ":")).encode()
         ).decode("ascii")
-        output = run_remote_script(
-            self._prelude()
-            + f"printf %s {shlex.quote(body)} | base64 -d | "
-            + "curl -fsS -H 'content-type: application/json' --data-binary @- "
-            + '"$endpoint/api/write" >/dev/null\n'
-            + 'curl -fsS "$endpoint/api/read"\n',
-            privileged=True,
-        )
+        try:
+            output = run_remote_script(
+                self._prelude()
+                + f"printf %s {shlex.quote(body)} | base64 -d | "
+                + "curl -fsS -H 'content-type: application/json' --data-binary @- "
+                + '"$endpoint/api/write" >/dev/null\n'
+                + 'curl -fsS "$endpoint/api/read"\n',
+                privileged=True,
+            )
+        except GovernanceError as error:
+            raise InfrastructureFailure(f"remote flag write produced no result: {error}") from error
         try:
             readback = json.loads(output)
         except json.JSONDecodeError as error:
@@ -192,13 +278,29 @@ endpoint="http://$cluster_ip:4000"
 
 
 class LiveScenarioObserver:
-    def __init__(self, candidate_sha: str, fault_class: str) -> None:
-        self.candidate_sha = candidate_sha
+    fault_sample_interval_seconds = 30
+    retain_terminal_fault_sample = False
+    # Metric v1/v2 stimulate once per fault call and otherwise depend on ambient
+    # load-generator traffic arriving inside the activation deadline. Metric v3
+    # drives its own workload on every poll tick instead; see AMD-0007 appendix 3.
+    restimulate_each_poll = False
+    recovery_deadline_seconds = FAULT_ACTIVATION_DEADLINE_SECONDS
+    recovery_sample_interval_seconds = 30
+    # Metric v1/v2 accept the first healthy control sample as the baseline. Metric v3
+    # additionally requires the ad pod to be quiescent first; see AMD-0007 appendix 4.
+    require_ad_cpu_quiescent_baseline = False
+
+    def __init__(self, producer_sha: str, fault_class: str) -> None:
+        self.producer_sha = producer_sha
         self.fault_class = fault_class
         self.baseline_cpu = 0.0
+        self.baseline_working_set = 0.0
         self.baseline_lag = 0.0
         self.fault_started: datetime | None = None
         self.recovery_started: datetime | None = None
+        self.fault_poll_stimuli = 0
+        self.recovery_poll_stimuli = 0
+        self.ad_cpu_quiescent_cores: float | None = None
         self.fault_samples: list[dict[str, Any]] = []
         self.recovery_samples: list[dict[str, Any]] = []
         self.ad_fault_stimulus: dict[str, Any] | None = None
@@ -214,7 +316,7 @@ class LiveScenarioObserver:
         payload = base64.b64encode(
             json.dumps(
                 {
-                    "candidate_sha": self.candidate_sha,
+                    "producer_sha": self.producer_sha,
                     "fault_class": self.fault_class,
                     "email_pod": (
                         self.email_runtime_reset.get("new_pod_name")
@@ -245,14 +347,6 @@ def kubectl(*args):
         capture_output=True,
         text=True,
     ).stdout
-
-binding = kubectl(
-    "get", "configmap", "fw-g02-candidate-binding", "-o",
-    "jsonpath={{.data.candidate_sha}}",
-)
-if binding != request["candidate_sha"]:
-    print("FW_G02_CANDIDATE_BINDING_DRIFT", file=sys.stderr)
-    raise SystemExit(42)
 
 deployments = json.loads(kubectl("get", "deployment", "-o", "json"))["items"]
 ready = all(
@@ -377,22 +471,19 @@ PY
         try:
             output = run_remote_script(script, privileged=True)
         except GovernanceError as error:
-            if "FW_G02_CANDIDATE_BINDING_DRIFT" in str(error):
-                raise
             raise InfrastructureFailure(
                 f"live observation collection produced no result: {error}"
             ) from error
         return json.loads(output)
 
     def _stimulate_checkout(self, *, allow_checkout_http_error: bool) -> dict[str, Any]:
-        user_id = (
-            f"faultwitness-g02-{self.candidate_sha[:12]}-"
-            + datetime.now(UTC).strftime("%Y%m%d%H%M%S%f")
+        user_id = f"faultwitness-g02-{self.producer_sha[:12]}-" + datetime.now(UTC).strftime(
+            "%Y%m%d%H%M%S%f"
         )
         payload = base64.b64encode(
             json.dumps(
                 {
-                    "candidate_sha": self.candidate_sha,
+                    "producer_sha": self.producer_sha,
                     "allow_checkout_http_error": allow_checkout_http_error,
                     "user_id": user_id,
                     "product_id": "0PUK6V6EV0",
@@ -428,16 +519,6 @@ import urllib.request
 
 request = json.loads(base64.b64decode({payload!r}))
 kubectl = ["/usr/local/bin/k3s", "kubectl", "-n", "fw-sut"]
-binding = subprocess.run(
-    [*kubectl, "get", "configmap", "fw-g02-candidate-binding", "-o",
-     "jsonpath={{.data.candidate_sha}}"],
-    check=True,
-    capture_output=True,
-    text=True,
-).stdout
-if binding != request["candidate_sha"]:
-    print("FW_G02_CANDIDATE_BINDING_DRIFT", file=sys.stderr)
-    raise SystemExit(42)
 frontend = json.loads(subprocess.run(
     [*kubectl, "get", "service", "frontend-proxy", "-o", "json"],
     check=True,
@@ -489,10 +570,7 @@ PY
         try:
             output = run_remote_script(script, privileged=True)
         except GovernanceError as error:
-            deterministic = (
-                "FW_G02_CANDIDATE_BINDING_DRIFT",
-                "FW_G02_STIMULUS_HTTP_ERROR",
-            )
+            deterministic = ("FW_G02_STIMULUS_HTTP_ERROR",)
             if any(marker in str(error) for marker in deterministic):
                 raise
             raise InfrastructureFailure(
@@ -770,6 +848,111 @@ PY
         # the fault oracle remains responsible for proving the correlated trace.
         return self._stimulate_checkout(allow_checkout_http_error=True)
 
+    def _absent_series(self, sample: Mapping[str, Any]) -> tuple[str, ...]:
+        """Name the absent series, label-blind.
+
+        Every window must carry all six evidence groups for every label, so a
+        window is only scoreable once all of them were scraped. Requiring the
+        same set for every label also keeps the wait behaviour independent of
+        the sealed fault class.
+        """
+        absent = set(sample.get("absent_series") or ())
+        return tuple(
+            name
+            for name in (
+                "cpu_rate",
+                "working_set",
+                "consumer_record_lag",
+                "consumer_poll_lag_seconds",
+            )
+            if name in absent
+        )
+
+    def _await_ad_cpu_quiescence(self) -> None:
+        """Wait until the ad pod's CPU rate leaves the previous case's burn behind.
+
+        The collector's ad CPU query is a 2-minute ``rate()`` and ``recovery_state``
+        only requires that the signal is not worsening, so every adHighCpu case ends
+        with the pod still decaying from its burn. Sampling a baseline inside that
+        lookback captures the *previous* case's load; multiplied by
+        ``AD_CPU_ACTIVE_MULTIPLIER`` the activation bar then exceeds what the pod can
+        physically reach, and the case fails for a reason that has nothing to do with
+        the candidate.
+
+        Waiting can only remove such false negatives. A quiescent baseline is a lower
+        baseline, so it can never make an inactive fault look active, and the fault
+        predicate itself is untouched.
+        """
+        deadline = time.monotonic() + V3_AD_CPU_QUIESCENCE_DEADLINE_SECONDS
+        while True:
+            sample = self._sample(datetime.now(UTC) - timedelta(minutes=2))
+            absent = self._absent_series(sample)
+            if not absent:
+                cpu_rate = float(sample["cpu_rate"])
+                if cpu_rate <= V3_AD_CPU_QUIESCENT_MAX_CORES:
+                    self.ad_cpu_quiescent_cores = cpu_rate
+                    return
+            if time.monotonic() >= deadline:
+                if absent:
+                    raise self._absent_series_failure(absent)
+                raise InfrastructureFailure(
+                    "metric-v3 ad pod did not reach a quiescent CPU baseline within "
+                    f"{V3_AD_CPU_QUIESCENCE_DEADLINE_SECONDS}s: last rate "
+                    f"{float(sample['cpu_rate']):.4f} cores exceeds "
+                    f"{V3_AD_CPU_QUIESCENT_MAX_CORES} cores"
+                )
+            time.sleep(FAULT_POLL_INTERVAL_SECONDS)
+
+    def _absent_series_failure(self, absent: Sequence[str]) -> InfrastructureFailure:
+        """A series still absent at the deadline is a missing instrument.
+
+        AMD-0003 authorises unlimited retries for attributable infrastructure
+        failures, so this is strictly safer than feeding a synthetic 0.0 into a
+        fault predicate and recording a non-retryable ``metric_fail``. A brief
+        scrape gap is waited out by the caller rather than reaching here.
+        """
+        return InfrastructureFailure(
+            "metric-v3 Prometheus series stayed absent past the observation "
+            f"deadline for {self.fault_class}: {', '.join(absent)}"
+        )
+
+    def _drive_label_workload(self, phase: str) -> None:
+        """Issue exactly one candidate-bound request for this label.
+
+        Called once per poll tick inside the fault and recovery windows so the
+        oracle measures a workload the runner controls rather than whatever the
+        ambient load generator happens to send. This cannot manufacture a false
+        positive: with the flag off, checkout succeeds, no error span is
+        recorded, fraud-detection keeps polling, and the ad service does not
+        spin, so no additional request can satisfy a fault predicate. It removes
+        false negatives only. Every predicate in ``fault_state`` and
+        ``recovery_state`` is unchanged.
+        """
+        if self.fault_class == "adHighCpu":
+            stimulus = self._stimulate_ad_request()
+            if phase == "fault":
+                self.ad_fault_stimulus = stimulus
+            else:
+                self.ad_recovery_stimulus = stimulus
+        elif self.fault_class == "emailMemoryLeak":
+            stimulus = self._stimulate_email_request()
+            if phase == "fault":
+                self.email_fault_stimuli.append(stimulus)
+            else:
+                self.email_recovery_stimulus = stimulus
+        elif self.fault_class == "productCatalogFailure":
+            self.product_stimulus = self._stimulate_product_fault()
+        elif self.fault_class == "kafkaQueueProblems":
+            self.kafka_stimulus = self._stimulate_kafka_fault()
+        elif self.fault_class in {"paymentFailure", "paymentUnreachable"}:
+            self.payment_stimulus = self._stimulate_payment_fault()
+        else:
+            raise GovernanceError("unsupported live fault observer")
+        if phase == "fault":
+            self.fault_poll_stimuli += 1
+        else:
+            self.recovery_poll_stimuli += 1
+
     def _active_observation(self, sample: Mapping[str, Any]) -> dict[str, Any]:
         descriptions = "\n".join(str(item) for item in sample["descriptions"])
         if self.fault_class == "productCatalogFailure":
@@ -796,6 +979,9 @@ PY
             observation = {
                 **sample,
                 "working_set": sample["working_set"],
+                "baseline_working_set": self.baseline_working_set,
+                "metric_service": "emailservice",
+                "working_set_unit": "bytes",
                 "email_stimulus_count": len(self.email_fault_stimuli),
             }
             if self.email_runtime_reset is not None:
@@ -830,33 +1016,66 @@ PY
         if fault_class != self.fault_class:
             raise GovernanceError("live observer fault class drifted")
         if phase == "control":
-            sample = self._sample(datetime.now(UTC) - timedelta(minutes=2))
-            self.baseline_cpu = float(sample["cpu_rate"])
-            self.baseline_lag = float(sample["consumer_lag"])
-            healthy = sample["ready"] and sample["journey_status"] == 200
-            return {"state": OracleState.HEALTHY if healthy else OracleState.UNKNOWN}
+            sample_since = datetime.now(UTC) - timedelta(minutes=2)
+            if self.fault_class == "emailMemoryLeak":
+                self.email_runtime_reset = self._reset_email_runtime()
+                sample_since = datetime.now(UTC)
+            elif self.fault_class == "adHighCpu":
+                if self.require_ad_cpu_quiescent_baseline:
+                    self._await_ad_cpu_quiescence()
+                sample_since = datetime.now(UTC)
+                self._stimulate_ad_request()
+            deadline = time.monotonic() + FAULT_ACTIVATION_DEADLINE_SECONDS
+            while True:
+                sample = self._sample(sample_since)
+                # An absent series here is the expected post-restart transient:
+                # keep polling until the scrape lands rather than failing closed.
+                signal_ready = not self._absent_series(sample)
+                if signal_ready and self.fault_class == "emailMemoryLeak":
+                    signal_ready = float(sample["working_set"]) > 0
+                elif signal_ready and self.fault_class == "adHighCpu":
+                    signal_ready = float(sample["cpu_rate"]) > 0
+                healthy = sample["ready"] and sample["journey_status"] == 200
+                if healthy and signal_ready:
+                    break
+                if time.monotonic() >= deadline:
+                    return {"state": OracleState.UNKNOWN}
+                time.sleep(FAULT_POLL_INTERVAL_SECONDS)
+            self.baseline_cpu = float(sample["cpu_rate"] or 0.0)
+            self.baseline_working_set = float(sample["working_set"] or 0.0)
+            self.baseline_lag = float(sample["consumer_lag"] or 0.0)
+            return {"state": OracleState.HEALTHY}
         if phase == "fault":
             if self.fault_started is None:
                 self.fault_started = datetime.now(UTC)
-                if self.fault_class == "adHighCpu":
-                    self.ad_fault_stimulus = self._stimulate_ad_request()
-                elif self.fault_class == "productCatalogFailure":
+                if self.fault_class == "productCatalogFailure":
                     self.product_stimulus = self._stimulate_product_fault()
-                elif self.fault_class == "emailMemoryLeak":
-                    self.email_runtime_reset = self._reset_email_runtime()
                 elif self.fault_class == "kafkaQueueProblems":
                     self.kafka_stimulus = self._stimulate_kafka_fault()
                 elif self.fault_class in {"paymentFailure", "paymentUnreachable"}:
                     self.payment_stimulus = self._stimulate_payment_fault()
             elif self.fault_samples:
-                time.sleep(30)
-            if self.fault_class == "emailMemoryLeak":
-                self.email_fault_stimuli.append(
-                    self._stimulate_email_request()
-                )
-            deadline = time.monotonic() + 90
+                time.sleep(self.fault_sample_interval_seconds)
+            if self.fault_class == "adHighCpu":
+                self.ad_fault_stimulus = self._stimulate_ad_request()
+            elif self.fault_class == "emailMemoryLeak":
+                self.email_fault_stimuli.append(self._stimulate_email_request())
+            deadline = time.monotonic() + FAULT_ACTIVATION_DEADLINE_SECONDS
             while True:
-                observation = self._active_observation(self._sample(self.fault_started))
+                sample = self._sample(self.fault_started)
+                absent = self._absent_series(sample)
+                if absent:
+                    # A momentarily unscraped series makes this window
+                    # unscoreable, not failed. Wait for the scrape the same way
+                    # the control phase does; only a series still absent at the
+                    # deadline is a missing instrument.
+                    if time.monotonic() >= deadline:
+                        raise self._absent_series_failure(absent)
+                    time.sleep(FAULT_POLL_INTERVAL_SECONDS)
+                    if self.restimulate_each_poll:
+                        self._drive_label_workload("fault")
+                    continue
+                observation = self._active_observation(sample)
                 if self.fault_class == "emailMemoryLeak" and not self.fault_samples:
                     self.fault_samples.append(observation)
                     return observation
@@ -870,8 +1089,12 @@ PY
                     self.fault_samples.append(observation)
                     return observation
                 if time.monotonic() >= deadline:
+                    if self.retain_terminal_fault_sample:
+                        self.fault_samples.append(observation)
                     return observation
-                time.sleep(5)
+                time.sleep(FAULT_POLL_INTERVAL_SECONDS)
+                if self.restimulate_each_poll:
+                    self._drive_label_workload("fault")
         if phase == "recovery":
             if self.recovery_started is None:
                 self.recovery_started = datetime.now(UTC)
@@ -880,18 +1103,33 @@ PY
                 elif self.fault_class == "emailMemoryLeak":
                     self.email_recovery_stimulus = self._stimulate_email_request()
             elif self.recovery_samples:
-                time.sleep(30)
-            deadline = time.monotonic() + 90
+                time.sleep(self.recovery_sample_interval_seconds)
+            deadline = time.monotonic() + self.recovery_deadline_seconds
             while True:
                 sample = self._sample(self.recovery_started)
+                absent = self._absent_series(sample)
+                if absent:
+                    # Same rule as the fault window: an unscraped series is not
+                    # a recovery verdict.
+                    if time.monotonic() >= deadline:
+                        raise self._absent_series_failure(absent)
+                    time.sleep(FAULT_POLL_INTERVAL_SECONDS)
+                    if self.restimulate_each_poll:
+                        self._drive_label_workload("recovery")
+                    continue
                 signal_ok = True
                 if self.fault_class == "adHighCpu":
                     signal_ok = float(sample["cpu_rate"]) <= max(
                         self.baseline_cpu, float(self.fault_samples[-1]["cpu_rate"])
                     )
                 elif self.fault_class == "emailMemoryLeak":
-                    signal_ok = float(sample["working_set"]) <= float(
-                        self.fault_samples[-1]["working_set"]
+                    tolerated_drift = max(
+                        EMAIL_MEMORY_MIN_GROWTH_BYTES,
+                        self.baseline_working_set * EMAIL_MEMORY_MIN_GROWTH_RATIO,
+                    )
+                    signal_ok = (
+                        float(sample["working_set"]) - float(self.fault_samples[-1]["working_set"])
+                        < tolerated_drift
                     )
                 elif self.fault_class == "kafkaQueueProblems":
                     signal_ok = float(sample["consumer_lag"]) <= float(
@@ -904,25 +1142,369 @@ PY
                     "signal_not_worsening": signal_ok,
                 }
                 if self.ad_recovery_stimulus is not None:
-                    observation["ad_recovery_stimulus"] = dict(
-                        self.ad_recovery_stimulus
-                    )
+                    observation["ad_recovery_stimulus"] = dict(self.ad_recovery_stimulus)
                 if self.email_recovery_stimulus is not None:
-                    observation["email_recovery_stimulus"] = dict(
-                        self.email_recovery_stimulus
-                    )
+                    observation["email_recovery_stimulus"] = dict(self.email_recovery_stimulus)
                 required = ("ready", "journey_healthy", "signal_not_worsening")
                 if all(observation[key] for key in required):
                     self.recovery_samples.append(observation)
                     return observation
                 if time.monotonic() >= deadline:
                     return observation
-                time.sleep(5)
+                time.sleep(FAULT_POLL_INTERVAL_SECONDS)
+                if self.restimulate_each_poll:
+                    self._drive_label_workload("recovery")
         raise GovernanceError("unknown live observer phase")
 
 
+def render_live_readiness_observer_v3_script(
+    producer_sha: str,
+    since: datetime,
+) -> str:
+    """Render one label-blind collector script with exact current-pod selectors."""
+    payload = base64.b64encode(
+        json.dumps(
+            {
+                "producer_sha": producer_sha,
+                "trace_services": list(V3_TRACE_QUERY_SERVICES),
+                "since_micros": int(since.timestamp() * 1_000_000),
+                "since_rfc3339": since.isoformat().replace("+00:00", "Z"),
+            }
+        ).encode()
+    ).decode("ascii")
+    return f"""set -eu
+python3 - <<'PY'
+import base64
+import datetime
+import json
+import subprocess
+import sys
+import urllib.parse
+import urllib.request
+
+request = json.loads(base64.b64decode({payload!r}))
+
+def kubectl(*args):
+    return subprocess.run(
+        ["/usr/local/bin/k3s", "kubectl", "-n", "fw-sut", *args],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+
+def current_pod(prefix):
+    items = json.loads(kubectl("get", "pods", "-o", "json"))["items"]
+    matches = [
+        item["metadata"]["name"]
+        for item in items
+        if item["metadata"]["name"].startswith(prefix)
+        and item["metadata"].get("deletionTimestamp") is None
+    ]
+    if len(matches) != 1:
+        print(
+            "FW_G03_COLLECTOR_POD_CARDINALITY "
+            + prefix
+            + " count="
+            + str(len(matches)),
+            file=sys.stderr,
+        )
+        raise SystemExit(42)
+    return matches[0]
+
+ad_pod = current_pod("ad-")
+email_pod = current_pod("email-")
+deployments = json.loads(kubectl("get", "deployment", "-o", "json"))["items"]
+ready = all(
+    item.get("status", {{}}).get("readyReplicas", 0) == item["spec"].get("replicas", 1)
+    for item in deployments
+)
+frontend = json.loads(kubectl("get", "service", "frontend-proxy", "-o", "json"))
+frontend_url = "http://" + frontend["spec"]["clusterIP"] + ":8080/"
+try:
+    journey_status = urllib.request.urlopen(frontend_url).status
+except Exception:
+    journey_status = 0
+
+prometheus = json.loads(kubectl("get", "service", "prometheus", "-o", "json"))
+prometheus_url = "http://" + prometheus["spec"]["clusterIP"] + ":9090/api/v1/query"
+
+def promql(query):
+    # An absent series is a missing instrument, not an observed zero. Report it
+    # as null so the caller can distinguish "not scraped yet" from a real 0.0
+    # instead of feeding a synthetic zero into a fault-state predicate.
+    url = prometheus_url + "?" + urllib.parse.urlencode({{"query": query}})
+    result = json.load(urllib.request.urlopen(url))["data"]["result"]
+    return float(result[0]["value"][1]) if result else None
+
+cpu_rate = promql(
+    'sum(rate(container_cpu_usage_seconds_total{{namespace="fw-sut",pod="'
+    + ad_pod
+    + '",container="ad"}}[2m]))'
+)
+working_set = promql(
+    'max(container_memory_working_set_bytes{{namespace="fw-sut",pod="'
+    + email_pod
+    + '",container="email"}})'
+)
+consumer_record_lag = promql(
+    'max(kafka_consumer_records_lag{{service_name="fraud-detection"}})'
+)
+consumer_poll_lag_seconds = promql(
+    'max(kafka_consumer_last_poll_seconds_ago{{service_name="fraud-detection"}})'
+)
+consumer_lag = (
+    None
+    if consumer_record_lag is None or consumer_poll_lag_seconds is None
+    else max(consumer_record_lag, consumer_poll_lag_seconds)
+)
+absent_series = sorted(
+    name
+    for name, value in (
+        ("cpu_rate", cpu_rate),
+        ("working_set", working_set),
+        ("consumer_record_lag", consumer_record_lag),
+        ("consumer_poll_lag_seconds", consumer_poll_lag_seconds),
+    )
+    if value is None
+)
+
+jaeger = json.loads(kubectl("get", "endpoints", "jaeger-query", "-o", "json"))
+jaeger_ip = jaeger["subsets"][0]["addresses"][0]["ip"]
+trace_activity = {{}}
+trace_errors = {{}}
+oracle_signals = {{}}
+for requested_service in request["trace_services"]:
+    query = {{
+        "service": requested_service,
+        "limit": "100",
+        "start": str(request["since_micros"]),
+        "lookback": "custom",
+    }}
+    url = (
+        "http://" + jaeger_ip + ":16686/jaeger/ui/api/traces?"
+        + urllib.parse.urlencode(query)
+    )
+    traces = json.load(urllib.request.urlopen(url)).get("data") or []
+    trace_activity[requested_service] = len(traces)
+    service_errors = 0
+    service_connections = 0
+    service_descriptions = []
+    oracle_descriptions = []
+    oracle_error_spans = 0
+    oracle_checkout_error_spans = 0
+    oracle_payment_connection_errors = 0
+    for trace in traces:
+        processes = trace.get("processes", {{}})
+        trace_has_checkout_error = False
+        trace_has_payment_client_error = False
+        trace_has_connection_error = False
+        for span in trace.get("spans", []):
+            tags = {{tag["key"]: tag.get("value") for tag in span.get("tags", [])}}
+            service_name = processes.get(span.get("processID"), {{}}).get("serviceName")
+            is_error = tags.get("error") is True or tags.get("otel.status_code") == "ERROR"
+            description = str(tags.get("otel.status_description", ""))
+            lowered = description.lower()
+            connection_error = any(token in lowered for token in (
+                "connection refused", "connection error", "unavailable",
+                "error while dialing", "connect:", "name resolver", "zero addresses",
+            ))
+            if description:
+                oracle_descriptions.append(description)
+            if is_error:
+                oracle_error_spans += 1
+                if (
+                    service_name == "checkout"
+                    and tags.get("rpc.service") == "oteldemo.CheckoutService"
+                    and tags.get("rpc.method") == "PlaceOrder"
+                ):
+                    oracle_checkout_error_spans += 1
+                    trace_has_checkout_error = True
+                if (
+                    service_name == "checkout"
+                    and tags.get("rpc.service") == "oteldemo.PaymentService"
+                    and tags.get("rpc.method") == "Charge"
+                ):
+                    trace_has_payment_client_error = True
+            if description and any(token in lowered for token in (
+                "connection refused", "connection error", "unavailable",
+                "error while dialing", "connect:",
+            )):
+                trace_has_connection_error = True
+            if service_name != requested_service:
+                continue
+            if description:
+                service_descriptions.append(description)
+            if is_error:
+                service_errors += 1
+            if connection_error:
+                service_connections += 1
+        if (
+            trace_has_checkout_error
+            and trace_has_payment_client_error
+            and trace_has_connection_error
+        ):
+            oracle_payment_connection_errors += 1
+    trace_errors[requested_service] = {{
+        "error_count": service_errors,
+        "connection_error_count": service_connections,
+        "descriptions": service_descriptions,
+    }}
+    oracle_signals[requested_service] = {{
+        "trace_count": len(traces),
+        "error_spans": oracle_error_spans,
+        "checkout_error_spans": oracle_checkout_error_spans,
+        "payment_connection_errors": oracle_payment_connection_errors,
+        "descriptions": oracle_descriptions,
+    }}
+
+logs = kubectl(
+    "logs", "deployment/fraud-detection", "--since-time=" + request["since_rfc3339"],
+)
+now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+print(json.dumps({{
+    "recorded_at": now,
+    "ready": ready,
+    "journey_status": journey_status,
+    "cpu_rate": cpu_rate,
+    "working_set": working_set,
+    "consumer_lag": consumer_lag,
+    "consumer_record_lag": consumer_record_lag,
+    "consumer_poll_lag_seconds": consumer_poll_lag_seconds,
+    "absent_series": absent_series,
+    "metric_pods": {{"ad": ad_pod, "email": email_pod}},
+    "trace_activity": trace_activity,
+    "trace_errors": trace_errors,
+    "oracle_signals": oracle_signals,
+    "kafka_log_error": "error" in logs.lower(),
+    "kafka_fault_log": "FeatureFlag 'kafkaQueueProblems' is enabled, sleeping" in logs,
+}}, sort_keys=True))
+PY
+"""
+
+
+def live_readiness_collector_source_digest() -> str:
+    source = inspect.getsource(render_live_readiness_observer_v3_script).encode()
+    return hashlib.sha256(source).hexdigest()
+
+
+def live_readiness_observer_source_digest() -> str:
+    source = inspect.getsource(LiveScenarioObserver.__call__).encode()
+    return hashlib.sha256(source).hexdigest()
+
+
+def validate_live_readiness_collector_checkpoint() -> dict[str, Any]:
+    collector_actual = live_readiness_collector_source_digest()
+    observer_actual = live_readiness_observer_source_digest()
+    if collector_actual != V3_READINESS_COLLECTOR_SOURCE_SHA256:
+        raise GovernanceError(
+            "metric-v3 collector source changed without a checkpoint digest update"
+        )
+    if observer_actual != V3_READINESS_OBSERVER_SOURCE_SHA256:
+        raise GovernanceError(
+            "metric-v3 observer source changed without a checkpoint digest update"
+        )
+    contract = {
+        "checkpoint": V3_READINESS_COLLECTOR_CHECKPOINT,
+        "source_sha256": collector_actual,
+        "observer_source_sha256": observer_actual,
+        "fault_sample_interval_seconds": V3_FAULT_SAMPLE_INTERVAL_SECONDS,
+        "terminal_fault_sample": "retained before deadline return for metric v3 only",
+        "pod_selection": "exactly one non-terminating ad pod and email pod",
+        "metric_selectors": "exact pod equality; regex selectors forbidden",
+        "trace_services": list(V3_TRACE_QUERY_SERVICES),
+        "fault_activation_deadline_seconds": FAULT_ACTIVATION_DEADLINE_SECONDS,
+        "poll_interval_seconds": FAULT_POLL_INTERVAL_SECONDS,
+        "restimulate_each_poll": True,
+        "recovery_observation_deadline_seconds": (V3_RECOVERY_OBSERVATION_DEADLINE_SECONDS),
+        "recovery_sample_interval_seconds": V3_RECOVERY_SAMPLE_INTERVAL_SECONDS,
+        "absent_series": "reported as null and classified as infrastructure",
+        "absent_series_wait": (
+            "label-blind: a window is unscoreable until every series is present; "
+            "only a series still absent at the observation deadline fails the case"
+        ),
+        "ad_cpu_quiescent_max_cores": V3_AD_CPU_QUIESCENT_MAX_CORES,
+        "ad_cpu_quiescence_deadline_seconds": V3_AD_CPU_QUIESCENCE_DEADLINE_SECONDS,
+    }
+    return {
+        **contract,
+        "contract_digest": hashlib.sha256(
+            json.dumps(contract, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest(),
+    }
+
+
+class LiveReadinessObserverV3(LiveScenarioObserver):
+    """Collect the same public service/metric surface for every sealed fault label."""
+
+    fault_sample_interval_seconds = V3_FAULT_SAMPLE_INTERVAL_SECONDS
+    retain_terminal_fault_sample = True
+    restimulate_each_poll = True
+    recovery_deadline_seconds = V3_RECOVERY_OBSERVATION_DEADLINE_SECONDS
+    recovery_sample_interval_seconds = V3_RECOVERY_SAMPLE_INTERVAL_SECONDS
+    require_ad_cpu_quiescent_baseline = True
+
+    def _sample(self, since: datetime) -> dict[str, Any]:
+        validate_live_readiness_collector_checkpoint()
+        script = render_live_readiness_observer_v3_script(self.producer_sha, since)
+        try:
+            output = run_remote_script(script, privileged=True)
+        except GovernanceError as error:
+            # A fail-closed marker raised by the collector itself is a governance
+            # verdict, not an infrastructure fault. Rewrapping it would launder a
+            # deliberate refusal into the AMD-0003 unlimited-retry class.
+            if "FW_G03_COLLECTOR_" in str(error):
+                raise
+            raise InfrastructureFailure(
+                f"metric-v3 live observation collection produced no result: {error}"
+            ) from error
+        try:
+            document = json.loads(output)
+        except json.JSONDecodeError as error:
+            raise InfrastructureFailure(
+                "metric-v3 live observation collection returned malformed JSON"
+            ) from error
+        expected_services = set(V3_TRACE_QUERY_SERVICES)
+        if set(document.get("trace_activity", {})) != expected_services:
+            raise GovernanceError("metric-v3 trace activity service set drifted")
+        if set(document.get("trace_errors", {})) != expected_services:
+            raise GovernanceError("metric-v3 trace error service set drifted")
+        if set(document.get("oracle_signals", {})) != expected_services:
+            raise GovernanceError("metric-v3 oracle signal service set drifted")
+        metric_pods = document.get("metric_pods")
+        if (
+            not isinstance(metric_pods, dict)
+            or not str(metric_pods.get("ad", "")).startswith("ad-")
+            or not str(metric_pods.get("email", "")).startswith("email-")
+        ):
+            raise GovernanceError("metric-v3 exact metric pod resolution drifted")
+        selected_service = TRACE_QUERY_SERVICES[self.fault_class]
+        oracle = document.pop("oracle_signals")[selected_service]
+        document.update(oracle)
+        return document
+
+    def collect_healthy_window(self) -> dict[str, Any]:
+        # Poll for a complete window rather than failing on the first scrape
+        # gap; the packet needs all six groups, so an absent series only means
+        # this sample is not yet usable.
+        deadline = time.monotonic() + FAULT_ACTIVATION_DEADLINE_SECONDS
+        while True:
+            sample = self._sample(datetime.now(UTC) - timedelta(minutes=2))
+            absent = self._absent_series(sample)
+            if not absent:
+                break
+            if time.monotonic() >= deadline:
+                raise self._absent_series_failure(absent)
+            time.sleep(FAULT_POLL_INTERVAL_SECONDS)
+            self._drive_label_workload("fault")
+        if not sample.get("ready") or sample.get("journey_status") != 200:
+            raise GovernanceError("metric-v3 healthy window is not healthy")
+        return sample
+
+
 def _operation_root() -> Path:
-    return InfraPaths.defaults().evidence_dir.parent.parent / "artifacts" / "I-0017" / "operations"
+    return (
+        InfraPaths.defaults().evidence_dir.parent.parent / "artifacts" / "fault-lab" / "operations"
+    )
 
 
 def _operation_path(operation_id: str) -> Path:
@@ -931,11 +1513,11 @@ def _operation_path(operation_id: str) -> Path:
     return _operation_root() / f"{operation_id}.json"
 
 
-def inject_live_fault(candidate_sha: str, fault_class: str) -> dict[str, Any]:
+def inject_live_fault(producer_sha: str, fault_class: str) -> dict[str, Any]:
     adapter = ADAPTERS.get(fault_class)
     if adapter is None:
         raise GovernanceError("G02 live injection uses an unknown fault class")
-    client = RemoteFlagClient(candidate_sha)
+    client = RemoteFlagClient(producer_sha)
     original = client.read()
     flags = original["flags"]
     if adapter.flag_key not in flags:
@@ -950,12 +1532,12 @@ def inject_live_fault(candidate_sha: str, fault_class: str) -> dict[str, Any]:
         "op-"
         + timestamp.strftime("%Y%m%dT%H%M%SZ-")
         + hashlib.sha256(
-            (candidate_sha + fault_class + canonical_json(original)).encode()
+            (producer_sha + fault_class + canonical_json(original)).encode()
         ).hexdigest()[:12]
     )
     record = {
         "operation_id": operation_id,
-        "candidate_sha": candidate_sha,
+        "producer_sha": producer_sha,
         "fault_class": fault_class,
         "flag_key": adapter.flag_key,
         "original": original,
@@ -979,14 +1561,14 @@ def inject_live_fault(candidate_sha: str, fault_class: str) -> dict[str, Any]:
     return {key: record[key] for key in public_keys}
 
 
-def restore_live_fault(candidate_sha: str, operation_id: str) -> dict[str, Any]:
+def restore_live_fault(producer_sha: str, operation_id: str) -> dict[str, Any]:
     path = _operation_path(operation_id)
     if not path.is_file():
         raise GovernanceError("G02 fault operation record is missing")
     record = json.loads(path.read_text(encoding="utf-8"))
-    if record.get("candidate_sha") != candidate_sha or record.get("status") != "injected":
-        raise GovernanceError("G02 fault operation is not restorable on this candidate")
-    client = RemoteFlagClient(candidate_sha)
+    if record.get("producer_sha") != producer_sha or record.get("status") != "injected":
+        raise GovernanceError("G02 fault operation is not restorable for this producer")
+    client = RemoteFlagClient(producer_sha)
     client.write(record["original"])
     restored = client.read()
     restored_digest = hashlib.sha256(canonical_json(restored).encode()).hexdigest()
@@ -1136,8 +1718,7 @@ def build_offline_staging_inventory(
         if containerd_normalized_reference(reference).startswith("docker.io/"):
             candidates.append((name, reference))
     candidates.extend(
-        (f"probe-{name.replace('_', '-')}", str(probe_images[name]))
-        for name in PROBE_IMAGE_NAMES
+        (f"probe-{name.replace('_', '-')}", str(probe_images[name])) for name in PROBE_IMAGE_NAMES
     )
 
     inventory: dict[str, str] = {}
@@ -1213,9 +1794,9 @@ def validate_lab_bootstrap(config: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-def render_k3s_bootstrap_script(config: Mapping[str, Any], candidate_sha: str) -> str:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("G02 lab candidate must be a full Git SHA")
+def render_k3s_bootstrap_script(config: Mapping[str, Any], producer_sha: str) -> str:
+    if not FULL_SHA.fullmatch(producer_sha):
+        raise GovernanceError("G02 lab producer must be a full Git SHA")
     validation = validate_lab_bootstrap(config)
     if validation["profile"] != "k3s":
         raise GovernanceError("K3s bootstrap runner cannot execute the fallback profile")
@@ -1228,7 +1809,7 @@ def render_k3s_bootstrap_script(config: Mapping[str, Any], candidate_sha: str) -
             replacements.append((source_reference, target))
     image_map = dict(replacements)
     encoded_image_map = base64.b64encode(canonical_json(image_map).encode()).decode()
-    workspace = f"/tmp/faultwitness-g02-{candidate_sha[:12]}"
+    workspace = f"/tmp/faultwitness-fault-lab-{producer_sha[:12]}"
     return f"""set -eu
 workspace={shlex.quote(workspace)}
 manifest="$workspace/opentelemetry-demo.yaml"
@@ -1293,11 +1874,11 @@ if ! /usr/local/bin/k3s kubectl -n fw-sut exec deployment/flagd -c flagd-ui -- \
   grep -q '"emailMemoryLeak"' /app/data/demo.flagd.json; then
   /usr/local/bin/k3s kubectl -n fw-sut rollout restart deployment/flagd
 fi
-/usr/local/bin/k3s kubectl -n fw-sut create configmap fw-g02-candidate-binding \
-  --from-literal=candidate_sha={candidate_sha} \
-  --from-literal=image_set_digest={validation["image_set_digest"]} \
-  --from-literal=sut_commit={SUT_COMMIT} \
-  --dry-run=client -o yaml | /usr/local/bin/k3s kubectl apply -f -
+/usr/local/bin/k3s kubectl annotate namespace fw-sut \
+  faultwitness.io/producer-sha={producer_sha} \
+  faultwitness.io/image-set-digest={validation["image_set_digest"]} \
+  faultwitness.io/sut-commit={SUT_COMMIT} --overwrite
+deadline=$(($(date +%s) + {LAB_READINESS_DEADLINE_SECONDS}))
 while true; do
   pending=$(/usr/local/bin/k3s kubectl -n fw-sut get deployment -o json | python3 -c '
 import json
@@ -1316,9 +1897,14 @@ for item in items:
         print(item["metadata"]["name"])
 ')
   test -z "$pending" && break
+  if test "$(date +%s)" -ge "$deadline"; then
+    printf 'FW_G02_LAB_DEPLOYMENT_TIMEOUT pending=%s\n' "$(echo $pending | tr '\\n' ',')"
+    exit 43
+  fi
   printf 'waiting for Deployments: %s\n' "$pending" >&2
   sleep 5
 done
+deadline=$(($(date +%s) + {LAB_READINESS_DEADLINE_SECONDS}))
 while true; do
   pending=$(/usr/local/bin/k3s kubectl -n fw-sut get statefulset opensearch -o json | python3 -c '
 import json
@@ -1336,21 +1922,72 @@ ready = (
 print("" if ready else item["metadata"]["name"])
 ')
   test -z "$pending" && break
+  if test "$(date +%s)" -ge "$deadline"; then
+    printf 'FW_G02_LAB_STATEFULSET_TIMEOUT pending=%s\n' "$pending"
+    exit 44
+  fi
   printf 'waiting for StatefulSet: %s\n' "$pending" >&2
   sleep 5
 done
-binding=$(/usr/local/bin/k3s kubectl -n fw-sut \
-  get configmap fw-g02-candidate-binding \
-  -o jsonpath='{{.data.candidate_sha}}')
-test "$binding" = {candidate_sha}
 ready=$(/usr/local/bin/k3s kubectl -n fw-sut get deployment \
   -o jsonpath='{{range .items[*]}}{{.metadata.name}}={{.status.readyReplicas}}{{"\\n"}}{{end}}')
-printf 'candidate_sha=%s\nimage_set_digest=%s\n%s' \
-  "$binding" {validation["image_set_digest"]} "$ready"
+printf 'producer_sha=%s\nimage_set_digest=%s\n%s' \
+  {producer_sha} {validation["image_set_digest"]} "$ready"
 """
 
 
-def _stage_lab_manifest(config: Mapping[str, Any], candidate_sha: str) -> None:
+def _host_stage_lab_manifest(config: Mapping[str, Any], producer_sha: str) -> None:
+    """Fetch the pinned SUT manifest on the host itself, verifying the frozen digest there."""
+    source = config["source"]
+    workspace = f"/tmp/faultwitness-fault-lab-{producer_sha[:12]}"
+    target = f"{workspace}/opentelemetry-demo.yaml"
+    uri = shlex.quote(str(source["uri"]))
+    expected = shlex.quote(str(source["sha256"]))
+    paths = BootstrapPaths.defaults()
+    bundle, _ = _remote_arguments(paths)
+    owner = shlex.quote(bundle.server_username)
+    script = f"""set -eu
+group=$(id -gn {owner})
+install -d -m 0700 -o {owner} -g "$group" {workspace}
+target={target}
+if test -f "$target" \\
+    && test "$(sha256sum "$target" | cut -d' ' -f1)" = {expected}; then
+  printf 'manifest=cached\\n'
+  exit 0
+fi
+attempt=1
+while test "$attempt" -le 5; do
+  curl -sS -L -C - -m 900 -o "$target.part" {uri} || true
+  if test -f "$target.part" \\
+      && test "$(sha256sum "$target.part" | cut -d' ' -f1)" = {expected}; then
+    mv -f "$target.part" "$target"
+    chown {owner}:"$group" "$target"
+    chmod 0600 "$target"
+    printf 'manifest=fetched attempts=%s\\n' "$attempt"
+    exit 0
+  fi
+  attempt=$((attempt + 1))
+  sleep 5
+done
+printf 'FW_G02_MANIFEST_HOST_FETCH_FAILED\\n'
+exit 1
+"""
+    output = run_remote_script(script, privileged=True)
+    if "manifest=" not in output:
+        raise GovernanceError("G02 manifest host staging produced no outcome line")
+
+
+def _stage_lab_manifest(config: Mapping[str, Any], producer_sha: str) -> None:
+    """Stage the manifest host-side; relay from the owner PC only if the host cannot fetch it."""
+    try:
+        _host_stage_lab_manifest(config, producer_sha)
+        return
+    except GovernanceError:
+        pass
+    _relay_lab_manifest_from_pc(config, producer_sha)
+
+
+def _relay_lab_manifest_from_pc(config: Mapping[str, Any], producer_sha: str) -> None:
     source = config["source"]
     with urllib.request.urlopen(str(source["uri"])) as response:  # noqa: S310
         payload = response.read()
@@ -1358,13 +1995,13 @@ def _stage_lab_manifest(config: Mapping[str, Any], candidate_sha: str) -> None:
     if actual_digest != source["sha256"]:
         raise GovernanceError("G02 upstream manifest digest drifted on the owner host")
     appdata = Path.home() / "AppData" / "Local"
-    cache = appdata / "FaultWitness" / "artifacts" / "I-0017" / "opentelemetry-demo.yaml"
+    cache = appdata / "FaultWitness" / "artifacts" / "fault-lab" / "opentelemetry-demo.yaml"
     cache.parent.mkdir(parents=True, exist_ok=True)
     cache.write_bytes(payload)
 
     paths = BootstrapPaths.defaults()
     bundle, _ = _remote_arguments(paths)
-    remote_name = f"fw-g02-manifest-{candidate_sha[:12]}.yaml"
+    remote_name = f"fw-fault-lab-manifest-{producer_sha[:12]}.yaml"
     common = [
         "-P",
         str(bundle.server_port),
@@ -1397,7 +2034,7 @@ def _stage_lab_manifest(config: Mapping[str, Any], candidate_sha: str) -> None:
         raise GovernanceError(
             "G02 manifest staging failed (" + ssh_failure_category(result.stderr) + ")"
         )
-    workspace = f"/tmp/faultwitness-g02-{candidate_sha[:12]}"
+    workspace = f"/tmp/faultwitness-fault-lab-{producer_sha[:12]}"
     owner = shlex.quote(bundle.server_username)
     run_remote_script(
         f"remote_home=$(getent passwd {owner} | cut -d: -f6); "
@@ -1410,11 +2047,78 @@ def _stage_lab_manifest(config: Mapping[str, Any], candidate_sha: str) -> None:
     )
 
 
-def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str) -> None:
+def render_host_image_staging_script(images: Mapping[str, str]) -> str:
+    """Pull the Docker Hub staging set on the host and normalize each tag to its pinned ref.
+
+    The owner PC sits behind a VPN that serves registry manifests but blocks layer blobs, so
+    a PC-side pull plus scp relay is both slower and, for some registries, impossible. The
+    host reaches every registry directly, and content it already holds needs no transfer.
+    """
+    script = "set -eu\nCTR=/usr/local/bin/k3s\n"
+    for name in sorted(images):
+        reference = images[name]
+        normalized = containerd_normalized_reference(reference)
+        digest = reference.rsplit("@", 1)[1]
+        aliases = " ".join(
+            shlex.quote(candidate) for candidate in containerd_registry_aliases(reference)
+        )
+        script += f"""
+source_ref=
+for candidate_ref in {aliases}; do
+  observed=$($CTR ctr -n k8s.io images list 2>/dev/null | \\
+    awk -v ref="$candidate_ref" '$1 == ref {{print $3; exit}}')
+  if test "$observed" = {shlex.quote(digest)}; then source_ref="$candidate_ref"; break; fi
+done
+if test -z "$source_ref"; then
+  attempt=1
+  while test "$attempt" -le 4; do
+    if $CTR ctr -n k8s.io images pull --platform linux/amd64 {shlex.quote(reference)} \\
+        >/dev/null 2>&1; then
+      break
+    fi
+    attempt=$((attempt + 1))
+    sleep 5
+  done
+  for candidate_ref in {aliases}; do
+    observed=$($CTR ctr -n k8s.io images list 2>/dev/null | \\
+      awk -v ref="$candidate_ref" '$1 == ref {{print $3; exit}}')
+    if test "$observed" = {shlex.quote(digest)}; then source_ref="$candidate_ref"; break; fi
+  done
+fi
+if test -z "$source_ref"; then
+  printf 'FW_G02_HOST_PULL_FAILED name={name}\\n'
+  exit 42
+fi
+if test "$source_ref" != {shlex.quote(normalized)}; then
+  $CTR ctr -n k8s.io images tag --force "$source_ref" {shlex.quote(normalized)} >/dev/null
+fi
+final=$($CTR ctr -n k8s.io images list 2>/dev/null | \\
+  awk -v ref={shlex.quote(normalized)} '$1 == ref {{print $3; exit}}')
+test "$final" = {shlex.quote(digest)}
+printf 'staged={name}\\n'
+"""
+    return script
+
+
+def _stage_lab_images(root: Path, config: Mapping[str, Any]) -> None:
+    """Stage the Docker Hub image set host-side, relaying from the PC only as a fallback."""
+    images = offline_staging_inventory(root, config)
+    try:
+        output = run_remote_script(render_host_image_staging_script(images), privileged=True)
+    except GovernanceError:
+        _relay_lab_images_from_pc(root, config)
+        return
+    staged = {line.split("=", 1)[1] for line in output.splitlines() if line.startswith("staged=")}
+    missing = sorted(set(images).difference(staged))
+    if missing:
+        raise GovernanceError("G02 host image staging did not confirm: " + ", ".join(missing))
+
+
+def _relay_lab_images_from_pc(root: Path, config: Mapping[str, Any]) -> None:
     images = offline_staging_inventory(root, config)
     crane = _ensure_crane(root)
     private_root = InfraPaths.defaults().evidence_dir.parent.parent
-    archive_root = private_root / "artifacts" / "I-0017" / "images"
+    archive_root = private_root / "artifacts" / "fault-lab" / "images"
     archives = {name: archive_root / f"{name}.oci.tar" for name in images}
     for name, image in images.items():
         _pull_oci_image_archive(crane, image, archives[name])
@@ -1513,7 +2217,7 @@ def _stage_lab_images(root: Path, config: Mapping[str, Any], candidate_sha: str)
             "done\n"
             'test -n "$source_ref"\n'
             f'if test "$source_ref" != {target}; then\n'
-            f"  /usr/local/bin/k3s ctr images tag --force \"$source_ref\" {target}\n"
+            f'  /usr/local/bin/k3s ctr images tag --force "$source_ref" {target}\n'
             "fi\n"
             f'test "$(/usr/local/bin/k3s ctr images list | '
             f"awk -v ref={target} '$1 == ref {{print $3; exit}}')\" = {digest}"
@@ -1540,9 +2244,7 @@ def containerd_registry_aliases(reference: str) -> tuple[str, ...]:
     return (reference,)
 
 
-def select_containerd_import_source(
-    reference: str, inventory: Mapping[str, str]
-) -> str:
+def select_containerd_import_source(reference: str, inventory: Mapping[str, str]) -> str:
     candidates = containerd_registry_aliases(reference)
     expected_digest = reference.rsplit("@", 1)[1]
     for candidate in candidates:
@@ -1616,59 +2318,34 @@ def _pull_oci_image_archive(crane: Path, image: str, destination: Path) -> None:
     )
 
 
-def _validate_lab_checkout(
-    root: Path, candidate_sha: str, evidence_head_sha: str | None = None
-) -> str:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("G02 lab candidate must be a full Git SHA")
-    expected_head = evidence_head_sha or candidate_sha
-    if not FULL_SHA.fullmatch(expected_head):
-        raise GovernanceError("G02 lab evidence head must be a full Git SHA")
-    head = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=root,
-        check=True,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-    ).stdout.strip()
-    if head != expected_head:
-        raise GovernanceError("G02 lab checkout must equal the validated evidence head")
-    ancestry = subprocess.run(
-        ["git", "merge-base", "--is-ancestor", candidate_sha, expected_head],
-        cwd=root,
-        check=False,
-        capture_output=True,
-    )
-    if ancestry.returncode != 0:
-        raise GovernanceError("G02 lab evidence head is not a candidate descendant")
-    return expected_head
-
-
-def deploy_g02_lab(
-    root: Path, candidate_sha: str, evidence_head_sha: str | None = None
-) -> dict[str, Any]:
-    _validate_lab_checkout(root, candidate_sha, evidence_head_sha)
-    if subprocess.run(["git", "status", "--porcelain"], cwd=root, capture_output=True).stdout:
-        raise GovernanceError("G02 lab deployment requires a clean candidate worktree")
+def deploy_g02_lab(root: Path) -> dict[str, Any]:
+    """Deploy the fault lab from actual content, allowing targeted dirty-tree debug."""
     config = load_lab_config(root)
     validation = validate_lab_bootstrap(config)
-    _stage_lab_manifest(config, candidate_sha)
-    _stage_lab_images(root, config, candidate_sha)
-    output = run_remote_script(render_k3s_bootstrap_script(config, candidate_sha), privileged=True)
+    provenance = producer_provenance(
+        root,
+        [root / "config" / "g02", root / "src" / "faultwitness_dev" / "g02_lab.py"],
+    )
+    _stage_lab_manifest(config, provenance.producer_sha)
+    _stage_lab_images(root, config)
+    output = run_remote_script(
+        render_k3s_bootstrap_script(config, provenance.producer_sha), privileged=True
+    )
     ready = {
         key: int(value or "0")
         for key, value in (
             line.split("=", 1)
             for line in output.splitlines()
-            if "=" in line and not line.startswith(("candidate_sha=", "image_set_digest="))
+            if "=" in line and not line.startswith(("producer_sha=", "image_set_digest="))
         )
     }
     if not ready or any(count < 1 for count in ready.values()):
         raise GovernanceError("G02 lab bootstrap completed without all deployments ready")
     return {
         **validation,
-        "candidate_sha": candidate_sha,
+        "producer_sha": provenance.producer_sha,
+        "source_digest": provenance.source_digest,
+        "dirty": provenance.dirty,
         "namespace": "fw-sut",
         "ready_deployments": ready,
     }
@@ -1737,11 +2414,27 @@ def fault_state(fault_class: str, observations: Sequence[Observation]) -> Oracle
         active = all(item["journey_failed"] and item["correlated_error"] for item in observations)
     elif fault_class == "adHighCpu":
         active = all(
-            item["cpu_rate"] > item["baseline_cpu_max"] and item["correlated_span"]
+            item["cpu_rate"]
+            >= max(
+                AD_CPU_ACTIVE_MIN_CORES,
+                item["baseline_cpu_max"] * AD_CPU_ACTIVE_MULTIPLIER,
+            )
+            and item["correlated_span"]
             for item in observations
         )
     elif fault_class == "emailMemoryLeak":
-        active = first["working_set"] < second["working_set"]
+        baseline = max(
+            float(first["baseline_working_set"]),
+            float(second["baseline_working_set"]),
+        )
+        minimum_growth = max(
+            EMAIL_MEMORY_MIN_GROWTH_BYTES,
+            baseline * EMAIL_MEMORY_MIN_GROWTH_RATIO,
+        )
+        active = (
+            float(second["working_set"]) - baseline >= minimum_growth
+            and float(second["working_set"]) - float(first["working_set"]) >= minimum_growth
+        )
     elif fault_class == "paymentFailure":
         active = all(item["checkout_failed"] and item["payment_error"] for item in observations)
     elif fault_class == "paymentUnreachable":
@@ -1805,6 +2498,7 @@ def run_scenario(
         precondition_source = "prior-scenario-recovery"
     fault_observations: list[Observation] = []
     recovery_observations: list[Observation] = []
+    primary_error: Exception | None = None
     cleanup_error: Exception | None = None
     try:
         injected = _mutated_document(original, adapter)
@@ -1814,6 +2508,8 @@ def run_scenario(
         fault_observations = [observer("fault", fault_class), observer("fault", fault_class)]
         if fault_state(str(fault_class), fault_observations) != OracleState.FAULT_ACTIVE:
             raise GovernanceError("fault oracle did not reach FAULT_ACTIVE")
+    except Exception as error:
+        primary_error = error
     finally:
         try:
             client.write(original)
@@ -1828,7 +2524,11 @@ def run_scenario(
         except Exception as error:  # cleanup must dominate the primary trial result
             cleanup_error = error
     if cleanup_error is not None:
-        raise GovernanceError(f"scenario cleanup blocked and quarantined the SUT: {cleanup_error}")
+        raise GovernanceError(
+            f"scenario cleanup blocked and quarantined the SUT: {cleanup_error}"
+        ) from cleanup_error
+    if primary_error is not None:
+        raise primary_error
     return {
         "scenario_id": scenario["scenario_id"],
         "family": scenario["family"],
@@ -1844,7 +2544,7 @@ def run_scenario(
 
 def run_gate_scenario_matrix(
     root: Path,
-    candidate_sha: str,
+    producer_sha: str,
     journal: TrialJournalProtocol,
     *,
     client_factory: Callable[[str], FlagDocumentClient] = RemoteFlagClient,
@@ -1861,9 +2561,19 @@ def run_gate_scenario_matrix(
     from faultwitness_dev.g02_baselines import build_observation_packet
 
     for scenario in seeds:
-        trial_id = f"g02-scenario-{candidate_sha}-{scenario['scenario_id'].casefold()}"
+        trial_id = f"g02-scenario-{scenario['scenario_id'].casefold()}"
+        cache_key = semantic_cache_key(
+            {
+                "sut": bootstrap["image_set_digest"],
+                "trace_service": hashlib.sha256(
+                    b"g02-live-scenario-observer-contract-v2"
+                ).hexdigest(),
+            },
+            ("sut", "trace_service"),
+            input_digest=hashlib.sha256(canonical_json(scenario).encode()).hexdigest(),
+        )
         previous = journal.read(trial_id)
-        if previous and previous.get("status") == "pass":
+        if previous and previous.get("status") == "pass" and previous.get("cache_key") == cache_key:
             payload = dict(previous["payload"])
             result = payload.get("result")
             if not isinstance(result, dict) or not isinstance(
@@ -1876,10 +2586,23 @@ def run_gate_scenario_matrix(
             completed.append(previous)
             packets.append(dict(payload["observation_packet"]))
             continue
-        journal.write(
+        if (
+            previous
+            and previous.get("cache_key") == cache_key
+            and previous.get("status") in {"metric_fail", "blocked"}
+        ):
+            return {
+                "status": previous["status"],
+                "validation": "V-G02-006",
+                "scenario_count": len(completed),
+                "failed_trial": trial_id,
+                "trials": [*completed, previous],
+            }
+        journal.begin(
             trial_id,
-            "running",
-            {
+            producer_sha=producer_sha,
+            cache_key=cache_key,
+            payload={
                 "scenario_id": scenario["scenario_id"],
                 "fault_class": scenario["fault_action"]["class"],
             },
@@ -1887,12 +2610,12 @@ def run_gate_scenario_matrix(
         try:
             result = run_scenario(
                 scenario,
-                client_factory(candidate_sha),
-                observer_factory(candidate_sha, str(scenario["fault_action"]["class"])),
+                client_factory(producer_sha),
+                observer_factory(producer_sha, str(scenario["fault_action"]["class"])),
                 precondition_recovery=precondition_recovery,
             )
             packet = build_observation_packet(scenario, result["fault_observations"])
-            record = journal.write(
+            record = journal.finish(
                 trial_id,
                 "pass",
                 {
@@ -1903,7 +2626,7 @@ def run_gate_scenario_matrix(
                 },
             )
         except InfrastructureFailure as exc:
-            record = journal.write(
+            record = journal.finish(
                 trial_id,
                 "infra_failed",
                 {
@@ -1920,7 +2643,7 @@ def run_gate_scenario_matrix(
                 "trials": [*completed, record],
             }
         except GovernanceError as exc:
-            record = journal.write(
+            record = journal.finish(
                 trial_id,
                 "metric_fail",
                 {
@@ -1946,6 +2669,146 @@ def run_gate_scenario_matrix(
         "validation": "V-G02-006",
         "scenario_count": 32,
         "trials": completed,
+        "observation_packets": packets,
+    }
+
+
+def replay_resource_scenarios(
+    root: Path,
+    producer_sha: str,
+    frozen_document: Mapping[str, Any],
+    journal: TrialJournalProtocol,
+    *,
+    sut_producer_sha: str | None = None,
+    client_factory: Callable[[str], FlagDocumentClient] = RemoteFlagClient,
+    observer_factory: Callable[[str, str], Observer] = LiveScenarioObserver,
+) -> dict[str, Any]:
+    """Replay only the eight resource cases whose observation semantics changed."""
+    frozen_trials = frozen_document.get("trials")
+    if not isinstance(frozen_trials, list) or len(frozen_trials) != 32:
+        raise GovernanceError("resource replay requires the frozen 32-case scenario artifact")
+    frozen_by_case: dict[str, dict[str, Any]] = {}
+    for record in frozen_trials:
+        if not isinstance(record, dict) or record.get("status") != "pass":
+            raise GovernanceError("resource replay cannot inherit an incomplete frozen case")
+        payload = record.get("payload")
+        if not isinstance(payload, dict) or not isinstance(payload.get("scenario_id"), str):
+            raise GovernanceError("resource replay found a malformed frozen case")
+        frozen_by_case[str(payload["scenario_id"])] = dict(record)
+    if len(frozen_by_case) != 32:
+        raise GovernanceError("resource replay found duplicate frozen case IDs")
+
+    config = load_lab_config(root)
+    bootstrap = validate_lab_bootstrap(config)
+    seeds = seed_catalog(bootstrap["image_set_digest"])
+    validate_seed_catalog(seeds, bootstrap["image_set_digest"])
+    resource_ids = {
+        str(seed["scenario_id"]) for seed in seeds if seed["family"] == "resource_capacity"
+    }
+    if len(resource_ids) != 8:
+        raise GovernanceError("resource replay must select exactly eight cases")
+
+    replacements: dict[str, dict[str, Any]] = {}
+    observed_sut_sha = sut_producer_sha or producer_sha
+    if not FULL_SHA.fullmatch(observed_sut_sha):
+        raise GovernanceError("resource replay requires a full SUT producer SHA")
+    from faultwitness_dev.g02_baselines import build_observation_packet
+
+    for scenario in seeds:
+        case_id = str(scenario["scenario_id"])
+        if case_id not in resource_ids:
+            continue
+        fault_class = str(scenario["fault_action"]["class"])
+        observer_contract = (
+            b"g02-resource-observer-contract-email-v5"
+            if fault_class == "emailMemoryLeak"
+            else b"g02-resource-observer-contract-v4"
+        )
+        trial_id = f"g02-v2-resource-{case_id.casefold()}"
+        cache_key = semantic_cache_key(
+            {
+                "sut": bootstrap["image_set_digest"],
+                "trace_service": hashlib.sha256(observer_contract).hexdigest(),
+            },
+            ("sut", "trace_service"),
+            input_digest=hashlib.sha256(canonical_json(scenario).encode()).hexdigest(),
+        )
+        previous = journal.read(trial_id)
+        if previous and previous.get("status") == "pass" and previous.get("cache_key") == cache_key:
+            replacements[case_id] = previous
+            continue
+        if (
+            previous
+            and previous.get("cache_key") == cache_key
+            and previous.get("status") in {"metric_fail", "blocked"}
+        ):
+            raise GovernanceError(f"resource case {case_id} requires a semantic fix before replay")
+        journal.begin(
+            trial_id,
+            producer_sha=producer_sha,
+            cache_key=cache_key,
+            payload={
+                "scenario_id": case_id,
+                "fault_class": fault_class,
+            },
+        )
+        try:
+            result = run_scenario(
+                scenario,
+                client_factory(observed_sut_sha),
+                observer_factory(
+                    observed_sut_sha,
+                    fault_class,
+                ),
+            )
+            packet = build_observation_packet(scenario, result["fault_observations"])
+            record = journal.finish(
+                trial_id,
+                "pass",
+                {
+                    "scenario_id": case_id,
+                    "fault_class": fault_class,
+                    "result": result,
+                    "observation_packet": packet,
+                },
+            )
+        except InfrastructureFailure as exc:
+            journal.finish(
+                trial_id,
+                "infra_failed",
+                {
+                    "scenario_id": case_id,
+                    "fault_class": fault_class,
+                    "reason": str(exc),
+                },
+            )
+            raise
+        except GovernanceError as exc:
+            journal.finish(
+                trial_id,
+                "metric_fail",
+                {
+                    "scenario_id": case_id,
+                    "fault_class": fault_class,
+                    "reason": str(exc),
+                },
+            )
+            raise
+        replacements[case_id] = record
+
+    combined = [
+        replacements.get(str(seed["scenario_id"]), frozen_by_case[str(seed["scenario_id"])])
+        for seed in seeds
+    ]
+    packets = [dict(record["payload"]["observation_packet"]) for record in combined]
+    return {
+        "status": "pass",
+        "validation": "G03-READINESS-RESOURCE-REPLAY",
+        "scenario_count": 32,
+        "inherited_case_count": 24,
+        "replayed_case_count": 8,
+        "replayed_case_ids": sorted(resource_ids),
+        "trials": combined,
         "observation_packets": packets,
     }
 
@@ -1995,8 +2858,11 @@ def scripted_observer(phase: str, fault_class: str) -> Observation:
         return {"ready": True, "journey_healthy": True, "signal_not_worsening": True}
     return {
         "productCatalogFailure": {"journey_failed": True, "correlated_error": True},
-        "adHighCpu": {"cpu_rate": 2.0, "baseline_cpu_max": 1.0, "correlated_span": True},
-        "emailMemoryLeak": {"working_set": 2.0},
+        "adHighCpu": {"cpu_rate": 6.0, "baseline_cpu_max": 1.0, "correlated_span": True},
+        "emailMemoryLeak": {
+            "working_set": 3 * 1024 * 1024,
+            "baseline_working_set": 1 * 1024 * 1024,
+        },
         "paymentFailure": {"checkout_failed": True, "payment_error": True},
         "paymentUnreachable": {"checkout_failed": True, "connection_error": True},
         "kafkaQueueProblems": {"consumer_lag": 2.0, "baseline_lag": 1.0, "kafka_error": True},
@@ -2004,11 +2870,14 @@ def scripted_observer(phase: str, fault_class: str) -> Observation:
 
 
 def scripted_sequence_observer() -> Observer:
-    memory_samples = iter((2.0, 3.0))
+    memory_samples = iter((3 * 1024 * 1024, 5 * 1024 * 1024))
 
     def observe(phase: str, fault_class: str) -> Observation:
         if phase == "fault" and fault_class == "emailMemoryLeak":
-            return {"working_set": next(memory_samples)}
+            return {
+                "working_set": next(memory_samples),
+                "baseline_working_set": 1 * 1024 * 1024,
+            }
         return scripted_observer(phase, fault_class)
 
     return observe
@@ -2017,114 +2886,3 @@ def scripted_sequence_observer() -> Observer:
 def _write_json(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-
-
-def evaluate_i0017(root: Path, candidate_sha: str) -> dict[str, Any]:
-    head = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=root,
-        check=True,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-    ).stdout.strip()
-    if head != candidate_sha:
-        raise GovernanceError("EVAL-G02-002 candidate SHA must equal checked-out HEAD")
-    if subprocess.run(["git", "status", "--porcelain"], cwd=root, capture_output=True).stdout:
-        raise GovernanceError("EVAL-G02-002 requires a clean candidate worktree")
-    loaded = validate_repository_schemas(root)
-    state = loaded["PROJECT_STATE.yaml"]
-    iteration = loaded["governance/iterations/I-0017.yaml"]
-    if (
-        state.get("active_gate") != "G02"
-        or state.get("active_gate_status") != "in_progress"
-        or state.get("active_iteration") != "I-0017"
-        or iteration.get("status") != "in_progress"
-    ):
-        raise GovernanceError("EVAL-G02-002 requires I-0017 as the sole active Iteration")
-
-    started_at = datetime.now(UTC).isoformat()
-    config = load_lab_config(root)
-    bootstrap = validate_lab_bootstrap(config)
-    seeds = seed_catalog(bootstrap["image_set_digest"])
-    validate_seed_catalog(seeds, bootstrap["image_set_digest"])
-
-    by_fault = {seed["fault_action"]["class"]: seed for seed in seeds}
-    adapter_results: list[dict[str, Any]] = []
-    for fault_class in ADAPTERS:
-        result = run_scenario(
-            by_fault[fault_class],
-            MemoryFlagClient(base_flag_document()),
-            scripted_sequence_observer(),
-        )
-        adapter_results.append(result)
-
-    smoke_faults = {
-        "change_config": "productCatalogFailure",
-        "resource_capacity": "adHighCpu",
-        "dependency_network": "paymentFailure",
-        "runtime_data": "kafkaQueueProblems",
-    }
-    smoke_results: list[dict[str, Any]] = []
-    for family, fault_class in smoke_faults.items():
-        scenario = copy.deepcopy(by_fault[fault_class])
-        scenario["scenario_id"] = "SMOKE-G02-" + family.upper().replace("_", "-")
-        result = run_scenario(
-            scenario,
-            RemoteFlagClient(candidate_sha),
-            LiveScenarioObserver(candidate_sha, fault_class),
-        )
-        smoke_results.append(result)
-
-    artifact_dir = root / "docs" / "evals" / "EVAL-G02-002" / "artifacts"
-    _write_json(
-        artifact_dir / "seed-registry.json",
-        {
-            "schema_version": "1.0.0",
-            "candidate_sha": candidate_sha,
-            "validation": "V-G02-004",
-            "iteration_n": 32,
-            "image_set_digest": bootstrap["image_set_digest"],
-            "seeds": seeds,
-            "status": "pass",
-        },
-    )
-    _write_json(
-        artifact_dir / "fault-oracle-contract.json",
-        {
-            "schema_version": "1.0.0",
-            "candidate_sha": candidate_sha,
-            "validation": "V-G02-005",
-            "iteration_n": 6,
-            "adapters": adapter_results,
-            "status": "pass",
-        },
-    )
-    _write_json(
-        artifact_dir / "scenario-smoke.json",
-        {
-            "schema_version": "1.0.0",
-            "candidate_sha": candidate_sha,
-            "validation": "V-G02-006",
-            "iteration_n": 4,
-            "environment": "private-k3s-live",
-            "scenarios": smoke_results,
-            "owned_gate_runners": ["g02.lab_bootstrap", "g02.scenario_matrix"],
-            "start_time": started_at,
-            "end_time": datetime.now(UTC).isoformat(),
-            "status": "pass",
-            "open_evidence": [],
-        },
-    )
-    return {
-        "eval_id": "EVAL-G02-002",
-        "candidate_sha": candidate_sha,
-        "status": "pass",
-        "checks": {
-            "seed_registry": "pass",
-            "fault_oracle_contract": "pass",
-            "scenario_smoke": "pass",
-            "lab_bootstrap_runner": "pass",
-        },
-        "open_evidence": [],
-    }

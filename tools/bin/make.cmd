@@ -4,7 +4,12 @@ set "SCRIPT_DIR=%~dp0"
 for %%I in ("%SCRIPT_DIR%\..\..") do set "REPO_ROOT=%%~fI"
 
 if "%~1"=="" (
-  echo Usage: make ^<verify-fast^|eval-changed^|audit-g00^|eval-g00^|eval-g00-close^>
+  echo Usage: make verify-fast
+  exit /b 2
+)
+
+if /I not "%~1"=="verify-fast" (
+  echo Only verify-fast is an active make target. Historical Gate commands live at their tags.
   exit /b 2
 )
 

@@ -49,11 +49,24 @@ tar -xzf "$artifact_dir/helm-$HELM_VERSION.tar.gz" -C "$helm_extract"
 install -m 0755 "$helm_extract/linux-amd64/helm" /usr/local/bin/helm
 
 step=write-k3s-config
-node_ip=$(ip -4 route get 1.1.1.1 | awk '{for (i=1; i<=NF; i++) if ($i == "src") {print $(i+1); exit}}')
+# Probing a public address (`route get 1.1.1.1`) picks whichever interface a VPN or
+# transparent proxy has claimed in a policy routing table, which on this host yields the
+# tunnel's 198.18.0.1 rather than the LAN address. Read the main-table default route
+# instead: that is the interface the node is actually reachable on.
+node_ip=$(ip -4 route show default table main | awk '{for (i=1; i<=NF; i++) if ($i == "src") {print $(i+1); exit}}')
+if [ -z "$node_ip" ]; then
+    gateway=$(ip -4 route show default table main | awk '{for (i=1; i<=NF; i++) if ($i == "via") {print $(i+1); exit}}')
+    [ -n "$gateway" ]
+    node_ip=$(ip -4 route get "$gateway" | awk '{for (i=1; i<=NF; i++) if ($i == "src") {print $(i+1); exit}}')
+fi
 case "$node_ip" in
     10.*|192.168.*|172.1[6-9].*|172.2[0-9].*|172.3[0-1].*) ;;
     *) printf 'FW_INSTALL_FAILED step=private-node-ip status=1\n' >&2; exit 1 ;;
 esac
+# Self-check the derivation: a node IP that is not configured on any interface would
+# produce an API server that binds nothing.
+step=confirm-node-ip-local
+ip -4 -o addr show | grep -q " inet $node_ip/"
 cat >/etc/rancher/k3s/config.yaml <<FW_K3S_CONFIG
 cluster-init: true
 cluster-cidr: 10.42.0.0/16
@@ -108,13 +121,11 @@ systemctl enable --now k3s.service
 
 step=wait-k3s-ready
 ready=false
-attempt=0
-while [ "$attempt" -lt 60 ]; do
+while true; do
     if /usr/local/bin/k3s kubectl get --raw=/readyz >/dev/null 2>&1; then
         ready=true
         break
     fi
-    attempt=$((attempt + 1))
     sleep 2
 done
 [ "$ready" = true ]
@@ -122,8 +133,12 @@ done
 step=verify-install
 /usr/local/bin/k3s --version | grep -F "$K3S_VERSION" >/dev/null
 /usr/local/bin/helm version --short | grep -F "$HELM_VERSION" >/dev/null
+# api_bind_scope is private-node (versions.lock.yaml), so the API server binds the node IP
+# in addition to loopback. Require loopback to be present and reject any binding wider than
+# the node IP -- a wildcard or public 6443 is the exposure this step exists to catch.
 ss -H -lnt | awk '$4 ~ /:6443$/ {print $4}' | grep -Eq '^(127\.0\.0\.1|\[::1\]):6443$'
-if ss -H -lnt | awk '$4 ~ /:6443$/ {print $4}' | grep -Ev '^(127\.0\.0\.1|\[::1\]):6443$' | grep -q .; then
+if ss -H -lnt | awk '$4 ~ /:6443$/ {print $4}' \
+    | grep -Ev "^(127\.0\.0\.1|\[::1\]|$node_ip):6443\$" | grep -q .; then
     exit 1
 fi
 step=complete

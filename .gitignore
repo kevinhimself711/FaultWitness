@@ -31,3 +31,15 @@ evidence.local.yaml
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Host credential handoffs. These carry SSH passwords, keys, and endpoints and must never
+# be committed; they exist only on the operator workstation.
+/newinfo-*/
+/oldinfo-*/
+
+# Crash dumps left by Windows/Cygwin tooling.
+*.stackdump
+
+# Operator-local execution conventions (internal host addresses, fallback endpoints).
+# The durable lessons live in the committed AGENTS.md and docs/governance/GOVERNANCE_V2.md.
+/CLAUDE.md

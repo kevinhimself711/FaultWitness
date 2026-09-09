@@ -10,11 +10,13 @@ import pytest
 
 from faultwitness.contracts.models import TraceEnvelope
 from faultwitness_dev.errors import GovernanceError
+from faultwitness_dev.experiment import TrialJournal
 from faultwitness_dev.g02_collectors import (
-    CandidateProbeBackend,
     MemoryProbeBackend,
     ProbeBlockedError,
+    ProbeContext,
     ProbeInfrastructureError,
+    RemoteProbeBackend,
     build_provisioning_plan,
     canary_values,
     langsmith_access_probe,
@@ -22,13 +24,6 @@ from faultwitness_dev.g02_collectors import (
     run_canary_matrix,
     run_trace_matrix,
     validate_provisioning_plan,
-)
-from faultwitness_dev.g02_eval import (
-    G02_PHASES,
-    PhaseContext,
-    PhaseEngine,
-    TrialJournal,
-    _owned_phase_handlers,
 )
 from faultwitness_dev.g02_isolation import CANARY_SURFACES, TRACE_STAGES, access_cell_contract
 from faultwitness_dev.schemas import load_data
@@ -38,14 +33,9 @@ CANDIDATE = "1" * 40
 ENVIRONMENT = "2" * 64
 
 
-def _context() -> PhaseContext:
-    return PhaseContext(
-        candidate_sha=CANDIDATE,
-        runtime_image_digests=("3" * 64,),
-        sut_image_set_digest="4" * 64,
-        config_digest="5" * 64,
-        evaluator_digest="6" * 64,
-        dataset_digest="7" * 64,
+def _context() -> ProbeContext:
+    return ProbeContext(
+        producer_sha=CANDIDATE,
         environment_fingerprint=ENVIRONMENT,
     )
 
@@ -59,9 +49,9 @@ def _remote_probe_module():  # type: ignore[no-untyped-def]
     return module
 
 
-def test_provisioning_plan_is_bound_pinned_and_credential_free() -> None:
+def test_provisioning_plan_is_attributed_pinned_and_credential_free() -> None:
     plan = build_provisioning_plan(ROOT, _context())
-    assert plan["candidate_sha"] == CANDIDATE
+    assert plan["producer_sha"] == CANDIDATE
     assert plan["environment_fingerprint"] == ENVIRONMENT
     assert len(plan["principals"]) == 4
     assert len(plan["prefixes"]) == 5
@@ -75,7 +65,7 @@ def test_provisioning_plan_is_bound_pinned_and_credential_free() -> None:
 
 
 def test_remote_provisioning_contract_matches_local_digest_and_cross_boundary_policy() -> None:
-    backend = CandidateProbeBackend(ROOT, {})
+    backend = RemoteProbeBackend(ROOT)
     request = backend._request(_context())
     remote = _remote_probe_module()
     local_plan = build_provisioning_plan(ROOT, _context())
@@ -158,11 +148,11 @@ def test_remote_probe_uses_python38_compatible_utc_semantics() -> None:
     assert timestamp.isoformat().endswith("+00:00")
 
 
-def test_remote_trace_envelope_is_exactly_replayable_for_one_candidate() -> None:
+def test_remote_trace_envelope_is_exactly_replayable_for_one_producer() -> None:
     remote = _remote_probe_module()
     request = {
-        "candidate_sha": CANDIDATE,
-        "candidate_timestamp": "2026-07-25T19:30:00-04:00",
+        "producer_sha": CANDIDATE,
+        "producer_timestamp": "2026-07-25T19:30:00-04:00",
         "environment_fingerprint": ENVIRONMENT,
     }
 
@@ -182,10 +172,10 @@ def test_remote_trace_envelope_is_exactly_replayable_for_one_candidate() -> None
     assert len(strict.spans) == 6
 
 
-def test_candidate_backend_normalizes_commit_timestamp_to_strict_utc(
+def test_remote_backend_normalizes_producer_timestamp_to_strict_utc(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    backend = CandidateProbeBackend(ROOT, {})
+    backend = RemoteProbeBackend(ROOT)
     monkeypatch.setattr(
         "faultwitness_dev.g02_collectors.subprocess.run",
         lambda *_args, **_kwargs: subprocess.CompletedProcess(
@@ -196,7 +186,7 @@ def test_candidate_backend_normalizes_commit_timestamp_to_strict_utc(
         ),
     )
 
-    assert backend._candidate_timestamp(_context()) == "2026-07-25T23:30:00+00:00"
+    assert backend._producer_timestamp(_context()) == "2026-07-25T23:30:00+00:00"
 
 
 @pytest.mark.parametrize(
@@ -387,33 +377,10 @@ def test_infrastructure_failure_resumes_only_the_failed_access_cell(tmp_path: Pa
     assert backend.calls["access"] == 60
 
 
-def test_phase_handlers_produce_target_artifacts_without_phase_inputs(tmp_path: Path) -> None:
-    context = _context()
-    engine = PhaseEngine(G02_PHASES, context, tmp_path / "journal")
-    handlers = _owned_phase_handlers(
-        tmp_path,
-        {"_eval_id": "EVAL-G02-010"},
-        engine,
-        MemoryProbeBackend(ROOT),
-    )
-    journal = TrialJournal(tmp_path / "journal")
-    expected = {
-        "isolation-access-matrix": 60,
-        "trace-six-stage-matrix": 6,
-        "all-surface-canary": 22,
-    }
-    for phase_id, count in expected.items():
-        result = handlers[phase_id](context, journal)
-        assert result["status"] == "pass"
-        assert result["artifact_path"].endswith(f"{phase_id}/matrix.json")
-        assert (tmp_path / result["artifact_path"]).is_file()
-        assert count in result.values()
-
-
-def test_candidate_backend_classifies_transport_and_rejects_raw_canary(
+def test_remote_backend_classifies_transport_and_rejects_raw_canary(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    backend = CandidateProbeBackend(ROOT, {})
+    backend = RemoteProbeBackend(ROOT)
 
     def transport_failure(*_args, **_kwargs):  # type: ignore[no-untyped-def]
         raise GovernanceError("ssh transport unavailable")

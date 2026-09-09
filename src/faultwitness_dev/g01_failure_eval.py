@@ -59,10 +59,10 @@ def _transition_sql(root: Path) -> tuple[str, int]:
     return "\n".join(statements), count
 
 
-def run_postgres_failure_matrix(root: Path, candidate_sha: str) -> dict[str, Any]:
+def run_postgres_failure_matrix(root: Path, producer_sha: str) -> dict[str, Any]:
     """Execute all-transition atomicity, duplicate, crash, and fencing checks."""
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+    if not FULL_SHA.fullmatch(producer_sha):
+        raise GovernanceError("producer SHA must contain 40 lowercase hexadecimal characters")
     transition_sql, transition_count = _transition_sql(root)
     if transition_count != 82:
         raise GovernanceError(f"frozen transition count drifted: {transition_count}")
@@ -131,9 +131,6 @@ ROLLBACK;
 """
     encoded = base64.b64encode(gzip.compress(sql.encode(), mtime=0)).decode()
     script = f"""set -eu
-binding=$(/usr/local/bin/k3s kubectl -n fw-system get configmap \
-  fw-runtime-candidate-binding -o jsonpath='{{.data.candidate_sha}}')
-test "$binding" = {candidate_sha}
 printf %s {encoded} | base64 -d | gzip -d | \
   /usr/local/bin/k3s kubectl -n fw-data exec -i postgres-0 -- sh -ec \
   'PGPASSWORD="$POSTGRES_PASSWORD" psql -qAt -v ON_ERROR_STOP=1 \
@@ -141,7 +138,7 @@ printf %s {encoded} | base64 -d | gzip -d | \
 """
     lines = [
         line.strip()
-        for line in run_remote_script(script, privileged=True, timeout=300).splitlines()
+        for line in run_remote_script(script, privileged=True).splitlines()
         if line.strip()
     ]
     try:
@@ -154,7 +151,7 @@ printf %s {encoded} | base64 -d | gzip -d | \
             f"PostgreSQL failure matrix counter mismatch: expected={expected}, actual={counters}"
         )
     return {
-        "candidate_sha": candidate_sha,
+        "producer_sha": producer_sha,
         "status": "pass",
         "transition_count": 82,
         "aggregate_count": 82,
@@ -170,11 +167,11 @@ printf %s {encoded} | base64 -d | gzip -d | \
     }
 
 
-def run_redis_recovery_matrix(candidate_sha: str) -> dict[str, Any]:
+def run_redis_recovery_matrix(producer_sha: str) -> dict[str, Any]:
     """Leave messages pending under a crashed consumer, reclaim, ACK, and drain."""
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
-    stream = f"fw:g01:recovery:{candidate_sha[:12]}"
+    if not FULL_SHA.fullmatch(producer_sha):
+        raise GovernanceError("producer SHA must contain 40 lowercase hexadecimal characters")
+    stream = f"fw:recovery:{producer_sha[:12]}"
     inner = f"""set -eu
 cli() {{ redis-cli --no-auth-warning -a "$REDIS_PASSWORD" --raw "$@"; }}
 stream='{stream}'
@@ -197,15 +194,12 @@ printf '%s\n%s\n%s\n' "$pending_before" "$length" "$pending_after"
 """
     encoded = base64.b64encode(inner.encode()).decode()
     script = f"""set -eu
-binding=$(/usr/local/bin/k3s kubectl -n fw-system get configmap \
-  fw-runtime-candidate-binding -o jsonpath='{{.data.candidate_sha}}')
-test "$binding" = {candidate_sha}
 printf %s {encoded} | base64 -d | \
   /usr/local/bin/k3s kubectl -n fw-data exec -i redis-0 -- sh -s
 """
     lines = [
         line.strip()
-        for line in run_remote_script(script, privileged=True, timeout=180).splitlines()
+        for line in run_remote_script(script, privileged=True).splitlines()
         if line.strip()
     ]
     try:
@@ -219,7 +213,7 @@ printf %s {encoded} | base64 -d | \
             f"pending_after={pending_after}"
         )
     return {
-        "candidate_sha": candidate_sha,
+        "producer_sha": producer_sha,
         "status": "pass",
         "published_count": 100,
         "crashed_consumer_pending": 100,
@@ -229,7 +223,7 @@ printf %s {encoded} | base64 -d | \
     }
 
 
-def _control_api_load_manifest(candidate_sha: str) -> str:
+def _control_api_load_manifest(image: str, producer_sha: str) -> str:
     script = f'''import asyncio
 import datetime
 import json
@@ -293,7 +287,7 @@ async def main():
             await connection.execute("DELETE FROM incident_owner.pending_approval WHERE tenant_id=$1", TENANT)
             await connection.execute("DELETE FROM incident_owner.incident WHERE tenant_id=$1", TENANT)
             remaining = await connection.fetchval("SELECT count(*) FROM incident_owner.incident WHERE tenant_id=$1", TENANT)
-        print(json.dumps({{"candidate_sha":"{candidate_sha}","event_count":event_count,
+        print(json.dumps({{"producer_sha":"{producer_sha}","event_count":event_count,
             "ordered":ordered,"reconnects":reconnects,"final_cursor":cursor,
             "retention_gap":retention_gap,"slow_consumer_closed":slow_consumer_closed,
             "remaining_rows":remaining}}, sort_keys=True))
@@ -340,7 +334,6 @@ kind: Job
 metadata: {{name: g01-api-load, namespace: fw-control}}
 spec:
   backoffLimit: 0
-  activeDeadlineSeconds: 900
   template:
     metadata: {{labels: {{app.kubernetes.io/name: g01-api-load}}}}
     spec:
@@ -348,7 +341,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: matrix
-          image: docker.io/faultwitness/control-api:{candidate_sha}
+          image: {image}
           imagePullPolicy: Never
           command: [python, /config/matrix.py]
           envFrom: [{{secretRef: {{name: fw-control-postgres-env}}}}]
@@ -358,18 +351,26 @@ spec:
 """
 
 
-def run_control_api_load_matrix(candidate_sha: str) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
-    manifest = base64.b64encode(_control_api_load_manifest(candidate_sha).encode()).decode()
+def run_control_api_load_matrix() -> dict[str, Any]:
+    observed = run_remote_script(
+        r"""set -eu
+image=$(/usr/local/bin/k3s kubectl -n fw-control get deployment control-api -o jsonpath='{.spec.template.spec.containers[0].image}')
+producer=$(/usr/local/bin/k3s kubectl -n fw-control get deployment control-api -o jsonpath='{.spec.template.metadata.annotations.faultwitness\.io/producer-sha}')
+test -n "$image"
+test -n "$producer"
+printf '%s\n%s\n' "$image" "$producer"
+""",
+        privileged=True,
+    ).splitlines()
+    if len(observed) != 2 or not FULL_SHA.fullmatch(observed[1]):
+        raise GovernanceError("Control API observed provenance is incomplete")
+    image, producer_sha = observed
+    manifest = base64.b64encode(_control_api_load_manifest(image, producer_sha).encode()).decode()
     script = f"""set -eu
-binding=$(/usr/local/bin/k3s kubectl -n fw-control get configmap \
-  fw-control-api-candidate -o jsonpath='{{.data.candidate_sha}}')
-test "$binding" = {candidate_sha}
 /usr/local/bin/k3s kubectl -n fw-control delete job g01-api-load \
   --ignore-not-found --wait=true >/dev/null
 printf %s {manifest} | base64 -d | /usr/local/bin/k3s kubectl apply -f - >/dev/null
-for attempt in $(seq 1 450); do
+while :; do
   succeeded=$(/usr/local/bin/k3s kubectl -n fw-control get job g01-api-load \
     -o jsonpath='{{.status.succeeded}}')
   failed=$(/usr/local/bin/k3s kubectl -n fw-control get job g01-api-load \
@@ -378,16 +379,15 @@ for attempt in $(seq 1 450); do
   test "$failed" = 1 && exit 1
   sleep 2
 done
-test "$succeeded" = 1
 /usr/local/bin/k3s kubectl -n fw-control logs job/g01-api-load
 """
-    output = run_remote_script(script, privileged=True, timeout=960).strip()
+    output = run_remote_script(script, privileged=True).strip()
     try:
         result = json.loads(output)
     except json.JSONDecodeError as error:
         raise GovernanceError("Control API load matrix returned invalid sanitized JSON") from error
     expected = {
-        "candidate_sha": candidate_sha,
+        "producer_sha": producer_sha,
         "event_count": 10_000,
         "ordered": True,
         "reconnects": 100,

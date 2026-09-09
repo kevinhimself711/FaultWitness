@@ -1,73 +1,47 @@
-# Evidence Asset Synchronization
+# Evidence and release synchronization
 
 ## Purpose
 
-FaultWitness separates implementation from evidence finalization without rewriting history. An
-Iteration candidate is immutable once candidate evaluation begins. The producing runner writes the
-evaluated revision and artifact digests during the real run; URLs, job IDs, sanitized summaries, and
-lifecycle records discovered afterward are added only through an evidence-only synchronization
-commit.
+Evidence synchronization records what actually ran; it does not create a second implementation
+identity or block the next experiment.
 
-## Protocol
+## Runtime evidence
 
-1. Complete implementation, tests, documentation, and preliminary Eval assets in one candidate commit.
-2. Freeze and pass the full `candidate_sha` explicitly to every candidate-bound runner. Do not infer
-   it from the newest commit after the freeze.
-3. Do not amend or force-push a candidate after evaluation starts; a functional correction creates
-   a new candidate SHA and reruns the phases invalidated by the frozen dependency/cache protocol.
-4. The real producing run writes `evaluated_revision`, result, timestamps, and artifact digests. In
-   a separate asset-only change, synchronize the Iteration `commit`, evidence URLs, Claims,
-   Changelog, and project state. Evidence sync may not edit `evaluated_revision`.
-5. The evidence-only change may not alter source, tests, schemas, contracts, thresholds, lockfiles, or workflow behavior.
-6. Merge the evidence sync through the same protected `main` workflow and preserve its CI URL in the Eval report.
+Each trial or phase journal atomically records its producer commit, named runtime checkpoint
+digests, configuration/data/model/environment facts, start/end timestamps, terminal status, and
+artifact digests. `execution_attempt` changes only when work executes; `record_version` changes on
+document updates.
+
+Passed evidence remains valid while its explicit inputs and required checkpoints remain unchanged.
+Reports, Claims, roadmap text, `PROJECT_STATE.yaml`, and other documentation do not participate in
+cache identity.
 
 ## Gate closure
 
-Gate closure is stricter than Iteration evidence sync. It evaluates one already-merged candidate SHA, produces the immutable Gate report, advances `PROJECT_STATE.yaml`, and creates a separate close commit and Gate tag. A closure commit may contain only governance and evidence assets and may not retroactively change the evaluated candidate.
+At closure, aggregate existing journals without re-executing them, write the Gate Report once, and
+create one release manifest containing:
 
-From the G01 retrospective maintenance protocol onward, Gate closure uses a generated exact
-allowlist for two consecutive Gates instead of a copied nine-path constant. The allowlist requires
-`AGENTS.md`, `README.md`, `PROJECT_STATE.yaml`, `docs/roadmap/PHASES.md`, Changelog, ADR/Claim
-indexes, the closing report, the next Gate placeholder plan/report, and both machine Gate records.
-Source, tests, schemas, workflows, lockfiles, thresholds, and deployment assets remain forbidden.
+- one release commit SHA and the factual producer SHA(s);
+- image, config, dataset, model, locked-test, Ground-Truth, and environment digests as applicable;
+- result artifact paths and digests;
+- the frozen metric sample sizes, thresholds with the measured reference values they resolved
+  against, and the terminal verdict.
 
-`verify-fast` compares lifecycle front matter in the root/status Markdown surfaces with
-`PROJECT_STATE.yaml`. Closure cannot pass while active Gate, Gate status, active Iteration, or last
-closed Gate disagree.
-
-## Candidate and evidence identities
-
-ADR-0009 separates `candidate_sha`, which identifies evaluated behavior and runtime artifacts, from
-`evidence_head_sha`, which identifies an allowlisted asset-only descendant. An evidence-only commit
-does not retroactively rename the runtime candidate. Any behavior, test-semantic, evaluator,
-threshold, workflow, dependency, deployment, dataset, or runtime-artifact change creates a new
-candidate and invalidates the affected evidence.
-
-Current HEAD is not a third identity. A checkout at `candidate_sha` is valid, and a checkout at an
-allowlisted evidence-only descendant is valid when ancestry, every intervening path, and all subject
-digests are verified. The latter must not redeploy or rerun solely because HEAD differs from the
-business candidate.
-
-No tracked binding, manifest, report, or closure asset is required to contain the SHA of the commit
-that contains itself. It records the execution checkpoint that existed before the artifact was
-produced. The identity of the subsequent evidence/closure commit is supplied by Git ancestry and the
-Gate tag, not by a self-referential content rewrite.
-
-Completed Iterations remain completed. A post-completion defect creates a new forward corrective
-Iteration with a link to the affected Iteration and evidence. It may block later work, but lifecycle
-state never moves backward and the historical record is not reopened.
-
-These identity rules are provenance controls. They never change sample sizes, locked tests, Ground
-Truth, quality/performance thresholds, health windows, token/cost ceilings, or pass/fail semantics.
+Advance `PROJECT_STATE.yaml` once at the Gate boundary and tag the release when explicitly
+authorized. There is no candidate/evidence/governance multi-SHA protocol, evidence-only commit
+allowlist, HEAD equality, lifecycle-front-matter synchronization, or self-referential revision
+rewrite.
 
 ## Failure handling
 
-Failed candidates, negative experiments, and superseded reports remain in Git history. A defect in
-a completed Iteration creates a new forward corrective Iteration for that owning domain; it does not
-reopen or rewrite the completed record. If an active Gate orchestration requires implementation,
-policy, zero-tolerance, metric, quality, or performance correction, that orchestration becomes an
-immutable failed record. After the corrective closes, create a new orchestration Iteration for the
-new candidate. It reuses only exact-key or expressly inherited evidence allowed by the frozen
-protocol and executes every invalidated phase. Transient infrastructure failure resumes the current
-phase/trial, and pure synchronization of already-existing evidence remains asset-only. Never lower a
-threshold or modify locked evidence to manufacture a pass.
+Persist the failed journal, fix one root cause in the existing implementation/runner, prove the
+changed seam, replay affected work only, and resume the same experiment. Failed evidence remains in
+the journal or Git history. A new Gate Plan amendment is required only for new scope, metric,
+threshold, or substantial framework—not for a minimal deterministic debug fix. Resolving a
+threshold's pending reference value from the first run that passes the instrument-validity checks is
+not a threshold change: the target's form and margin are unchanged. Correcting a reference value
+already anchored to a demonstrated instrument defect does need an amendment, and that amendment
+names the defect rather than the inconvenience.
+
+The G00–G02 synchronization protocol remains available only at its Gate tags; see
+[the legacy governance boundary](LEGACY_GOVERNANCE_EPOCH.md).

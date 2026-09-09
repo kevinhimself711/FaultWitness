@@ -2,8 +2,6 @@ import inspect
 import json
 from pathlib import Path
 
-import pytest
-
 from faultwitness_dev.control_api_deploy import (
     deploy_control_api,
     inspect_control_api,
@@ -12,23 +10,24 @@ from faultwitness_dev.control_api_deploy import (
     run_control_api_smoke,
     run_keycloak_outage_smoke,
 )
-from faultwitness_dev.errors import GovernanceError
 
 
-@pytest.mark.parametrize("candidate", ["", "abc", "A" * 40, "0" * 39])
-def test_control_api_deploy_rejects_invalid_candidate(candidate: str) -> None:
-    with pytest.raises(GovernanceError, match="candidate SHA"):
-        deploy_control_api(Path.cwd(), candidate)
-    with pytest.raises(GovernanceError, match="candidate SHA"):
-        inspect_control_api(candidate)
-    with pytest.raises(GovernanceError, match="candidate SHA"):
-        provision_keycloak_realm(Path.cwd(), candidate)
-    with pytest.raises(GovernanceError, match="candidate SHA"):
-        inspect_keycloak_realm(candidate)
-    with pytest.raises(GovernanceError, match="candidate SHA"):
-        run_control_api_smoke(candidate)
-    with pytest.raises(GovernanceError, match="candidate SHA"):
-        run_keycloak_outage_smoke(candidate)
+def test_control_api_deploy_has_no_head_binding_or_orchestration_timeout() -> None:
+    sources = "\n".join(
+        inspect.getsource(function)
+        for function in (
+            deploy_control_api,
+            inspect_control_api,
+            provision_keycloak_realm,
+            inspect_keycloak_realm,
+            run_control_api_smoke,
+            run_keycloak_outage_smoke,
+        )
+    )
+    assert "producer_provenance" in sources
+    assert "candidate-binding" not in sources
+    assert "--timeout" not in sources
+    assert "run_remote_script(script, privileged=True, timeout=" not in sources
 
 
 def test_keycloak_outage_smoke_is_secret_safe_and_fail_closed() -> None:

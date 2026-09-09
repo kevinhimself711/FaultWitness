@@ -23,6 +23,7 @@ from faultwitness_dev.infra import (
     run_remote_script,
     ssh_failure_category,
 )
+from faultwitness_dev.provenance import producer_provenance
 
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
 BASE_IMAGE = "python:3.12.11-slim-bookworm@sha256:c00fc7b44d844b6da22861ec24af43968a5200eac4ec607b4725d585165d6b49"
@@ -37,26 +38,6 @@ def _tracked_files(root: Path) -> list[Path]:
     ]
     files.extend(path for path in sorted((root / "src").rglob("*")) if path.is_file())
     return files
-
-
-def _assert_candidate(root: Path, candidate_sha: str, files: list[Path]) -> None:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
-    head = subprocess.run(
-        ["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True, text=True
-    ).stdout.strip()
-    if head != candidate_sha:
-        raise GovernanceError("candidate SHA does not match repository HEAD")
-    relative = [str(path.relative_to(root)) for path in files]
-    dirty = subprocess.run(
-        ["git", "status", "--porcelain", "--", *relative],
-        cwd=root,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout
-    if dirty.strip():
-        raise GovernanceError("Control API deployment inputs differ from immutable candidate")
 
 
 def _context(root: Path, files: list[Path]) -> tuple[bytes, str]:
@@ -81,10 +62,10 @@ def _stage_base_image(root: Path) -> None:
     appdata = os.environ.get("APPDATA")
     if not appdata:
         raise GovernanceError("APPDATA is required for private image staging")
-    archive = Path(appdata) / "FaultWitness" / "artifacts" / "I-0012" / "python-base.tar"
+    archive = Path(appdata) / "FaultWitness" / "artifacts" / "control-api" / "python-base.tar"
     crane = _ensure_crane(root)
     _pull_image_archive(crane, BASE_IMAGE, archive)
-    _stage_file(archive, "faultwitness-i0012-python-base.tar")
+    _stage_file(archive, "faultwitness-control-api-python-base.tar")
 
 
 def _stage_file(local_path: Path, remote_name: str) -> None:
@@ -111,7 +92,7 @@ def _stage_file(local_path: Path, remote_name: str) -> None:
         str(local_path),
         f"{bundle.server_username}@{bundle.server_host}:{remote_name}",
     ]
-    result = subprocess.run(arguments, check=False, capture_output=True, text=True, timeout=300)
+    result = subprocess.run(arguments, check=False, capture_output=True, text=True)
     if result.returncode:
         raise GovernanceError(
             "base image staging failed (" + ssh_failure_category(result.stderr) + ")"
@@ -123,63 +104,77 @@ def _stage_file(local_path: Path, remote_name: str) -> None:
     )
 
 
-def deploy_control_api(root: Path, candidate_sha: str) -> dict[str, Any]:
+def deploy_control_api(root: Path) -> dict[str, Any]:
     files = _tracked_files(root)
-    _assert_candidate(root, candidate_sha, files)
+    provenance = producer_provenance(root, files)
     context_payload, bundle_digest = _context(root, files)
     appdata = os.environ.get("APPDATA")
     if not appdata:
         raise GovernanceError("APPDATA is required for private deployment staging")
-    context_path = Path(appdata) / "FaultWitness" / "artifacts" / "I-0012" / "context.tgz"
+    context_path = Path(appdata) / "FaultWitness" / "artifacts" / "control-api" / "context.tgz"
     context_path.parent.mkdir(parents=True, exist_ok=True)
     context_path.write_bytes(context_payload)
     _stage_base_image(root)
-    _stage_file(context_path, "faultwitness-i0012-context.tgz")
-    image = f"docker.io/faultwitness/control-api:{candidate_sha}"
-    manifest = _manifest(candidate_sha, image)
+    _stage_file(context_path, "faultwitness-control-api-context.tgz")
+    image = (
+        "docker.io/faultwitness/control-api:"
+        f"{provenance.producer_sha[:12]}-{bundle_digest[:12]}"
+    )
+    manifest = _manifest(provenance.producer_sha, bundle_digest, image)
     manifest_encoded = base64.b64encode(manifest.encode()).decode()
     script = f"""set -eu
-work=$(mktemp -d /tmp/faultwitness-i0012-build.XXXXXX)
+work=$(mktemp -d /tmp/faultwitness-control-api-build.XXXXXX)
 trap 'rm -rf "$work"' EXIT HUP INT TERM
-docker load -i /tmp/faultwitness-i0012-python-base.tar >/dev/null
-install -m 0600 /tmp/faultwitness-i0012-context.tgz "$work/context.tgz"
+docker load -i /tmp/faultwitness-control-api-python-base.tar >/dev/null
+install -m 0600 /tmp/faultwitness-control-api-context.tgz "$work/context.tgz"
 test "$(sha256sum "$work/context.tgz" | awk '{{print $1}}')" = {bundle_digest}
 tar -xzf "$work/context.tgz" -C "$work"
-docker build --pull=false --label faultwitness.candidate={candidate_sha} -t {image} -f "$work/deploy/control-api/Dockerfile" "$work" >/dev/null
+docker build --pull=false --label faultwitness.producer={provenance.producer_sha} --label faultwitness.source-digest={bundle_digest} -t {image} -f "$work/deploy/control-api/Dockerfile" "$work" >/dev/null
 docker save {image} -o "$work/control-api.tar"
 /usr/local/bin/k3s ctr images import "$work/control-api.tar" >/dev/null
 /usr/local/bin/k3s kubectl create namespace fw-control --dry-run=client -o yaml | /usr/local/bin/k3s kubectl apply -f - >/dev/null
 /usr/local/bin/k3s kubectl label namespace fw-control kubernetes.io/metadata.name=fw-control faultwitness.io/boundary=control --overwrite >/dev/null
 /usr/local/bin/k3s kubectl -n fw-data get secret fw-postgres-env -o json | python3 -c 'import json,sys; d=json.load(sys.stdin); d["metadata"]={{"name":"fw-control-postgres-env","namespace":"fw-control"}}; d.pop("type",None); print(json.dumps(d))' | /usr/local/bin/k3s kubectl apply -f - >/dev/null
 printf %s {manifest_encoded} | base64 -d | /usr/local/bin/k3s kubectl apply -f - >/dev/null
-/usr/local/bin/k3s kubectl -n fw-control rollout status deployment/control-api --timeout=5m >/dev/null
+/usr/local/bin/k3s kubectl -n fw-control rollout status deployment/control-api >/dev/null
 """
-    run_remote_script(script, privileged=True, timeout=900)
+    run_remote_script(script, privileged=True)
     return {
-        "candidate_sha": candidate_sha,
+        "producer_sha": provenance.producer_sha,
+        "source_digest": provenance.source_digest,
+        "dirty": provenance.dirty,
         "bundle_sha256": bundle_digest,
         "image": image,
     }
 
 
-def inspect_control_api(candidate_sha: str) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
-    script = f"""set -eu
-available=$(/usr/local/bin/k3s kubectl -n fw-control get deployment control-api -o jsonpath='{{.status.availableReplicas}}')
-ready=$(/usr/local/bin/k3s kubectl -n fw-control get deployment control-api -o jsonpath='{{.status.readyReplicas}}')
-binding=$(/usr/local/bin/k3s kubectl -n fw-control get configmap fw-control-api-candidate -o jsonpath='{{.data.candidate_sha}}')
-service_type=$(/usr/local/bin/k3s kubectl -n fw-control get service control-api -o jsonpath='{{.spec.type}}')
+def inspect_control_api() -> dict[str, Any]:
+    script = r"""set -eu
+available=$(/usr/local/bin/k3s kubectl -n fw-control get deployment control-api -o jsonpath='{.status.availableReplicas}')
+ready=$(/usr/local/bin/k3s kubectl -n fw-control get deployment control-api -o jsonpath='{.status.readyReplicas}')
+service_type=$(/usr/local/bin/k3s kubectl -n fw-control get service control-api -o jsonpath='{.spec.type}')
+image=$(/usr/local/bin/k3s kubectl -n fw-control get deployment control-api -o jsonpath='{.spec.template.spec.containers[0].image}')
+producer=$(/usr/local/bin/k3s kubectl -n fw-control get deployment control-api -o jsonpath='{.spec.template.metadata.annotations.faultwitness\.io/producer-sha}')
+source_digest=$(/usr/local/bin/k3s kubectl -n fw-control get deployment control-api -o jsonpath='{.spec.template.metadata.annotations.faultwitness\.io/source-digest}')
 test "$available" = 1
 test "$ready" = 1
-test "$binding" = {candidate_sha}
 test "$service_type" = ClusterIP
-printf '%s %s %s\n' "$available" "$ready" "$service_type"
+test -n "$image"
+test -n "$producer"
+test -n "$source_digest"
+printf '%s %s %s %s %s %s\n' "$available" "$ready" "$service_type" "$image" "$producer" "$source_digest"
 """
     fields = run_remote_script(script, privileged=True).strip().split()
-    if fields != ["1", "1", "ClusterIP"]:
+    if len(fields) != 6 or fields[:3] != ["1", "1", "ClusterIP"]:
         raise GovernanceError("Control API deployment is not Ready")
-    return {"candidate_sha": candidate_sha, "available": 1, "ready": 1, "service_type": "ClusterIP"}
+    return {
+        "available": 1,
+        "ready": 1,
+        "service_type": "ClusterIP",
+        "image": fields[3],
+        "producer_sha": fields[4],
+        "source_digest": fields[5],
+    }
 
 
 def diagnose_control_api() -> str:
@@ -206,9 +201,9 @@ def diagnose_control_api() -> str:
     return run_remote_script(script, privileged=True)
 
 
-def provision_keycloak_realm(root: Path, candidate_sha: str) -> dict[str, Any]:
+def provision_keycloak_realm(root: Path) -> dict[str, Any]:
     realm_path = root / "deploy" / "keycloak" / "faultwitness-realm.json"
-    _assert_candidate(root, candidate_sha, [realm_path])
+    provenance = producer_provenance(root, [realm_path])
     try:
         realm = json.loads(realm_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
@@ -333,54 +328,68 @@ for tenant in tenant-a tenant-b; do
   done
 done
 printf %s {policy_encoded} | base64 -d | /usr/local/bin/k3s kubectl apply -f - >/dev/null
-/usr/local/bin/k3s kubectl -n fw-system create configmap fw-keycloak-realm-candidate \
-  --from-literal=candidate_sha={candidate_sha} --from-literal=tenant_count=2 --from-literal=role_count=4 --from-literal=user_count=8 \
+/usr/local/bin/k3s kubectl -n fw-system create configmap fw-keycloak-realm-state \
+  --from-literal=source_digest={provenance.source_digest} --from-literal=tenant_count=2 --from-literal=role_count=4 --from-literal=user_count=8 \
   --dry-run=client -o yaml | /usr/local/bin/k3s kubectl apply -f - >/dev/null
 """
-    run_remote_script(script, privileged=True, timeout=300)
-    return {"candidate_sha": candidate_sha, "tenant_count": 2, "role_count": 4, "user_count": 8}
+    run_remote_script(script, privileged=True)
+    return {
+        "producer_sha": provenance.producer_sha,
+        "source_digest": provenance.source_digest,
+        "dirty": provenance.dirty,
+        "tenant_count": 2,
+        "role_count": 4,
+        "user_count": 8,
+    }
 
 
-def inspect_keycloak_realm(candidate_sha: str) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
-    script = f"""set -eu
-binding=$(/usr/local/bin/k3s kubectl -n fw-system get configmap fw-keycloak-realm-candidate -o jsonpath='{{.data.candidate_sha}}')
-tenants=$(/usr/local/bin/k3s kubectl -n fw-system get configmap fw-keycloak-realm-candidate -o jsonpath='{{.data.tenant_count}}')
-roles=$(/usr/local/bin/k3s kubectl -n fw-system get configmap fw-keycloak-realm-candidate -o jsonpath='{{.data.role_count}}')
-users=$(/usr/local/bin/k3s kubectl -n fw-system get configmap fw-keycloak-realm-candidate -o jsonpath='{{.data.user_count}}')
-test "$binding" = {candidate_sha}
+def inspect_keycloak_realm() -> dict[str, Any]:
+    script = """set -eu
+tenants=$(/usr/local/bin/k3s kubectl -n fw-system get configmap fw-keycloak-realm-state -o jsonpath='{.data.tenant_count}')
+roles=$(/usr/local/bin/k3s kubectl -n fw-system get configmap fw-keycloak-realm-state -o jsonpath='{.data.role_count}')
+users=$(/usr/local/bin/k3s kubectl -n fw-system get configmap fw-keycloak-realm-state -o jsonpath='{.data.user_count}')
+source_digest=$(/usr/local/bin/k3s kubectl -n fw-system get configmap fw-keycloak-realm-state -o jsonpath='{.data.source_digest}')
 test "$tenants" = 2
 test "$roles" = 4
 test "$users" = 8
-printf '%s %s %s\n' "$tenants" "$roles" "$users"
+test -n "$source_digest"
+printf '%s %s %s %s\n' "$tenants" "$roles" "$users" "$source_digest"
 """
     fields = run_remote_script(script, privileged=True).strip().split()
-    if fields != ["2", "4", "8"]:
+    if len(fields) != 4 or fields[:3] != ["2", "4", "8"]:
         raise GovernanceError("Keycloak synthetic realm inventory is incomplete")
-    return {"candidate_sha": candidate_sha, "tenant_count": 2, "role_count": 4, "user_count": 8}
+    return {
+        "tenant_count": 2,
+        "role_count": 4,
+        "user_count": 8,
+        "source_digest": fields[3],
+    }
 
 
-def run_control_api_smoke(candidate_sha: str) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
-    manifest = _smoke_manifest(candidate_sha)
+def run_control_api_smoke() -> dict[str, Any]:
+    image = run_remote_script(
+        "/usr/local/bin/k3s kubectl -n fw-control get deployment control-api "
+        "-o jsonpath='{.spec.template.spec.containers[0].image}'\n",
+        privileged=True,
+    ).strip()
+    if not image:
+        raise GovernanceError("Control API workload has no observed image")
+    manifest = _smoke_manifest(image)
     encoded = base64.b64encode(manifest.encode()).decode()
     script = f"""set -eu
 /usr/local/bin/k3s kubectl -n fw-system get secret fw-synthetic-users -o json | python3 -c 'import json,sys; d=json.load(sys.stdin); d["metadata"]={{"name":"fw-control-smoke-users","namespace":"fw-control"}}; d.pop("type",None); print(json.dumps(d))' | /usr/local/bin/k3s kubectl apply -f - >/dev/null
 /usr/local/bin/k3s kubectl -n fw-control delete job control-api-smoke --ignore-not-found --wait=true >/dev/null
 printf %s {encoded} | base64 -d | /usr/local/bin/k3s kubectl apply -f - >/dev/null
-for attempt in $(seq 1 60); do
+while :; do
   succeeded=$(/usr/local/bin/k3s kubectl -n fw-control get job control-api-smoke -o jsonpath='{{.status.succeeded}}')
   failed=$(/usr/local/bin/k3s kubectl -n fw-control get job control-api-smoke -o jsonpath='{{.status.failed}}')
   test "$succeeded" = 1 && break
   test "$failed" = 1 && exit 1
   sleep 2
 done
-test "$succeeded" = 1
 /usr/local/bin/k3s kubectl -n fw-control logs job/control-api-smoke
 """
-    output = run_remote_script(script, privileged=True, timeout=180).strip()
+    output = run_remote_script(script, privileged=True).strip()
     try:
         result = json.loads(output.splitlines()[-1])
     except (IndexError, json.JSONDecodeError) as error:
@@ -401,44 +410,51 @@ test "$succeeded" = 1
     }
     if result != expected:
         raise GovernanceError("Control API smoke did not satisfy the frozen outcome matrix")
-    return {"candidate_sha": candidate_sha, **result}
+    return {"image": image, **result}
 
 
-def run_keycloak_outage_smoke(candidate_sha: str) -> dict[str, Any]:
+def run_keycloak_outage_smoke() -> dict[str, Any]:
     """Prove a cold JWKS cache fails closed while Keycloak is unavailable."""
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
-    manifest = _keycloak_outage_manifest(candidate_sha)
+    image = run_remote_script(
+        "/usr/local/bin/k3s kubectl -n fw-control get deployment control-api "
+        "-o jsonpath='{.spec.template.spec.containers[0].image}'\n",
+        privileged=True,
+    ).strip()
+    if not image:
+        raise GovernanceError("Control API workload has no observed image")
+    manifest = _keycloak_outage_manifest(image)
     encoded = base64.b64encode(manifest.encode()).decode()
-    job = _keycloak_outage_job_manifest(candidate_sha)
+    job = _keycloak_outage_job_manifest(image)
     job_encoded = base64.b64encode(job.encode()).decode()
     script = f"""set -eu
 cleanup() {{
   /usr/local/bin/k3s kubectl -n fw-system scale deployment/keycloak --replicas=1 >/dev/null 2>&1 || true
-  /usr/local/bin/k3s kubectl -n fw-system rollout status deployment/keycloak --timeout=180s >/dev/null 2>&1 || true
+  /usr/local/bin/k3s kubectl -n fw-system rollout status deployment/keycloak >/dev/null 2>&1 || true
   /usr/local/bin/k3s kubectl -n fw-control rollout restart deployment/control-api >/dev/null 2>&1 || true
-  /usr/local/bin/k3s kubectl -n fw-control rollout status deployment/control-api --timeout=180s >/dev/null 2>&1 || true
+  /usr/local/bin/k3s kubectl -n fw-control rollout status deployment/control-api >/dev/null 2>&1 || true
   /usr/local/bin/k3s kubectl -n fw-control delete job control-api-keycloak-outage --ignore-not-found --wait=true >/dev/null 2>&1 || true
   /usr/local/bin/k3s kubectl -n fw-control delete pod control-api-token-mint --ignore-not-found --wait=true >/dev/null 2>&1 || true
   /usr/local/bin/k3s kubectl -n fw-control delete secret fw-keycloak-outage-token --ignore-not-found >/dev/null 2>&1 || true
   /usr/local/bin/k3s kubectl -n fw-control delete configmap control-api-keycloak-outage --ignore-not-found >/dev/null 2>&1 || true
 }}
 trap cleanup EXIT
-binding=$(/usr/local/bin/k3s kubectl -n fw-control get configmap fw-control-api-candidate -o jsonpath='{{.data.candidate_sha}}')
-test "$binding" = {candidate_sha}
 printf %s {encoded} | base64 -d | /usr/local/bin/k3s kubectl apply -f - >/dev/null
-/usr/local/bin/k3s kubectl -n fw-control wait --for=condition=Ready pod/control-api-token-mint --timeout=90s >/dev/null
+while test "$(/usr/local/bin/k3s kubectl -n fw-control get pod/control-api-token-mint -o jsonpath='{{.status.conditions[?(@.type=="Ready")].status}}')" != True; do
+  phase=$(/usr/local/bin/k3s kubectl -n fw-control get pod/control-api-token-mint -o jsonpath='{{.status.phase}}')
+  test "$phase" != Failed || exit 1
+  sleep 2
+done
 token=$(/usr/local/bin/k3s kubectl -n fw-control exec pod/control-api-token-mint -- python -c 'import httpx,os; r=httpx.post("http://keycloak.fw-system.svc.cluster.local:8080/realms/faultwitness/protocol/openid-connect/token",data={{"grant_type":"password","client_id":"faultwitness-api","username":"tenant-a-operator","password":os.environ["TENANT_A_OPERATOR"]}},timeout=10); r.raise_for_status(); print(r.json()["access_token"])')
 test -n "$token"
 /usr/local/bin/k3s kubectl -n fw-control create secret generic fw-keycloak-outage-token --from-literal=token="$token" --dry-run=client -o yaml | /usr/local/bin/k3s kubectl apply -f - >/dev/null
 unset token
 /usr/local/bin/k3s kubectl -n fw-system scale deployment/keycloak --replicas=0 >/dev/null
-/usr/local/bin/k3s kubectl -n fw-system rollout status deployment/keycloak --timeout=90s >/dev/null
+/usr/local/bin/k3s kubectl -n fw-system rollout status deployment/keycloak >/dev/null
 /usr/local/bin/k3s kubectl -n fw-control rollout restart deployment/control-api >/dev/null
-/usr/local/bin/k3s kubectl -n fw-control rollout status deployment/control-api --timeout=180s >/dev/null
+/usr/local/bin/k3s kubectl -n fw-control rollout status deployment/control-api >/dev/null
 /usr/local/bin/k3s kubectl -n fw-control delete job control-api-keycloak-outage --ignore-not-found --wait=true >/dev/null
 printf %s {job_encoded} | base64 -d | /usr/local/bin/k3s kubectl apply -f - >/dev/null
-for attempt in $(seq 1 60); do
+while :; do
   succeeded=$(/usr/local/bin/k3s kubectl -n fw-control get job control-api-keycloak-outage -o jsonpath='{{.status.succeeded}}')
   failed=$(/usr/local/bin/k3s kubectl -n fw-control get job control-api-keycloak-outage -o jsonpath='{{.status.failed}}')
   test "$succeeded" = 1 && break
@@ -447,26 +463,18 @@ for attempt in $(seq 1 60); do
 done
 /usr/local/bin/k3s kubectl -n fw-control logs job/control-api-keycloak-outage
 """
-    output = run_remote_script(script, privileged=True, timeout=420).strip()
+    output = run_remote_script(script, privileged=True).strip()
     try:
         result = json.loads(output.splitlines()[-1])
     except (IndexError, json.JSONDecodeError) as error:
         raise GovernanceError("Keycloak outage smoke returned malformed evidence") from error
     if result != {"cold_jwks_status": 401, "state_write_attempted": False}:
         raise GovernanceError("Keycloak outage did not fail closed before state mutation")
-    return {"candidate_sha": candidate_sha, **result}
+    return {"image": image, **result}
 
 
-def _manifest(candidate_sha: str, image: str) -> str:
+def _manifest(producer_sha: str, source_digest: str, image: str) -> str:
     return f"""apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: fw-control-api-candidate
-  namespace: fw-control
-data:
-  candidate_sha: {candidate_sha}
----
-apiVersion: v1
 kind: ServiceAccount
 metadata: {{name: control-api, namespace: fw-control}}
 automountServiceAccountToken: false
@@ -480,7 +488,11 @@ spec:
   replicas: 1
   selector: {{matchLabels: {{app.kubernetes.io/name: control-api}}}}
   template:
-    metadata: {{labels: {{app.kubernetes.io/name: control-api, faultwitness.io/candidate: "{candidate_sha}"}}}}
+    metadata:
+      labels: {{app.kubernetes.io/name: control-api}}
+      annotations:
+        faultwitness.io/producer-sha: "{producer_sha}"
+        faultwitness.io/source-digest: "{source_digest}"
     spec:
       serviceAccountName: control-api
       automountServiceAccountToken: false
@@ -568,7 +580,7 @@ spec:
 """
 
 
-def _keycloak_outage_manifest(candidate_sha: str) -> str:
+def _keycloak_outage_manifest(image: str) -> str:
     return f"""apiVersion: v1
 kind: ConfigMap
 metadata: {{name: control-api-keycloak-outage, namespace: fw-control}}
@@ -579,7 +591,7 @@ data:
     import time
     import httpx
 
-    for attempt in range(60):
+    while True:
         try:
             response = httpx.get(
                 "http://control-api.fw-control.svc.cluster.local:8000/v1/tools",
@@ -588,9 +600,6 @@ data:
             )
             break
         except httpx.ConnectError:
-            if attempt == 59:
-                print(json.dumps({{"cold_jwks_status": 0, "state_write_attempted": False}}))
-                raise
             time.sleep(0.5)
     result = {{"cold_jwks_status": response.status_code, "state_write_attempted": False}}
     print(json.dumps(result, sort_keys=True))
@@ -607,7 +616,7 @@ spec:
   automountServiceAccountToken: false
   containers:
     - name: mint
-      image: docker.io/faultwitness/control-api:{candidate_sha}
+      image: {image}
       imagePullPolicy: Never
       command: [sleep, "300"]
       env:
@@ -617,7 +626,7 @@ spec:
 """
 
 
-def _keycloak_outage_job_manifest(candidate_sha: str) -> str:
+def _keycloak_outage_job_manifest(image: str) -> str:
     return f"""apiVersion: batch/v1
 kind: Job
 metadata: {{name: control-api-keycloak-outage, namespace: fw-control}}
@@ -630,7 +639,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: smoke
-          image: docker.io/faultwitness/control-api:{candidate_sha}
+          image: {image}
           imagePullPolicy: Never
           command: [python, /config/smoke.py]
           env:
@@ -642,7 +651,7 @@ spec:
 """
 
 
-def _smoke_manifest(candidate_sha: str) -> str:
+def _smoke_manifest(image: str) -> str:
     return f"""apiVersion: v1
 kind: ConfigMap
 metadata: {{name: control-api-smoke, namespace: fw-control}}
@@ -660,14 +669,12 @@ data:
     api = "http://control-api.fw-control.svc.cluster.local:8000"
 
     def token(username, password):
-        for attempt in range(20):
+        while True:
             try:
                 response = httpx.post(identity, data={{"grant_type": "password", "client_id": "faultwitness-api", "username": username, "password": password}}, timeout=5)
                 response.raise_for_status()
                 return response.json()["access_token"]
             except httpx.ConnectError:
-                if attempt == 19:
-                    raise
                 time.sleep(0.5)
 
     operator = token("tenant-a-operator", os.environ["TENANT_A_OPERATOR"])
@@ -728,7 +735,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: smoke
-          image: docker.io/faultwitness/control-api:{candidate_sha}
+          image: {image}
           imagePullPolicy: Never
           command: [python, /config/smoke.py]
           env:

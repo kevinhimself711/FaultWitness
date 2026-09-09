@@ -23,9 +23,10 @@ body:
     validations:
       required: true
   - type: input
-    id: revision
+    id: provenance
     attributes:
-      label: Revision
-      placeholder: Full candidate commit SHA
+      label: Observed producer and source provenance
+      description: Include the commit when available, dirty/clean fact, and relevant source, config, or image digest.
+      placeholder: Producer commit; dirty=true/false; relevant digest(s)
     validations:
       required: true

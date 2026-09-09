@@ -8,7 +8,6 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
-from tempfile import TemporaryDirectory
 from typing import Any, Protocol
 
 import httpx
@@ -19,35 +18,48 @@ from faultwitness_dev.bootstrap import (
     load_secret_bundle,
 )
 from faultwitness_dev.errors import GovernanceError
+from faultwitness_dev.experiment import semantic_cache_key
 from faultwitness_dev.g02_isolation import (
     CANARY_SURFACES,
-    FULL_SHA,
     PRINCIPALS,
     TRACE_STAGES,
     access_cell_contract,
     load_isolation_config,
-    prove_writer_canaries,
-    simulate_identity_policies,
     validate_all_surface_canary,
     validate_live_access_matrix,
-    validate_policy_observation,
     validate_stage_matrix,
 )
 from faultwitness_dev.infra import run_remote_script
-from faultwitness_dev.schemas import load_data, validate_repository_schemas
+from faultwitness_dev.schemas import load_data
 
 
 class ContextLike(Protocol):
-    candidate_sha: str
+    producer_sha: str
     environment_fingerprint: str
 
+
+@dataclass(frozen=True)
+class ProbeContext:
+    """Minimal runtime provenance used by the retained G02 collector contracts."""
+
+    producer_sha: str
+    environment_fingerprint: str
 
 class JournalLike(Protocol):
     root: Path
 
     def read(self, trial_id: str) -> dict[str, Any] | None: ...
 
-    def write(
+    def begin(
+        self,
+        trial_id: str,
+        *,
+        producer_sha: str,
+        cache_key: str,
+        payload: Mapping[str, Any] | None = None,
+    ) -> dict[str, Any]: ...
+
+    def finish(
         self, trial_id: str, status: str, payload: Mapping[str, Any]
     ) -> dict[str, Any]: ...
 
@@ -69,7 +81,7 @@ class ProbeInfrastructureError(RuntimeError):
 
 
 class ProbeBlockedError(RuntimeError):
-    """A deterministic runner or provisioning failure that needs a new candidate."""
+    """A deterministic runner or provisioning failure needing a semantic change."""
 
 
 LANGSMITH_CREDENTIAL_INFO_URL = (
@@ -120,7 +132,7 @@ def _digest(value: Any) -> str:
 
 def _artifact_ref(context: ContextLike, phase: str, unit: str, value: Any) -> str:
     return (
-        f"private://faultwitness/g02/{context.candidate_sha}/{phase}/{unit}/"
+        f"private://faultwitness/isolation/{context.producer_sha}/{phase}/{unit}/"
         f"{_digest(value)}"
     )
 
@@ -129,24 +141,63 @@ def _bound_payload(
     context: ContextLike, unit_id: str, result: Mapping[str, Any]
 ) -> dict[str, Any]:
     return {
-        "candidate_sha": context.candidate_sha,
+        "producer_sha": context.producer_sha,
         "environment_fingerprint": context.environment_fingerprint,
         "unit_id": unit_id,
         "result": dict(result),
     }
 
 
+def _unit_cache_key(context: ContextLike, unit_id: str) -> str:
+    return semantic_cache_key(
+        {"environment": context.environment_fingerprint},
+        ("environment",),
+        input_digest=_digest(unit_id),
+    )
+
+
+def _begin(
+    journal: JournalLike,
+    context: ContextLike,
+    trial_id: str,
+    unit_id: str,
+) -> dict[str, Any]:
+    return journal.begin(
+        trial_id,
+        producer_sha=context.producer_sha,
+        cache_key=_unit_cache_key(context, unit_id),
+        payload={"unit_id": unit_id},
+    )
+
+
+def _finish(
+    journal: JournalLike,
+    context: ContextLike,
+    trial_id: str,
+    unit_id: str,
+    status: str,
+    payload: Mapping[str, Any],
+) -> dict[str, Any]:
+    running = journal.read(trial_id)
+    if running is None or running.get("status") != "running":
+        _begin(journal, context, trial_id, unit_id)
+    return journal.finish(trial_id, status, payload)
+
+
 def _reusable(
     record: Mapping[str, Any] | None, context: ContextLike, unit_id: str
 ) -> Mapping[str, Any] | None:
-    if not record or record.get("status") != "pass":
+    if (
+        not record
+        or record.get("status") != "pass"
+        or record.get("cache_key") != _unit_cache_key(context, unit_id)
+    ):
         return None
     payload = record.get("payload")
     if not isinstance(payload, Mapping):
         return None
     if (
-        payload.get("candidate_sha") != context.candidate_sha
-        or payload.get("environment_fingerprint") != context.environment_fingerprint
+        payload.get("environment_fingerprint") != context.environment_fingerprint
         or payload.get("unit_id") != unit_id
         or not isinstance(payload.get("result"), Mapping)
     ):
@@ -160,15 +211,18 @@ def _terminal_result(
     unit_id: str,
 ) -> tuple[str, Mapping[str, Any]] | None:
     """Return an exact-bound non-resumable result without executing it again."""
-    if not record or record.get("status") not in {"metric_fail", "blocked"}:
+    if (
+        not record
+        or record.get("status") not in {"metric_fail", "blocked"}
+        or record.get("cache_key") != _unit_cache_key(context, unit_id)
+    ):
         return None
     payload = record.get("payload")
     if not isinstance(payload, Mapping):
         return None
     result = payload.get("result")
     if (
-        payload.get("candidate_sha") != context.candidate_sha
-        or payload.get("environment_fingerprint") != context.environment_fingerprint
+        payload.get("environment_fingerprint") != context.environment_fingerprint
         or payload.get("unit_id") != unit_id
         or not isinstance(result, Mapping)
     ):
@@ -181,7 +235,7 @@ def build_provisioning_plan(root: Path, context: ContextLike) -> dict[str, Any]:
     probes = load_data(root / "config/g02/gate-probes.yaml")
     plan = {
         "schema_version": "1.0.0",
-        "candidate_sha": context.candidate_sha,
+        "producer_sha": context.producer_sha,
         "environment_fingerprint": context.environment_fingerprint,
         "principals": list(isolation["principals"]),
         "prefixes": list(isolation["prefixes"]),
@@ -258,7 +312,7 @@ def validate_provisioning_plan(document: Mapping[str, Any]) -> None:
 def _ensure_provisioned(
     context: ContextLike, journal: JournalLike, backend: ProbeBackend
 ) -> Mapping[str, Any]:
-    unit_id = "candidate-bound-l2-provisioning"
+    unit_id = "isolation-provisioning"
     existing = journal.read("g02-provisioning")
     reusable = _reusable(existing, context, unit_id)
     if reusable is not None:
@@ -266,25 +320,42 @@ def _ensure_provisioned(
     terminal = _terminal_result(existing, context, unit_id)
     if terminal is not None:
         raise ProbeBlockedError(str(terminal[1].get("reason_code", "provisioning_blocked")))
+    _begin(journal, context, "g02-provisioning", unit_id)
     try:
         result = dict(backend.provision(context))
     except ProbeInfrastructureError as error:
         payload = _bound_payload(context, unit_id, {"reason_code": str(error)})
-        journal.write("g02-provisioning", "infra_failed", payload)
+        _finish(
+            journal, context, "g02-provisioning", unit_id, "infra_failed", payload
+        )
         raise
     except ProbeBlockedError as error:
         payload = _bound_payload(context, unit_id, {"reason_code": str(error)})
-        journal.write("g02-provisioning", "blocked", payload)
+        _finish(journal, context, "g02-provisioning", unit_id, "blocked", payload)
         raise
     if (
         result.get("status") != "pass"
-        or result.get("candidate_sha") != context.candidate_sha
+        or result.get("producer_sha") != context.producer_sha
         or result.get("environment_fingerprint") != context.environment_fingerprint
         or not result.get("artifact_ref")
     ):
-        journal.write("g02-provisioning", "blocked", _bound_payload(context, unit_id, result))
+        _finish(
+            journal,
+            context,
+            "g02-provisioning",
+            unit_id,
+            "blocked",
+            _bound_payload(context, unit_id, result),
+        )
         raise ProbeBlockedError("provisioning_result_invalid")
-    journal.write("g02-provisioning", "pass", _bound_payload(context, unit_id, result))
+    _finish(
+        journal,
+        context,
+        "g02-provisioning",
+        unit_id,
+        "pass",
+        _bound_payload(context, unit_id, result),
+    )
     return result
 
 
@@ -310,18 +381,25 @@ def run_access_matrix(
                 cells.append({**contract, **dict(terminal_result)})
             return _matrix_document(context, terminal_status, "cells", cells)
         if result is None:
+            _begin(journal, context, trial_id, unit_id)
             try:
                 result = dict(backend.access_cell(context, contract))
             except ProbeInfrastructureError as error:
-                journal.write(
+                _finish(
+                    journal,
+                    context,
                     trial_id,
+                    unit_id,
                     "infra_failed",
                     _bound_payload(context, unit_id, {"reason_code": str(error)}),
                 )
                 return _matrix_document(context, "infra_failed", "cells", cells)
             except ProbeBlockedError as error:
-                journal.write(
+                _finish(
+                    journal,
+                    context,
                     trial_id,
+                    unit_id,
                     "blocked",
                     _bound_payload(context, unit_id, {"reason_code": str(error)}),
                 )
@@ -331,20 +409,34 @@ def run_access_matrix(
                 or not isinstance(result.get("actual_allow"), bool)
                 or not result.get("artifact_ref")
             ):
-                journal.write(trial_id, "blocked", _bound_payload(context, unit_id, result))
+                _finish(
+                    journal,
+                    context,
+                    trial_id,
+                    unit_id,
+                    "blocked",
+                    _bound_payload(context, unit_id, result),
+                )
                 return _matrix_document(context, "blocked", "cells", cells)
             status = (
                 "pass"
                 if result["actual_allow"] is contract["expected_allow"]
                 else "metric_fail"
             )
-            journal.write(trial_id, status, _bound_payload(context, unit_id, result))
+            _finish(
+                journal,
+                context,
+                trial_id,
+                unit_id,
+                status,
+                _bound_payload(context, unit_id, result),
+            )
             if status != "pass":
                 cells.append({**contract, **result})
                 return _matrix_document(context, status, "cells", cells)
         cells.append({**contract, **dict(result)})
     document = _matrix_document(context, "pass", "cells", cells)
-    validate_live_access_matrix(document, context.candidate_sha, context.environment_fingerprint)
+    validate_live_access_matrix(document, context.producer_sha, context.environment_fingerprint)
     return document
 
 
@@ -370,7 +462,7 @@ def run_trace_matrix(
         reusable_stages.append(dict(result))
     if reusable_stages:
         document = _matrix_document(context, "pass", "stages", reusable_stages)
-        validate_stage_matrix(document, context.candidate_sha, context.environment_fingerprint)
+        validate_stage_matrix(document, context.producer_sha, context.environment_fingerprint)
         return document
     collection_unit = "six-stage-collection"
     terminal_collection = _terminal_result(
@@ -378,30 +470,47 @@ def run_trace_matrix(
     )
     if terminal_collection is not None:
         return _matrix_document(context, terminal_collection[0], "stages", [])
+    _begin(journal, context, "trace-collection", collection_unit)
     try:
         result = dict(backend.trace_matrix(context))
     except ProbeInfrastructureError as error:
-        journal.write(
+        _finish(
+            journal,
+            context,
             "trace-collection",
+            collection_unit,
             "infra_failed",
             _bound_payload(context, collection_unit, {"reason_code": str(error)}),
         )
         return _matrix_document(context, "infra_failed", "stages", [])
     except ProbeBlockedError as error:
-        journal.write(
+        _finish(
+            journal,
+            context,
             "trace-collection",
+            collection_unit,
             "blocked",
             _bound_payload(context, collection_unit, {"reason_code": str(error)}),
         )
         return _matrix_document(context, "blocked", "stages", [])
     stages = result.get("stages")
     if not isinstance(stages, list):
-        journal.write(
-            "trace-collection", "blocked", _bound_payload(context, collection_unit, result)
+        _finish(
+            journal,
+            context,
+            "trace-collection",
+            collection_unit,
+            "blocked",
+            _bound_payload(context, collection_unit, result),
         )
         return _matrix_document(context, "blocked", "stages", [])
-    journal.write(
-        "trace-collection", "pass", _bound_payload(context, collection_unit, result)
+    _finish(
+        journal,
+        context,
+        "trace-collection",
+        collection_unit,
+        "pass",
+        _bound_payload(context, collection_unit, result),
     )
     by_stage = {item.get("stage"): item for item in stages if isinstance(item, Mapping)}
     status = (
@@ -419,15 +528,20 @@ def run_trace_matrix(
             and item.get("artifact_ref")
             else "metric_fail"
         )
-        journal.write(
-            f"trace-{index:02d}", unit_status, _bound_payload(context, stage, item)
+        _finish(
+            journal,
+            context,
+            f"trace-{index:02d}",
+            stage,
+            unit_status,
+            _bound_payload(context, stage, item),
         )
         ordered.append(item)
         if unit_status != "pass":
             status = "metric_fail"
     document = _matrix_document(context, status, "stages", ordered)
     if status == "pass":
-        validate_stage_matrix(document, context.candidate_sha, context.environment_fingerprint)
+        validate_stage_matrix(document, context.producer_sha, context.environment_fingerprint)
     return document
 
 
@@ -454,7 +568,7 @@ def run_canary_matrix(
     if reusable_surfaces:
         document = _matrix_document(context, "pass", "surfaces", reusable_surfaces)
         validate_all_surface_canary(
-            document, context.candidate_sha, context.environment_fingerprint
+            document, context.producer_sha, context.environment_fingerprint
         )
         return document
     collection_unit = "all-surface-collection"
@@ -463,30 +577,47 @@ def run_canary_matrix(
     )
     if terminal_collection is not None:
         return _matrix_document(context, terminal_collection[0], "surfaces", [])
+    _begin(journal, context, "canary-collection", collection_unit)
     try:
         result = dict(backend.canary_matrix(context))
     except ProbeInfrastructureError as error:
-        journal.write(
+        _finish(
+            journal,
+            context,
             "canary-collection",
+            collection_unit,
             "infra_failed",
             _bound_payload(context, collection_unit, {"reason_code": str(error)}),
         )
         return _matrix_document(context, "infra_failed", "surfaces", [])
     except ProbeBlockedError as error:
-        journal.write(
+        _finish(
+            journal,
+            context,
             "canary-collection",
+            collection_unit,
             "blocked",
             _bound_payload(context, collection_unit, {"reason_code": str(error)}),
         )
         return _matrix_document(context, "blocked", "surfaces", [])
     surfaces = result.get("surfaces")
     if not isinstance(surfaces, list):
-        journal.write(
-            "canary-collection", "blocked", _bound_payload(context, collection_unit, result)
+        _finish(
+            journal,
+            context,
+            "canary-collection",
+            collection_unit,
+            "blocked",
+            _bound_payload(context, collection_unit, result),
         )
         return _matrix_document(context, "blocked", "surfaces", [])
-    journal.write(
-        "canary-collection", "pass", _bound_payload(context, collection_unit, result)
+    _finish(
+        journal,
+        context,
+        "canary-collection",
+        collection_unit,
+        "pass",
+        _bound_payload(context, collection_unit, result),
     )
     by_surface = {
         item.get("surface"): item for item in surfaces if isinstance(item, Mapping)
@@ -507,8 +638,13 @@ def run_canary_matrix(
             and item.get("canary_digest")
             else "metric_fail"
         )
-        journal.write(
-            f"canary-{index:02d}", unit_status, _bound_payload(context, surface, item)
+        _finish(
+            journal,
+            context,
+            f"canary-{index:02d}",
+            surface,
+            unit_status,
+            _bound_payload(context, surface, item),
         )
         ordered.append(item)
         if unit_status != "pass":
@@ -516,7 +652,7 @@ def run_canary_matrix(
     document = _matrix_document(context, status, "surfaces", ordered)
     if status == "pass":
         validate_all_surface_canary(
-            document, context.candidate_sha, context.environment_fingerprint
+            document, context.producer_sha, context.environment_fingerprint
         )
     return document
 
@@ -526,7 +662,7 @@ def _matrix_document(
 ) -> dict[str, Any]:
     return {
         "schema_version": "1.0.0",
-        "candidate_sha": context.candidate_sha,
+        "producer_sha": context.producer_sha,
         "environment_fingerprint": context.environment_fingerprint,
         field_name: [dict(value) for value in values],
         "status": status,
@@ -535,7 +671,7 @@ def _matrix_document(
 
 def canary_values(context: ContextLike) -> tuple[str, str]:
     seed = hashlib.sha256(
-        f"{context.candidate_sha}|{context.environment_fingerprint}|g02-canary-v1".encode()
+        f"{context.environment_fingerprint}|g02-canary-v1".encode()
     ).hexdigest()[:24]
     return f"FW_SECRET_CANARY_{seed}", f"fw_pii_canary_{seed}@example.invalid"
 
@@ -556,7 +692,7 @@ class MemoryProbeBackend:
         plan = build_provisioning_plan(self.root, context)
         return {
             "status": "pass",
-            "candidate_sha": context.candidate_sha,
+            "producer_sha": context.producer_sha,
             "environment_fingerprint": context.environment_fingerprint,
             "plan_digest": _digest(plan),
             "artifact_ref": _artifact_ref(context, "provisioning", "plan", plan),
@@ -576,7 +712,7 @@ class MemoryProbeBackend:
 
     def trace_matrix(self, context: ContextLike) -> Mapping[str, Any]:
         self._called("trace")
-        trace_id = hashlib.sha256(context.candidate_sha.encode()).hexdigest()[:32]
+        trace_id = hashlib.sha256(context.environment_fingerprint.encode()).hexdigest()[:32]
         stages = [
             {
                 "stage": stage,
@@ -606,20 +742,19 @@ class MemoryProbeBackend:
         }
 
 
-class CandidateProbeBackend:
-    def __init__(self, root: Path, binding: Mapping[str, Any]) -> None:
+class RemoteProbeBackend:
+    def __init__(self, root: Path) -> None:
         self.root = root
-        self.binding = binding
         self.program = root / "deploy/g02/gate_probe.py"
         if not self.program.is_file():
-            raise GovernanceError("G02 candidate-bound probe program is missing")
+            raise GovernanceError("G02 remote probe program is missing")
 
     def _request(
         self, context: ContextLike, extra: Mapping[str, Any] | None = None
     ) -> dict[str, Any]:
         plan_digest = _digest(build_provisioning_plan(self.root, context))
         return {
-            "candidate_sha": context.candidate_sha,
+            "producer_sha": context.producer_sha,
             "environment_fingerprint": context.environment_fingerprint,
             "plan_digest": plan_digest,
             "probe_config": load_data(self.root / "config/g02/gate-probes.yaml"),
@@ -629,9 +764,9 @@ class CandidateProbeBackend:
             **dict(extra or {}),
         }
 
-    def _candidate_timestamp(self, context: ContextLike) -> str:
+    def _producer_timestamp(self, context: ContextLike) -> str:
         timestamp = subprocess.run(
-            ["git", "show", "-s", "--format=%cI", context.candidate_sha],
+            ["git", "show", "-s", "--format=%cI", context.producer_sha],
             cwd=self.root,
             check=False,
             capture_output=True,
@@ -639,13 +774,13 @@ class CandidateProbeBackend:
             encoding="utf-8",
         )
         if timestamp.returncode or not timestamp.stdout.strip():
-            raise ProbeBlockedError("candidate_timestamp_unavailable")
+            raise ProbeBlockedError("producer_timestamp_unavailable")
         try:
             parsed = datetime.fromisoformat(timestamp.stdout.strip().replace("Z", "+00:00"))
         except ValueError as error:
-            raise ProbeBlockedError("candidate_timestamp_invalid") from error
+            raise ProbeBlockedError("producer_timestamp_invalid") from error
         if parsed.tzinfo is None:
-            raise ProbeBlockedError("candidate_timestamp_invalid")
+            raise ProbeBlockedError("producer_timestamp_invalid")
         return parsed.astimezone(UTC).isoformat()
 
     def _invoke(
@@ -738,11 +873,11 @@ python3 "$work/gate_probe.py" {action} "$work/request.json"
 
     def trace_matrix(self, context: ContextLike) -> Mapping[str, Any]:
         document = self._invoke(
-            "trace", context, {"candidate_timestamp": self._candidate_timestamp(context)}
+            "trace", context, {"producer_timestamp": self._producer_timestamp(context)}
         )
         from faultwitness_dev.observability_deploy import relay_langsmith
 
-        relay = relay_langsmith(context.candidate_sha)
+        relay = relay_langsmith()
         if relay.get("pending_traces") != 0 or relay.get("pending_langsmith") != 0:
             raise ProbeBlockedError("trace_relay_backlog")
         stages = document.get("stages")
@@ -757,7 +892,7 @@ python3 "$work/gate_probe.py" {action} "$work/request.json"
 
     def canary_matrix(self, context: ContextLike) -> Mapping[str, Any]:
         document = self._invoke(
-            "canary", context, {"candidate_timestamp": self._candidate_timestamp(context)}
+            "canary", context, {"producer_timestamp": self._producer_timestamp(context)}
         )
         surfaces = document.get("surfaces")
         if not isinstance(surfaces, list):
@@ -817,214 +952,3 @@ python3 "$work/gate_probe.py" {action} "$work/request.json"
                 }
             )
         return results
-
-
-def evaluate_i0024(root: Path, candidate_sha: str) -> dict[str, Any]:
-    """Run the five local readiness cases without executing any Gate L2 work."""
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("EVAL-G02-009 requires a full candidate SHA")
-    head = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=root,
-        check=True,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-    ).stdout.strip()
-    if head != candidate_sha:
-        raise GovernanceError("EVAL-G02-009 candidate SHA must equal checked-out HEAD")
-    if subprocess.run(
-        ["git", "status", "--porcelain"], cwd=root, capture_output=True
-    ).stdout:
-        raise GovernanceError("EVAL-G02-009 requires a clean candidate worktree")
-    loaded = validate_repository_schemas(root)
-    state = loaded["PROJECT_STATE.yaml"]
-    iteration = loaded["governance/iterations/I-0024.yaml"]
-    if (
-        state.get("active_gate") != "G02"
-        or state.get("active_gate_status") != "in_progress"
-        or state.get("active_iteration") != "I-0024"
-        or iteration.get("status") != "in_progress"
-    ):
-        raise GovernanceError("EVAL-G02-009 requires I-0024 as the sole active Iteration")
-
-    from faultwitness_dev.g02_eval import (
-        G02_PHASES,
-        PhaseContext,
-        PhaseEngine,
-        TrialJournal,
-        _owned_phase_handlers,
-    )
-
-    environment = _digest("EVAL-G02-009-local-deterministic")
-    context = PhaseContext(
-        candidate_sha=candidate_sha,
-        runtime_image_digests=("1" * 64,),
-        sut_image_set_digest="2" * 64,
-        config_digest="3" * 64,
-        evaluator_digest="4" * 64,
-        dataset_digest="5" * 64,
-        environment_fingerprint=environment,
-    )
-    started_at = datetime.now(UTC).isoformat()
-    cases: list[dict[str, Any]] = []
-
-    plan = build_provisioning_plan(root, context)
-    drift = load_data(root / "tests/fixtures/g02/provisioning_identity_drift.json")
-    try:
-        validate_provisioning_plan({**plan, **drift})
-    except GovernanceError:
-        pass
-    else:
-        raise GovernanceError("I-0024 provisioning identity drift fixture was accepted")
-    cases.append(
-        {
-            "case_id": "candidate-bound-provisioning",
-            "principal_count": len(plan["principals"]),
-            "prefix_count": len(plan["prefixes"]),
-            "credential_value_count": len(plan["secret_values"]),
-            "status": "pass",
-        }
-    )
-
-    with TemporaryDirectory(prefix="fw-g02-i0024-") as temporary:
-        work = Path(temporary)
-        config = load_isolation_config(root)
-        identities = simulate_identity_policies(config)
-        if len(identities) != 4:
-            raise GovernanceError("V-G02-009 Iteration N must remain exactly four")
-        access = run_access_matrix(
-            context, TrialJournal(work / "access"), MemoryProbeBackend(root)
-        )
-        if access.get("status") != "pass" or len(access.get("cells", [])) != 60:
-            raise GovernanceError("I-0024 fake access collector did not enumerate 60 cells")
-        wrong_allow = load_data(root / "tests/fixtures/g02/access_wrong_allow.yaml")
-        try:
-            validate_policy_observation(config, wrong_allow)
-        except GovernanceError:
-            pass
-        else:
-            raise GovernanceError("I-0024 access wrong-allow fixture was accepted")
-        cases.append(
-            {
-                "case_id": "access-collector",
-                "iteration_n": len(identities),
-                "fake_contract_cell_count": len(access["cells"]),
-                "status": "pass",
-            }
-        )
-
-        trace_fixture = load_data(root / "tests/fixtures/g02/trace_missing_stage.json")
-        trace = run_trace_matrix(
-            context, TrialJournal(work / "trace"), MemoryProbeBackend(root)
-        )
-        trace_negative = run_trace_matrix(
-            context,
-            TrialJournal(work / "trace-negative"),
-            MemoryProbeBackend(root, missing_stage=str(trace_fixture["missing_stage"])),
-        )
-        if trace.get("status") != "pass" or trace_negative.get("status") != "metric_fail":
-            raise GovernanceError("I-0024 six-stage collector did not fail closed")
-        cases.append(
-            {
-                "case_id": "trace-collector",
-                "fake_contract_stage_count": len(trace["stages"]),
-                "iteration_n": 0,
-                "status": "pass",
-            }
-        )
-
-        writers = prove_writer_canaries(config)
-        if len(writers) != 4:
-            raise GovernanceError("V-G02-011 Iteration N must remain exactly four")
-        canary_fixture = load_data(root / "tests/fixtures/g02/canary_leaked_artifact.json")
-        canary = run_canary_matrix(
-            context, TrialJournal(work / "canary"), MemoryProbeBackend(root)
-        )
-        canary_negative = run_canary_matrix(
-            context,
-            TrialJournal(work / "canary-negative"),
-            MemoryProbeBackend(
-                root, canary_hit_surface=str(canary_fixture["surface"])
-            ),
-        )
-        if canary.get("status") != "pass" or canary_negative.get("status") != "metric_fail":
-            raise GovernanceError("I-0024 all-surface collector did not fail closed")
-        cases.append(
-            {
-                "case_id": "canary-collector",
-                "iteration_n": len(writers),
-                "fake_contract_surface_count": len(canary["surfaces"]),
-                "status": "pass",
-            }
-        )
-
-        fixture_root = work / "phase-interface"
-        engine = PhaseEngine(G02_PHASES, context, fixture_root / "journal")
-        handlers = _owned_phase_handlers(
-            fixture_root,
-            {"_eval_id": "EVAL-G02-010"},
-            engine,
-            MemoryProbeBackend(root),
-        )
-        journal = TrialJournal(fixture_root / "journal")
-        phase_ids = (
-            "isolation-access-matrix",
-            "trace-six-stage-matrix",
-            "all-surface-canary",
-        )
-        outputs = [handlers[phase_id](context, journal) for phase_id in phase_ids]
-        if any(output.get("status") != "pass" for output in outputs):
-            raise GovernanceError("I-0024 phase interface did not call a frozen collector")
-
-        class DriftBackend(MemoryProbeBackend):
-            def provision(self, bound_context: ContextLike) -> Mapping[str, Any]:
-                result = dict(super().provision(bound_context))
-                result["candidate_sha"] = "0" * 40
-                return result
-
-        blocked = run_access_matrix(
-            context, TrialJournal(work / "binding-drift"), DriftBackend(root)
-        )
-        if blocked.get("status") != "blocked":
-            raise GovernanceError("I-0024 candidate drift was not blocking")
-        cases.append(
-            {
-                "case_id": "phase-interface-and-binding",
-                "phase_count": len(outputs),
-                "operator_adjudication_paths": 0,
-                "status": "pass",
-            }
-        )
-
-    if len(cases) != 5 or any(case["status"] != "pass" for case in cases):
-        raise GovernanceError("EVAL-G02-009 must pass exactly five deterministic cases")
-    artifact = {
-        "schema_version": "1.0.0",
-        "eval_id": "EVAL-G02-009",
-        "candidate_sha": candidate_sha,
-        "environment_fingerprint": environment,
-        "start_time": started_at,
-        "end_time": datetime.now(UTC).isoformat(),
-        "cases": cases,
-        "case_count": 5,
-        "iteration_n": {"V-G02-009": 4, "V-G02-010": 0, "V-G02-011": 4},
-        "gate_l2_execution_count": 0,
-        "destructive_execution_count": 0,
-        "external_call_count": 0,
-        "model_call_count": 0,
-        "open_evidence": [],
-        "status": "pass",
-    }
-    artifact_path = root / "docs/evals/EVAL-G02-009/artifacts/collector-readiness.json"
-    artifact_path.parent.mkdir(parents=True, exist_ok=True)
-    artifact_path.write_text(
-        json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
-    return {
-        "eval_id": "EVAL-G02-009",
-        "candidate_sha": candidate_sha,
-        "status": "pass",
-        "checks": {case["case_id"]: "pass" for case in cases},
-        "open_evidence": [],
-    }

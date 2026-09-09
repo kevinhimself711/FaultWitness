@@ -15,6 +15,20 @@ from typing import Any
 
 from faultwitness_dev.errors import GovernanceError
 
+# Host kernel series the frozen profile accepts. 5.15.0-139 is the kernel G01 closed on;
+# it panicked on the original host in the cross-CPU TLB-flush path, so 5.8.0-43 was added
+# (ADR-0016). That host was later written off entirely -- Raptor Lake Vmin-shift silicon
+# degradation -- and 7.0 is the series the replacement host runs (ADR-0017).
+# Series are admitted, never replaced: dropping one would retroactively invalidate the
+# closed G01 capability baseline recorded under it.
+ACCEPTED_KERNEL_SERIES = ("5.15.", "5.8.", "7.0.")
+
+
+def kernel_series_accepted(kernel_release: str) -> bool:
+    """True when a kernel release belongs to an accepted frozen-profile series."""
+    return str(kernel_release).startswith(ACCEPTED_KERNEL_SERIES)
+
+
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
 AGE_RECIPIENT = re.compile(r"^age1[0-9a-z]+$")
 SAFE_USERNAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_.-]{0,63}$")
@@ -98,7 +112,7 @@ class BootstrapPaths:
             metadata_file=root / "state" / "bootstrap-metadata.json",
             ssh_private_key=root / "keys" / "ssh" / "faultwitness_ed25519",
             known_hosts_file=root / "ssh" / "known_hosts",
-            private_evidence_dir=root / "evidence" / "I-0007",
+            private_evidence_dir=root / "evidence" / "bootstrap",
         )
 
     @classmethod
@@ -110,7 +124,7 @@ class BootstrapPaths:
             metadata_file=root / "state" / "bootstrap-metadata.json",
             ssh_private_key=root / "keys" / "ssh" / "faultwitness_ed25519",
             known_hosts_file=root / "ssh" / "known_hosts",
-            private_evidence_dir=root / "evidence" / "I-0007",
+            private_evidence_dir=root / "evidence" / "bootstrap",
         )
 
 
@@ -199,6 +213,78 @@ def parse_handoff(text: str) -> SecretBundle:
     )
     validate_bundle(bundle)
     return bundle
+
+
+@dataclass(frozen=True, repr=False)
+class ServerEndpoint:
+    """One reachable SSH endpoint for a host, plus its login."""
+
+    host: str
+    port: int
+    username: str
+    password: str
+    label: str
+
+    def __repr__(self) -> str:
+        return f"ServerEndpoint(label={self.label!r}, <redacted>)"
+
+
+def parse_endpoint_handoff(text: str) -> tuple[ServerEndpoint, ...]:
+    """Parse a replacement-host handoff into its endpoints, LAN first.
+
+    A host-replacement handoff differs from the original bootstrap handoff: it carries no
+    API keys (those are retained across rotation) and it lists *two* ways to reach the
+    same machine -- a LAN address and a relay. Each address line is followed by its own
+    port line, so ports bind to the address above them rather than to the document.
+
+    Endpoints are returned in preference order, LAN before relay, because the LAN path is
+    both faster and does not depend on a third-party tunnel staying up.
+    """
+    lan_markers = ("内网", "lan", "intranet", "local")
+    relay_markers = ("frpc", "frp", "passnat", "公网", "wan", "relay")
+    entries: list[dict[str, Any]] = []
+    username = ""
+    password = ""
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line:
+            continue
+        lowered = line.casefold()
+        value = _value_after_separator(line)
+        if "ip" in lowered and any(marker in lowered for marker in lan_markers):
+            entries.append({"host": value, "label": "lan", "port": None})
+        elif "ip" in lowered and any(marker in lowered for marker in relay_markers):
+            entries.append({"host": value, "label": "relay", "port": None})
+        elif ("端口" in line or "port" in lowered) and entries and entries[-1]["port"] is None:
+            entries[-1]["port"] = value
+        elif "user" in lowered or "用户" in line or "账号" in line:
+            username = value
+        elif "pwd" in lowered or "pass" in lowered or "密码" in line:
+            password = value
+    if not entries:
+        raise GovernanceError("endpoint handoff lists no addresses")
+    if not username or not password:
+        raise GovernanceError("endpoint handoff is missing the username or password")
+    endpoints: list[ServerEndpoint] = []
+    for entry in entries:
+        if not entry["port"]:
+            raise GovernanceError(f"endpoint handoff has no port for the {entry['label']} address")
+        try:
+            port = int(str(entry["port"]))
+        except ValueError as error:
+            raise GovernanceError("endpoint handoff port must be an integer") from error
+        endpoints.append(
+            ServerEndpoint(
+                host=str(entry["host"]),
+                port=port,
+                username=username,
+                password=password,
+                label=str(entry["label"]),
+            )
+        )
+    order = {"lan": 0, "relay": 1}
+    endpoints.sort(key=lambda item: order.get(item.label, 2))
+    return tuple(endpoints)
 
 
 def validate_bundle(bundle: SecretBundle) -> None:
@@ -357,8 +443,8 @@ def migrate_handoff(
         },
         "credential_verification": {
             "server.password": "pending_login",
-            "bailian.api_key": "deferred_to_I-0014_live_eval",
-            "langsmith.api_key": "deferred_to_I-0013_live_eval",
+            "bailian.api_key": "deferred_to_model_gateway_live",
+            "langsmith.api_key": "deferred_to_trace_service_live",
         },
         "host_key_verified": False,
         "ssh_key_verified": False,
@@ -366,6 +452,82 @@ def migrate_handoff(
         "handoff_deleted": False,
     }
     _atomic_write(paths.metadata_file, json.dumps(metadata, indent=2) + "\n")
+    return metadata
+
+
+def rotate_server_endpoint(
+    paths: BootstrapPaths,
+    sops: Path,
+    age_keygen: Path,
+    *,
+    host: str,
+    port: int,
+    username: str,
+    password: str,
+    reason: str,
+    now: datetime | None = None,
+) -> dict[str, Any]:
+    """Re-point the encrypted store at a replacement host, keeping the API credentials.
+
+    ``migrate_handoff`` refuses to overwrite an existing store, which is correct for its
+    job (a second handoff must never silently replace a verified one) but leaves no path
+    for the case where the pinned host is physically gone. Rebootstrapping from scratch
+    would discard the Bailian and LangSmith keys and their live-verification evidence,
+    which are host-independent and still valid.
+
+    Server identity and machine trust are separate concerns, so this rotates only the
+    four ``server.*`` values and then *clears* the pin evidence: a new machine has a new
+    host key and an empty ``authorized_keys``, so ``host_key_verified`` and
+    ``ssh_key_verified`` must be re-earned through the normal capture/accept/install
+    path rather than inherited. ``capability_reprobe_match`` is cleared for the same
+    reason -- the retained capability contract describes a host, not a project.
+    """
+    metadata = load_private_metadata(paths.metadata_file)
+    if metadata.get("encrypted_round_trip") != "pass":
+        raise GovernanceError("encrypted round-trip evidence must pass before rotation")
+    previous = load_secret_bundle(paths, sops)
+    rotated = SecretBundle(
+        server_host=host,
+        server_port=port,
+        server_username=username,
+        server_password=password,
+        bailian_api_key=previous.bailian_api_key,
+        langsmith_api_key=previous.langsmith_api_key,
+    )
+    validate_bundle(rotated)
+    recipient = derive_age_recipient(age_keygen, paths.identity_file)
+    ciphertext = encrypt_bundle(rotated, sops, recipient)
+    round_trip = decrypt_bundle(ciphertext, sops, paths.identity_file)
+    if not secrets.compare_digest(bundle_fingerprint(rotated), bundle_fingerprint(round_trip)):
+        raise GovernanceError("rotated secret round-trip verification failed")
+    _atomic_write(paths.encrypted_store, ciphertext)
+
+    # A stale pin is worse than no pin: it would let a different machine at the same
+    # address pass BatchMode checks. Remove the old known_hosts entry outright.
+    for stale in (paths.known_hosts_file, paths.known_hosts_file.with_suffix(".candidate")):
+        if stale.exists():
+            stale.unlink()
+
+    timestamp = (now or datetime.now(UTC)).isoformat()
+    history = list(metadata.get("server_endpoint_rotations", []))
+    history.append(
+        {
+            "rotated_at": timestamp,
+            "reason": reason,
+            "previous_host_sha256": hashlib.sha256(
+                f"{previous.server_host}:{previous.server_port}".encode()
+            ).hexdigest(),
+            "host_sha256": hashlib.sha256(f"{host}:{port}".encode()).hexdigest(),
+        }
+    )
+    metadata["server_endpoint_rotations"] = history
+    metadata["host_key_verified"] = False
+    metadata["ssh_key_verified"] = False
+    metadata["capability_reprobe_match"] = False
+    metadata.pop("host_key_verification_method", None)
+    verification = metadata.setdefault("credential_verification", {})
+    verification["server.password"] = "pending_login"
+    _write_private_metadata(paths, metadata)
     return metadata
 
 
@@ -413,8 +575,8 @@ def accept_existing_credentials(paths: BootstrapPaths, sops: Path) -> None:
         "server.password": (
             "verified_login" if metadata.get("ssh_key_verified") is True else "pending_login"
         ),
-        "bailian.api_key": "deferred_to_I-0014_live_eval",
-        "langsmith.api_key": "deferred_to_I-0013_live_eval",
+        "bailian.api_key": "deferred_to_model_gateway_live",
+        "langsmith.api_key": "deferred_to_trace_service_live",
     }
     metadata["credential_acceptance_method"] = "operator_confirmed_existing_long_lived"
     metadata["credentials_accepted_at"] = datetime.now(UTC).isoformat()
@@ -422,18 +584,18 @@ def accept_existing_credentials(paths: BootstrapPaths, sops: Path) -> None:
 
 
 def record_live_api_verification(
-    paths: BootstrapPaths, *, secret_name: str, iteration: str
+    paths: BootstrapPaths, *, secret_name: str, capability: str
 ) -> None:
-    owners = {"langsmith.api_key": "I-0013", "bailian.api_key": "I-0014"}
-    if owners.get(secret_name) != iteration:
+    owners = {"langsmith.api_key": "trace-service", "bailian.api_key": "model-gateway"}
+    if owners.get(secret_name) != capability:
         raise GovernanceError("API credential verification owner is invalid")
     metadata = load_private_metadata(paths.metadata_file)
     if metadata.get("credential_acceptance", {}).get(secret_name) != "accepted_existing":
         raise GovernanceError("API credential must be accepted before live verification")
     verification = metadata.setdefault("credential_verification", {})
-    if verification.get("bailian.api_key") == "deferred_to_I-0013_live_eval":
-        verification["bailian.api_key"] = "deferred_to_I-0014_live_eval"
-    verification[secret_name] = f"verified_live_{iteration}"
+    if not str(verification.get("bailian.api_key", "")).startswith("verified_live_"):
+        verification["bailian.api_key"] = "deferred_to_model_gateway_live"
+    verification[secret_name] = f"verified_live_{capability}"
     metadata.setdefault("credential_verified_at", {})[secret_name] = datetime.now(UTC).isoformat()
     _write_private_metadata(paths, metadata)
 
@@ -666,7 +828,7 @@ def run_capability_probe(
     paths: BootstrapPaths,
     sops: Path,
     probe_script: Path,
-    candidate_sha: str,
+    producer_sha: str,
     public_output: Path,
 ) -> dict[str, Any]:
     metadata = validate_migration(paths, sops)
@@ -691,7 +853,7 @@ def run_capability_probe(
         "python3 -",
     ]
     reports: list[dict[str, Any]] = []
-    for attempt in range(1, 3):
+    for sample_number in range(1, 3):
         result = subprocess.run(
             arguments,
             input=script,
@@ -708,8 +870,8 @@ def run_capability_probe(
                 json.dumps(
                     {
                         "schema_version": "1.0.0",
-                        "candidate_sha": candidate_sha,
-                        "attempt": attempt,
+                        "producer_sha": producer_sha,
+                        "sample_number": sample_number,
                         "category": category,
                         "recorded_at": datetime.now(UTC).isoformat(),
                     },
@@ -726,7 +888,7 @@ def run_capability_probe(
         except json.JSONDecodeError as error:
             raise GovernanceError("host capability probe returned invalid JSON") from error
         assert_no_sensitive_capability_fields(raw)
-        reports.append(canonical_capability_report(raw, candidate_sha))
+        reports.append(canonical_capability_report(raw, producer_sha))
     if reports[0] != reports[1]:
         raise GovernanceError("two normalized capability probes did not match")
     assert_no_sensitive_capability_fields(reports[0])
@@ -766,9 +928,9 @@ def finalize_handoff(handoff: Path, paths: BootstrapPaths, sops: Path) -> None:
     _atomic_write(paths.metadata_file, json.dumps(metadata, indent=2) + "\n")
 
 
-def canonical_capability_report(document: dict[str, Any], candidate_sha: str) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+def canonical_capability_report(document: dict[str, Any], producer_sha: str) -> dict[str, Any]:
+    if not FULL_SHA.fullmatch(producer_sha):
+        raise GovernanceError("producer SHA must contain 40 lowercase hexadecimal characters")
     required = {
         "architecture",
         "cpu_count",
@@ -801,7 +963,7 @@ def canonical_capability_report(document: dict[str, Any], candidate_sha: str) ->
         )
     report = {
         "schema_version": "1.0.0",
-        "candidate_sha": candidate_sha,
+        "producer_sha": producer_sha,
         "capabilities": {name: document[name] for name in sorted(required)},
     }
     serialized = json.dumps(report, sort_keys=True, separators=(",", ":"))
@@ -840,6 +1002,48 @@ def assert_no_sensitive_capability_fields(document: dict[str, Any]) -> None:
                 walk(child, (*path, str(index)))
 
     walk(document)
+
+
+def validate_capability_baseline(
+    report: dict[str, Any], producer_sha: str, schema: dict[str, Any] | None = None
+) -> None:
+    """Validate the retained host-capability contract without a Gate lifecycle engine."""
+    if schema is not None:
+        from faultwitness_dev.schemas import validate_document
+
+        validate_document(report, schema, "sanitized capability baseline")
+    assert_no_sensitive_capability_fields(report)
+    capabilities = report.get("capabilities")
+    if not isinstance(capabilities, dict):
+        raise GovernanceError("capability baseline is missing its capabilities object")
+    expected = canonical_capability_report(capabilities, producer_sha)
+    if report != expected:
+        raise GovernanceError("capability baseline digest or producer provenance drifted")
+    checks = {
+        "architecture": str(capabilities["architecture"]).casefold() in {"x86_64", "amd64"},
+        "cpu_count": capabilities["cpu_count"] >= 32,
+        "memory_bytes": capabilities["memory_bytes"] >= 60 * 1024**3,
+        "kernel_release": kernel_series_accepted(capabilities["kernel_release"]),
+        "cgroup_version": capabilities["cgroup_version"] == 1,
+        "kvm_available": capabilities["kvm_available"] is True,
+        "seccomp_available": capabilities["seccomp_available"] is True,
+        "user_namespace_available": capabilities["user_namespace_available"] is True,
+        "docker_available": capabilities["docker_available"] is True,
+        "docker_unhealthy_count": capabilities["docker_unhealthy_count"] == 0,
+        "protected_ports": capabilities["ports_80_443_in_use"] is True,
+        "k3s_absent": capabilities["k3s_available"] is False,
+        "helm_absent": capabilities["helm_available"] is False,
+        "gvisor_absent": capabilities["gvisor_available"] is False,
+        "kata_absent": capabilities["kata_available"] is False,
+        "nvidia_available": capabilities["nvidia_available"] is True,
+        "gpu_model": "4090" in str(capabilities["gpu_model"]),
+        "gpu_memory_bytes": capabilities["gpu_memory_bytes"] >= 23 * 1024**3,
+        "root_total_bytes": capabilities["root_total_bytes"] >= 100 * 1024**3,
+        "cidr_conflict": capabilities["cidr_conflict_with_10_42_10_43"] is False,
+    }
+    failures = [name for name, passed in checks.items() if not passed]
+    if failures:
+        raise GovernanceError("capability baseline failed required checks: " + ", ".join(failures))
 
 
 def remote_probe_failure_category(stderr: str) -> str:

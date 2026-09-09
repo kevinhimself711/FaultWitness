@@ -9,6 +9,7 @@ import shlex
 import subprocess
 import tarfile
 import urllib.request
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -21,14 +22,20 @@ from faultwitness_dev.bootstrap import (
     _atomic_write,
     _ssh_base_arguments,
     default_sops_executable,
+    kernel_series_accepted,
     load_private_metadata,
     load_secret_bundle,
     ssh_failure_category,
 )
 from faultwitness_dev.errors import GovernanceError
+from faultwitness_dev.provenance import producer_provenance
 
 FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
 PUBLIC_IMAGE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9./_:@-]{0,255}$")
+
+
+def _platform_provenance(root: Path):
+    return producer_provenance(root, [root / "deploy" / "k3s"])
 
 
 @dataclass(frozen=True)
@@ -40,7 +47,7 @@ class InfraPaths:
         appdata = os.environ.get("APPDATA")
         if not appdata:
             raise GovernanceError("APPDATA is required for private infrastructure evidence")
-        return cls(Path(appdata) / "FaultWitness" / "evidence" / "I-0008")
+        return cls(Path(appdata) / "FaultWitness" / "evidence" / "platform")
 
 
 def _remote_arguments(paths: BootstrapPaths) -> tuple[Any, list[str]]:
@@ -97,14 +104,10 @@ def _remote_process(
     )
     try:
         stdout = (
-            result.stdout.decode("utf-8")
-            if isinstance(result.stdout, bytes)
-            else result.stdout
+            result.stdout.decode("utf-8") if isinstance(result.stdout, bytes) else result.stdout
         )
         stderr = (
-            result.stderr.decode("utf-8")
-            if isinstance(result.stderr, bytes)
-            else result.stderr
+            result.stderr.decode("utf-8") if isinstance(result.stderr, bytes) else result.stderr
         )
     except UnicodeDecodeError as error:
         raise GovernanceError("remote process output is not valid UTF-8") from error
@@ -160,9 +163,7 @@ def _run_remote_script_transport(
     execute_command = "sudo -k -S -p '' /bin/sh " + shlex.quote(remote_path)
     cleanup_command = "rm -f -- " + shlex.quote(remote_path)
     try:
-        execute = _remote_process(
-            runner, arguments, execute_command, sudo_stdin + "\n"
-        )
+        execute = _remote_process(runner, arguments, execute_command, sudo_stdin + "\n")
     except BaseException:
         _remote_process(runner, arguments, cleanup_command, "")
         raise
@@ -188,13 +189,9 @@ def _run_remote_script_transport(
     return execute.stdout
 
 
-def run_remote_script(
-    script: str, *, privileged: bool, timeout: float | None = None
-) -> str:
+def run_remote_script(script: str, *, privileged: bool) -> str:
     paths = BootstrapPaths.defaults()
     bundle, arguments = _remote_arguments(paths)
-    # Backward-compatible argument only: normal progress is never killed by a preset wall clock.
-    _ = timeout
     return _run_remote_script_transport(
         script,
         privileged=privileged,
@@ -226,18 +223,18 @@ for tool in sudo curl sha256sum sha512sum tar zstd gcc make systemctl ss python3
 done
 candidate=$(apt-cache policy zstd 2>/dev/null | awk '/Candidate:/ {print $2; exit}')
 printf 'zstd_candidate=%s\\n' "${candidate:-absent}"
-if test -f /tmp/faultwitness-i0008/kata-static.tar.zst; then
+if test -f /tmp/faultwitness-platform/kata-static.tar.zst; then
     printf 'kata_stage_bytes=%s\\n' \
-        "$(stat -c %s /tmp/faultwitness-i0008/kata-static.tar.zst)"
+        "$(stat -c %s /tmp/faultwitness-platform/kata-static.tar.zst)"
 else
     echo kata_stage_bytes=0
 fi
-if test -d /tmp/faultwitness-i0008/images; then
+if test -d /tmp/faultwitness-platform/images; then
     echo image_stage_dir=present
 else
     echo image_stage_dir=absent
 fi
-if test -w /tmp/faultwitness-i0008/images; then
+if test -w /tmp/faultwitness-platform/images; then
     echo image_stage_writable=yes
 else
     echo image_stage_writable=no
@@ -409,13 +406,13 @@ def diagnose_runtime_smokes() -> dict[str, Any]:
 def diagnose_network_matrix() -> dict[str, Any]:
     output = run_remote_script(
         "for ns in fw-control fw-data; do echo FW_NAMESPACE=$ns; "
-        "/usr/local/bin/k3s kubectl -n \"$ns\" get all,networkpolicy "
+        '/usr/local/bin/k3s kubectl -n "$ns" get all,networkpolicy '
         "-l faultwitness.dev/eval=EVAL-G01-002-network -o json; "
-        "/usr/local/bin/k3s kubectl -n \"$ns\" get events "
+        '/usr/local/bin/k3s kubectl -n "$ns" get events '
         "--sort-by=.metadata.creationTimestamp; "
         "for job in network-allow network-deny-same network-deny-cross "
         "network-dns network-deny-internet; do echo FW_JOB=$job; "
-        "/usr/local/bin/k3s kubectl -n \"$ns\" logs job/$job "
+        '/usr/local/bin/k3s kubectl -n "$ns" logs job/$job '
         "--tail=100 2>&1 || true; done; done\n",
         privileged=True,
     )
@@ -430,9 +427,7 @@ def diagnose_network_matrix() -> dict[str, Any]:
         "quota": ("exceeded quota",),
         "container": ("createcontainer",),
     }
-    categories = [
-        name for name, words in markers.items() if all(word in lowered for word in words)
-    ]
+    categories = [name for name, words in markers.items() if all(word in lowered for word in words)]
     return {
         "sha256": hashlib.sha256(output.encode()).hexdigest(),
         "categories": categories or ["unclassified"],
@@ -466,7 +461,7 @@ def validate_preinstall_baseline(document: dict[str, Any]) -> None:
     containers = document.get("docker", {}).get("containers", [])
     failures = {
         "architecture": document.get("architecture") in {"x86_64", "amd64"},
-        "kernel": str(document.get("kernel_release", "")).startswith("5.15."),
+        "kernel": kernel_series_accepted(document.get("kernel_release", "")),
         "cgroup_v1": document.get("cgroup_version") == 1,
         "k3s_absent": document.get("k3s_installed") is False,
         "reserved_cidrs_free": document.get("reserved_cidr_overlap") is False,
@@ -478,9 +473,7 @@ def validate_preinstall_baseline(document: dict[str, Any]) -> None:
         raise GovernanceError("infrastructure preflight failed: " + ", ".join(failed))
 
 
-def capture_preinstall_baseline(root: Path, candidate_sha: str) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+def capture_preinstall_baseline(root: Path) -> dict[str, Any]:
     script_path = root / "deploy" / "k3s" / "capture_baseline.py"
     if not script_path.is_file():
         raise GovernanceError("allowlisted infrastructure baseline script is missing")
@@ -493,6 +486,7 @@ def capture_preinstall_baseline(root: Path, candidate_sha: str) -> dict[str, Any
     except json.JSONDecodeError as error:
         raise GovernanceError("infrastructure baseline returned invalid JSON") from error
     validate_preinstall_baseline(document)
+    provenance = producer_provenance(root, [script_path])
     evidence = InfraPaths.defaults().evidence_dir
     evidence.mkdir(parents=True, exist_ok=True)
     _atomic_write(
@@ -504,7 +498,9 @@ def capture_preinstall_baseline(root: Path, candidate_sha: str) -> dict[str, Any
     ).hexdigest()
     summary = {
         "schema_version": "1.0.0",
-        "candidate_sha": candidate_sha,
+        "producer_sha": provenance.producer_sha,
+        "source_digest": provenance.source_digest,
+        "dirty": provenance.dirty,
         "captured_at": datetime.now(UTC).isoformat(),
         "baseline_sha256": digest,
         "container_count": len(document["docker"]["containers"]),
@@ -527,11 +523,11 @@ def render_core_installer(root: Path) -> str:
         "K3S_URL": artifacts["k3s"]["url"],
         "K3S_SHA256": artifacts["k3s"]["sha256"],
         "K3S_VERSION": artifacts["k3s"]["version"],
-        "K3S_STAGE": "/tmp/faultwitness-i0008/k3s",
+        "K3S_STAGE": "/tmp/faultwitness-platform/k3s",
         "HELM_URL": artifacts["helm"]["url"],
         "HELM_SHA256": artifacts["helm"]["sha256"],
         "HELM_VERSION": artifacts["helm"]["version"],
-        "HELM_STAGE": "/tmp/faultwitness-i0008/helm.tar.gz",
+        "HELM_STAGE": "/tmp/faultwitness-platform/helm.tar.gz",
     }
     template = (root / "deploy" / "k3s" / "install_core.sh").read_text(encoding="utf-8")
     for name, value in values.items():
@@ -559,7 +555,7 @@ def _download_verified(
     destination.parent.mkdir(parents=True, exist_ok=True)
     temporary = destination.with_suffix(destination.suffix + ".download")
     digest = hashlib.new(algorithm)
-    request = urllib.request.Request(url, headers={"User-Agent": "FaultWitness-I-0008/1.0"})
+    request = urllib.request.Request(url, headers={"User-Agent": "FaultWitness-Platform/1.0"})
     try:
         with (
             urllib.request.urlopen(request, timeout=30) as response,
@@ -576,11 +572,148 @@ def _download_verified(
             temporary.unlink()
 
 
+_REMOTE_STAGE_DIR = "/tmp/faultwitness-platform"
+
+# The transparent proxy on the replacement host truncates long single-shot transfers
+# (curl exit 28/56 mid-stream) while resolving and connecting to every artifact host
+# normally. Resumable retries recover byte-exact downloads; see ADR-0017.
+_REMOTE_FETCH_HELPER = """set -u
+umask 077
+stage_dir={stage_dir}
+mkdir -p "$stage_dir"
+fetch() {{
+    name=$1
+    url=$2
+    expected=$3
+    algo=$4
+    target=$stage_dir/$name
+    if test -f "$target" \\
+        && printf '%s  %s\\n' "$expected" "$target" | "${{algo}}sum" --check --status; then
+        printf 'stage %s cached\\n' "$name"
+        return 0
+    fi
+    # curl's own --retry restarts the transfer and truncates -o, so -C - never resumes and
+    # a proxy that cuts every transfer mid-stream makes no net progress. Retry as separate
+    # processes instead: each new curl resumes from whatever the previous one left on disk.
+    attempt=1
+    while test "$attempt" -le 8; do
+        curl -sS -L -C - -m 900 -o "$target.part" "$url" || true
+        if printf '%s  %s\\n' "$expected" "$target.part" \\
+            | "${{algo}}sum" --check --status; then
+            mv -f "$target.part" "$target"
+            printf 'stage %s downloaded attempts=%s\\n' "$name" "$attempt"
+            return 0
+        fi
+        attempt=$((attempt + 1))
+        sleep 3
+    done
+    # The digest never matched. Keep nothing partial: a stale .part would be resumed on the
+    # next run and could not converge if the mismatch came from corruption rather than truncation.
+    printf 'stage %s download-failed bytes=%s\\n' "$name" \\
+        "$(stat -c %s "$target.part" 2>/dev/null || echo 0)"
+    rm -f "$target.part"
+    return 0
+}}
+"""
+
+
+@dataclass(frozen=True)
+class _StagedArtifact:
+    remote_name: str
+    url: str
+    digest: str
+    algorithm: str
+    local_path: Path
+
+
+def _scp_to_stage(
+    artifacts: Sequence[_StagedArtifact], *, failure_label: str, paths: BootstrapPaths, bundle: Any
+) -> None:
+    common = [
+        "-P",
+        str(bundle.server_port),
+        "-o",
+        "ConnectTimeout=10",
+        "-o",
+        "StrictHostKeyChecking=yes",
+        "-o",
+        f"UserKnownHostsFile={paths.known_hosts_file}",
+        "-o",
+        "LogLevel=ERROR",
+        "-o",
+        "BatchMode=yes",
+        "-o",
+        "PasswordAuthentication=no",
+        "-i",
+        str(paths.ssh_private_key),
+    ]
+    for artifact in artifacts:
+        _download_verified(artifact.url, artifact.digest, artifact.local_path, artifact.algorithm)
+        result = subprocess.run(
+            [
+                "scp",
+                *common,
+                str(artifact.local_path),
+                f"{bundle.server_username}@{bundle.server_host}:"
+                f"{_REMOTE_STAGE_DIR}/{artifact.remote_name}",
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+        if result.returncode:
+            raise GovernanceError(
+                f"{failure_label} staging failed (" + ssh_failure_category(result.stderr) + ")"
+            )
+
+
+def _stage_artifacts(artifacts: Sequence[_StagedArtifact], *, failure_label: str) -> dict[str, str]:
+    """Stage pinned artifacts under the remote staging directory.
+
+    The host downloads them itself and verifies each against the digest pinned in
+    ``versions.lock.yaml`` before the file is moved into place, so the integrity
+    guarantee is identical to the relay path -- only the bytes take a shorter route.
+    Anything the host cannot fetch falls back to a PC download plus scp.
+    """
+    if not artifacts:
+        return {}
+    script = _REMOTE_FETCH_HELPER.format(stage_dir=shlex.quote(_REMOTE_STAGE_DIR))
+    script += "".join(
+        f"fetch {shlex.quote(item.remote_name)} {shlex.quote(item.url)}"
+        f" {shlex.quote(item.digest)} {shlex.quote(item.algorithm)}\n"
+        for item in artifacts
+    )
+    if not script.isascii():
+        raise GovernanceError("remote staging script must stay ASCII for transport safety")
+    outcomes: dict[str, str] = {}
+    try:
+        stdout = run_remote_script(script, privileged=False)
+    except GovernanceError:
+        stdout = ""
+    for line in stdout.splitlines():
+        fields = line.split()
+        # Trailing fields carry diagnostics (attempt count, short byte count); the outcome
+        # is always the third token.
+        if len(fields) >= 3 and fields[0] == "stage":
+            outcomes[fields[1]] = fields[2]
+    relay = [
+        item for item in artifacts if outcomes.get(item.remote_name) not in {"cached", "downloaded"}
+    ]
+    if relay:
+        paths = BootstrapPaths.defaults()
+        bundle, _ = _remote_arguments(paths)
+        _scp_to_stage(relay, failure_label=failure_label, paths=paths, bundle=bundle)
+        for item in relay:
+            outcomes[item.remote_name] = "relayed"
+    return outcomes
+
+
 def _ensure_crane(root: Path) -> Path:
     lock = yaml.safe_load((root / "deploy" / "k3s" / "versions.lock.yaml").read_text())
     artifact = lock["artifacts"]["crane"]
     private_root = InfraPaths.defaults().evidence_dir.parent.parent
-    archive = private_root / "artifacts" / "I-0008" / "crane.tar.gz"
+    archive = private_root / "artifacts" / "platform" / "crane.tar.gz"
     executable = private_root / "tools" / "crane" / artifact["version"] / "crane.exe"
     _download_verified(artifact["url"], artifact["sha256"], archive)
     if not executable.is_file():
@@ -620,7 +753,6 @@ def _pull_image_archive(crane: Path, image: str, destination: Path) -> None:
         capture_output=True,
         text=True,
         encoding="utf-8",
-        timeout=600,
     )
     if result.returncode:
         if temporary.exists():
@@ -638,13 +770,11 @@ def _pull_image_archive(crane: Path, image: str, destination: Path) -> None:
     )
 
 
-def prepare_offline_base_images(root: Path, candidate_sha: str) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+def prepare_offline_base_images(root: Path) -> dict[str, Any]:
     lock = yaml.safe_load((root / "deploy" / "k3s" / "versions.lock.yaml").read_text())
     artifacts = lock["artifacts"]
     crane = _ensure_crane(root)
-    private_root = InfraPaths.defaults().evidence_dir.parent.parent / "artifacts" / "I-0008"
+    private_root = InfraPaths.defaults().evidence_dir.parent.parent / "artifacts" / "platform"
     images = {
         "pause": artifacts["pause"]["image"],
         "busybox": artifacts["busybox_smoke"]["image"],
@@ -657,7 +787,7 @@ def prepare_offline_base_images(root: Path, candidate_sha: str) -> dict[str, Any
     owner = shlex.quote(bundle.server_username)
     run_remote_script(
         f'group=$(id -gn {owner}); install -d -m 0700 -o {owner} -g "$group" '
-        "/tmp/faultwitness-i0008/images\n",
+        "/tmp/faultwitness-platform/images\n",
         privileged=True,
     )
     common = [
@@ -683,13 +813,12 @@ def prepare_offline_base_images(root: Path, candidate_sha: str) -> dict[str, Any
                 *common,
                 str(archive),
                 f"{bundle.server_username}@{bundle.server_host}:"
-                f"/tmp/faultwitness-i0008/images/{name}.tar",
+                f"/tmp/faultwitness-platform/images/{name}.tar",
             ],
             check=False,
             capture_output=True,
             text=True,
             encoding="utf-8",
-            timeout=300,
         )
         if result.returncode:
             failure_path = InfraPaths.defaults().evidence_dir / "offline-image-scp-failure.log"
@@ -698,7 +827,7 @@ def prepare_offline_base_images(root: Path, candidate_sha: str) -> dict[str, Any
                 "offline image staging failed (" + ssh_failure_category(result.stderr) + ")"
             )
     import_script = "set -eu\n" + "\n".join(
-        f"/usr/local/bin/k3s ctr images import /tmp/faultwitness-i0008/images/{name}.tar"
+        f"/usr/local/bin/k3s ctr images import /tmp/faultwitness-platform/images/{name}.tar"
         for name in archives
     )
     import_script += """
@@ -718,11 +847,14 @@ fi
 /usr/local/bin/k3s ctr images list -q | grep -Fx docker.io/rancher/mirrored-pause:3.6
 /usr/local/bin/k3s ctr images list -q | grep -Fx docker.io/library/busybox:1.36.1
 """
-    run_remote_script(import_script, privileged=True, timeout=300)
+    run_remote_script(import_script, privileged=True)
     evidence = InfraPaths.defaults().evidence_dir
+    provenance = producer_provenance(root, [root / "deploy" / "k3s" / "versions.lock.yaml"])
     summary = {
         "schema_version": "1.0.0",
-        "candidate_sha": candidate_sha,
+        "producer_sha": provenance.producer_sha,
+        "source_digest": provenance.source_digest,
+        "dirty": provenance.dirty,
         "prepared_at": datetime.now(UTC).isoformat(),
         "images": sorted(images),
         "status": "pass",
@@ -734,138 +866,65 @@ fi
     return summary
 
 
-def _stage_core_artifacts(root: Path) -> None:
+def _stage_core_artifacts(root: Path) -> dict[str, str]:
     lock = yaml.safe_load((root / "deploy" / "k3s" / "versions.lock.yaml").read_text())
     artifacts = lock["artifacts"]
-    private_root = InfraPaths.defaults().evidence_dir.parent.parent / "artifacts" / "I-0008"
-    local_files = {
-        "k3s": private_root / "k3s",
-        "helm.tar.gz": private_root / "helm.tar.gz",
-    }
-    _download_verified(artifacts["k3s"]["url"], artifacts["k3s"]["sha256"], local_files["k3s"])
-    _download_verified(
-        artifacts["helm"]["url"], artifacts["helm"]["sha256"], local_files["helm.tar.gz"]
+    private_root = InfraPaths.defaults().evidence_dir.parent.parent / "artifacts" / "platform"
+    return _stage_artifacts(
+        [
+            _StagedArtifact(
+                "k3s",
+                artifacts["k3s"]["url"],
+                artifacts["k3s"]["sha256"],
+                "sha256",
+                private_root / "k3s",
+            ),
+            _StagedArtifact(
+                "helm.tar.gz",
+                artifacts["helm"]["url"],
+                artifacts["helm"]["sha256"],
+                "sha256",
+                private_root / "helm.tar.gz",
+            ),
+        ],
+        failure_label="infrastructure artifact",
     )
-    paths = BootstrapPaths.defaults()
-    bundle, ssh_arguments = _remote_arguments(paths)
-    run_remote_script(
-        "umask 077; mkdir -p /tmp/faultwitness-i0008; "
-        "rm -f /tmp/faultwitness-i0008/k3s /tmp/faultwitness-i0008/helm.tar.gz\n",
-        privileged=False,
-    )
-    common = [
-        "-P",
-        str(bundle.server_port),
-        "-o",
-        "ConnectTimeout=10",
-        "-o",
-        "StrictHostKeyChecking=yes",
-        "-o",
-        f"UserKnownHostsFile={paths.known_hosts_file}",
-        "-o",
-        "LogLevel=ERROR",
-        "-o",
-        "BatchMode=yes",
-        "-o",
-        "PasswordAuthentication=no",
-        "-i",
-        str(paths.ssh_private_key),
-    ]
-    del ssh_arguments
-    for remote_name, local_path in local_files.items():
-        result = subprocess.run(
-            [
-                "scp",
-                *common,
-                str(local_path),
-                f"{bundle.server_username}@{bundle.server_host}:/tmp/faultwitness-i0008/{remote_name}",
-            ],
-            check=False,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            timeout=300,
-        )
-        if result.returncode:
-            raise GovernanceError(
-                "infrastructure artifact staging failed ("
-                + ssh_failure_category(result.stderr)
-                + ")"
-            )
 
 
-def _stage_gvisor_artifacts(root: Path) -> None:
+def _stage_gvisor_artifacts(root: Path) -> dict[str, str]:
     lock = yaml.safe_load((root / "deploy" / "k3s" / "versions.lock.yaml").read_text())
     artifacts = lock["artifacts"]
-    private_root = InfraPaths.defaults().evidence_dir.parent.parent / "artifacts" / "I-0008"
-    local_files = {
-        "runsc": private_root / "runsc",
-        "containerd-shim-runsc-v1": private_root / "containerd-shim-runsc-v1",
-    }
-    _download_verified(
-        artifacts["gvisor_runsc"]["url"],
-        artifacts["gvisor_runsc"]["sha512"],
-        local_files["runsc"],
-        "sha512",
+    private_root = InfraPaths.defaults().evidence_dir.parent.parent / "artifacts" / "platform"
+    return _stage_artifacts(
+        [
+            _StagedArtifact(
+                "runsc",
+                artifacts["gvisor_runsc"]["url"],
+                artifacts["gvisor_runsc"]["sha512"],
+                "sha512",
+                private_root / "runsc",
+            ),
+            _StagedArtifact(
+                "containerd-shim-runsc-v1",
+                artifacts["gvisor_containerd_shim"]["url"],
+                artifacts["gvisor_containerd_shim"]["sha512"],
+                "sha512",
+                private_root / "containerd-shim-runsc-v1",
+            ),
+        ],
+        failure_label="gVisor artifact",
     )
-    _download_verified(
-        artifacts["gvisor_containerd_shim"]["url"],
-        artifacts["gvisor_containerd_shim"]["sha512"],
-        local_files["containerd-shim-runsc-v1"],
-        "sha512",
-    )
-    paths = BootstrapPaths.defaults()
-    bundle, _ = _remote_arguments(paths)
-    run_remote_script("umask 077; mkdir -p /tmp/faultwitness-i0008\n", privileged=False)
-    common = [
-        "-P",
-        str(bundle.server_port),
-        "-o",
-        "ConnectTimeout=10",
-        "-o",
-        "StrictHostKeyChecking=yes",
-        "-o",
-        f"UserKnownHostsFile={paths.known_hosts_file}",
-        "-o",
-        "LogLevel=ERROR",
-        "-o",
-        "BatchMode=yes",
-        "-o",
-        "PasswordAuthentication=no",
-        "-i",
-        str(paths.ssh_private_key),
-    ]
-    for remote_name, local_path in local_files.items():
-        result = subprocess.run(
-            [
-                "scp",
-                *common,
-                str(local_path),
-                f"{bundle.server_username}@{bundle.server_host}:/tmp/faultwitness-i0008/{remote_name}",
-            ],
-            check=False,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            timeout=300,
-        )
-        if result.returncode:
-            raise GovernanceError(
-                "gVisor artifact staging failed (" + ssh_failure_category(result.stderr) + ")"
-            )
 
 
-def install_gvisor_runtime(root: Path, candidate_sha: str) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+def install_gvisor_runtime(root: Path) -> dict[str, Any]:
     lock = yaml.safe_load((root / "deploy" / "k3s" / "versions.lock.yaml").read_text())
     artifacts = lock["artifacts"]
     _stage_gvisor_artifacts(root)
     runsc_sha = shlex.quote(artifacts["gvisor_runsc"]["sha512"])
     shim_sha = shlex.quote(artifacts["gvisor_containerd_shim"]["sha512"])
     script = f"""set -eu
-runsc_stage=/tmp/faultwitness-i0008/runsc
-shim_stage=/tmp/faultwitness-i0008/containerd-shim-runsc-v1
+runsc_stage=/tmp/faultwitness-platform/runsc
+shim_stage=/tmp/faultwitness-platform/containerd-shim-runsc-v1
 printf '%s  %s\\n' {runsc_sha} "$runsc_stage" | sha512sum --check --status
 printf '%s  %s\\n' {shim_sha} "$shim_stage" | sha512sum --check --status
 install -m 0755 "$runsc_stage" /usr/local/bin/runsc
@@ -879,10 +938,7 @@ fi
 rm -f "$bad_template"
 if ! test -e "$template"; then
     systemctl restart k3s.service
-    attempt=0
     until /usr/local/bin/k3s kubectl get --raw=/readyz >/dev/null 2>&1; do
-        attempt=$((attempt + 1))
-        test "$attempt" -lt 60
         sleep 2
     done
     cp "$config_dir/config.toml" "$template"
@@ -896,10 +952,7 @@ cat >>"$template" <<'FW_CONTAINERD_TEMPLATE'
 FW_CONTAINERD_TEMPLATE
 fi
 systemctl restart k3s.service
-attempt=0
 until /usr/local/bin/k3s kubectl get --raw=/readyz >/dev/null 2>&1; do
-    attempt=$((attempt + 1))
-    test "$attempt" -lt 60
     sleep 2
 done
 grep -F 'io.containerd.runsc.v1' /var/lib/rancher/k3s/agent/etc/containerd/config.toml >/dev/null
@@ -922,11 +975,14 @@ handler: runc
 FW_RUNTIMECLASS
 /usr/local/bin/k3s kubectl get runtimeclass gvisor runc >/dev/null
 """
-    run_remote_script(script, privileged=True, timeout=300)
+    run_remote_script(script, privileged=True)
+    provenance = _platform_provenance(root)
     evidence = InfraPaths.defaults().evidence_dir
     summary = {
         "schema_version": "1.0.0",
-        "candidate_sha": candidate_sha,
+        "producer_sha": provenance.producer_sha,
+        "source_digest": provenance.source_digest,
+        "dirty": provenance.dirty,
         "installed_at": datetime.now(UTC).isoformat(),
         "runtime_classes": ["runc", "gvisor"],
         "gvisor_version": artifacts["gvisor_runsc"]["version"],
@@ -939,67 +995,33 @@ FW_RUNTIMECLASS
     return summary
 
 
-def _stage_kata_archive(root: Path) -> None:
+def _stage_kata_archive(root: Path) -> dict[str, str]:
     lock = yaml.safe_load((root / "deploy" / "k3s" / "versions.lock.yaml").read_text())
     artifact = lock["artifacts"]["kata_static"]
     zstd = lock["artifacts"]["zstd_source"]
-    private_root = InfraPaths.defaults().evidence_dir.parent.parent / "artifacts" / "I-0008"
-    local_path = private_root / "kata-static-3.32.0-amd64.tar.zst"
-    zstd_path = private_root / "zstd-1.5.7.tar.gz"
-    _download_verified(artifact["url"], artifact["sha256"], local_path)
-    _download_verified(zstd["url"], zstd["sha256"], zstd_path)
-    paths = BootstrapPaths.defaults()
-    bundle, _ = _remote_arguments(paths)
-    run_remote_script("umask 077; mkdir -p /tmp/faultwitness-i0008\n", privileged=False)
-    remote_status = run_remote_script(
-        "if test -f /tmp/faultwitness-i0008/kata-static.tar.zst && "
-        f"printf '%s  %s\\n' {shlex.quote(artifact['sha256'])} "
-        "/tmp/faultwitness-i0008/kata-static.tar.zst | sha256sum --check --status; "
-        "then echo verified; else echo missing; fi\n",
-        privileged=True,
+    private_root = InfraPaths.defaults().evidence_dir.parent.parent / "artifacts" / "platform"
+    return _stage_artifacts(
+        [
+            _StagedArtifact(
+                "kata-static.tar.zst",
+                artifact["url"],
+                artifact["sha256"],
+                "sha256",
+                private_root / "kata-static-3.32.0-amd64.tar.zst",
+            ),
+            _StagedArtifact(
+                "zstd-source.tar.gz",
+                zstd["url"],
+                zstd["sha256"],
+                "sha256",
+                private_root / "zstd-1.5.7.tar.gz",
+            ),
+        ],
+        failure_label="Kata artifact",
     )
-    files = [(zstd_path, "zstd-source.tar.gz", 300)]
-    if remote_status.strip() != "verified":
-        files.append((local_path, "kata-static.tar.zst", 1800))
-    for source, remote_name, timeout in files:
-        result = subprocess.run(
-            [
-                "scp",
-                "-P",
-                str(bundle.server_port),
-                "-o",
-                "ConnectTimeout=10",
-                "-o",
-                "StrictHostKeyChecking=yes",
-                "-o",
-                f"UserKnownHostsFile={paths.known_hosts_file}",
-                "-o",
-                "LogLevel=ERROR",
-                "-o",
-                "BatchMode=yes",
-                "-o",
-                "PasswordAuthentication=no",
-                "-i",
-                str(paths.ssh_private_key),
-                str(source),
-                f"{bundle.server_username}@{bundle.server_host}:"
-                f"/tmp/faultwitness-i0008/{remote_name}",
-            ],
-            check=False,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            timeout=timeout,
-        )
-        if result.returncode:
-            raise GovernanceError(
-                "Kata artifact staging failed (" + ssh_failure_category(result.stderr) + ")"
-            )
 
 
-def install_kata_runtime(root: Path, candidate_sha: str) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+def install_kata_runtime(root: Path) -> dict[str, Any]:
     lock = yaml.safe_load((root / "deploy" / "k3s" / "versions.lock.yaml").read_text())
     kata = lock["artifacts"]["kata_static"]
     zstd = lock["artifacts"]["zstd_source"]
@@ -1008,13 +1030,12 @@ def install_kata_runtime(root: Path, candidate_sha: str) -> dict[str, Any]:
     zstd_version = shlex.quote(zstd["version"])
     zstd_sha = shlex.quote(zstd["sha256"])
     kata_runtime_config = (
-        "/opt/kata/share/defaults/kata-containers/runtime-rs/"
-        "configuration-qemu-runtime-rs.toml"
+        "/opt/kata/share/defaults/kata-containers/runtime-rs/configuration-qemu-runtime-rs.toml"
     )
     script = f"""set -eu
-archive=/tmp/faultwitness-i0008/kata-static.tar.zst
+archive=/tmp/faultwitness-platform/kata-static.tar.zst
 printf '%s  %s\\n' {kata_sha} "$archive" | sha256sum --check --status
-zstd_archive=/tmp/faultwitness-i0008/zstd-source.tar.gz
+zstd_archive=/tmp/faultwitness-platform/zstd-source.tar.gz
 printf '%s  %s\\n' {zstd_sha} "$zstd_archive" | sha256sum --check --status
 zstd_root=/opt/faultwitness/tools/zstd/{zstd_version}
 if ! test -x "$zstd_root/zstd"; then
@@ -1060,10 +1081,7 @@ old_config='/opt/kata/share/defaults/kata-containers/configuration-qemu.toml'
 new_config='/opt/kata/share/defaults/kata-containers/runtime-rs/configuration-qemu-runtime-rs.toml'
 sed -i "s#$old_config#$new_config#" "$template"
 systemctl restart k3s.service
-attempt=0
 until /usr/local/bin/k3s kubectl get --raw=/readyz >/dev/null 2>&1; do
-    attempt=$((attempt + 1))
-    test "$attempt" -lt 60
     sleep 2
 done
 grep -F 'io.containerd.kata.v2' \
@@ -1083,11 +1101,14 @@ overhead:
 FW_KATA_RUNTIMECLASS
 /usr/local/bin/k3s kubectl get runtimeclass kata >/dev/null
 """
-    run_remote_script(script, privileged=True, timeout=900)
+    run_remote_script(script, privileged=True)
+    provenance = _platform_provenance(root)
     evidence = InfraPaths.defaults().evidence_dir
     summary = {
         "schema_version": "1.0.0",
-        "candidate_sha": candidate_sha,
+        "producer_sha": provenance.producer_sha,
+        "source_digest": provenance.source_digest,
+        "dirty": provenance.dirty,
         "installed_at": datetime.now(UTC).isoformat(),
         "runtime_class": "kata",
         "runtime_implementation": "runtime-rs",
@@ -1102,9 +1123,111 @@ FW_KATA_RUNTIMECLASS
     return summary
 
 
-def install_nvidia_runtime(root: Path, candidate_sha: str) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+def _stage_nvidia_toolkit(root: Path) -> dict[str, str]:
+    lock = yaml.safe_load((root / "deploy" / "k3s" / "versions.lock.yaml").read_text())
+    artifact = lock["artifacts"]["nvidia_container_toolkit"]
+    private_root = InfraPaths.defaults().evidence_dir.parent.parent / "artifacts" / "platform"
+    return _stage_artifacts(
+        [
+            _StagedArtifact(
+                "nvidia-container-toolkit.tar.gz",
+                artifact["url"],
+                artifact["sha256"],
+                "sha256",
+                private_root / f"nvidia-container-toolkit-{artifact['version']}-deb-amd64.tar.gz",
+            )
+        ],
+        failure_label="NVIDIA container toolkit artifact",
+    )
+
+
+def install_nvidia_container_toolkit(root: Path) -> dict[str, Any]:
+    """Install the pinned NVIDIA container toolkit from its offline deb bundle.
+
+    The device plugin's RuntimeClass points at the ``nvidia`` containerd handler, which
+    only exists once this toolkit is present. Installing from the release tarball keeps
+    the version pinned in ``versions.lock.yaml`` instead of tracking an apt repository,
+    matching how every other runtime on this host is staged.
+    """
+    lock = yaml.safe_load((root / "deploy" / "k3s" / "versions.lock.yaml").read_text())
+    artifact = lock["artifacts"]["nvidia_container_toolkit"]
+    _stage_nvidia_toolkit(root)
+    version = shlex.quote(artifact["version"])
+    digest = shlex.quote(artifact["sha256"])
+    script = f"""set -eu
+step=verify-archive
+archive={_REMOTE_STAGE_DIR}/nvidia-container-toolkit.tar.gz
+printf '%s  %s\\n' {digest} "$archive" | sha256sum --check --status
+step=require-driver
+nvidia-smi --query-gpu=name --format=csv,noheader >/dev/null
+step=extract
+extract=$(mktemp -d)
+trap 'rm -rf "$extract"' EXIT HUP INT TERM
+tar -xzf "$archive" -C "$extract"
+packages=$extract/release-v{artifact["version"]}-stable/packages/ubuntu18.04/amd64
+test -d "$packages"
+step=install-packages
+# Only the runtime packages: -dev headers, -dbg symbols, and operator extensions are not
+# needed to provide the containerd handler and would widen the installed surface.
+DEBIAN_FRONTEND=noninteractive dpkg -i \\
+    "$packages/libnvidia-container1_{artifact["version"]}-1_amd64.deb" \\
+    "$packages/libnvidia-container-tools_{artifact["version"]}-1_amd64.deb" \\
+    "$packages/nvidia-container-toolkit-base_{artifact["version"]}-1_amd64.deb" \\
+    "$packages/nvidia-container-toolkit_{artifact["version"]}-1_amd64.deb"
+step=verify-binaries
+command -v nvidia-container-runtime >/dev/null
+command -v nvidia-ctk >/dev/null
+installed=$(nvidia-ctk --version | grep -oE '[0-9]+\\.[0-9]+\\.[0-9]+' | head -n1)
+test "$installed" = {version}
+step=configure-containerd
+config_dir=/var/lib/rancher/k3s/agent/etc/containerd
+template=$config_dir/config.toml.tmpl
+if ! test -e "$template"; then
+    cp "$config_dir/config.toml" "$template"
+fi
+if ! grep -F 'faultwitness.dev/runtime=nvidia' "$template" >/dev/null; then
+cat >>"$template" <<'FW_NVIDIA_RUNTIME'
+
+# faultwitness.dev/runtime=nvidia
+[plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.'nvidia']
+  runtime_type = "io.containerd.runc.v2"
+  [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.'nvidia'.options]
+    BinaryName = "/usr/bin/nvidia-container-runtime"
+    SystemdCgroup = false
+FW_NVIDIA_RUNTIME
+fi
+step=restart-k3s
+systemctl restart k3s.service
+until /usr/local/bin/k3s kubectl get --raw=/readyz >/dev/null 2>&1; do
+    sleep 2
+done
+step=verify-containerd-config
+grep -F 'nvidia-container-runtime' "$config_dir/config.toml" >/dev/null
+step=complete
+"""
+    if not script.isascii():
+        raise GovernanceError("remote NVIDIA toolkit script must stay ASCII for transport safety")
+    run_remote_script(script, privileged=True)
+    provenance = _platform_provenance(root)
+    evidence = InfraPaths.defaults().evidence_dir
+    summary = {
+        "schema_version": "1.0.0",
+        "producer_sha": provenance.producer_sha,
+        "source_digest": provenance.source_digest,
+        "dirty": provenance.dirty,
+        "installed_at": datetime.now(UTC).isoformat(),
+        "toolkit_version": artifact["version"],
+        "containerd_handler": "nvidia",
+        "status": "pass",
+    }
+    _atomic_write(
+        evidence / "nvidia-toolkit-summary.json",
+        json.dumps(summary, indent=2, sort_keys=True) + "\n",
+    )
+    return summary
+
+
+def install_nvidia_runtime(root: Path) -> dict[str, Any]:
     lock = yaml.safe_load((root / "deploy" / "k3s" / "versions.lock.yaml").read_text())
     artifact = lock["artifacts"]["nvidia_device_plugin"]
     manifest = (root / "deploy" / "k3s" / "nvidia-device-plugin.yaml").read_text(encoding="utf-8")
@@ -1112,22 +1235,30 @@ def install_nvidia_runtime(root: Path, candidate_sha: str) -> dict[str, Any]:
         raise GovernanceError("NVIDIA manifest image does not match the locked digest")
     script = (
         "set -eu\n"
+        # The RuntimeClass in the manifest resolves to the containerd 'nvidia' handler,
+        # which the container toolkit provides. Without it the DaemonSet would sit
+        # unschedulable and the GPU-count wait below would spin until the SSH timeout.
+        "command -v nvidia-container-runtime >/dev/null\n"
+        "grep -F 'nvidia-container-runtime' "
+        "/var/lib/rancher/k3s/agent/etc/containerd/config.toml >/dev/null\n"
         "cat <<'FW_NVIDIA' | /usr/local/bin/k3s kubectl apply -f -\n" + manifest + "\nFW_NVIDIA\n"
         "/usr/local/bin/k3s kubectl -n kube-system rollout status "
-        "daemonset/nvidia-device-plugin --timeout=300s\n"
-        "attempt=0\n"
+        "daemonset/nvidia-device-plugin\n"
         "while :; do\n"
         "  gpu=$(/usr/local/bin/k3s kubectl get nodes "
         "-o jsonpath='{.items[0].status.allocatable.nvidia\\.com/gpu}')\n"
         '  if test "${gpu:-0}" -ge 1 2>/dev/null; then break; fi\n'
-        '  attempt=$((attempt + 1)); test "$attempt" -lt 60; sleep 2\n'
+        "  sleep 2\n"
         "done\n"
     )
-    run_remote_script(script, privileged=True, timeout=480)
+    run_remote_script(script, privileged=True)
+    provenance = _platform_provenance(root)
     evidence = InfraPaths.defaults().evidence_dir
     summary = {
         "schema_version": "1.0.0",
-        "candidate_sha": candidate_sha,
+        "producer_sha": provenance.producer_sha,
+        "source_digest": provenance.source_digest,
+        "dirty": provenance.dirty,
         "installed_at": datetime.now(UTC).isoformat(),
         "runtime_class": "nvidia",
         "device_plugin_version": artifact["version"],
@@ -1141,9 +1272,7 @@ def install_nvidia_runtime(root: Path, candidate_sha: str) -> dict[str, Any]:
     return summary
 
 
-def run_runtime_smokes(root: Path, candidate_sha: str) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+def run_runtime_smokes(root: Path) -> dict[str, Any]:
     lock = yaml.safe_load((root / "deploy" / "k3s" / "versions.lock.yaml").read_text())
     artifacts = lock["artifacts"]
     manifest = (root / "deploy" / "k3s" / "runtime-smoke.yaml").read_text(encoding="utf-8")
@@ -1160,17 +1289,16 @@ def run_runtime_smokes(root: Path, candidate_sha: str) -> dict[str, Any]:
         "--ignore-not-found=true --wait=true\n"
         "cat <<'FW_SMOKES' | /usr/local/bin/k3s kubectl apply -f -\n" + manifest + "\nFW_SMOKES\n"
         "wait_job() {\n"
-        "  name=$1; attempt=0\n"
-        '  while test "$attempt" -lt 300; do\n'
+        "  name=$1\n"
+        "  while :; do\n"
         '    complete=$(/usr/local/bin/k3s kubectl -n fw-eval get job "$name" '
         "-o jsonpath='{.status.succeeded}' 2>/dev/null || true)\n"
         '    failed=$(/usr/local/bin/k3s kubectl -n fw-eval get job "$name" '
         "-o jsonpath='{.status.failed}' 2>/dev/null || true)\n"
         '    test "${complete:-0}" = 1 && return 0\n'
         '    test "${failed:-0}" = 0 || return 1\n'
-        "    attempt=$((attempt + 1)); sleep 2\n"
+        "    sleep 2\n"
         "  done\n"
-        "  return 1\n"
         "}\n"
         + "\n".join(f"wait_job {job}" for job in jobs)
         + "\n"
@@ -1180,7 +1308,8 @@ def run_runtime_smokes(root: Path, candidate_sha: str) -> dict[str, Any]:
         )
         + "\n"
     )
-    output = run_remote_script(script, privileged=True, timeout=900)
+    output = run_remote_script(script, privileged=True)
+    provenance = _platform_provenance(root)
     sections: dict[str, str] = {}
     for block in output.split("FW_JOB=")[1:]:
         name, _, logs = block.partition("\n")
@@ -1196,7 +1325,7 @@ def run_runtime_smokes(root: Path, candidate_sha: str) -> dict[str, Any]:
     }
     if set(kernels) != set(jobs[:3]):
         raise GovernanceError("runtime smoke logs are missing kernel identity evidence")
-    if not kernels["smoke-runc"].startswith("5.15."):
+    if not kernel_series_accepted(kernels["smoke-runc"]):
         raise GovernanceError("runc workload did not observe the frozen host kernel")
     if kernels["smoke-gvisor"] == kernels["smoke-runc"]:
         raise GovernanceError("gVisor workload did not expose an isolated kernel view")
@@ -1208,7 +1337,9 @@ def run_runtime_smokes(root: Path, candidate_sha: str) -> dict[str, Any]:
     _atomic_write(evidence / "runtime-smoke.log", output)
     summary = {
         "schema_version": "1.0.0",
-        "candidate_sha": candidate_sha,
+        "producer_sha": provenance.producer_sha,
+        "source_digest": provenance.source_digest,
+        "dirty": provenance.dirty,
         "completed_at": datetime.now(UTC).isoformat(),
         "runtimes": ["runc", "gvisor", "kata", "nvidia"],
         "kernel_views_distinct": True,
@@ -1222,9 +1353,7 @@ def run_runtime_smokes(root: Path, candidate_sha: str) -> dict[str, Any]:
     return summary
 
 
-def run_network_matrix(root: Path, candidate_sha: str) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+def run_network_matrix(root: Path) -> dict[str, Any]:
     lock = yaml.safe_load((root / "deploy" / "k3s" / "versions.lock.yaml").read_text())
     busybox_tag, busybox_digest = lock["artifacts"]["busybox_smoke"]["image"].split("@", 1)
     manifest = (root / "deploy" / "k3s" / "network-smoke.yaml").read_text(encoding="utf-8")
@@ -1245,19 +1374,18 @@ def run_network_matrix(root: Path, candidate_sha: str) -> dict[str, Any]:
         "--ignore-not-found=true --wait=true; done\n"
         "cat <<'FW_NETWORK' | /usr/local/bin/k3s kubectl apply -f -\n" + manifest + "\nFW_NETWORK\n"
         "/usr/local/bin/k3s kubectl -n fw-control rollout status "
-        "deployment/network-server --timeout=180s\n"
+        "deployment/network-server\n"
         "wait_job() {\n"
-        "  ns=$1; name=$2; attempt=0\n"
-        '  while test "$attempt" -lt 120; do\n'
+        "  ns=$1; name=$2\n"
+        "  while :; do\n"
         '    complete=$(/usr/local/bin/k3s kubectl -n "$ns" get job "$name" '
         "-o jsonpath='{.status.succeeded}' 2>/dev/null || true)\n"
         '    failed=$(/usr/local/bin/k3s kubectl -n "$ns" get job "$name" '
         "-o jsonpath='{.status.failed}' 2>/dev/null || true)\n"
         '    test "${complete:-0}" = 1 && return 0\n'
         '    test "${failed:-0}" = 0 || return 1\n'
-        "    attempt=$((attempt + 1)); sleep 2\n"
+        "    sleep 2\n"
         "  done\n"
-        "  return 1\n"
         "}\n"
         + "\n".join(f"wait_job {namespace} {job}" for namespace, job, _ in cases)
         + "\n"
@@ -1267,7 +1395,7 @@ def run_network_matrix(root: Path, candidate_sha: str) -> dict[str, Any]:
         )
         + "\n"
     )
-    output = run_remote_script(script, privileged=True, timeout=600)
+    output = run_remote_script(script, privileged=True)
     sections: dict[str, str] = {}
     for block in output.split("FW_CASE=")[1:]:
         name, _, logs = block.partition("\n")
@@ -1281,12 +1409,15 @@ def run_network_matrix(root: Path, candidate_sha: str) -> dict[str, Any]:
         "-l faultwitness.dev/eval=EVAL-G01-002-network "
         "--ignore-not-found=true --wait=true; done\n"
     )
-    run_remote_script(cleanup, privileged=True, timeout=180)
+    run_remote_script(cleanup, privileged=True)
+    provenance = _platform_provenance(root)
     evidence = InfraPaths.defaults().evidence_dir
     _atomic_write(evidence / "network-matrix.log", output)
     summary = {
         "schema_version": "1.0.0",
-        "candidate_sha": candidate_sha,
+        "producer_sha": provenance.producer_sha,
+        "source_digest": provenance.source_digest,
+        "dirty": provenance.dirty,
         "completed_at": datetime.now(UTC).isoformat(),
         "passed_cases": [job for _, job, _ in cases],
         "matrix_pass_rate": 1.0,
@@ -1332,9 +1463,7 @@ def _listener_scope(local: str) -> tuple[str, int]:
     return scope, int(port_text)
 
 
-def audit_runtime_coexistence(root: Path, candidate_sha: str) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+def audit_runtime_coexistence(root: Path) -> dict[str, Any]:
     evidence = InfraPaths.defaults().evidence_dir
     before_path = evidence / "docker-baseline-before.json"
     if not before_path.is_file():
@@ -1365,9 +1494,12 @@ def audit_runtime_coexistence(root: Path, candidate_sha: str) -> dict[str, Any]:
         evidence / "docker-baseline-after-runtimes.json",
         json.dumps(after, indent=2, sort_keys=True) + "\n",
     )
+    provenance = _platform_provenance(root)
     summary = {
         "schema_version": "1.0.0",
-        "candidate_sha": candidate_sha,
+        "producer_sha": provenance.producer_sha,
+        "source_digest": provenance.source_digest,
+        "dirty": provenance.dirty,
         "audited_at": datetime.now(UTC).isoformat(),
         "docker_regression_count": 0,
         "new_nonpublic_listener_count": len(new_listeners) - len(exposed),
@@ -1384,9 +1516,7 @@ def audit_runtime_coexistence(root: Path, candidate_sha: str) -> dict[str, Any]:
     return summary
 
 
-def harden_runtime_listeners(candidate_sha: str) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+def harden_runtime_listeners(root: Path) -> dict[str, Any]:
     script = """set -eu
 config=/etc/rancher/k3s/config.yaml
 backup=/etc/rancher/k3s/config.yaml.before-listener-hardening
@@ -1403,17 +1533,11 @@ recover() {
     cp "$backup" "$config"
     systemctl restart k3s.service >/dev/null 2>&1 || true
 }
-if ! timeout 240 systemctl restart k3s.service; then
+if ! systemctl restart k3s.service; then
     recover
     exit 1
 fi
-attempt=0
 until /usr/local/bin/k3s kubectl get --raw=/readyz >/dev/null 2>&1; do
-    attempt=$((attempt + 1))
-    if test "$attempt" -ge 60; then
-        recover
-        exit 1
-    fi
     sleep 2
 done
 if ip link show flannel.1 >/dev/null 2>&1; then
@@ -1428,11 +1552,14 @@ if test -n "$exposed"; then
 fi
 rm -f "$backup"
 """
-    run_remote_script(script, privileged=True, timeout=480)
+    run_remote_script(script, privileged=True)
+    provenance = _platform_provenance(root)
     evidence = InfraPaths.defaults().evidence_dir
     summary = {
         "schema_version": "1.0.0",
-        "candidate_sha": candidate_sha,
+        "producer_sha": provenance.producer_sha,
+        "source_digest": provenance.source_digest,
+        "dirty": provenance.dirty,
         "hardened_at": datetime.now(UTC).isoformat(),
         "flannel_backend": "host-gw",
         "private_cluster_ports": [2379, 2380],
@@ -1446,21 +1573,22 @@ rm -f "$backup"
     return summary
 
 
-def recover_cluster_dns(candidate_sha: str) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+def recover_cluster_dns(root: Path) -> dict[str, Any]:
     script = """set -eu
 /usr/local/bin/k3s kubectl -n kube-system rollout restart deployment/coredns
-/usr/local/bin/k3s kubectl -n kube-system rollout status deployment/coredns --timeout=240s
+/usr/local/bin/k3s kubectl -n kube-system rollout status deployment/coredns
 endpoint=$(/usr/local/bin/k3s kubectl -n kube-system get endpoints kube-dns \
     -o jsonpath='{.subsets[0].addresses[0].ip}')
 test -n "$endpoint"
 """
-    run_remote_script(script, privileged=True, timeout=360)
+    run_remote_script(script, privileged=True)
+    provenance = _platform_provenance(root)
     evidence = InfraPaths.defaults().evidence_dir
     summary = {
         "schema_version": "1.0.0",
-        "candidate_sha": candidate_sha,
+        "producer_sha": provenance.producer_sha,
+        "source_digest": provenance.source_digest,
+        "dirty": provenance.dirty,
         "recovered_at": datetime.now(UTC).isoformat(),
         "ready_replicas_minimum": 1,
         "endpoint": "present",
@@ -1473,9 +1601,7 @@ test -n "$endpoint"
     return summary
 
 
-def install_k3s_core(root: Path, candidate_sha: str) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+def install_k3s_core(root: Path) -> dict[str, Any]:
     evidence = InfraPaths.defaults().evidence_dir
     before_path = evidence / "docker-baseline-before.json"
     if not before_path.is_file():
@@ -1485,7 +1611,7 @@ def install_k3s_core(root: Path, candidate_sha: str) -> dict[str, Any]:
     _stage_core_artifacts(root)
     installer = render_core_installer(root)
     foundation = (root / "deploy" / "k3s" / "foundation.yaml").read_text(encoding="utf-8")
-    run_remote_script(installer, privileged=True, timeout=600)
+    run_remote_script(installer, privileged=True)
     apply_script = (
         "set -eu\n"
         "cat >/tmp/faultwitness-foundation.yaml <<'FW_FOUNDATION'\n"
@@ -1494,7 +1620,7 @@ def install_k3s_core(root: Path, candidate_sha: str) -> dict[str, Any]:
         + "/usr/local/bin/k3s kubectl apply -f /tmp/faultwitness-foundation.yaml\n"
         + "rm -f /tmp/faultwitness-foundation.yaml\n"
     )
-    run_remote_script(apply_script, privileged=True, timeout=180)
+    run_remote_script(apply_script, privileged=True)
     baseline_script = (root / "deploy" / "k3s" / "capture_baseline.py").read_text(encoding="utf-8")
     stdout = run_remote_script(
         "python3 - <<'FW_BASELINE'\n" + baseline_script + "\nFW_BASELINE\n",
@@ -1513,9 +1639,12 @@ def install_k3s_core(root: Path, candidate_sha: str) -> dict[str, Any]:
         evidence / "docker-baseline-after-core.json",
         json.dumps(after, indent=2, sort_keys=True) + "\n",
     )
+    provenance = _platform_provenance(root)
     summary = {
         "schema_version": "1.0.0",
-        "candidate_sha": candidate_sha,
+        "producer_sha": provenance.producer_sha,
+        "source_digest": provenance.source_digest,
+        "dirty": provenance.dirty,
         "installed_at": datetime.now(UTC).isoformat(),
         "docker_regression_count": 0,
         "container_count": len(after["docker"]["containers"]),

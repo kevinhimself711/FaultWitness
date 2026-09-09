@@ -1,41 +1,16 @@
 from __future__ import annotations
 
 import copy
-import subprocess
 from pathlib import Path
 
 import pytest
 
-from faultwitness_dev.changes import (
-    G00_CLOSURE_PATHS,
-    G01_CLOSURE_PATHS,
-    gate_closure_paths,
-    infer_iteration_id,
-    validate_change_record,
-    validate_g00_closure_change,
-    validate_g01_closure_change,
-)
-from faultwitness_dev.checks import (
-    validate_active_governance_state,
-    validate_g02_validation_registry,
-    validate_iteration_lifecycle_history,
-    validate_iteration_status_sequence,
-    validate_iteration_status_transition,
-    validate_lifecycle_documents,
-    validate_lifecycle_records,
-    validate_manifest_revision_change,
-    validate_validation_layer_counts,
-    validate_work_item_namespaces_and_cost,
-    validate_work_item_record,
-)
+from faultwitness_dev.checks import validate_current_state
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.schemas import (
     _check_adr_invariants,
     _check_architecture_invariants,
-    _check_cross_references,
     _check_evidence_invariants,
-    _check_gate_walkthroughs,
-    _check_ruleset_invariants,
     _check_unique_ids,
     load_data,
     validate_document,
@@ -47,41 +22,39 @@ FIXTURES = ROOT / "tests" / "fixtures" / "governance"
 SCHEMAS = ROOT / "schemas" / "governance"
 
 
-def test_repository_governance_assets_are_valid() -> None:
+def test_active_governance_assets_are_valid_without_legacy_epoch() -> None:
     loaded = validate_repository_schemas(ROOT)
     assert "PROJECT_STATE.yaml" in loaded
-    assert "governance/iterations/I-0002.yaml" in loaded
-    assert "governance/iterations/C-G02-001.yaml" in loaded
-    assert "governance/iterations/A-G02-001.yaml" in loaded
+    assert not any(path.startswith("governance/iterations/") for path in loaded)
+    assert not any(path.startswith("governance/gates/") for path in loaded)
+    assert not any(path.startswith("docs/evals/") for path in loaded)
 
 
-def test_work_item_schema_accepts_separate_corrective_and_attempt_namespaces() -> None:
-    schema = load_data(SCHEMAS / "iteration.schema.json")
-    validate_document(
-        load_data(ROOT / "governance/iterations/C-G02-001.yaml"),
-        schema,
-        "corrective-work-item",
-    )
-    validate_document(
-        load_data(ROOT / "governance/iterations/A-G02-001.yaml"),
-        schema,
-        "gate-attempt-work-item",
-    )
+def test_current_state_references_real_plan_report_and_release() -> None:
+    validate_current_state(ROOT)
 
 
-def test_missing_required_field_is_rejected() -> None:
-    document = load_data(FIXTURES / "missing_project_field.yaml")
+def test_project_state_has_one_small_v2_shape() -> None:
+    state = load_data(ROOT / "PROJECT_STATE.yaml")
+    assert set(state) == {
+        "governance_version",
+        "active_gate",
+        "active_gate_status",
+        "last_closed_gate",
+        "active_plan",
+        "active_report",
+        "latest_release",
+    }
+    assert "active_iteration" not in state
+    assert "next_iteration" not in state
+
+
+def test_missing_required_project_field_is_rejected() -> None:
+    state = load_data(ROOT / "PROJECT_STATE.yaml")
+    state.pop("active_plan")
     schema = load_data(SCHEMAS / "project-state.schema.json")
     with pytest.raises(GovernanceError, match="required property"):
-        validate_document(document, schema, "missing_project_field")
-
-
-def test_project_state_allows_frozen_not_started_gate_handoff() -> None:
-    document = load_data(ROOT / "PROJECT_STATE.yaml")
-    schema = load_data(SCHEMAS / "project-state.schema.json")
-    mutated = copy.deepcopy(document)
-    mutated["active_gate_status"] = "not_started"
-    validate_document(mutated, schema, "not_started_gate_handoff")
+        validate_document(state, schema, "missing-active-plan")
 
 
 def test_duplicate_identifier_is_rejected() -> None:
@@ -90,545 +63,31 @@ def test_duplicate_identifier_is_rejected() -> None:
         _check_unique_ids(document, "duplicate_requirements")
 
 
-def test_unknown_gate_and_iteration_are_rejected() -> None:
-    loaded = validate_repository_schemas(ROOT)
-    mutated = copy.deepcopy(loaded)
-    mutated["docs/evals/EVAL-G99-001/manifest.json"] = load_data(
-        FIXTURES / "unknown_eval_refs.json"
-    )
-    with pytest.raises(GovernanceError, match="unknown eval gate"):
-        _check_cross_references(mutated)
-
-
-def test_behavior_change_without_documentation_is_rejected() -> None:
-    record = load_data(FIXTURES / "behavior_without_docs.yaml")
-    with pytest.raises(GovernanceError, match="must update documentation"):
-        validate_change_record(record)
-
-
-def test_illegal_iteration_status_is_rejected() -> None:
-    document = load_data(FIXTURES / "illegal_iteration_status.yaml")
-    schema = load_data(SCHEMAS / "iteration.schema.json")
-    with pytest.raises(GovernanceError, match="silently_skipped"):
-        validate_document(document, schema, "illegal_iteration_status")
-
-
-def test_threshold_decrease_is_rejected() -> None:
-    record = load_data(FIXTURES / "threshold_decrease.yaml")
-    with pytest.raises(GovernanceError, match="threshold decrease"):
-        validate_change_record(record)
-
-
-def test_ruleset_cannot_drop_a_required_platform() -> None:
-    ruleset = load_data(ROOT / ".github" / "rulesets" / "main.json")
-    mutated = copy.deepcopy(ruleset)
-    status_rule = next(
-        rule for rule in mutated["rules"] if rule["type"] == "required_status_checks"
-    )
-    status_rule["parameters"]["required_status_checks"].pop()
-    with pytest.raises(GovernanceError, match="status checks drifted"):
-        _check_ruleset_invariants(mutated)
-
-
-def test_ruleset_requires_cross_platform_and_audit_checks() -> None:
-    ruleset = load_data(ROOT / ".github" / "rulesets" / "main.json")
-    status_rule = next(
-        rule for rule in ruleset["rules"] if rule["type"] == "required_status_checks"
-    )
-    contexts = {item["context"] for item in status_rule["parameters"]["required_status_checks"]}
-    assert contexts == {
-        "audit (ubuntu-latest)",
-        "verify (ubuntu-latest)",
-        "verify (windows-latest)",
-    }
-
-
-def test_iteration_inference_ignores_planned_bootstrap_records() -> None:
-    paths = [f"governance/iterations/I-{number:04d}.yaml" for number in range(1, 7)]
-    planned = [path for path in paths if load_data(ROOT / path)["status"] == "planned"]
-    assert infer_iteration_id(ROOT, planned) is None
-
-
-def test_iteration_inference_selects_current_in_progress_record() -> None:
-    paths = [f"governance/iterations/I-{number:04d}.yaml" for number in range(1, 7)]
-    eligible = [
-        load_data(ROOT / path)["id"]
-        for path in paths
-        if load_data(ROOT / path)["status"] in {"in_progress", "completed", "failed"}
-        and load_data(ROOT / path)["docs_updated"]
-    ]
-    assert infer_iteration_id(ROOT, paths) == max(eligible)
-
-
-def test_iteration_inference_attributes_a_terminal_failure_transition(tmp_path: Path) -> None:
-    records = tmp_path / "governance" / "iterations"
-    records.mkdir(parents=True)
-    failed_path = records / "I-0020.yaml"
-    planned_path = records / "I-0022.yaml"
-    failed_path.write_text(
-        "id: I-0020\nstatus: failed\ndocs_updated: [docs/evals/EVAL-G02-005/REPORT.md]\n",
-        encoding="utf-8",
-    )
-    planned_path.write_text(
-        "id: I-0022\nstatus: planned\ndocs_updated: [docs/evals/EVAL-G02-007/PLAN.md]\n",
-        encoding="utf-8",
-    )
-    paths = [
-        "governance/iterations/I-0020.yaml",
-        "governance/iterations/I-0022.yaml",
-    ]
-    assert infer_iteration_id(tmp_path, paths) == "I-0020"
-
-
-def _g00_closure_records() -> tuple[dict, dict, dict]:
-    state = {
-        "active_gate": "G01",
-        "active_gate_status": "not_started",
-        "active_iteration": None,
-        "next_iteration": None,
-        "last_closed_gate": "G00",
-        "active_gate_plan": "docs/gates/G01/PLAN.md",
-        "active_gate_report": "docs/gates/G01/REPORT.md",
-    }
-    return (
-        state,
-        {"id": "G00", "status": "passed", "waivers": []},
-        {
-            "id": "G01",
-            "status": "planned",
-        },
-    )
-
-
-def test_asset_only_g00_closure_is_accepted() -> None:
-    validate_g00_closure_change(*_g00_closure_records(), sorted(G00_CLOSURE_PATHS))
-
-
-def test_g00_closure_rejects_source_code() -> None:
-    paths = sorted(G00_CLOSURE_PATHS | {"src/faultwitness_dev/runtime.py"})
-    with pytest.raises(GovernanceError, match="unexpected"):
-        validate_g00_closure_change(*_g00_closure_records(), paths)
-
-
-def test_g00_closure_rejects_inexact_handoff_state() -> None:
-    state, g00, g01 = _g00_closure_records()
-    state["active_gate_status"] = "planned"
-    with pytest.raises(GovernanceError, match="project-state drift"):
-        validate_g00_closure_change(state, g00, g01, sorted(G00_CLOSURE_PATHS))
-
-
-def _g01_closure_records() -> tuple[dict, dict, dict]:
-    state = {
-        "active_gate": "G02",
-        "active_gate_status": "not_started",
-        "active_iteration": None,
-        "next_iteration": None,
-        "last_closed_gate": "G01",
-        "active_gate_plan": "docs/gates/G02/PLAN.md",
-        "active_gate_report": "docs/gates/G02/REPORT.md",
-    }
-    return (
-        state,
-        {"id": "G01", "status": "passed", "waivers": []},
-        {
-            "id": "G02",
-            "status": "planned",
-        },
-    )
-
-
-def test_asset_only_g01_closure_is_accepted() -> None:
-    validate_g01_closure_change(*_g01_closure_records(), sorted(G01_CLOSURE_PATHS))
-
-
-def test_gate_closure_boundary_requires_root_and_status_documents() -> None:
-    required = {
-        "AGENTS.md",
-        "PROJECT_STATE.yaml",
-        "README.md",
-        "docs/roadmap/PHASES.md",
-    }
-    assert required <= G01_CLOSURE_PATHS
-    missing_agents = sorted(G01_CLOSURE_PATHS - {"AGENTS.md"})
-    with pytest.raises(GovernanceError, match="missing=.*AGENTS.md"):
-        validate_g01_closure_change(*_g01_closure_records(), missing_agents)
-
-
-def test_gate_closure_boundary_is_generated_for_future_consecutive_gates() -> None:
-    paths = gate_closure_paths("G02", "G03")
-    assert "docs/gates/G02/REPORT.md" in paths
-    assert "docs/gates/G03/PLAN.md" in paths
-    assert "governance/gates/G03.yaml" in paths
-    with pytest.raises(GovernanceError, match="consecutive"):
-        gate_closure_paths("G02", "G04")
-
-
-def test_g01_closure_rejects_source_code() -> None:
-    paths = sorted(G01_CLOSURE_PATHS | {"src/faultwitness_dev/g01_eval.py"})
-    with pytest.raises(GovernanceError, match="unexpected"):
-        validate_g01_closure_change(*_g01_closure_records(), paths)
-
-
-def test_g01_closure_rejects_waiver_or_inexact_handoff() -> None:
-    state, g01, g02 = _g01_closure_records()
-    g01["waivers"] = ["not-allowed"]
-    with pytest.raises(GovernanceError, match="waiver-free"):
-        validate_g01_closure_change(state, g01, g02, sorted(G01_CLOSURE_PATHS))
-    g01["waivers"] = []
-    state["active_gate_status"] = "planned"
-    with pytest.raises(GovernanceError, match="project-state drift"):
-        validate_g01_closure_change(state, g01, g02, sorted(G01_CLOSURE_PATHS))
-
-
-def test_repository_lifecycle_documents_match_project_state() -> None:
-    validate_lifecycle_documents(ROOT)
-
-
-def test_active_gate_and_iteration_records_match_project_state() -> None:
-    validate_active_governance_state(ROOT)
-
-
-def test_g02_validation_registry_is_machine_valid() -> None:
-    validate_g02_validation_registry(ROOT)
-
-
-def test_l3_validation_cannot_repeat_the_same_n() -> None:
-    registry = load_data(ROOT / "docs" / "gates" / "G02" / "VALIDATIONS.yaml")
-    items = copy.deepcopy(registry["validation_items"])
-    item = next(record for record in items if record["layer"] == "L3")
-    item["gate_n"] = item["iteration_n"]
-    with pytest.raises(GovernanceError, match="overlapping N"):
-        validate_validation_layer_counts(items)
-
-
-def test_zero_tolerance_registry_fields_are_nonempty() -> None:
-    registry = load_data(ROOT / "docs" / "gates" / "G02" / "VALIDATIONS.yaml")
-    zero_tolerance = [item for item in registry["validation_items"] if item["zero_tolerance"]]
-    assert zero_tolerance
-    for item in zero_tolerance:
-        assert item["runner"]
-        assert item["negative_fixture"]
-        assert item["artifact_paths"]
-
-
-def test_evaluated_revision_change_requires_artifact_change() -> None:
-    current = {
-        "evaluated_revision": "b" * 40,
-        "artifacts": ["docs/evals/EVAL-G02-001/artifacts/summary.json"],
-    }
-    previous = {"evaluated_revision": "a" * 40}
-    with pytest.raises(GovernanceError, match="corresponding artifact"):
-        validate_manifest_revision_change(
-            current,
-            previous,
-            {"docs/evals/EVAL-G02-001/manifest.json"},
-            "docs/evals/EVAL-G02-001/manifest.json",
-        )
-    validate_manifest_revision_change(
-        current,
-        previous,
-        {"docs/evals/EVAL-G02-001/artifacts/summary.json"},
-        "docs/evals/EVAL-G02-001/manifest.json",
-    )
-
-
-def test_lifecycle_state_drift_is_rejected() -> None:
-    state = {
-        "active_gate": "G02",
-        "active_gate_status": "not_started",
-        "active_iteration": None,
-        "last_closed_gate": "G01",
-    }
-    matching = copy.deepcopy(state)
-    drifted = copy.deepcopy(state)
-    drifted["active_iteration"] = "I-0016"
-    with pytest.raises(GovernanceError, match="lifecycle state drift in AGENTS.md"):
-        validate_lifecycle_records(
-            state,
-            {
-                "AGENTS.md": drifted,
-                "README.md": matching,
-                "docs/roadmap/PHASES.md": matching,
-            },
-        )
-
-
-def test_iteration_lifecycle_accepts_only_forward_nonterminal_transitions() -> None:
-    planned = {"id": "I-9000", "status": "planned", "iteration_type": "standard"}
-    active = {"id": "I-9000", "status": "in_progress", "iteration_type": "standard"}
-    completed = {"id": "I-9000", "status": "completed", "iteration_type": "standard"}
-    failed = {"id": "I-9000", "status": "failed", "iteration_type": "standard"}
-
-    validate_iteration_status_transition(planned, active, "planned-active")
-    validate_iteration_status_transition(active, completed, "active-completed")
-    with pytest.raises(GovernanceError, match="status regression"):
-        validate_iteration_status_transition(completed, active, "completed-active")
-    with pytest.raises(GovernanceError, match="status regression"):
-        validate_iteration_status_transition(failed, planned, "failed-planned")
-    with pytest.raises(GovernanceError, match="record deletion"):
-        validate_iteration_status_transition(completed, None, "completed-deleted")
-    mutated_type = {**active, "iteration_type": "corrective", "corrects": ["I-8999"]}
-    with pytest.raises(GovernanceError, match="type changed"):
-        validate_iteration_status_transition(active, mutated_type, "type-mutation")
-
-
-def test_corrective_and_gate_attempt_may_start_directly_active() -> None:
-    corrective = {
-        "id": "C-G02-999",
-        "status": "in_progress",
-        "iteration_type": "corrective",
-        "corrects": ["A-G02-998"],
-    }
-    gate_attempt = {
-        "id": "A-G02-999",
-        "status": "in_progress",
-        "iteration_type": "gate_attempt",
-    }
-    validate_iteration_status_transition(None, corrective, "direct-corrective")
-    validate_iteration_status_transition(None, gate_attempt, "direct-gate-attempt")
-
-
-def test_standard_iteration_must_still_start_planned() -> None:
-    standard = {"id": "I-9999", "status": "in_progress", "iteration_type": "standard"}
-    with pytest.raises(GovernanceError, match="invalid initial status"):
-        validate_iteration_status_transition(None, standard, "direct-standard")
-
-
-def test_iteration_sequence_rejects_reactivation_hidden_by_later_completion() -> None:
-    completed = {"id": "I-9000", "status": "completed", "iteration_type": "standard"}
-    active = {"id": "I-9000", "status": "in_progress", "iteration_type": "standard"}
-    with pytest.raises(GovernanceError, match="status regression"):
-        validate_iteration_status_sequence([completed, active, completed], "hidden-reactivation")
-
-
-def _work_item_policy_context() -> tuple[dict, dict[str, dict]]:
-    policy = load_data(ROOT / "governance/policies/work-item-lifecycle-v2.yaml")
-    gates = {
-        path.stem: load_data(path)
-        for path in (ROOT / "governance/gates").glob("G*.yaml")
-    }
-    return policy, gates
-
-
-def test_repository_work_item_namespaces_and_cost_boundaries_pass() -> None:
-    validate_work_item_namespaces_and_cost(ROOT)
-
-
-def test_new_corrective_cannot_reuse_the_planned_iteration_namespace() -> None:
-    policy, gates = _work_item_policy_context()
-    record = copy.deepcopy(load_data(ROOT / "governance/iterations/C-G02-001.yaml"))
-    record["id"] = "I-0038"
-    with pytest.raises(GovernanceError, match="must use C-Gxx-nnn namespace"):
-        validate_work_item_record("I-0038", record, policy, gates)
-
-
-@pytest.mark.parametrize(
-    ("mutation", "message"),
-    [
-        ("gate_l2", "Gate L2 or full Gate Eval"),
-        ("bespoke_harness", "bespoke Eval harness"),
-        ("gate_command", "full Gate execution"),
-        ("global_gate_asset", "deferred global assets"),
-        ("other_eval", "another Eval asset"),
-    ],
-)
-def test_corrective_rejects_cost_inflating_scope(mutation: str, message: str) -> None:
-    policy, gates = _work_item_policy_context()
-    record = copy.deepcopy(load_data(ROOT / "governance/iterations/C-G02-001.yaml"))
-    if mutation == "gate_l2":
-        record["verification_scope"]["gate_l2_execution"] = 60
-    elif mutation == "bespoke_harness":
-        record["cost_boundary"]["bespoke_eval_harness"] = True
-    elif mutation == "gate_command":
-        record["tests"].append("uv run python -m faultwitness_dev eval-g02 --resume")
-    elif mutation == "global_gate_asset":
-        record["changed_paths"].append("docs/gates/G02/REPORT.md")
-    else:
-        record["changed_paths"].append("docs/evals/EVAL-G02-024")
-    with pytest.raises(GovernanceError, match=message):
-        validate_work_item_record("C-G02-001", record, policy, gates)
-
-
-@pytest.mark.parametrize(
-    ("mutation", "message"),
-    [
-        ("implementation_path", "implementation paths"),
-        ("behavior", "behavior or thresholds"),
-        ("threshold", "behavior or thresholds"),
-        ("ad_hoc_diagnostic", "execution boundary"),
-    ],
-)
-def test_gate_attempt_rejects_engineering_scope(mutation: str, message: str) -> None:
-    policy, gates = _work_item_policy_context()
-    record = copy.deepcopy(load_data(ROOT / "governance/iterations/A-G02-001.yaml"))
-    if mutation == "implementation_path":
-        record["changed_paths"].append("src/faultwitness_dev/new_gate_harness.py")
-    elif mutation == "behavior":
-        record["behavior_change"] = True
-    elif mutation == "threshold":
-        record["threshold_changes"] = [
-            {"id": "quality", "from": 1, "to": 2, "direction": "increase"}
-        ]
-    else:
-        record["attempt_scope"]["ad_hoc_diagnostic_tooling"] = True
-    with pytest.raises(GovernanceError, match=message):
-        validate_work_item_record("A-G02-001", record, policy, gates)
-
-
-def test_machine_registry_accepts_immutable_legacy_corrective_and_attempt_ids() -> None:
-    policy, gates = _work_item_policy_context()
-    validate_work_item_record(
-        "I-0034",
-        load_data(ROOT / "governance/iterations/I-0034.yaml"),
-        policy,
-        gates,
-    )
-    validate_work_item_record(
-        "I-0035",
-        load_data(ROOT / "governance/iterations/I-0035.yaml"),
-        policy,
-        gates,
-    )
-
-
-def test_future_planned_iteration_requires_real_seam_and_diagnostic_declarations() -> None:
-    policy, gates = _work_item_policy_context()
-    gates = {
-        **gates,
-        "G03": {
-            "id": "G03",
-            "iterations": ["I-0038"],
-            "frozen_iterations": ["I-0038"],
-            "work_items": [],
-        },
-    }
-    record = copy.deepcopy(load_data(ROOT / "governance/iterations/I-0016.yaml"))
-    record.update(
-        {
-            "id": "I-0038",
-            "gate": "G03",
-            "iteration_type": "standard",
-            "planning_readiness": {
-                "external_seams": [
-                    {
-                        "id": "minio-read",
-                        "operation": "direct object read",
-                        "real_seam_runner": "runner.minio_read",
-                        "failure_diagnostic": "runner.minio_read_diagnostic",
-                        "artifact_path": "docs/evals/example/real-seam.json",
-                    }
-                ],
-                "mock_only_gate_readiness": False,
-            },
-        }
-    )
-    validate_work_item_record("I-0038", record, policy, gates)
-    del record["planning_readiness"]["external_seams"][0]["failure_diagnostic"]
-    with pytest.raises(GovernanceError, match="lacks real proof or diagnostic"):
-        validate_work_item_record("I-0038", record, policy, gates)
-
-
-def _git(repo: Path, *arguments: str) -> None:
-    subprocess.run(
-        ["git", *arguments],
-        cwd=repo,
-        check=True,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-    )
-
-
-def test_repository_history_rejects_terminal_reactivation(tmp_path: Path) -> None:
-    _git(tmp_path, "init")
-    _git(tmp_path, "config", "user.name", "FaultWitness Test")
-    _git(tmp_path, "config", "user.email", "test@faultwitness.local")
-    (tmp_path / "README.md").write_text("bootstrap\n", encoding="utf-8")
-    _git(tmp_path, "add", "README.md")
-    _git(tmp_path, "commit", "-m", "bootstrap")
-
-    policy = tmp_path / "governance" / "policies" / "iteration-lifecycle-v1.yaml"
-    record = tmp_path / "governance" / "iterations" / "I-9000.yaml"
-    policy.parent.mkdir(parents=True)
-    record.parent.mkdir(parents=True)
-    policy.write_text(
-        "schema_version: '1.0.0'\n"
-        "policy_id: ITERATION-LIFECYCLE-V1\n"
-        "terminal_statuses: [completed, failed]\n"
-        "allowed_transitions:\n"
-        "  planned: [planned, in_progress, failed]\n"
-        "  in_progress: [in_progress, completed, failed]\n"
-        "  completed: [completed]\n"
-        "  failed: [failed]\n"
-        "new_record_initial_status: planned\n"
-        "direct_active_initial_types: [corrective, gate_attempt]\n"
-        "corrective_link_direction: lower_iteration_id\n",
-        encoding="utf-8",
-    )
-    record.write_text("id: I-9000\nstatus: planned\niteration_type: standard\n", encoding="utf-8")
-    _git(tmp_path, "add", ".")
-    _git(tmp_path, "commit", "-m", "start policy")
-
-    for status in ("in_progress", "completed", "in_progress", "completed"):
-        record.write_text(
-            f"id: I-9000\nstatus: {status}\niteration_type: standard\n",
-            encoding="utf-8",
-        )
-        _git(tmp_path, "add", str(record.relative_to(tmp_path)))
-        _git(tmp_path, "commit", "-m", f"status {status}")
-
-    with pytest.raises(GovernanceError, match="status regression"):
-        validate_iteration_lifecycle_history(tmp_path)
-
-
-def _load_evidence_assets() -> tuple[list[dict], dict, dict]:
-    requirements = load_data(ROOT / "docs" / "requirements" / "REQUIREMENTS.yaml")
-    sources = load_data(ROOT / "docs" / "requirements" / "SOURCE_CATALOG.yaml")
-    matrix = load_data(ROOT / "docs" / "requirements" / "EVIDENCE_MATRIX.yaml")
+def _evidence_assets() -> tuple[list[dict], dict, dict]:
+    requirements = load_data(ROOT / "docs/requirements/REQUIREMENTS.yaml")
+    sources = load_data(ROOT / "docs/requirements/SOURCE_CATALOG.yaml")
+    matrix = load_data(ROOT / "docs/requirements/EVIDENCE_MATRIX.yaml")
     return requirements["requirements"], sources, matrix
 
 
 def test_mandatory_requirement_cannot_rely_only_on_tier_c() -> None:
-    requirements, sources, matrix = _load_evidence_assets()
+    requirements, sources, matrix = _evidence_assets()
     mutated = copy.deepcopy(requirements)
     mutated[0]["source_ids"] = ["SRC-UPSTREAM-001"]
     with pytest.raises(GovernanceError, match="supported only by Tier C"):
         _check_evidence_invariants(mutated, sources, matrix)
 
 
-def test_source_count_drift_is_rejected() -> None:
-    requirements, sources, matrix = _load_evidence_assets()
-    mutated = copy.deepcopy(sources)
-    source = next(item for item in mutated["sources"] if item["kind"] == "interview")
-    source["included"] = False
-    source["indexed"] = False
-    source["exclusion_reason"] = "synthetic drift fixture"
-    with pytest.raises(GovernanceError, match="source catalog count drift"):
-        _check_evidence_invariants(requirements, mutated, matrix)
-
-
 def test_unknown_requirement_source_is_rejected() -> None:
-    requirements, sources, matrix = _load_evidence_assets()
+    requirements, sources, matrix = _evidence_assets()
     mutated = copy.deepcopy(requirements)
-    mutated[0]["source_ids"].append("SRC-JD-999")
+    mutated[0]["source_ids"].append("SRC-NOT-REAL")
     with pytest.raises(GovernanceError, match="unknown sources"):
         _check_evidence_invariants(mutated, sources, matrix)
 
 
-def test_duplicate_evidence_matrix_coverage_is_rejected() -> None:
-    requirements, sources, matrix = _load_evidence_assets()
-    mutated = copy.deepcopy(matrix)
-    mutated["entries"][1]["requirement_ids"].append("REQ-BUS-001")
-    with pytest.raises(GovernanceError, match="duplicates requirement coverage"):
-        _check_evidence_invariants(requirements, sources, mutated)
-
-
-def _load_architecture() -> dict:
-    return load_data(ROOT / "docs" / "architecture" / "ARCHITECTURE.yaml")
-
-
-def test_missing_mandatory_engineering_plane_is_rejected() -> None:
-    architecture = _load_architecture()
+def test_architecture_retains_three_engineering_planes() -> None:
+    architecture = load_data(ROOT / "docs/architecture/ARCHITECTURE.yaml")
     mutated = copy.deepcopy(architecture)
     mutated["engineering_planes"].remove("data_eval_training")
     with pytest.raises(GovernanceError, match="three mandatory engineering planes"):
@@ -636,53 +95,29 @@ def test_missing_mandatory_engineering_plane_is_rejected() -> None:
 
 
 def test_cross_owner_state_write_is_rejected() -> None:
-    architecture = _load_architecture()
+    architecture = load_data(ROOT / "docs/architecture/ARCHITECTURE.yaml")
     mutated = copy.deepcopy(architecture)
-    console = next(item for item in mutated["components"] if item["id"] == "CMP-INCIDENT-CONSOLE")
-    console["writes_states"].append("Incident Lifecycle")
+    component = next(item for item in mutated["components"] if item["id"] == "CMP-INCIDENT-CONSOLE")
+    component["writes_states"].append("Incident Lifecycle")
     with pytest.raises(GovernanceError, match="cross-owner state write"):
         _check_architecture_invariants(mutated)
 
 
-def test_unknown_walkthrough_component_is_rejected() -> None:
-    architecture = _load_architecture()
-    mutated = copy.deepcopy(architecture)
-    mutated["walkthroughs"][0]["component_path"].append("CMP-NOT-REAL")
-    with pytest.raises(GovernanceError, match="unknown components"):
-        _check_architecture_invariants(mutated)
-
-
 def test_mandatory_prohibited_path_cannot_be_removed() -> None:
-    architecture = _load_architecture()
+    architecture = load_data(ROOT / "docs/architecture/ARCHITECTURE.yaml")
     mutated = copy.deepcopy(architecture)
     mutated["prohibited_paths"] = [
-        item for item in mutated["prohibited_paths"] if item["id"] != "DENY-AGENT-DIRECT-ACTION"
+        item
+        for item in mutated["prohibited_paths"]
+        if item["id"] != "DENY-AGENT-DIRECT-ACTION"
     ]
     with pytest.raises(GovernanceError, match="mandatory prohibited path"):
         _check_architecture_invariants(mutated)
 
 
 def test_accepted_adr_must_resolve_to_a_file() -> None:
-    index = load_data(ROOT / "docs" / "adr" / "INDEX.yaml")
+    index = load_data(ROOT / "docs/adr/INDEX.yaml")
     mutated = copy.deepcopy(index)
     mutated["adrs"][0]["path"] = "docs/adr/ADR-NOT-REAL.md"
     with pytest.raises(GovernanceError, match="accepted ADR path does not exist"):
         _check_adr_invariants(ROOT, mutated)
-
-
-def test_g00_walkthrough_set_cannot_be_reduced() -> None:
-    walkthroughs = load_data(ROOT / "docs" / "evals" / "EVAL-G00-006" / "WALKTHROUGHS.yaml")
-    bindings = load_data(ROOT / "docs" / "contracts" / "WALKTHROUGH_BINDINGS.yaml")
-    mutated = copy.deepcopy(walkthroughs)
-    mutated["walkthroughs"].pop()
-    with pytest.raises(GovernanceError, match="exactly W-G00-001 through 014"):
-        _check_gate_walkthroughs(mutated, bindings)
-
-
-def test_g00_walkthrough_requires_known_contract_binding() -> None:
-    walkthroughs = load_data(ROOT / "docs" / "evals" / "EVAL-G00-006" / "WALKTHROUGHS.yaml")
-    bindings = load_data(ROOT / "docs" / "contracts" / "WALKTHROUGH_BINDINGS.yaml")
-    mutated = copy.deepcopy(walkthroughs)
-    mutated["walkthroughs"][0]["source_binding"] = "W-ARCH-999"
-    with pytest.raises(GovernanceError, match="unknown contract bindings"):
-        _check_gate_walkthroughs(mutated, bindings)

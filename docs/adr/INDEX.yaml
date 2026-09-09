@@ -4,6 +4,8 @@
 # G02 planning review: ADR-0010 through ADR-0013 freeze the lab, isolation, baseline, and phase protocols.
 # G02 corrective-cost review: ADR-0014 separates frozen Iterations, correctives, and Gate attempts.
 # G02 closure review: accepted ADRs remain recorded; implementation-road simplification changes no Eval metric or architecture invariant.
+# G03 preflight: ADR-0016 discharges the ADR-0007 host-kernel-compatibility clause after the 5.15 boot regression.
+# G03 preflight: ADR-0017 discharges the same clause for a change of machine, admitting the 7.0 series additively; readiness evidence must record which host produced it.
 schema_version: "1.0.0"
 adrs:
   - {id: ADR-0001, title: "Integrate three engineering planes behind five logical responsibility planes", status: accepted, decision_date: "2026-07-22", path: docs/adr/ADR-0001.md, supersedes: null}
@@ -20,3 +22,6 @@ adrs:
   - {id: ADR-0012, title: "Compare three diagnosis-only baselines on shared observation packets", status: accepted, decision_date: "2026-07-23", path: docs/adr/ADR-0012.md, supersedes: null}
   - {id: ADR-0013, title: "Bind G02 phase caches to candidate subjects and immutable trial evidence", status: accepted, decision_date: "2026-07-23", path: docs/adr/ADR-0013.md, supersedes: null}
   - {id: ADR-0014, title: "Separate planned Iterations, corrective work, and Gate attempts", status: accepted, decision_date: "2026-07-24", path: docs/adr/ADR-0014.md, supersedes: null}
+  - {id: ADR-0015, title: "Replace per-work-item governance with release-level provenance", status: accepted, decision_date: "2026-07-26", path: docs/adr/ADR-0015.md, supersedes: ADR-0014}
+  - {id: ADR-0016, title: "Accept both 5.15 and 5.8 host kernel series after the 5.15 boot regression", status: accepted, decision_date: "2026-08-11", path: docs/adr/ADR-0016.md, supersedes: null}
+  - {id: ADR-0017, title: "Migrate to a replacement host and admit the 7.0 kernel series", status: accepted, decision_date: "2026-08-11", path: docs/adr/ADR-0017.md, supersedes: null}

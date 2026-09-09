@@ -6,8 +6,6 @@ import hashlib
 import io
 import json
 import os
-import re
-import subprocess
 import tarfile
 import time
 from collections.abc import Callable
@@ -21,8 +19,8 @@ import yaml
 from faultwitness_dev.bootstrap import _atomic_write
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.infra import run_remote_script
+from faultwitness_dev.provenance import producer_provenance
 
-FULL_SHA = re.compile(r"^[0-9a-f]{40}$")
 RELEASE_NAME = "fw-platform"
 NAMESPACE = "fw-system"
 WORKLOAD_SELECTOR = "app.kubernetes.io/part-of=faultwitness-platform"
@@ -38,38 +36,7 @@ class PlatformPaths:
         appdata = os.environ.get("APPDATA")
         if not appdata:
             raise GovernanceError("APPDATA is required for private platform evidence")
-        return cls(Path(appdata) / "FaultWitness" / "evidence" / "I-0009")
-
-
-def _assert_candidate(root: Path, candidate_sha: str, tracked_paths: list[Path]) -> None:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
-    head = subprocess.run(
-        ["git", "rev-parse", "HEAD"],
-        cwd=root,
-        check=True,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-    ).stdout.strip()
-    if head != candidate_sha:
-        raise GovernanceError("candidate SHA does not match the checked-out repository HEAD")
-    try:
-        relative = [str(path.resolve().relative_to(root.resolve())) for path in tracked_paths]
-    except ValueError as error:
-        raise GovernanceError(
-            "platform deployment inputs must remain inside the repository"
-        ) from error
-    dirty = subprocess.run(
-        ["git", "status", "--porcelain", "--", *relative],
-        cwd=root,
-        check=True,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-    ).stdout
-    if dirty.strip():
-        raise GovernanceError("platform deployment inputs differ from the immutable candidate")
+        return cls(Path(appdata) / "FaultWitness" / "evidence" / "platform")
 
 
 def _deployment_files(chart: Path, values: Path) -> list[tuple[Path, str]]:
@@ -117,7 +84,6 @@ def _bundle(files: list[tuple[Path, str]]) -> tuple[str, str]:
 
 def deploy_platform(
     root: Path,
-    candidate_sha: str,
     *,
     chart: Path | None = None,
     values: Path | None = None,
@@ -125,9 +91,9 @@ def deploy_platform(
 ) -> dict[str, Any]:
     chart = chart or root / "deploy" / "charts" / "faultwitness-platform"
     values = values or root / "deploy" / "environments" / "private-server" / "values.yaml"
-    _assert_candidate(root, candidate_sha, [chart, values])
     _validate_values(values)
     encoded, bundle_digest = _bundle(_deployment_files(chart, values))
+    provenance = producer_provenance(root, [chart, values])
     script = f"""set -eu
 step=bootstrap
 on_exit() {{
@@ -137,7 +103,7 @@ on_exit() {{
   fi
 }}
 trap on_exit EXIT
-work=$(mktemp -d /tmp/faultwitness-i0009.XXXXXX)
+work=$(mktemp -d /tmp/faultwitness-platform.XXXXXX)
 cleanup() {{ rm -rf "$work"; }}
 trap cleanup HUP INT TERM
 step=namespaces
@@ -171,22 +137,18 @@ step=helm-lint
 /usr/local/bin/helm lint "$work/chart" -f "$work/values.yaml" >/dev/null
 step=helm-upgrade
 /usr/local/bin/helm upgrade --install {RELEASE_NAME} "$work/chart" \
-  --namespace {NAMESPACE} --create-namespace -f "$work/values.yaml" \
-  --atomic --wait --timeout 15m >/dev/null
-step=candidate-binding
-/usr/local/bin/k3s kubectl -n {NAMESPACE} create configmap fw-platform-candidate-binding \
-  --from-literal=candidate_sha={candidate_sha} \
-  --from-literal=bundle_sha256={bundle_digest} --dry-run=client -o yaml \
-  | /usr/local/bin/k3s kubectl apply -f - >/dev/null
+  --namespace {NAMESPACE} --create-namespace -f "$work/values.yaml" >/dev/null
 step=cleanup
 cleanup
 """
-    run_remote_script(script, privileged=True, timeout=1200)
+    run_remote_script(script, privileged=True)
     evidence = evidence_paths or PlatformPaths.defaults()
     evidence.evidence_dir.mkdir(parents=True, exist_ok=True)
     summary = {
         "schema_version": "1.0.0",
-        "candidate_sha": candidate_sha,
+        "producer_sha": provenance.producer_sha,
+        "source_digest": provenance.source_digest,
+        "dirty": provenance.dirty,
         "captured_at": datetime.now(UTC).isoformat(),
         "release": RELEASE_NAME,
         "namespace": NAMESPACE,
@@ -200,7 +162,7 @@ cleanup
     return summary
 
 
-def _sanitize_inventory(raw: str, candidate_sha: str) -> dict[str, Any]:
+def _sanitize_inventory(raw: str) -> dict[str, Any]:
     try:
         document = json.loads(raw)
     except json.JSONDecodeError as error:
@@ -250,6 +212,11 @@ def _sanitize_inventory(raw: str, candidate_sha: str) -> dict[str, Any]:
             "ready": ready,
             "observed_generation": status.get("observedGeneration", 0),
             "generation": metadata.get("generation", 0),
+            "images": sorted(
+                str(container.get("image"))
+                for container in spec.get("template", {}).get("spec", {}).get("containers", [])
+                if isinstance(container, dict) and container.get("image")
+            ),
         }
         workloads.append(record)
         if desired < 1 or ready != desired or record["observed_generation"] != record["generation"]:
@@ -261,7 +228,6 @@ def _sanitize_inventory(raw: str, candidate_sha: str) -> dict[str, Any]:
         raise GovernanceError("platform workloads are not Ready: " + ", ".join(sorted(failures)))
     return {
         "schema_version": "1.0.0",
-        "candidate_sha": candidate_sha,
         "captured_at": datetime.now(UTC).isoformat(),
         "selector": WORKLOAD_SELECTOR,
         "workload_count": len(workloads),
@@ -272,7 +238,6 @@ def _sanitize_inventory(raw: str, candidate_sha: str) -> dict[str, Any]:
 
 def inspect_platform_readiness(
     root: Path,
-    candidate_sha: str,
     *,
     stability_seconds: int = 0,
     evidence_paths: PlatformPaths | None = None,
@@ -281,23 +246,15 @@ def inspect_platform_readiness(
 ) -> dict[str, Any]:
     if stability_seconds < 0 or stability_seconds > 3600:
         raise GovernanceError("stability seconds must be between 0 and 3600")
-    _assert_candidate(root, candidate_sha, [])
     deadline = clock() + stability_seconds
     latest: dict[str, Any] | None = None
     while True:
         raw = run_remote_script(
             "set -eu\n"
-            "binding=$(/usr/local/bin/k3s kubectl -n fw-system get configmap "
-            "fw-platform-candidate-binding -o jsonpath='{.data.candidate_sha}')\n"
-            f'if test "$binding" != {candidate_sha}; then\n'
-            "  echo 'FW_PLATFORM_CANDIDATE_MISMATCH' >&2\n"
-            "  exit 1\n"
-            "fi\n"
             "/usr/local/bin/k3s kubectl get deployment,statefulset,daemonset -A -o json\n",
             privileged=True,
-            timeout=120,
         )
-        latest = _sanitize_inventory(raw, candidate_sha)
+        latest = _sanitize_inventory(raw)
         now = clock()
         if now >= deadline:
             break

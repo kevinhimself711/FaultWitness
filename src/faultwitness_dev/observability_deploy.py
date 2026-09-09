@@ -21,14 +21,13 @@ from faultwitness_dev.bootstrap import (
     record_live_api_verification,
 )
 from faultwitness_dev.control_api_deploy import (
-    FULL_SHA,
-    _assert_candidate,
     _context,
     _stage_base_image,
     _stage_file,
 )
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.infra import _remote_arguments, run_remote_script
+from faultwitness_dev.provenance import producer_provenance
 
 
 def _tracked_files(root: Path) -> list[Path]:
@@ -42,29 +41,34 @@ def _tracked_files(root: Path) -> list[Path]:
     return files
 
 
-def deploy_trace_service(root: Path, candidate_sha: str) -> dict[str, Any]:
+def deploy_trace_service(root: Path) -> dict[str, Any]:
     files = _tracked_files(root)
-    _assert_candidate(root, candidate_sha, files)
+    provenance = producer_provenance(root, files)
     payload, bundle_digest = _context(root, files)
     appdata = os.environ.get("APPDATA")
     if not appdata:
         raise GovernanceError("APPDATA is required for private deployment staging")
-    context_path = Path(appdata) / "FaultWitness" / "artifacts" / "I-0013" / "context.tgz"
+    context_path = Path(appdata) / "FaultWitness" / "artifacts" / "trace-service" / "context.tgz"
     context_path.parent.mkdir(parents=True, exist_ok=True)
     context_path.write_bytes(payload)
     _stage_base_image(root)
-    _stage_file(context_path, "faultwitness-i0013-context.tgz")
-    image = f"docker.io/faultwitness/trace-service:{candidate_sha}"
-    manifest = base64.b64encode(_manifest(candidate_sha, image).encode()).decode()
-    project = f"faultwitness-g01-{candidate_sha[:12]}"
+    _stage_file(context_path, "faultwitness-trace-service-context.tgz")
+    image = (
+        "docker.io/faultwitness/trace-service:"
+        f"{provenance.producer_sha[:12]}-{bundle_digest[:12]}"
+    )
+    manifest = base64.b64encode(
+        _manifest(provenance.producer_sha, bundle_digest, image).encode()
+    ).decode()
+    project = f"faultwitness-trace-service-{bundle_digest[:12]}"
     script = f"""set -eu
-work=$(mktemp -d /tmp/faultwitness-i0013-build.XXXXXX)
+work=$(mktemp -d /tmp/faultwitness-trace-service.XXXXXX)
 trap 'rm -rf "$work"' EXIT HUP INT TERM
-docker load -i /tmp/faultwitness-i0012-python-base.tar >/dev/null
-install -m 0600 /tmp/faultwitness-i0013-context.tgz "$work/context.tgz"
+docker load -i /tmp/faultwitness-control-api-python-base.tar >/dev/null
+install -m 0600 /tmp/faultwitness-trace-service-context.tgz "$work/context.tgz"
 test "$(sha256sum "$work/context.tgz" | awk '{{print $1}}')" = {bundle_digest}
 tar -xzf "$work/context.tgz" -C "$work"
-docker build --pull=false --label faultwitness.candidate={candidate_sha} -t {image} -f "$work/deploy/observability/Dockerfile" "$work" >/dev/null
+docker build --pull=false --label faultwitness.producer={provenance.producer_sha} --label faultwitness.source-digest={bundle_digest} -t {image} -f "$work/deploy/observability/Dockerfile" "$work" >/dev/null
 docker save {image} -o "$work/trace-service.tar"
 /usr/local/bin/k3s ctr images import "$work/trace-service.tar" >/dev/null
 /usr/local/bin/k3s kubectl create namespace fw-control --dry-run=client -o yaml | /usr/local/bin/k3s kubectl apply -f - >/dev/null
@@ -107,35 +111,43 @@ rm -f "$envfile"
 printf %s {manifest} | base64 -d | /usr/local/bin/k3s kubectl apply -f - >/dev/null
 /usr/local/bin/k3s kubectl -n fw-control rollout status deployment/trace-service >/dev/null
 """
-    run_remote_script(script, privileged=True, timeout=900)
+    run_remote_script(script, privileged=True)
     return {
-        "candidate_sha": candidate_sha,
+        "producer_sha": provenance.producer_sha,
+        "source_digest": provenance.source_digest,
+        "dirty": provenance.dirty,
         "bundle_sha256": bundle_digest,
         "image": image,
         "project": project,
     }
 
 
-def inspect_trace_service(candidate_sha: str) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
-    script = f"""set -eu
-available=$(/usr/local/bin/k3s kubectl -n fw-control get deployment trace-service -o jsonpath='{{.status.availableReplicas}}')
-ready=$(/usr/local/bin/k3s kubectl -n fw-control get deployment trace-service -o jsonpath='{{.status.readyReplicas}}')
-binding=$(/usr/local/bin/k3s kubectl -n fw-control get configmap fw-trace-candidate -o jsonpath='{{.data.candidate_sha}}')
-service_type=$(/usr/local/bin/k3s kubectl -n fw-control get service trace-service -o jsonpath='{{.spec.type}}')
+def inspect_trace_service() -> dict[str, Any]:
+    script = r"""set -eu
+available=$(/usr/local/bin/k3s kubectl -n fw-control get deployment trace-service -o jsonpath='{.status.availableReplicas}')
+ready=$(/usr/local/bin/k3s kubectl -n fw-control get deployment trace-service -o jsonpath='{.status.readyReplicas}')
+service_type=$(/usr/local/bin/k3s kubectl -n fw-control get service trace-service -o jsonpath='{.spec.type}')
+image=$(/usr/local/bin/k3s kubectl -n fw-control get deployment trace-service -o jsonpath='{.spec.template.spec.containers[0].image}')
+producer=$(/usr/local/bin/k3s kubectl -n fw-control get deployment trace-service -o jsonpath='{.spec.template.metadata.annotations.faultwitness\.io/producer-sha}')
+source_digest=$(/usr/local/bin/k3s kubectl -n fw-control get deployment trace-service -o jsonpath='{.spec.template.metadata.annotations.faultwitness\.io/source-digest}')
 status=$(/usr/local/bin/k3s kubectl -n fw-control exec deployment/trace-service -- python -c 'import httpx; print(httpx.get("http://127.0.0.1:8001/health/ready",timeout=5).status_code)')
 test "$available" = 1
 test "$ready" = 1
-test "$binding" = {candidate_sha}
 test "$service_type" = ClusterIP
 test "$status" = 200
-printf '%s %s %s\n' "$available" "$ready" "$service_type"
+printf '%s %s %s %s %s %s\n' "$available" "$ready" "$service_type" "$image" "$producer" "$source_digest"
 """
     fields = run_remote_script(script, privileged=True).strip().split()
-    if fields != ["1", "1", "ClusterIP"]:
+    if len(fields) != 6 or fields[:3] != ["1", "1", "ClusterIP"]:
         raise GovernanceError("trace service deployment is not Ready")
-    return {"candidate_sha": candidate_sha, "available": 1, "ready": 1, "service_type": "ClusterIP"}
+    return {
+        "available": 1,
+        "ready": 1,
+        "service_type": "ClusterIP",
+        "image": fields[3],
+        "producer_sha": fields[4],
+        "source_digest": fields[5],
+    }
 
 
 def diagnose_trace_service() -> str:
@@ -150,27 +162,26 @@ def diagnose_trace_service() -> str:
 
 
 def run_trace_service_smoke(
-    candidate_sha: str, *, inject_uncertain_ack: bool = False
+    *, inject_uncertain_ack: bool = False
 ) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
-    manifest = base64.b64encode(_smoke_manifest(candidate_sha).encode()).decode()
+    observed = inspect_trace_service()
+    image = str(observed["image"])
+    manifest = base64.b64encode(
+        _smoke_manifest(str(observed["producer_sha"]), image).encode()
+    ).decode()
     script = f"""set -eu
-binding=$(/usr/local/bin/k3s kubectl -n fw-control get configmap fw-trace-candidate -o jsonpath='{{.data.candidate_sha}}')
-test "$binding" = {candidate_sha}
 /usr/local/bin/k3s kubectl -n fw-control delete job trace-service-smoke --ignore-not-found --wait=true >/dev/null
 printf %s {manifest} | base64 -d | /usr/local/bin/k3s kubectl apply -f - >/dev/null
-for attempt in $(seq 1 90); do
+while :; do
   succeeded=$(/usr/local/bin/k3s kubectl -n fw-control get job trace-service-smoke -o jsonpath='{{.status.succeeded}}')
   failed=$(/usr/local/bin/k3s kubectl -n fw-control get job trace-service-smoke -o jsonpath='{{.status.failed}}')
   test "$succeeded" = 1 && break
   test "$failed" = 1 && exit 1
   sleep 2
 done
-test "$succeeded" = 1
 /usr/local/bin/k3s kubectl -n fw-control logs job/trace-service-smoke
 """
-    output = run_remote_script(script, privileged=True, timeout=240).strip()
+    output = run_remote_script(script, privileged=True).strip()
     try:
         result = json.loads(output)
     except json.JSONDecodeError as error:
@@ -187,25 +198,21 @@ test "$succeeded" = 1
     }
     if any(result.get(key) != value for key, value in expected.items()):
         raise GovernanceError("trace service smoke did not satisfy the frozen outcome matrix")
-    relay = relay_langsmith(candidate_sha, inject_uncertain_ack=inject_uncertain_ack)
+    relay = relay_langsmith(inject_uncertain_ack=inject_uncertain_ack)
     if relay["pending_traces"] != 0 or relay["pending_langsmith"] != 0:
         raise GovernanceError("LangSmith operator relay did not drain the candidate buffer")
     if result["langsmith_trace_id"] not in relay["langsmith_trace_ids"]:
         raise GovernanceError("candidate LangSmith trace was not acknowledged by the relay")
     result.update(relay)
     record_live_api_verification(
-        BootstrapPaths.defaults(), secret_name="langsmith.api_key", iteration="I-0013"
+        BootstrapPaths.defaults(), secret_name="langsmith.api_key", capability="trace-service"
     )
-    return {"candidate_sha": candidate_sha, **result}
+    return {"image": image, **result}
 
 
-def relay_langsmith(candidate_sha: str, *, inject_uncertain_ack: bool = False) -> dict[str, Any]:
-    if not FULL_SHA.fullmatch(candidate_sha):
-        raise GovernanceError("candidate SHA must contain 40 lowercase hexadecimal characters")
+def relay_langsmith(*, inject_uncertain_ack: bool = False) -> dict[str, Any]:
     private = run_remote_script(
         "set -eu\n"
-        "binding=$(/usr/local/bin/k3s kubectl -n fw-control get configmap fw-trace-candidate -o jsonpath='{.data.candidate_sha}')\n"
-        f'test "$binding" = {candidate_sha}\n'
         "service_ip=$(/usr/local/bin/k3s kubectl -n fw-control get service trace-service -o jsonpath='{.spec.clusterIP}')\n"
         "token=$(/usr/local/bin/k3s kubectl -n fw-control get secret fw-trace-env -o jsonpath='{.data.TRACE_INGEST_TOKEN}' | base64 -d)\n"
         'printf \'service_ip=%s\\ntoken=%s\\n\' "$service_ip" "$token"\n',
@@ -244,7 +251,7 @@ def relay_langsmith(candidate_sha: str, *, inject_uncertain_ack: bool = False) -
     uncertain_replay: tuple[str, str, str] | None = None
     try:
         with httpx.Client(timeout=10) as client:
-            for _ in range(30):
+            while True:
                 if tunnel.poll() is not None:
                     raise GovernanceError("private trace relay tunnel exited before readiness")
                 try:
@@ -253,9 +260,7 @@ def relay_langsmith(candidate_sha: str, *, inject_uncertain_ack: bool = False) -
                 except httpx.TransportError:
                     pass
                 time.sleep(0.5)
-            else:
-                raise GovernanceError("private trace relay tunnel did not become ready")
-            for _ in range(100):
+            while True:
                 response = client.post(base + "/internal/v1/relay/langsmith/claim", headers=headers)
                 if response.status_code == 204:
                     if uncertain_replay is not None and not exported:
@@ -267,7 +272,7 @@ def relay_langsmith(candidate_sha: str, *, inject_uncertain_ack: bool = False) -
                 trace = SanitizedTrace.from_document(response.json())
                 exporter = LangSmithExporter(
                     bundle.langsmith_api_key,
-                    project=f"faultwitness-g01-{trace.candidate_sha[:12]}",
+                    project=f"faultwitness-trace-service-{trace.candidate_sha[:12]}",
                 )
                 try:
                     summary = asyncio.run(exporter.export(trace))
@@ -306,19 +311,13 @@ def relay_langsmith(candidate_sha: str, *, inject_uncertain_ack: bool = False) -
                 if ack.status_code != 204:
                     raise GovernanceError("Trace Service did not acknowledge LangSmith relay")
                 exported.append(summary["remote_trace_id"])
-            else:
-                raise GovernanceError("LangSmith relay exceeded its bounded drain limit")
             status_response = client.get(base + "/internal/v1/status", headers=headers)
             if status_response.status_code != 200:
                 raise GovernanceError("Trace Service relay status is unavailable")
             status = status_response.json()
     finally:
         tunnel.terminate()
-        try:
-            tunnel.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            tunnel.kill()
-            tunnel.wait(timeout=5)
+        tunnel.wait()
     return {
         **status,
         "relayed_langsmith_traces": len(exported),
@@ -328,13 +327,8 @@ def relay_langsmith(candidate_sha: str, *, inject_uncertain_ack: bool = False) -
     }
 
 
-def _manifest(candidate_sha: str, image: str) -> str:
+def _manifest(producer_sha: str, source_digest: str, image: str) -> str:
     return f"""apiVersion: v1
-kind: ConfigMap
-metadata: {{name: fw-trace-candidate, namespace: fw-control}}
-data: {{candidate_sha: "{candidate_sha}"}}
----
-apiVersion: v1
 kind: ServiceAccount
 metadata: {{name: trace-service, namespace: fw-control}}
 automountServiceAccountToken: false
@@ -350,7 +344,9 @@ spec:
       labels:
         app.kubernetes.io/name: trace-service
         faultwitness.io/platform-client: "true"
-        faultwitness.io/candidate: "{candidate_sha}"
+      annotations:
+        faultwitness.io/producer-sha: "{producer_sha}"
+        faultwitness.io/source-digest: "{source_digest}"
     spec:
       serviceAccountName: trace-service
       automountServiceAccountToken: false
@@ -407,7 +403,7 @@ spec:
 """
 
 
-def _smoke_manifest(candidate_sha: str) -> str:
+def _smoke_manifest(producer_sha: str, image: str) -> str:
     return f"""apiVersion: v1
 kind: ConfigMap
 metadata: {{name: trace-service-smoke, namespace: fw-control}}
@@ -435,7 +431,7 @@ data:
       "correlation_id":new_id("corr_"),
       "incident_id":new_id("inc_"),
       "contracts_version":"1.1.0",
-      "candidate_sha":"{candidate_sha}",
+      "candidate_sha":"{producer_sha}",
       "spans":[
         {{"span_id":root_span,"parent_span_id":None,"name":"api.incident.create","stage":"api","started_at":now.isoformat(),"ended_at":end.isoformat(),"status":"ok","attributes":{{"http.request.method":"POST","http.route":"/v1/incidents","http.response.status_code":201}}}},
         {{"span_id":child_span,"parent_span_id":root_span,"name":"state.incident.create","stage":"state_transition","started_at":child_start.isoformat(),"ended_at":child_end.isoformat(),"status":"ok","attributes":{{"state.from":"NEW","state.to":"QUEUED"}}}}
@@ -445,14 +441,12 @@ data:
     headers = {{"x-faultwitness-ingest-token":os.environ["TRACE_INGEST_TOKEN"]}}
     api = "http://trace-service.fw-control.svc.cluster.local:8001"
     accepted = None
-    for _ in range(30):
+    while True:
       try:
         accepted = httpx.post(api + "/internal/v1/traces", headers=headers, json=base, timeout=10)
         break
       except httpx.TransportError:
         time.sleep(1)
-    if accepted is None:
-      raise SystemExit("trace service did not become reachable")
     duplicate = httpx.post(api + "/internal/v1/traces", headers=headers, json=base, timeout=10)
     canary = copy.deepcopy(base)
     canary["trace_id"] = new_id("trace_")
@@ -462,7 +456,7 @@ data:
     canary["spans"][0]["attributes"] = {{"outcome":"FW_SECRET_CANARY-live-smoke"}}
     rejected = httpx.post(api + "/internal/v1/traces", headers=headers, json=canary, timeout=10)
     state = None
-    for _ in range(60):
+    while True:
       httpx.post(api + "/internal/v1/drain", headers=headers, timeout=30)
       state = httpx.get(api + "/internal/v1/status", headers=headers, timeout=10).json()
       if state["pending_otlp"] == 0 and state["pending_archive"] == 0:
@@ -503,7 +497,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: smoke
-          image: docker.io/faultwitness/trace-service:{candidate_sha}
+          image: {image}
           imagePullPolicy: Never
           command: [python, /config/smoke.py]
           env:

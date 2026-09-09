@@ -8,13 +8,13 @@ import pytest
 from faultwitness_dev.errors import GovernanceError
 from faultwitness_dev.platform import (
     PlatformPaths,
-    _assert_candidate,
     _bundle,
     _deployment_files,
     _sanitize_inventory,
     deploy_platform,
     inspect_platform_readiness,
 )
+from faultwitness_dev.provenance import ProducerProvenance
 
 CANDIDATE = "a" * 40
 
@@ -71,10 +71,9 @@ def _inventory(*, ready: int = 1, generation: int = 4) -> str:
     )
 
 
-def test_sanitized_inventory_is_candidate_bound_and_allowlisted() -> None:
-    result = _sanitize_inventory(_inventory(), CANDIDATE)
+def test_sanitized_inventory_is_observed_and_allowlisted() -> None:
+    result = _sanitize_inventory(_inventory())
     encoded = json.dumps(result)
-    assert result["candidate_sha"] == CANDIDATE
     assert result["workload_count"] == 1
     assert result["workloads"][0]["ready"] == 1
     assert "private" not in encoded
@@ -85,25 +84,16 @@ def test_sanitized_inventory_is_candidate_bound_and_allowlisted() -> None:
 @pytest.mark.parametrize("raw", ["{}", '{"items": []}', "not-json"])
 def test_sanitized_inventory_fails_closed_on_missing_or_invalid_evidence(raw: str) -> None:
     with pytest.raises(GovernanceError):
-        _sanitize_inventory(raw, CANDIDATE)
+        _sanitize_inventory(raw)
 
 
 def test_sanitized_inventory_rejects_unready_or_stale_workload() -> None:
     with pytest.raises(GovernanceError, match="not Ready"):
-        _sanitize_inventory(_inventory(ready=0), CANDIDATE)
+        _sanitize_inventory(_inventory(ready=0))
     document = json.loads(_inventory())
     document["items"][0]["status"]["observedGeneration"] = 3
     with pytest.raises(GovernanceError, match="not Ready"):
-        _sanitize_inventory(json.dumps(document), CANDIDATE)
-
-
-def test_candidate_binding_rejects_head_mismatch(monkeypatch, tmp_path: Path) -> None:
-    class Result:
-        stdout = "b" * 40 + "\n"
-
-    monkeypatch.setattr("faultwitness_dev.platform.subprocess.run", lambda *a, **k: Result())
-    with pytest.raises(GovernanceError, match="does not match"):
-        _assert_candidate(tmp_path, CANDIDATE, [])
+        _sanitize_inventory(json.dumps(document))
 
 
 def test_deploy_platform_stages_helm_bundle_and_writes_private_summary(
@@ -126,7 +116,10 @@ def test_deploy_platform_stages_helm_bundle_and_writes_private_summary(
     values.write_text("replicas: 1\n", encoding="utf-8")
     evidence = PlatformPaths(tmp_path / "private-evidence")
     captured: dict[str, object] = {}
-    monkeypatch.setattr("faultwitness_dev.platform._assert_candidate", lambda *a, **k: None)
+    monkeypatch.setattr(
+        "faultwitness_dev.platform.producer_provenance",
+        lambda *_args, **_kwargs: ProducerProvenance(CANDIDATE, "b" * 64, True),
+    )
 
     def fake_remote(script: str, **kwargs: object) -> str:
         captured["script"] = script
@@ -136,7 +129,6 @@ def test_deploy_platform_stages_helm_bundle_and_writes_private_summary(
     monkeypatch.setattr("faultwitness_dev.platform.run_remote_script", fake_remote)
     result = deploy_platform(
         tmp_path,
-        CANDIDATE,
         chart=chart,
         values=values,
         evidence_paths=evidence,
@@ -147,17 +139,16 @@ def test_deploy_platform_stages_helm_bundle_and_writes_private_summary(
     assert 'kubectl create namespace "$namespace"' in script
     assert "export KUBECONFIG=/etc/rancher/k3s/k3s.yaml" in script
     assert "helm upgrade --install fw-platform" in script
-    assert "--atomic --wait --timeout 15m" in script
-    assert "fw-platform-candidate-binding" in script
-    assert f"--from-literal=candidate_sha={CANDIDATE}" in script
-    assert captured["kwargs"] == {"privileged": True, "timeout": 1200}
-    assert result["candidate_sha"] == CANDIDATE
+    assert "--timeout" not in script
+    assert "candidate-binding" not in script
+    assert captured["kwargs"] == {"privileged": True}
+    assert result["producer_sha"] == CANDIDATE
+    assert result["dirty"] is True
     written = json.loads((evidence.evidence_dir / "deployment-summary.json").read_text())
     assert written["deployment_bundle_sha256"] == result["deployment_bundle_sha256"]
 
 
 def test_inspect_platform_rechecks_for_full_stability_window(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setattr("faultwitness_dev.platform._assert_candidate", lambda *a, **k: None)
     calls = {"remote": 0}
 
     def fake_remote(*args: object, **kwargs: object) -> str:
@@ -169,7 +160,6 @@ def test_inspect_platform_rechecks_for_full_stability_window(monkeypatch, tmp_pa
     monkeypatch.setattr("faultwitness_dev.platform.run_remote_script", fake_remote)
     result = inspect_platform_readiness(
         tmp_path,
-        CANDIDATE,
         stability_seconds=10,
         evidence_paths=PlatformPaths(tmp_path / "evidence"),
         clock=lambda: next(ticks),

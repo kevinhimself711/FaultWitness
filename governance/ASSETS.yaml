@@ -1,4 +1,4 @@
-schema_version: "1.2.0"
+schema_version: "2.0.0"
 assets:
   - path: PROJECT_STATE.yaml
     schema: schemas/governance/project-state.schema.json
@@ -24,27 +24,9 @@ assets:
     schema: schemas/contracts/openapi-design.schema.json
   - path: docs/contracts/asyncapi.yaml
     schema: schemas/contracts/asyncapi-design.schema.json
-  - path: docs/claims/CLAIMS.yaml
-    schema: schemas/governance/claim-registry.schema.json
-  - path: governance/iterations/*.yaml
-    schema: schemas/governance/iteration.schema.json
-  - path: governance/gates/G*.yaml
-    schema: schemas/governance/gate.schema.json
-  - path: docs/evals/EVAL-G*/manifest.json
-    schema: schemas/governance/eval-manifest.schema.json
-  - path: docs/evals/EVAL-G00-006/WALKTHROUGHS.yaml
-    schema: schemas/governance/gate-walkthroughs.schema.json
-  - path: docs/gates/G02/VALIDATIONS.yaml
-    schema: schemas/governance/validation-registry.schema.json
-  - path: docs/gates/G02/CARRY_IN.yaml
-    schema: schemas/governance/carry-in-registry.schema.json
   - path: docs/adr/INDEX.yaml
     schema: schemas/governance/adr-registry.schema.json
   - path: config/secrets/schema.yaml
     schema: schemas/bootstrap/secret-config.schema.json
   - path: config/secrets/toolchain.lock.yaml
     schema: schemas/bootstrap/toolchain-lock.schema.json
-  - path: docs/evals/EVAL-G01-001/CAPABILITY_BASELINE.json
-    schema: schemas/bootstrap/capability-baseline.schema.json
-  - path: .github/rulesets/main.json
-    schema: schemas/governance/github-ruleset.schema.json

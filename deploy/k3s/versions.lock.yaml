@@ -1,5 +1,5 @@
 schema_version: "1.0.0"
-compatibility_profile: ubuntu-5.15-cgroup-v1-amd64
+compatibility_profile: ubuntu-5.15-or-5.8-or-7.0-cgroup-v1-amd64
 artifacts:
   k3s:
     version: v1.34.9+k3s1
@@ -29,6 +29,10 @@ artifacts:
     version: 1.5.7
     url: https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.gz
     sha256: eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3
+  nvidia_container_toolkit:
+    version: 1.19.1
+    url: https://github.com/NVIDIA/nvidia-container-toolkit/releases/download/v1.19.1/nvidia-container-toolkit_1.19.1_deb_amd64.tar.gz
+    sha256: 5411de394488be86d6dd1756e950c13cfdf7c90e44eaed252e70883b88a4d00c
   nvidia_device_plugin:
     version: v0.19.0
     image: nvcr.io/nvidia/k8s-device-plugin:v0.19.0@sha256:75eff5962176618e486da18d73eae57870369b69f186fc8d193973166d1cfad9

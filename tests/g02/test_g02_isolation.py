@@ -7,14 +7,6 @@ from pathlib import Path
 import pytest
 
 from faultwitness_dev.errors import GovernanceError
-from faultwitness_dev.g02_collectors import MemoryProbeBackend
-from faultwitness_dev.g02_eval import (
-    G02_PHASES,
-    PhaseContext,
-    PhaseEngine,
-    TrialJournal,
-    _owned_phase_handlers,
-)
 from faultwitness_dev.g02_isolation import (
     CANARY_SURFACES,
     DIFFICULTIES,
@@ -133,7 +125,7 @@ def test_four_new_writer_paths_reject_secret_and_pii() -> None:
 
 def _passing_access_matrix() -> dict[str, object]:
     return {
-        "candidate_sha": CANDIDATE,
+        "producer_sha": CANDIDATE,
         "environment_fingerprint": ENVIRONMENT,
         "cells": [
             {
@@ -146,20 +138,20 @@ def _passing_access_matrix() -> dict[str, object]:
     }
 
 
-def test_access_matrix_runner_contract_is_60_candidate_bound_cells() -> None:
+def test_access_matrix_runner_contract_is_60_provenance_attributed_cells() -> None:
     document = _passing_access_matrix()
     assert validate_live_access_matrix(document, CANDIDATE, ENVIRONMENT)["cell_count"] == 60
     broken = copy.deepcopy(document)
     broken["cells"][0]["actual_allow"] = not broken["cells"][0]["actual_allow"]
     with pytest.raises(GovernanceError, match="access matrix failed"):
         validate_live_access_matrix(broken, CANDIDATE, ENVIRONMENT)
-    with pytest.raises(GovernanceError, match="candidate binding"):
+    with pytest.raises(GovernanceError, match="producer provenance"):
         validate_live_access_matrix(document, "3" * 40, ENVIRONMENT)
 
 
 def _passing_stage_matrix() -> dict[str, object]:
     return {
-        "candidate_sha": CANDIDATE,
+        "producer_sha": CANDIDATE,
         "environment_fingerprint": ENVIRONMENT,
         "stages": [
             {
@@ -187,7 +179,7 @@ def test_six_stage_runner_contract_rejects_missing_stage_fixture() -> None:
 
 def _passing_canary_matrix() -> dict[str, object]:
     return {
-        "candidate_sha": CANDIDATE,
+        "producer_sha": CANDIDATE,
         "environment_fingerprint": ENVIRONMENT,
         "surfaces": [
             {
@@ -210,31 +202,3 @@ def test_all_surface_runner_contract_rejects_leaked_fixture() -> None:
     broken["surfaces"][index] = fixture
     with pytest.raises(GovernanceError, match="leaked"):
         validate_all_surface_canary(broken, CANDIDATE, ENVIRONMENT)
-
-
-def test_three_gate_phase_interfaces_write_candidate_bound_artifacts(tmp_path: Path) -> None:
-    context = PhaseContext(
-        candidate_sha=CANDIDATE,
-        runtime_image_digests=("3" * 64,),
-        sut_image_set_digest="4" * 64,
-        config_digest="5" * 64,
-        evaluator_digest="6" * 64,
-        dataset_digest="7" * 64,
-        environment_fingerprint=ENVIRONMENT,
-    )
-    engine = PhaseEngine(G02_PHASES, context, tmp_path / "journal")
-    handlers = _owned_phase_handlers(
-        tmp_path,
-        {"_eval_id": "EVAL-G02-010"},
-        engine,
-        MemoryProbeBackend(ROOT),
-    )
-    journal = TrialJournal(tmp_path / "journal")
-    for phase_id in (
-        "isolation-access-matrix",
-        "trace-six-stage-matrix",
-        "all-surface-canary",
-    ):
-        result = handlers[phase_id](context, journal)
-        assert result["status"] == "pass"
-        assert (tmp_path / result["artifact_path"]).is_file()

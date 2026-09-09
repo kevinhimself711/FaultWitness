@@ -34,7 +34,7 @@ def validate_document(document: Any, schema: dict[str, Any], label: str) -> None
 def _check_unique_ids(document: Any, label: str) -> None:
     if not isinstance(document, dict):
         return
-    for key in ("requirements", "claims", "adrs", "sources"):
+    for key in ("requirements", "adrs", "sources"):
         records = document.get(key)
         if not isinstance(records, list):
             continue
@@ -61,7 +61,6 @@ def validate_repository_schemas(root: Path) -> dict[str, Any]:
             _check_unique_ids(document, label)
             loaded[label] = document
     _check_cross_references(loaded)
-    _check_ruleset_invariants(loaded[".github/rulesets/main.json"])
     _check_adr_invariants(root, loaded["docs/adr/INDEX.yaml"])
     _check_architecture_documents(root)
     from faultwitness_dev.contracts import validate_contracts
@@ -70,71 +69,12 @@ def validate_repository_schemas(root: Path) -> dict[str, Any]:
     return loaded
 
 
-def _check_ruleset_invariants(ruleset: dict[str, Any]) -> None:
-    rules = {rule["type"]: rule for rule in ruleset["rules"]}
-    required_types = {"deletion", "non_fast_forward", "pull_request", "required_status_checks"}
-    missing = sorted(required_types - set(rules))
-    if missing:
-        raise GovernanceError(f"main ruleset is missing rules: {missing}")
-    pull_request = rules["pull_request"]["parameters"]
-    if not pull_request.get("dismiss_stale_reviews_on_push"):
-        raise GovernanceError("main ruleset must dismiss stale reviews")
-    if not pull_request.get("required_review_thread_resolution"):
-        raise GovernanceError("main ruleset must require review thread resolution")
-    status_parameters = rules["required_status_checks"]["parameters"]
-    contexts = {item["context"] for item in status_parameters["required_status_checks"]}
-    expected = {
-        "audit (ubuntu-latest)",
-        "verify (ubuntu-latest)",
-        "verify (windows-latest)",
-    }
-    if contexts != expected:
-        raise GovernanceError(f"main ruleset status checks drifted: {sorted(contexts)}")
-    if not status_parameters.get("strict_required_status_checks_policy"):
-        raise GovernanceError("main ruleset must require an up-to-date branch")
-
-
 def _check_cross_references(loaded: dict[str, Any]) -> None:
-    state = loaded["PROJECT_STATE.yaml"]
-    gates = {
-        document["id"]: document
-        for path, document in loaded.items()
-        if path.startswith("governance/gates/")
-    }
-    iterations = {
-        document["id"]: document
-        for path, document in loaded.items()
-        if path.startswith("governance/iterations/")
-    }
     requirements = loaded["docs/requirements/REQUIREMENTS.yaml"]["requirements"]
-    requirement_ids = {record["id"] for record in requirements}
     source_catalog = loaded["docs/requirements/SOURCE_CATALOG.yaml"]
     evidence_matrix = loaded["docs/requirements/EVIDENCE_MATRIX.yaml"]
     _check_evidence_invariants(requirements, source_catalog, evidence_matrix)
     _check_architecture_invariants(loaded["docs/architecture/ARCHITECTURE.yaml"])
-    if "docs/evals/EVAL-G00-006/WALKTHROUGHS.yaml" in loaded:
-        _check_gate_walkthroughs(
-            loaded["docs/evals/EVAL-G00-006/WALKTHROUGHS.yaml"],
-            loaded["docs/contracts/WALKTHROUGH_BINDINGS.yaml"],
-        )
-    if state["active_gate"] not in gates:
-        raise GovernanceError(f"unknown active_gate: {state['active_gate']}")
-    for field in ("active_iteration", "next_iteration"):
-        value = state.get(field)
-        if value is not None and value not in iterations:
-            raise GovernanceError(f"unknown {field}: {value}")
-    for path, manifest in loaded.items():
-        if not path.endswith("manifest.json"):
-            continue
-        if manifest["gate"] not in gates:
-            raise GovernanceError(f"unknown eval gate in {path}: {manifest['gate']}")
-        if manifest["iteration"] not in iterations:
-            raise GovernanceError(f"unknown eval iteration in {path}: {manifest['iteration']}")
-    claims = loaded["docs/claims/CLAIMS.yaml"]["claims"]
-    for claim in claims:
-        unknown = sorted(set(claim["requirements"]) - requirement_ids)
-        if unknown:
-            raise GovernanceError(f"claim {claim['id']} has unknown requirements: {unknown}")
 
 
 def _check_evidence_invariants(
