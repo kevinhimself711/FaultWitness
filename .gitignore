@@ -21,6 +21,8 @@ build/
 
 .dvc/cache/
 artifacts/
+!docs/evals/**/artifacts/
+!docs/evals/**/artifacts/**
 data/raw/
 /models/
 
