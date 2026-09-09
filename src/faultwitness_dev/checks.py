@@ -53,6 +53,34 @@ def run_repository_audit(root: Path) -> None:
     audit_repository(root)
 
 
+def check_release_evidence(root: Path) -> None:
+    """Require tracked artifacts for the current release; report historical gaps."""
+    state = load_data(root / "PROJECT_STATE.yaml")
+    manifest_path = root / state["latest_release"]["evidence_manifest"]
+    eval_root = manifest_path.parent
+    artifacts = eval_root / "artifacts"
+    if not artifacts.is_dir():
+        raise GovernanceError(f"release evidence artifacts directory is missing: {artifacts}")
+    tracked = subprocess.run(
+        ["git", "ls-files", "--cached", "--", f"{artifacts.relative_to(root).as_posix()}/"],
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    ).stdout.splitlines()
+    if not any((root / path).is_file() for path in tracked):
+        raise GovernanceError(f"release evidence has no tracked artifacts: {eval_root}")
+
+    missing: list[str] = []
+    for candidate in sorted((root / "docs/evals").glob("EVAL-*/")):
+        candidate_artifacts = candidate / "artifacts"
+        if not candidate_artifacts.is_dir() or not any(candidate_artifacts.rglob("*")):
+            missing.append(candidate.relative_to(root).as_posix())
+    if missing:
+        print("historical EVAL directories missing artifacts: " + ", ".join(missing))
+
+
 def verify_fast(root: Path) -> None:
     files = repository_files(root)
     check_utf8(files, root)
@@ -61,6 +89,7 @@ def verify_fast(root: Path) -> None:
     validate_repository_schemas(root)
     validate_current_state(root)
     run_repository_audit(root)
+    check_release_evidence(root)
     run(["ruff", "check", "src", "tests"], root)
     run(["pytest", "-q"], root)
     run(["pnpm", "exec", "markdownlint-cli2"], root)
