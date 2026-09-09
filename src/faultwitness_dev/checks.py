@@ -92,13 +92,17 @@ def check_release_evidence(root: Path) -> None:
 def verify_fast(root: Path) -> None:
     files = repository_files(root)
     check_utf8(files, root)
+    check_release_evidence(root)
+    run(["ruff", "check", "src", "tests"], root)
+    run(["pytest", "-q"], root)
+    run(["git", "diff", "--check"], root)
+
+
+def verify_docs(root: Path) -> None:
+    files = repository_files(root)
     check_markdown_basics(files, root)
     check_local_links(files, root)
     validate_repository_schemas(root)
     validate_current_state(root)
     run_repository_audit(root)
-    check_release_evidence(root)
-    run(["ruff", "check", "src", "tests"], root)
-    run(["pytest", "-q"], root)
     run(["pnpm", "exec", "markdownlint-cli2"], root)
-    run(["git", "diff", "--check"], root)

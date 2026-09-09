@@ -27,7 +27,7 @@ from faultwitness_dev.bootstrap import (
     run_capability_probe,
     validate_migration,
 )
-from faultwitness_dev.checks import verify_fast
+from faultwitness_dev.checks import verify_docs, verify_fast
 from faultwitness_dev.control_api_deploy import (
     deploy_control_api,
     diagnose_control_api,
@@ -104,6 +104,7 @@ def parser() -> argparse.ArgumentParser:
     subparsers = command_parser.add_subparsers(dest="command", required=True)
     for command in (
         "verify-fast",
+        "verify-docs",
         "validate",
         "external-links",
     ):
@@ -247,7 +248,10 @@ def main() -> int:
         root = repository_root()
         if args.command == "verify-fast":
             verify_fast(root)
-            message = "repository checks, tests, and Markdown passed"
+            message = "fast repository checks, tests, and release evidence passed"
+        elif args.command == "verify-docs":
+            verify_docs(root)
+            message = "documentation checks passed"
         elif args.command == "validate":
             loaded = validate_repository_schemas(root)
             message = f"validated {len(loaded)} governed assets"

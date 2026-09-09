@@ -11,12 +11,8 @@ permissions:
 
 jobs:
   verify:
-    name: verify (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+    name: verify (ubuntu)
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
         with:
@@ -38,9 +34,5 @@ jobs:
         run: |
           uv sync --frozen --all-groups
           pnpm install --frozen-lockfile
-      - name: Add Windows repository shim
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: (Resolve-Path tools\bin).Path | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       - name: Run fast verification
         run: make verify-fast

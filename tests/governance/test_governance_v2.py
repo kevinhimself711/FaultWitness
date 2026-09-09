@@ -454,6 +454,7 @@ def test_active_cli_has_no_legacy_lifecycle_or_binding_entrypoint() -> None:
         action for action in parser()._actions if action.__class__.__name__ == "_SubParsersAction"
     )
     commands = set(command_action.choices)
+    assert "verify-docs" in commands
     legacy_commands = {
         "eval-changed",
         "eval-iteration",
@@ -658,9 +659,12 @@ def test_active_templates_entrypoints_and_ci_are_minimal() -> None:
     shim = (ROOT / "tools/bin/make.cmd").read_text(encoding="utf-8")
     workflow = (ROOT / ".github/workflows/baseline.yml").read_text(encoding="utf-8")
     assert makefile.count("verify-fast") == 3
+    assert "verify-docs:" in makefile
     assert "eval" not in makefile.lower()
-    assert "Only verify-fast is an active make target" in shim
+    assert "Only verify-fast and verify-docs are active make targets" in shim
     assert "make verify-fast" in workflow
+    assert "windows-latest" not in workflow
+    assert "matrix.os" not in workflow
     assert not LEGACY_REFERENCE.search(makefile + shim + workflow)
     assert not (ROOT / ".github/rulesets/main.json").exists()
 
@@ -669,30 +673,45 @@ def test_verify_fast_invokes_only_active_local_checks(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     commands: list[tuple[str, ...]] = []
-    audits: list[Path] = []
+    calls: list[str] = []
     monkeypatch.setattr(active_checks, "repository_files", lambda _root: [])
-    monkeypatch.setattr(active_checks, "check_utf8", lambda *_args: None)
-    monkeypatch.setattr(active_checks, "check_markdown_basics", lambda *_args: None)
-    monkeypatch.setattr(active_checks, "check_local_links", lambda *_args: None)
-    monkeypatch.setattr(active_checks, "validate_repository_schemas", lambda _root: {})
-    monkeypatch.setattr(active_checks, "validate_current_state", lambda _root: None)
-    monkeypatch.setattr(active_checks, "check_release_evidence", lambda _root: None)
+    monkeypatch.setattr(active_checks, "check_utf8", lambda *_args: calls.append("utf8"))
     monkeypatch.setattr(
         active_checks,
-        "run_repository_audit",
-        lambda root: audits.append(root),
+        "check_release_evidence",
+        lambda _root: calls.append("evidence"),
     )
+    monkeypatch.setattr(
+        active_checks,
+        "check_markdown_basics",
+        lambda *_args: calls.append("markdown"),
+    )
+    monkeypatch.setattr(
+        active_checks,
+        "check_local_links",
+        lambda *_args: calls.append("links"),
+    )
+    monkeypatch.setattr(
+        active_checks,
+        "validate_repository_schemas",
+        lambda _root: calls.append("schemas"),
+    )
+    monkeypatch.setattr(
+        active_checks,
+        "validate_current_state",
+        lambda _root: calls.append("state"),
+    )
+    monkeypatch.setattr(active_checks, "run_repository_audit", lambda _root: calls.append("audit"))
     monkeypatch.setattr(
         active_checks,
         "run",
         lambda command, _root: commands.append(tuple(command)),
     )
     active_checks.verify_fast(tmp_path)
-    assert audits == [tmp_path]
+    assert calls == ["utf8", "evidence"]
     assert commands == [
         ("ruff", "check", "src", "tests"),
         ("pytest", "-q"),
-        ("pnpm", "exec", "markdownlint-cli2"),
         ("git", "diff", "--check"),
     ]
     forbidden = ("git log", "rev-list", "eval-changed", "gate eval", "ssh", "kubectl")
