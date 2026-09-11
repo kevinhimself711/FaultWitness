@@ -3,9 +3,19 @@ document_id: FW-GATE-G03-PLAN
 gate: G03
 status: placeholder
 authoritative: false
+superseded_by: PLAN.md
 ---
 
 # G03 Gate Plan — 只读 Agent 纵切
+
+> **本文件已降级为历史记录（2026-09-10）。**
+>
+> 它由 G02 收口流程自动生成，不代表任何人对 G03 所做的规划决策。
+> 其数值目标见 [ADR-0018](../../adr/ADR-0018.md)。其 "Planning requirement"（实现前须冻结
+> scope/Evals/budgets 等十一项）与「先测量后冻结」冲突，不适用于只读诊断观测——
+> 泄漏探针、分化度检查、披露对称性检查不构成 implementation。
+>
+> G03 的活跃执行清单见仓库根的 `PLAN.md`。
 
 ## Status
 
