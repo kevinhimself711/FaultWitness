@@ -548,11 +548,20 @@ def test_v3_prompt_states_the_evidence_completeness_the_scorer_enforces() -> Non
         assert scored["core_e2e"] == 0.0, case_id
         assert scored["failure_class"] == "missing_required_evidence", case_id
 
-    # The longer instruction must still fit the four-turn input bound.
+    # The instruction's own cost is bounded: it is the system prompt, charged once per turn,
+    # and it is not what exceeds the budget. The four-turn bound is exceeded by the widened
+    # nine-service trace scope (see test_widened_trace_scope_exceeds_the_four_turn_bound and
+    # docs/adr/ADR-0019.md), so pass-ness is asserted there against the packet, not here
+    # against the prompt. What must hold here is that disclosure did not become the binding
+    # constraint: the system prompt stays a small fraction of the per-request bound.
     preflight = token_preflight_v3(document)
-    assert preflight["status"] == "pass"
-    assert preflight["blocked_case_ids"] == []
-    assert preflight["headroom_at_max"] >= preflight["required_headroom"]
+    system_bytes = len(
+        build_baseline_prompt_v3(
+            "naive_react",
+            next(iter(scenario_cases_v3(document).values()))["packet"],
+        )[0]["content"].encode("utf-8")
+    )
+    assert system_bytes < 0.10 * min(row["per_request"][0] for row in preflight["cases"])
 
 
 def test_v3_metric_definition_artifact_matches_the_code_that_runs() -> None:
@@ -769,11 +778,18 @@ def test_unknown_versions_fail_before_any_artifact_or_secret_boundary(
 
 
 def test_compact_packet_completeness_and_token_headroom_are_independent() -> None:
+    """Group completeness and the token bound are separate verdicts.
+
+    That independence is the point of the test, and it is now observable in the direction that
+    matters: under the widened nine-service trace scope the bound is exceeded while every packet
+    is still structurally complete. A blocked budget must not be reported as a malformed packet.
+    """
     document = _scenario_document()
     preflight = token_preflight_v3(document)
-    assert preflight["status"] == "pass"
-    assert preflight["max"] <= 58_982
-    assert preflight["headroom_at_max"] >= 6_554
+    assert preflight["status"] == "blocked"
+    assert preflight["blocked_case_ids"]
+    for entry in scenario_cases_v3(document).values():
+        assert validate_observation_packet_v3(entry["packet"])
     assert all(
         row["four_turn_input_upper_bound"] == sum(row["per_request"])
         for row in preflight["cases"]
@@ -836,6 +852,72 @@ def test_compact_packet_completeness_and_token_headroom_are_independent() -> Non
     subject = {key: value for key, value in packet.items() if key != "packet_digest"}
     packet["packet_digest"] = _digest_json(subject)
     assert four_turn_input_upper_bound_v3(packet)["status"] == "blocked"
+
+
+def test_widened_trace_scope_adds_uninjected_services_without_moving_the_presence_prior() -> None:
+    """Widening the trace scope must add observability without adding a group signature.
+
+    Two properties, both load-bearing for the cascade question. First, the three added services
+    are queried but never injected, so a non-zero error count on one of them can only be
+    propagation from an injected service -- that is what makes criterion E answerable at all.
+    Second, presence_only_probe_v3 keys on the *group signature*, not the service set, so the
+    widening must not move its (8, 20) counts; if it did, a scope change would masquerade as a
+    leakage verdict and block preflight for the wrong reason.
+    """
+    injected = set(TARGET_SERVICES.values())
+    observed = set(V3_TRACE_QUERY_SERVICES)
+    assert injected < observed
+    uninjected = observed - injected
+    assert uninjected == {"cart", "frontend", "recommendation"}
+
+    document = _scenario_document()
+    probe = presence_only_probe_v3(document)
+    assert (probe["top1_count"], probe["top3_count"]) == (8, 20)
+    assert probe["status"] == "pass"
+    assert probe["signature_count"] == 1
+
+    # Every queried service, injected or not, is present in every trace sample, so an all-zero
+    # reading on an uninjected service is a measurement rather than an absent series.
+    for entry in scenario_cases_v3(document).values():
+        for group in entry["packet"]["observations"]:
+            if group["kind"] in ("trace_errors", "trace_activity"):
+                for sample in group["samples"]:
+                    assert set(sample["services"]) == observed
+
+
+def test_widened_trace_scope_exceeds_the_four_turn_bound() -> None:
+    """The nine-service trace scope overruns the four-turn budget. This pins that as known.
+
+    It is recorded as a test rather than left to surface as a surprise in a run, because the
+    overrun is a deliberate, measured consequence of widening the observation scope, not a
+    defect: the budget's numeric value was frozen with no derivation anywhere in the repository
+    and 61.7% of its fixed overhead is assistant drafts billed whether or not they occur (see
+    docs/adr/ADR-0019.md). Governance forbids raising the value and forbids dropping measured
+    fields to fit it, so the honest state is a blocked live path with the zero-model path intact.
+
+    Asserted here: the overrun is real, it is caused by the packet rather than the framing, and
+    it is not so large that a single service caused it. If a later change makes the budget fit
+    again -- by de-duplicating the packet across turns, which AMD-0007:168 explicitly permits --
+    this test should fail and be deleted, which is the intended signal.
+    """
+    document = _scenario_document()
+    preflight = token_preflight_v3(document)
+    assert preflight["status"] == "blocked"
+    assert preflight["max"] > preflight["maximum_allowed"]
+
+    # The packet, counted once per turn, is what exceeds the limit -- not the fixed overhead.
+    case = next(iter(scenario_cases_v3(document).values()))
+    bound = four_turn_input_upper_bound_v3(case["packet"])
+    packet_bytes = len(
+        build_baseline_prompt_v3("naive_react", case["packet"])[1]["content"].encode("utf-8")
+    )
+    fixed_overhead = bound["four_turn_input_upper_bound"] - 4 * packet_bytes
+    assert fixed_overhead < bound["maximum_allowed"]
+    assert 4 * packet_bytes > bound["maximum_allowed"] - fixed_overhead
+
+    # Every packet is still structurally valid: this is a budget verdict, not a data defect.
+    for entry in scenario_cases_v3(document).values():
+        assert validate_observation_packet_v3(entry["packet"])
 
 
 def test_metric_definition_digest_changes_with_frozen_formula(

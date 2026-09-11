@@ -161,3 +161,30 @@ E 与 D1 是两个正交的问题，必须分开报。四种组合，报告必�
 `ROOT_CAUSE_LABELS`、`TARGET_SERVICES`（族→服务映射）、arms registry、任何门槛数值、
 `+0.10` 的五处代码残留、`PROJECT_STATE.yaml`、`.audit/` 下既有目录、`docs/audit/**`、
 `descriptions` 的处理逻辑、`AMD-0007.md`（hashed input #7）。
+## 预登记之后的补充（2026-09-11，实现判据 E 探针时发现）
+
+**这一节写在预登记提交之后，所以标明为补充，不冒充预登记内容。** 它不改判据 E 的问题，
+也不改上面四种组合中的任何一格，只补上一个原本会把 E 读错的测量语义。
+
+写探针时核实了采集端的行为：**Jaeger 对从未见过的服务返回空 trace 列表，采集端记成 `0`**
+（`g02_lab.py` 的 Jaeger 循环：`trace_activity[svc] = len(traces)`，随后 error 计数从同一批
+traces 累加）。Prometheus 不是这样——缺 series 记 `null` 并归类为 infrastructure。
+于是 `trace_errors` 里有三种不同的零，写出来一模一样：
+
+| 读数 | 含义 |
+| --- | --- |
+| 有 trace、无 error | **测到了**"没有传播" |
+| 一条 trace 都没有 | **没测到**，不是没传播 |
+| healthy 期也报同样多的错 | 噪声，不是传播 |
+
+第二种正是 **1:1 观测面那个问题在加宽之后原样存活**：把它读成"级联不存在"，
+就是在新地方犯同一个错。所以探针增加第五种读数 `cascade_unobservable`——
+当且仅当全部候选 case 的上游服务在 fault 期都没有 trace 时报出，
+**它不等于 `cascade_absent`，也不落在上面四格中的任何一格**，
+对应的下一步是查采集面而不是查 SUT 性质。
+
+第三种是 `excess_over_healthy` 存在的理由：按"fault 期非零"判定会把一个 baseline 就有噪声的
+服务在该族每个 case 上都算成级联。
+
+预登记里判据 E 的原话是"是否出现非零"。**实测按 `excess_over_healthy > 0` 判定，比原话严格**，
+差别在此明写，事后不重新解释。

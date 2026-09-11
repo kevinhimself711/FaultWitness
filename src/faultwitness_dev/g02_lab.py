@@ -57,6 +57,15 @@ TRACE_QUERY_SERVICES = {
     "paymentUnreachable": "checkout",
     "kafkaQueueProblems": "fraud-detection",
 }
+# The first six are the injection targets, one per fault family, which made the observation
+# scope 1:1 with the label set: every answer owned a private channel, and a zero-model
+# classifier scored 0.9062 against the model arms' 0.9479. The last three are queried but
+# never injected. They are upstream of the injected services -- frontend and recommendation
+# call product-catalog, cart neighbours checkout -- so a non-zero error count on one of them
+# is cross-service propagation rather than the family's own signal. Whether such propagation
+# exists at all was previously unobservable: the all-zero off-diagonal co-occurrence matrix
+# could equally mean faults do not spread or that nothing downstream was ever queried. See
+# docs/engineering/diagnostics/g03-observation-scope-widening/PRE_REGISTRATION.md.
 V3_TRACE_QUERY_SERVICES = (
     "ad",
     "checkout",
@@ -64,6 +73,9 @@ V3_TRACE_QUERY_SERVICES = (
     "fraud-detection",
     "payment",
     "product-catalog",
+    "cart",
+    "frontend",
+    "recommendation",
 )
 V3_READINESS_COLLECTOR_CHECKPOINT = "g03-readiness-v3-label-blind-six-group-collector-v6"
 V3_READINESS_COLLECTOR_SOURCE_SHA256 = (

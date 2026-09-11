@@ -17,6 +17,7 @@
 - U9: r8/r9 live 差异只读取证 + 两轮产物入库（诊断模式，零模型成本），结论见下方已知坑。
 - U10: metric-v3 根信号分化度检查（诊断模式，零模型成本），结论见下方已知坑。
 - U11: ADR-0019 撤销四轮 token 预算的数值冻结（只改文档，不动代码），结论见下方已知坑。
+- U12: 观测面加宽阶段 3a——`V3_TRACE_QUERY_SERVICES` 6 → 9 加入三个非注入上游服务，新增判据 E 级联存在性探针（`g03_cascade.py`，`diagnostic_only`，零模型调用），结论见下方已知坑。
 
 ## 未完成项
 
@@ -161,3 +162,30 @@ G03 重跑前必须先确认这四个数字的原始产物是否仍在 pci-2 上
   本轮只测量：未改数据集、未改 `descriptions`、未改任何阈值、未改 `g03_readiness.py` 行为。
   下一步的路线决定（脱敏后重采 vs 重构任务表示）由人做；可直接用作重构设计输入的三项事实是
   健康基线恒零（4/6 族）、故障不跨服务传播、族与服务是 `TARGET_SERVICES` 里公开的一一映射。
+- 2026-09-11 观测面加宽 3a（`diagnostic_only`，零模型调用，预登记见
+  `docs/engineering/diagnostics/g03-observation-scope-widening/PRE_REGISTRATION.md`）：
+  **观测面与标签集原本是 1:1 构造的，这解释了 D1 = 0.9062 的全部来源。**
+  `V3_TRACE_QUERY_SERVICES` 恰好是六个注入目标，三条标量通道各钉死一个服务
+  （`cpu_window` → `ad`、`memory_window` → `email`、`queue_window` → `fraud-detection`）——
+  **每个答案有一条私有通道**，所以高 D1 不是"抽到了简单 case"，是仪器被这样构造出来的。
+  由此"故障不跨服务传播"（共现矩阵非对角全 0）**至少部分是测量伪影而非 SUT 属性**：
+  `product-catalog` 报错本该出现在 `frontend` 与 `recommendation` 的 trace 里，
+  而这两个服务从未被查询。加宽后 6 → 9，新增 `frontend` / `recommendation` / `cart`
+  （注入目标的上游调用方，最小充分集；不扩到全部 19 个，多余服务只添噪声）。
+  **`TARGET_SERVICES`、`ROOT_CAUSE_LABELS`、`descriptions` 处理逻辑、任何门槛数值均未改动。**
+  已核实两个采集器 source SHA 只哈希函数体、常量在模块层，**3a 不需要更新那两个 digest**
+  （计划原先写"必须同步更新"，读错了）。`presence_only_probe_v3` 按组签名计数、不按服务数，
+  加宽后仍 `top1 == 8`、`status: pass`，不触发 `leak_not_eliminated`。
+- 2026-09-11 判据 E 探针（`g03_cascade.py`，CLI `g03-cascade`）：**它存在的唯一理由是
+  区分三种零**，把它们混成一个数就会在新地方犯 1:1 观测面那个错：
+  (a) 有 trace 无 error = **测到了**"没有传播"；
+  (b) 一条 trace 都没有 = **没测到**——Jaeger 对从未见过的服务返回空列表，采集端记成 `0`，
+      和 (a) 写出来一模一样（Prometheus 不同：缺 series 记 `null` 并归类为 infrastructure）；
+  (c) healthy 期也报同样多的错 = 噪声，按 `nonzero_in_fault` 判定会把它在该族每个 case 上
+      都算成级联，所以判据落在 `excess_over_healthy` 上。
+  若全部候选 case 的上游都没有 trace，`e_verdict` 报 `cascade_unobservable` 而**不是**
+  `cascade_absent`。探针**逐 case 报告、不聚合**：族级比率会正好盖住最该看见的东西——
+  传播是否每次都落在同一组邻居上（同一组 = 查表格子变大，仍是查表；每次不同 = 真取证工作）。
+  四组合解释表连同**"E 无 + D1 高 → 换注入面，不是项目终结"**写进产物的 `interpretation` 字段，
+  不只写在预登记里，因为后来的读者打开的是产物。**候选族由 trace 服务集推导而非手写**，
+  避免留下与观测面不一致的过期清单。

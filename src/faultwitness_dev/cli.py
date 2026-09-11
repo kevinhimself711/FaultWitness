@@ -50,6 +50,7 @@ from faultwitness_dev.g02_baselines import (
     write_json_artifact,
 )
 from faultwitness_dev.g02_lab import deploy_g02_lab, replay_resource_scenarios
+from faultwitness_dev.g03_cascade import run_cascade_probe_from_path
 from faultwitness_dev.g03_leakage_probe import run_leakage_probe_from_path
 from faultwitness_dev.g03_readiness import run_retest_baselines_v3
 from faultwitness_dev.g03_separability import run_separability_probe_from_path
@@ -169,6 +170,17 @@ def parser() -> argparse.ArgumentParser:
     )
     separability.add_argument("--dataset", type=Path, required=True)
     separability.add_argument("--output", type=Path, required=True)
+
+    cascade = subparsers.add_parser(
+        "g03-cascade",
+        help=(
+            "read-only diagnostic: answer criterion E, whether a fault injected into one service "
+            "produces trace errors on the uninjected services that call it. Reported per case and "
+            "not aggregated. Products are diagnostic_only and never gate evidence."
+        ),
+    )
+    cascade.add_argument("--dataset", type=Path, required=True)
+    cascade.add_argument("--output", type=Path, required=True)
 
     bootstrap = subparsers.add_parser("bootstrap-secrets")
     bootstrap.add_argument("--handoff", type=Path, default=Path("envs.txt"))
@@ -430,6 +442,21 @@ def main() -> int:
                 f"D2={classifiers['D2_root_signal_bare_quantum']['scores']['accuracy']:.4f} "
                 f"D3={classifiers['D3_majority_class']['scores']['accuracy']:.4f}; "
                 f"readings holding: {', '.join(holding) if holding else 'none'}"
+            )
+        elif args.command == "g03-cascade":
+            dataset = args.dataset if args.dataset.is_absolute() else root / args.dataset
+            output = args.output if args.output.is_absolute() else root / args.output
+            report = run_cascade_probe_from_path(dataset, output)
+            assessment = report["assessment"]
+            families = assessment["families_with_cascade"]
+            message = (
+                f"recorded diagnostic_only cascade probe in {output} over "
+                f"{report['n_cases']} cases from {report['source_run']}; criterion E "
+                f"{assessment['e_verdict']} on "
+                f"{assessment['candidate_cases_with_cascade']}/"
+                f"{assessment['candidate_case_count']} candidate cases; families with cascade: "
+                f"{', '.join(families) if families else 'none'}; reading "
+                f"{assessment['reading']}"
             )
         elif args.command == "bootstrap-secrets":
             paths = (
