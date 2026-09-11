@@ -16,6 +16,7 @@
 - U6: 将文档政策逐字写入 `AGENTS.md` 第 3 节，提交 `9041946`。
 - U9: r8/r9 live 差异只读取证 + 两轮产物入库（诊断模式，零模型成本），结论见下方已知坑。
 - U10: metric-v3 根信号分化度检查（诊断模式，零模型成本），结论见下方已知坑。
+- U11: ADR-0019 撤销四轮 token 预算的数值冻结（只改文档，不动代码），结论见下方已知坑。
 
 ## 未完成项
 
@@ -103,6 +104,39 @@ G03 重跑前必须先确认这四个数字的原始产物是否仍在 pci-2 上
   对四个 baseline 的影响：r9 的数字不是 r8 那种仪器故障读数，但仍受 `descriptions` 泄漏
   （16/32 case）制约，引用限定条件见上述 README 的 Q3 一节。
   r8 的 0.1458/0.1250/0.1667 **不可**当作同一数据集的"另一次测量"参与对比或取平均。
+- 2026-09-11 四轮 token 预算（ADR-0019，只改文档、零代码改动）：
+  `MAX_CUMULATIVE_INPUT_TOKENS = 65_536`（`g03_readiness.py:117`，镜像
+  `config/g03/baselines-v3.yaml:5`）**在整个 repo 里没有任何推导依据**——grep 全部
+  `src/`/`config/`/`docs/` 只有常量与配置镜像两处命中，也不对应所用模型的上下文窗口。
+  它先被挑选、再被 AMD-0007:168「the budget may not be raised」冻结，
+  与 `+0.10` 是同一类错误（测量之前冻结一个数值目标）。
+  **而且预算大头不是证据**：四轮上界固定开销 19902 的分解为
+  假设性 assistant 草稿 **12288（61.7%）**、system×4 4644、framing 1280、template 1024、
+  correction 666（逐项相加精确闭合）。草稿按 `MAX_COMPLETION_TOKENS × prior_count`
+  （`:1801`，即 2048×(0+1+2+3)）计，**不论那几轮是否真的发生**。
+  packet 只分到 9770 B；最差现有 packet（`SEED-G02-0008`）9469 B，**余量 301 B**。
+  边际成本每服务 `trace_activity` +226 B / `trace_errors` +534 B（下界），
+  即加一个上游服务就要 760 B，**塞不下**。AMD-0007:57 保护的 measured value
+  正在被一个记账约定挤压，不是被数据量挤压。
+  ADR-0019 只把**数值**改为待定，**形式不变**（仍算上界、仍留 headroom、
+  `four_turn_token_headroom` 仍阻塞 live、`budget_exhausted` 仍计入分母），**不动任何代码**。
+  **ADR-0019 不编辑 `AMD-0007.md`**——它是 hashed input 第 7 个
+  （`_source_inputs_v3:2852-2864`），改它就会动 `config_digest` 破坏 resume 身份（r6/r7 即如此）。
+  另：AMD-0007:168 的例外条款（"removing repeated representation metadata without removing
+  measurements"）**已经允许**去掉四轮重复的 packet——packet 逐字重发正是 repeated
+  representation，去掉它是执行该条款而非违反。但正确时机是**工具化改造
+  （agent-collected evidence）**，那时每轮只带被请求的结果、四轮结构自然消失；
+  现在手工拆是在解一个后续改造会删掉的问题，且会在只该改一个变量的轮次里改第二个。
+  两处顺带记录的冲突：AMD-0007:639-641「future amendment」与 CLAUDE.md:91-92
+  「不写修正案文档」不可同时满足（现行 ADR+PLAN.md 已选后者）；
+  `max_tool_calls: 6` 声明于 AMD-0007:160-161 并在同句承认未实现，
+  在 `config_digest` 里却无任何消费方（live 请求体无 `tools` 键），仍在改变 run 身份。
+- 2026-09-11 preflight 的写入顺序（已核实，本轮据此执行）：
+  `scenarios.json` 写于 `:3225`、`deterministic.json` 写于 `:3279`、
+  `token_preflight_v3` 才跑于 `:3283`、`GovernanceError` 抛于 `:3354`。
+  **即 token 不可行的 packet 仍会把数据集与 deterministic 矩阵完整写盘**，然后命令非零退出；
+  两个探针只读 `scenarios.json` 且不引用任何 token 检查。
+  **token 天花板阻塞的是 live 路径，不是零模型闸门。**
 - 2026-09-11 分化度检查（`diagnostic_only`，零模型调用，源 r9，产物
   `docs/engineering/diagnostics/g03-metric-v3-root-signal-separability.json` 与同名 `-README.md`）：
   **脱敏 `descriptions` 不足以给任务留下取证难度——数值通道本身就是一张六选一查表，
