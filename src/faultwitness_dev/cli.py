@@ -50,6 +50,7 @@ from faultwitness_dev.g02_baselines import (
     write_json_artifact,
 )
 from faultwitness_dev.g02_lab import deploy_g02_lab, replay_resource_scenarios
+from faultwitness_dev.g03_leakage_probe import run_leakage_probe_from_path
 from faultwitness_dev.g03_readiness import run_retest_baselines_v3
 from faultwitness_dev.infra import (
     audit_runtime_coexistence,
@@ -146,6 +147,16 @@ def parser() -> argparse.ArgumentParser:
             "first failure. Products are diagnostic_only and never gate evidence."
         ),
     )
+
+    leakage_probe = subparsers.add_parser(
+        "g03-leakage-probe",
+        help=(
+            "read-only diagnostic: measure whether metric-v3 trace_errors descriptions alone "
+            "name the fault family. Products are diagnostic_only and never gate evidence."
+        ),
+    )
+    leakage_probe.add_argument("--dataset", type=Path, required=True)
+    leakage_probe.add_argument("--output", type=Path, required=True)
 
     bootstrap = subparsers.add_parser("bootstrap-secrets")
     bootstrap.add_argument("--handoff", type=Path, default=Path("envs.txt"))
@@ -381,6 +392,18 @@ def main() -> int:
                 f"recorded metric v3 baseline readiness in {output_dir} "
                 f"with execution {summary['execution_status']} and "
                 f"readiness {summary['readiness_status']}"
+            )
+        elif args.command == "g03-leakage-probe":
+            dataset = args.dataset if args.dataset.is_absolute() else root / args.dataset
+            output = args.output if args.output.is_absolute() else root / args.output
+            report = run_leakage_probe_from_path(dataset, output)
+            verdict = report["verdict"]
+            message = (
+                f"recorded diagnostic_only leakage probe in {output} over "
+                f"{report['n_cases']} cases from {report['source_run']}; verdict "
+                f"{verdict['code']} (A={verdict['descriptions_accuracy']:.4f} "
+                f"B={verdict['root_signal_accuracy']:.4f} "
+                f"C={verdict['majority_class_accuracy']:.4f})"
             )
         elif args.command == "bootstrap-secrets":
             paths = (

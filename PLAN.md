@@ -7,6 +7,7 @@
 - U7.2: 原样补交 G02-046 的 6 个机器产物，提交 `d7979be`。
 - U7.3: 记录数值来源不一致（见下方已知坑）。
 - U7.4: `verify-fast` 新增 latest-release 追踪 artifact 检查，提交 `0e29742`。
+- U8: metric-v3 `descriptions` 维度泄漏探针（诊断模式，零模型成本），结论见下方已知坑。
 - U2: 将文档/治理检查移至手动 `verify-docs`，CI 只保留快速检查，提交 `dc5b9ee`。
 - U2.5: 语义测试迁出 `tests/governance/`，删除治理形态断言，提交 `78a47d6`。
 - U3: 清理 6 个旧 G02 candidate worktree；目标旧分支在本地和远端均已不存在。
@@ -27,6 +28,10 @@ G02-046 入库的机器产物记录的是 deterministic core_e2e=0.5、live 0.00
 来自 metric-v3 的 r1–r9 运行,这批运行没有对应的 EVAL 目录,原始产物未入版本控制。
 G03 重跑前必须先确认这四个数字的原始产物是否仍在 pci-2 上;
 在还原之前,任何对外表述都应标注它们的来源运行与仪器版本。
+2026-09-10 补：四个数字的原始产物在本地 `.audit/g03-readiness/g03-4622470-r9/aggregate.json`
+（`baselines.*.metrics.core_e2e.estimate` 与 `findings.naive_react_single`），四值逐一吻合；
+`.audit/` 仍 gitignored，故仍未入版本控制。同目录 r8 的 live 三臂为 0.1458/0.1250/0.1667，
+只有 r9 是这四个数字的来源，引用时须写明 r9。
 
 - 2026-09-09：宿主默认 Codex runtime 的 pnpm/Node 版本为 11.19.0/v24.19.0，导致审计测试拒绝运行；用项目声明的 Node 22.14.0、pnpm 11.9.0 重跑后通过。
 - 历史缺 artifact 的 EVAL 目录仍有 G00-001–006、G01-001–009、G02-021、G02-022；U7.4 只报告，不追溯补造。
@@ -45,3 +50,21 @@ G03 重跑前必须先确认这四个数字的原始产物是否仍在 pci-2 上
   解冻条件满足后需一次性改完这五处（代码与测试同一 commit）。
   解冻条件：泄漏探针通过 + 分化度检查通过 + 第一次 naive_react baseline 入库。
   注：诊断模式（diagnostic_only: true）不走 resolve_quality_floor，不受此阻塞。
+- 2026-09-10 泄漏探针（`diagnostic_only`，零模型调用，源 r9，产物
+  `docs/engineering/diagnostics/g03-metric-v3-descriptions-leakage-probe.json`）：
+  **`trace_errors.descriptions` 存在局部泄漏，解冻条件的第一项未通过。**
+  只读 descriptions 文本的 leave-one-out 分类器 A 在
+  productCatalogFailure / paymentFailure / paymentUnreachable 三族 **16/16 = 1.0000**，
+  另外三族 0/16 = 0.0000；总 0.5000（16 次弃答）、macro-F1 0.5000，
+  多数类基线 C 为 0.2500。关键词表里直接出现 `catalog` `product` `feature` `flag` `fail`
+  `enabled`（8 例）、`payment` `invalid` `token`（4 例）、`resolver` `unavailable`
+  `addresses`（4 例）——明文点名故障族，无需推理。
+  即数据集半数（16/32）是阅读理解而非取证推理，harness 在其上不可能显出价值。
+  A(0.5000) 低于 B(0.5938) **不能**读作"无捷径"：B 用裸 quantum 而非冻结的
+  leave-one-case-out healthy p99，`adHighCpu` 的 quantum 1e-6 低于环境漂移，
+  在 25/32 个 case 上都满足（21 次误合格）从而污染 B 的排序；
+  B 的阈值本身其实是 32/32 全中（`qualification_detail.true_label_qualification_rate = 1.0`）。
+  判据只对 C 与三族/三族分裂成立，不对 B 成立。
+  本轮只测量不修复：未改数据集、未改 `descriptions`、未动任何阈值。
+  下一步是工具层脱敏（`_public_window` 的 `descriptions` 直通）后重采，
+  现有四条 baseline 在脱敏后全部作废。
