@@ -7,7 +7,6 @@ import pytest
 
 from faultwitness_dev.audit import (
     Component,
-    audit_repository,
     build_sbom,
     scan_publication_boundary,
     validate_action_pins,
@@ -16,8 +15,6 @@ from faultwitness_dev.audit import (
     validate_source_ownership,
 )
 from faultwitness_dev.errors import GovernanceError
-
-ROOT = Path(__file__).resolve().parents[2]
 
 
 def test_private_key_is_rejected(tmp_path: Path) -> None:
@@ -97,14 +94,6 @@ def test_sbom_validation_rejects_missing_license() -> None:
     mutated["components"][0]["licenses"] = []
     with pytest.raises(GovernanceError, match="version and license"):
         validate_sbom(mutated)
-
-
-def test_repository_audit_generates_valid_cyclonedx(tmp_path: Path) -> None:
-    summary = audit_repository(ROOT, tmp_path)
-    assert summary["status"] == "pass"
-    assert summary["component_count"] > 0
-    assert (tmp_path / "sbom.cdx.json").is_file()
-    assert (tmp_path / "audit-summary.json").is_file()
 
 
 def test_source_ownership_accepts_registered_roots_and_rejects_unknown_package(

@@ -34,3 +34,7 @@ G03 重跑前必须先确认这四个数字的原始产物是否仍在 pci-2 上
   但它不在任何自动加载通道里：AGENTS.md（60 行）只规定教训该写到哪、本身不承载教训；
   .claude/rules/ 三个文件都有 paths 门控。当前该课仅靠本地 CLAUDE.md 进入上下文。
   **在建立替代通道之前，不要从本地 CLAUDE.md 删除该节。**
+- SBOM/CycloneDX 生成（run_repository_audit，依赖 pnpm）已退出 CI 与 pytest，
+  仅存在于 verify-docs 的外部工具组，缺 pnpm 时静默跳过。
+  G10 生产前审计需要它时，必须显式在有 pnpm 的环境跑一次并把产物入库，
+  不能假设 CI 已经覆盖。
