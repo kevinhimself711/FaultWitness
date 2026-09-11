@@ -98,11 +98,35 @@ def verify_fast(root: Path) -> None:
     run(["git", "diff", "--check"], root)
 
 
+PNPM_CHECKS = ("markdownlint-cli2", "repository-audit")
+
+
 def verify_docs(root: Path) -> None:
+    """Run documentation checks, degrading to the pure-Python subset without pnpm.
+
+    The pure-Python group always runs and any failure in it fails the command. The
+    pnpm group is skipped with a printed notice when pnpm is unavailable, so a missing
+    optional toolchain cannot make every documentation check unrunnable.
+    """
     files = repository_files(root)
-    check_markdown_basics(files, root)
-    check_local_links(files, root)
-    validate_repository_schemas(root)
-    validate_current_state(root)
-    run_repository_audit(root)
+    for name, check in (
+        ("markdown-basics", lambda: check_markdown_basics(files, root)),
+        ("local-links", lambda: check_local_links(files, root)),
+        ("repository-schemas", lambda: validate_repository_schemas(root)),
+        ("current-state", lambda: validate_current_state(root)),
+    ):
+        check()
+        print(f"  ran {name}")
+
+    if which("pnpm") is None:
+        print(
+            "  skipped "
+            + ", ".join(PNPM_CHECKS)
+            + ": pnpm not on PATH (optional toolchain; does not affect exit code)"
+        )
+        return
+
     run(["pnpm", "exec", "markdownlint-cli2"], root)
+    print("  ran markdownlint-cli2")
+    run_repository_audit(root)
+    print("  ran repository-audit")
