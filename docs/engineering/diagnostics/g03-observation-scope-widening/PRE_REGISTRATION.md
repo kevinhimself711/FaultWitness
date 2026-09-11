@@ -188,3 +188,23 @@ traces 累加）。Prometheus 不是这样——缺 series 记 `null` 并归类�
 
 预登记里判据 E 的原话是"是否出现非零"。**实测按 `excess_over_healthy > 0` 判定，比原话严格**，
 差别在此明写，事后不重新解释。
+
+### 再补一条（2026-09-11，r3 采集期间实测）：healthy 期的零是"该窗没流量"，不是"服务未知"
+
+跑 r3 时看到 r2 那个 case 的 healthy 窗里只有 `frontend` 有 trace（3→6），
+六个原服务全为 `0`，一度像是"新服务可观测、老服务不可观测"。
+**回查加宽之前的 r9 数据集否证了这条读法**：r9 的 healthy 窗（index 0–4）
+`ad`/`checkout`/`email`/`fraud-detection`/`payment`/`product-catalog` **同样全为 0**，
+trace 只在 fault 窗（index 5–6）出现（`checkout: 5`、`payment: 4`…）。
+
+原因在采集端而非观测面：workload 只在 fault 轮询时被驱动
+（`restimulate_each_poll`），healthy 窗的 Jaeger 回看窗口里本来就没有请求。
+**所以 healthy 期的零对判据 E 无信息量，唯一有信息量的是 fault 期的零。**
+
+探针的 `observed_under_fault` 恰好只读 fault 窗的 `trace_count` 最大值
+（`g03_cascade.py:181-182`），healthy 期的零不会污染它。这一条是核实而非改动：
+未改任何代码。
+
+`frontend` 在 healthy 期有 trace，是因为它承接 load generator 的常驻首页流量；
+这也说明加宽引入的三个服务里至少 `frontend` 在 Jaeger 里确实存在，
+`cascade_unobservable` 若发生不会是"服务名根本没注册"这种平凡原因。

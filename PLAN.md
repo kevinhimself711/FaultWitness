@@ -189,3 +189,36 @@ G03 重跑前必须先确认这四个数字的原始产物是否仍在 pci-2 上
   四组合解释表连同**"E 无 + D1 高 → 换注入面，不是项目终结"**写进产物的 `interpretation` 字段，
   不只写在预登记里，因为后来的读者打开的是产物。**候选族由 trace 服务集推导而非手写**，
   避免留下与观测面不一致的过期清单。
+
+### U13 加宽观测面实测（r4，2026-09-11）：判据 E 为真，但 D1 涨到 1.0000
+
+`.audit/g03-readiness/g03-wide-r4`，32/32 pass，`dataset_digest 728a8ae405ee`，零模型。
+产物在 `docs/engineering/diagnostics/g03-observation-scope-widening/`
+（`cascade-wide.json` / `separability-wide.json` / `leakage-wide.json` / `RESULTS.md`）。
+
+- **判据 E `cascade_present`**：16/16 候选 case 可答，15 例观测到级联，三族各 1 种传播模式，
+  载体全部是 `frontend`。**预期 E 部分被否证**：`recommendation` 全程零 trace（没测到），
+  `cart` 有 trace 但零 error（测到没传播）。
+- **判据 D 三条全部成立且都在最坏值**：D1 0.9062 → **1.0000**，D4 自识别 5/6 → **6/6**
+  （全部 precision 1.000、外族误报 0），单信号偏移比例 0.75 → **1.0000**（32/32 恰好一条信号）。
+  per-family spread 0.25 → 0.0。
+- **加宽让任务更简单，方向与预登记相反。** 原因实测：加宽没打破独占通道，而是给三个
+  `trace_errors` 族**各加了第二条私有通道**，同时挤掉了 `adHighCpu` 原有的 8 例假阳性。
+- **`descriptions` 泄漏**：非空 `incident_tokens` 16/32 → 14/32，classifier A 0.5000 → 0.4375。
+  下降来自新服务稀释判别 token，不是文本变得不可用；三族仍显著泄漏，脱敏仍必要。
+- **脱敏对 D1 的影响为零（结构性）**：D1–D4 只读数值通道，`D1 = 1.0000` 本身就是脱敏后的数字。
+- token preflight `blocked`，`headroom_at_max: -718`（`max 66254` / 允许 58982），
+  比预登记估的 +2282 B 更差。只阻塞 live，不影响零模型结论。
+
+**3b 取消。** 计划的条件是"E 为真才做 3b"，E 为真，但本轮证明加宽观测面只会增加私有通道，
+同一机制再走一步没有理由期待相反结果。出口按产物 `interpretation` 的登记文本：
+**多故障同时注入**（直接攻击 `single_offset_fraction: 1.0`），必要时再换注入机制。
+不是项目终结。
+
+**已知坑（本轮暴露，未修）**：
+1. 杀死 live run 会把 flagd 留在故障变体，下一轮第一个 case 会以
+   `scenario mutation changed more than one flag` 失败——而实际是改了**零**个 flag。
+   `_mutated_document`（`g02_lab.py:2485`）应把 `changed == []` 与 `len(changed) > 1` 分开报。
+2. 注入失败时 cleanup 的 recovery 分支读 `fault_samples[-1]` 抛裸 `IndexError`，应给命名错误。
+3. 本机 commit 见底会让 `sops` 无法 spawn（`WinError 1455`），杀掉整轮。
+   跑 2 小时的 live 窗口前先关掉高 commit 占用的桌面进程。
