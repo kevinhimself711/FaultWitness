@@ -1,0 +1,88 @@
+{
+  "artifact_digest": "711507a60251a33fec2284bd99ec2903752d738b42f1b26715d0cd6a605dc616",
+  "cache_key": "6b741509c0614c26720b4893fd87ae4d9a0d9f4adf2c444d90c1418cf8d964ae",
+  "execution_attempt": 1,
+  "history": [],
+  "payload": {
+    "baseline": "no_rag",
+    "case_id": "SEED-G02-0019",
+    "cost_cny": 0.007483999999999999,
+    "input_tokens": 2894,
+    "output_tokens": 212,
+    "repetition": 1,
+    "result": {
+      "baseline": "no_rag",
+      "case_id": "SEED-G02-0019",
+      "claims": [
+        {
+          "claim_type": "root_cause",
+          "evidence_refs": [
+            "ev3-730a350a6ca0f442a52e58ec",
+            "ev3-78a1509c429e49133cb7d892"
+          ],
+          "value": "emailMemoryLeak"
+        }
+      ],
+      "evidence": [
+        "ev3-730a350a6ca0f442a52e58ec",
+        "ev3-78a1509c429e49133cb7d892"
+      ],
+      "fallback_count": 0,
+      "input_tokens": 2894,
+      "latency_ms": 7103.094,
+      "metric_version": 3,
+      "model_id": "qwen3.7-plus-2026-05-26",
+      "output_tokens": 212,
+      "root_cause": "emailMemoryLeak",
+      "root_cause_candidates": [
+        "emailMemoryLeak"
+      ],
+      "schema_version": "2.0.0",
+      "status": "ok"
+    },
+    "trial_telemetry": {
+      "draft_digests": [
+        "72a341f52530a0071e715c6c43d3de95e610d7641572cc73cb9543752eefa639"
+      ],
+      "drafts": [
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-730a350a6ca0f442a52e58ec",
+                "ev3-78a1509c429e49133cb7d892"
+              ],
+              "value": "emailMemoryLeak"
+            }
+          ],
+          "evidence": [
+            "ev3-730a350a6ca0f442a52e58ec",
+            "ev3-78a1509c429e49133cb7d892"
+          ],
+          "root_cause": "emailMemoryLeak",
+          "root_cause_candidates": [
+            "emailMemoryLeak"
+          ]
+        }
+      ],
+      "terminal_reason": "max_turns",
+      "turn_count": 1,
+      "turn_usage": [
+        {
+          "finish_reason": "stop",
+          "input_tokens": 2894,
+          "latency_ms": 6226.875,
+          "output_tokens": 212,
+          "turn": 1
+        }
+      ]
+    }
+  },
+  "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+  "record_version": 2,
+  "recorded_at": "2026-09-05T11:58:25.337340+00:00",
+  "runtime_checkpoints": {},
+  "status": "pass",
+  "trial_id": "g03-readiness-v3-78bbc8d668f274a2e7046805f8364b2ab4b4792746201a7b75842094274c43f6"
+}

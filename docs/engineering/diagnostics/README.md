@@ -18,6 +18,20 @@ They live under `docs/` rather than `.audit/` because `.audit/**` is gitignored,
 | Artifact | Question | Verdict |
 | --- | --- | --- |
 | `g03-metric-v3-descriptions-leakage-probe.json` | Can `trace_errors.descriptions` text alone name the metric-v3 fault family, without reading `error_count` / `connection_error_count`? | `localized_leakage_trace_errors_families` — yes, on 16/16 cases of the three families that share the `trace_errors` kind |
+| `g03-r8-r9-live-divergence/` | r8 and r9 share a byte-identical dataset, yet r9's live arms score 5–6× r8's. Which round is broken? | r8. Its root-cause accuracy is *higher* (0.9583 vs 0.9479); the whole gap is evidence-citation completeness (0.1458 vs 0.8924), caused by a prompt that never disclosed the completeness rule its scoring enforced |
+
+### Reading the r8/r9 divergence record
+
+- The verdict rests on a decomposition of `core_e2e` into root-cause correctness and
+  evidence-set completeness, recomputed independently from the 288 per-trial journals of each
+  round; all six arm scores reproduce `aggregate.json` exactly.
+- One inference is not a direct measurement: trial journals persist no prompt text and no prompt
+  digest, so "the +64 turn-1 tokens are that completeness instruction" is triangulated from token
+  counts, `relevant_source_digest`, and the behavioural consequence. `README.md` marks this.
+- Both rounds ran on the same host, SUT, and model — this is *not* an ADR-0016/0017
+  incomparability case.
+- The runner hostname is redacted to `<redacted-runner-hostname-A>` in 4 files, using the same
+  placeholder in both rounds so that "same hostname" remains checkable. Nothing else is redacted.
 
 ### Reading the leakage probe
 

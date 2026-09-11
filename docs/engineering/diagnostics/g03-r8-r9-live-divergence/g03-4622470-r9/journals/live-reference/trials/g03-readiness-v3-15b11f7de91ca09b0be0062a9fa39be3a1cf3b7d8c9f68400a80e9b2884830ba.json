@@ -1,0 +1,116 @@
+{
+  "artifact_digest": "72af4d7354b4479345af92774b78d37e3c3a5558bdf0d97bee2ffbcfa63b12b0",
+  "cache_key": "6fcd505cd06ef29febe897714e7ff4c328144b21452d0edb7573d8c14a826898",
+  "execution_attempt": 1,
+  "history": [],
+  "payload": {
+    "baseline": "naive_react",
+    "case_id": "SEED-G02-0027",
+    "cost_cny": 0.015229999999999999,
+    "input_tokens": 6271,
+    "output_tokens": 336,
+    "repetition": 3,
+    "result": {
+      "baseline": "naive_react",
+      "case_id": "SEED-G02-0027",
+      "claims": [
+        {
+          "claim_type": "root_cause",
+          "evidence_refs": [
+            "ev3-f89c32fb1aed74fe24aa7b80",
+            "ev3-e61d235988c8426e72975ed8"
+          ],
+          "value": "paymentUnreachable"
+        }
+      ],
+      "evidence": [
+        "ev3-f89c32fb1aed74fe24aa7b80",
+        "ev3-e61d235988c8426e72975ed8"
+      ],
+      "fallback_count": 0,
+      "input_tokens": 6271,
+      "latency_ms": 15313.935,
+      "metric_version": 3,
+      "model_id": "qwen3.7-plus-2026-05-26",
+      "output_tokens": 336,
+      "root_cause": "paymentUnreachable",
+      "root_cause_candidates": [
+        "paymentUnreachable"
+      ],
+      "schema_version": "2.0.0",
+      "status": "ok"
+    },
+    "trial_telemetry": {
+      "draft_digests": [
+        "2394a9963eb10f41b6719a8641ad086dbbb0f62161e1acb63c964c3f999df8cf",
+        "2394a9963eb10f41b6719a8641ad086dbbb0f62161e1acb63c964c3f999df8cf"
+      ],
+      "drafts": [
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-f89c32fb1aed74fe24aa7b80",
+                "ev3-e61d235988c8426e72975ed8"
+              ],
+              "value": "paymentUnreachable"
+            }
+          ],
+          "evidence": [
+            "ev3-f89c32fb1aed74fe24aa7b80",
+            "ev3-e61d235988c8426e72975ed8"
+          ],
+          "root_cause": "paymentUnreachable",
+          "root_cause_candidates": [
+            "paymentUnreachable"
+          ]
+        },
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-f89c32fb1aed74fe24aa7b80",
+                "ev3-e61d235988c8426e72975ed8"
+              ],
+              "value": "paymentUnreachable"
+            }
+          ],
+          "evidence": [
+            "ev3-f89c32fb1aed74fe24aa7b80",
+            "ev3-e61d235988c8426e72975ed8"
+          ],
+          "root_cause": "paymentUnreachable",
+          "root_cause_candidates": [
+            "paymentUnreachable"
+          ]
+        }
+      ],
+      "terminal_reason": "stable_diagnosis",
+      "turn_count": 2,
+      "turn_usage": [
+        {
+          "finish_reason": "stop",
+          "input_tokens": 3053,
+          "latency_ms": 9685.918,
+          "output_tokens": 199,
+          "turn": 1
+        },
+        {
+          "finish_reason": "stop",
+          "input_tokens": 3218,
+          "latency_ms": 4765.993,
+          "output_tokens": 137,
+          "turn": 2
+        }
+      ]
+    }
+  },
+  "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+  "record_version": 2,
+  "recorded_at": "2026-09-05T11:36:34.161336+00:00",
+  "runtime_checkpoints": {},
+  "status": "pass",
+  "trial_id": "g03-readiness-v3-15b11f7de91ca09b0be0062a9fa39be3a1cf3b7d8c9f68400a80e9b2884830ba"
+}

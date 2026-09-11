@@ -1,0 +1,116 @@
+{
+  "artifact_digest": "d96e601b0f0cdf3350309554545c516201c22baaa54526a891178fd98b3b3955",
+  "cache_key": "b53c31f3b86310c0265d5b5887411b1ff3700b648862befb08eab5389e816dfc",
+  "execution_attempt": 1,
+  "history": [],
+  "payload": {
+    "baseline": "naive_react",
+    "case_id": "SEED-G02-0005",
+    "cost_cny": 0.015300000000000001,
+    "input_tokens": 6282,
+    "output_tokens": 342,
+    "repetition": 3,
+    "result": {
+      "baseline": "naive_react",
+      "case_id": "SEED-G02-0005",
+      "claims": [
+        {
+          "claim_type": "root_cause",
+          "evidence_refs": [
+            "ev3-77c0c81143982d1223b36fe8",
+            "ev3-3dfd996fc42d5100c16ff86f"
+          ],
+          "value": "paymentFailure"
+        }
+      ],
+      "evidence": [
+        "ev3-77c0c81143982d1223b36fe8",
+        "ev3-3dfd996fc42d5100c16ff86f"
+      ],
+      "fallback_count": 0,
+      "input_tokens": 6282,
+      "latency_ms": 11619.951,
+      "metric_version": 3,
+      "model_id": "qwen3.7-plus-2026-05-26",
+      "output_tokens": 342,
+      "root_cause": "paymentFailure",
+      "root_cause_candidates": [
+        "paymentFailure"
+      ],
+      "schema_version": "2.0.0",
+      "status": "ok"
+    },
+    "trial_telemetry": {
+      "draft_digests": [
+        "ff891780f2ff1080573423bb65b146e93e777c373e1d909a00cb7866d1b87001",
+        "ff891780f2ff1080573423bb65b146e93e777c373e1d909a00cb7866d1b87001"
+      ],
+      "drafts": [
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-77c0c81143982d1223b36fe8",
+                "ev3-3dfd996fc42d5100c16ff86f"
+              ],
+              "value": "paymentFailure"
+            }
+          ],
+          "evidence": [
+            "ev3-77c0c81143982d1223b36fe8",
+            "ev3-3dfd996fc42d5100c16ff86f"
+          ],
+          "root_cause": "paymentFailure",
+          "root_cause_candidates": [
+            "paymentFailure"
+          ]
+        },
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-77c0c81143982d1223b36fe8",
+                "ev3-3dfd996fc42d5100c16ff86f"
+              ],
+              "value": "paymentFailure"
+            }
+          ],
+          "evidence": [
+            "ev3-77c0c81143982d1223b36fe8",
+            "ev3-3dfd996fc42d5100c16ff86f"
+          ],
+          "root_cause": "paymentFailure",
+          "root_cause_candidates": [
+            "paymentFailure"
+          ]
+        }
+      ],
+      "terminal_reason": "stable_diagnosis",
+      "turn_count": 2,
+      "turn_usage": [
+        {
+          "finish_reason": "stop",
+          "input_tokens": 3057,
+          "latency_ms": 7046.987,
+          "output_tokens": 202,
+          "turn": 1
+        },
+        {
+          "finish_reason": "stop",
+          "input_tokens": 3225,
+          "latency_ms": 3690.519,
+          "output_tokens": 140,
+          "turn": 2
+        }
+      ]
+    }
+  },
+  "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+  "record_version": 2,
+  "recorded_at": "2026-09-05T11:23:52.046027+00:00",
+  "runtime_checkpoints": {},
+  "status": "pass",
+  "trial_id": "g03-readiness-v3-bfd566edb0ef639abe90f81fd8681f15646edf684391f82733f98a95c6810bad"
+}

@@ -14,6 +14,7 @@
 - U4: 原样归档 G00–G02 流程资产到 `docs/_archive/`，修复活动文档断链，提交序列 `8bdd0c9`–`5c7ba53`。
 - U5: 重写根 `AGENTS.md` 并建立 scoped `.claude/rules/`，提交 `20a74b1`、`7e4f1a3`。
 - U6: 将文档政策逐字写入 `AGENTS.md` 第 3 节，提交 `9041946`。
+- U9: r8/r9 live 差异只读取证 + 两轮产物入库（诊断模式，零模型成本），结论见下方已知坑。
 
 ## 未完成项
 
@@ -28,10 +29,12 @@ G02-046 入库的机器产物记录的是 deterministic core_e2e=0.5、live 0.00
 来自 metric-v3 的 r1–r9 运行,这批运行没有对应的 EVAL 目录,原始产物未入版本控制。
 G03 重跑前必须先确认这四个数字的原始产物是否仍在 pci-2 上;
 在还原之前,任何对外表述都应标注它们的来源运行与仪器版本。
-2026-09-10 补：四个数字的原始产物在本地 `.audit/g03-readiness/g03-4622470-r9/aggregate.json`
-（`baselines.*.metrics.core_e2e.estimate` 与 `findings.naive_react_single`），四值逐一吻合；
-`.audit/` 仍 gitignored，故仍未入版本控制。同目录 r8 的 live 三臂为 0.1458/0.1250/0.1667，
-只有 r9 是这四个数字的来源，引用时须写明 r9。
+2026-09-10 补：四个数字的原始产物在 `.audit/g03-readiness/g03-4622470-r9/aggregate.json`
+（`baselines.*.metrics.core_e2e.estimate` 与 `findings.naive_react_single`），四值逐一吻合。
+2026-09-11 更新：**已入版本控制**——r8 与 r9 两轮共 656 个文件原样入库到
+`docs/engineering/diagnostics/g03-r8-r9-live-divergence/`（仅 `environment.hostname` 脱敏 4 处，
+`-r3` 重复文件未入库），`.audit/` 原目录未改动。
+同目录 r8 的 live 三臂为 0.1458/0.1250/0.1667，只有 r9 是这四个数字的来源，引用时须写明 r9。
 
 - 2026-09-09：宿主默认 Codex runtime 的 pnpm/Node 版本为 11.19.0/v24.19.0，导致审计测试拒绝运行；用项目声明的 Node 22.14.0、pnpm 11.9.0 重跑后通过。
 - 历史缺 artifact 的 EVAL 目录仍有 G00-001–006、G01-001–009、G02-021、G02-022；U7.4 只报告，不追溯补造。
@@ -68,3 +71,29 @@ G03 重跑前必须先确认这四个数字的原始产物是否仍在 pci-2 上
   本轮只测量不修复：未改数据集、未改 `descriptions`、未动任何阈值。
   下一步是工具层脱敏（`_public_window` 的 `descriptions` 直通）后重采，
   现有四条 baseline 在脱敏后全部作废。
+- 2026-09-11 r8/r9 live 差异排查（只读取证，`diagnostic_only`，零模型调用，记录见
+  `docs/engineering/diagnostics/g03-r8-r9-live-divergence/README.md`）：
+  **r8 是坏的那一轮，且 r8 就是 postmortem 里的假通过。**
+  两轮同宿主、同 SUT、同模型（`qwen3.7-plus-2026-05-26`）、`scenarios.json` 逐字节相同、
+  `config_digest`/`metric_definition_digest` 相同（评分规则未变），330 个文件名集合完全一致，
+  sha256 35 同 / 295 异（异的全是输出类）。**不构成 ADR-0016/0017 的宿主不可比情形。**
+  第一分歧点在 **prompt 构造、模型调用之前**：全部 288 个 trial 的 turn-1 input_tokens
+  恰好相差 +64（min=max=mean=64，三臂各 96），而 `cache_key` 与文件名两轮完全一致，
+  `relevant_source_digest` 不同而 `producer_sha` 相同且两轮均 `dirty_worktree: True`。
+  机制：把 `core_e2e` 拆开后，**r8 的根因准确率 276/288=0.9583 反而高于 r9 的 273/288=0.9479**，
+  差异 100% 在证据引用完整性 42/288=0.1458 vs 257/288=0.8924；r8 有 234 个 trial 说对根因
+  但只引 1 个 ID（evidence 数分布 r8 `{1:241, 2:47}` / r9 `{1:3, 2:272, 3:11, 4:2}`），
+  `missing_required_evidence` r8 三臂 77/80/77、r9 降到 0/3/0。
+  即 r8 的 prompt 缺少"evidence 必须完整、不完整即算失败"那段指令，而评分照此扣分——
+  **披露对称性失效**，失效方式是让门通过：r8 输出 `readiness_status: ready`、
+  `deterministic_live_significant: true`、`best_baseline: deterministic 0.8125`，
+  那个"显著"正是被它本应检出的缺陷制造的。deterministic 两轮均 0.8125（规则臂不过模型），
+  印证影响只在三条模型臂。
+  预登记的预期是"r9 更可能坏（有 10 个重跑 trial）"，**已被否证**：那 10 个的 `history[0]`
+  全部是 `infra_failed` / `transport:ConnectError` 且 cache_key 与当前一致，是正常传输重试，
+  不是改判路径。
+  **推断环节（唯一）**：trial journal 不存 prompt 原文也不存 prompt digest，
+  "+64 token 就是那段指令"由 token 计数 + 源码 digest + 行为后果三方推出，非逐字比对。
+  对四个 baseline 的影响：r9 的数字不是 r8 那种仪器故障读数，但仍受 `descriptions` 泄漏
+  （16/32 case）制约，引用限定条件见上述 README 的 Q3 一节。
+  r8 的 0.1458/0.1250/0.1667 **不可**当作同一数据集的"另一次测量"参与对比或取平均。

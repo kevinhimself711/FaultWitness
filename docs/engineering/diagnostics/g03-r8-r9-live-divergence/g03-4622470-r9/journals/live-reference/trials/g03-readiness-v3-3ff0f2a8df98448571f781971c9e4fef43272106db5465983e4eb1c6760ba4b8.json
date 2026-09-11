@@ -1,0 +1,116 @@
+{
+  "artifact_digest": "5ad1ba332c662074cf1def838acc80691c2ecd139cf2292a2bac0f22972e3420",
+  "cache_key": "b0a3bf1dbbd2e024a28186cfcc0203ec133aeff8d9419c7814599f2e571c1d84",
+  "execution_attempt": 1,
+  "history": [],
+  "payload": {
+    "baseline": "naive_react",
+    "case_id": "SEED-G02-0021",
+    "cost_cny": 0.014728,
+    "input_tokens": 5964,
+    "output_tokens": 350,
+    "repetition": 2,
+    "result": {
+      "baseline": "naive_react",
+      "case_id": "SEED-G02-0021",
+      "claims": [
+        {
+          "claim_type": "root_cause",
+          "evidence_refs": [
+            "ev3-1fcf74626ca3d53b64d3d4bb",
+            "ev3-490a9cabf26d6c43c8b471ae"
+          ],
+          "value": "emailMemoryLeak"
+        }
+      ],
+      "evidence": [
+        "ev3-1fcf74626ca3d53b64d3d4bb",
+        "ev3-490a9cabf26d6c43c8b471ae"
+      ],
+      "fallback_count": 0,
+      "input_tokens": 5964,
+      "latency_ms": 11806.853,
+      "metric_version": 3,
+      "model_id": "qwen3.7-plus-2026-05-26",
+      "output_tokens": 350,
+      "root_cause": "emailMemoryLeak",
+      "root_cause_candidates": [
+        "emailMemoryLeak"
+      ],
+      "schema_version": "2.0.0",
+      "status": "ok"
+    },
+    "trial_telemetry": {
+      "draft_digests": [
+        "c7b5aa9c752581a8c106b135d8f9d89380837e8ea5e2a5e7c093ca80a8fab7a7",
+        "c7b5aa9c752581a8c106b135d8f9d89380837e8ea5e2a5e7c093ca80a8fab7a7"
+      ],
+      "drafts": [
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-1fcf74626ca3d53b64d3d4bb",
+                "ev3-490a9cabf26d6c43c8b471ae"
+              ],
+              "value": "emailMemoryLeak"
+            }
+          ],
+          "evidence": [
+            "ev3-1fcf74626ca3d53b64d3d4bb",
+            "ev3-490a9cabf26d6c43c8b471ae"
+          ],
+          "root_cause": "emailMemoryLeak",
+          "root_cause_candidates": [
+            "emailMemoryLeak"
+          ]
+        },
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-1fcf74626ca3d53b64d3d4bb",
+                "ev3-490a9cabf26d6c43c8b471ae"
+              ],
+              "value": "emailMemoryLeak"
+            }
+          ],
+          "evidence": [
+            "ev3-1fcf74626ca3d53b64d3d4bb",
+            "ev3-490a9cabf26d6c43c8b471ae"
+          ],
+          "root_cause": "emailMemoryLeak",
+          "root_cause_candidates": [
+            "emailMemoryLeak"
+          ]
+        }
+      ],
+      "terminal_reason": "stable_diagnosis",
+      "turn_count": 2,
+      "turn_usage": [
+        {
+          "finish_reason": "stop",
+          "input_tokens": 2896,
+          "latency_ms": 7157.436,
+          "output_tokens": 206,
+          "turn": 1
+        },
+        {
+          "finish_reason": "stop",
+          "input_tokens": 3068,
+          "latency_ms": 3776.87,
+          "output_tokens": 144,
+          "turn": 2
+        }
+      ]
+    }
+  },
+  "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+  "record_version": 2,
+  "recorded_at": "2026-09-05T11:32:47.066443+00:00",
+  "runtime_checkpoints": {},
+  "status": "pass",
+  "trial_id": "g03-readiness-v3-3ff0f2a8df98448571f781971c9e4fef43272106db5465983e4eb1c6760ba4b8"
+}

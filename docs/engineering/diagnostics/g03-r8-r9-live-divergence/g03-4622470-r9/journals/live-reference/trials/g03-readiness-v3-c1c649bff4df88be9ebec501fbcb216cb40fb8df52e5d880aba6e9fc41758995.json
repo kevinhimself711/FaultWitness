@@ -1,0 +1,131 @@
+{
+  "artifact_digest": "7abed89623b84a9ba516b0bb4b00e20707f554f5564022c2961c1d9478fef155",
+  "cache_key": "f17eb2bf060e09d317c53b13c891830e31ad5dc3624172fef99485edb3ffe79d",
+  "execution_attempt": 2,
+  "history": [
+    {
+      "artifact_digest": "04f95d7c510fceb5ecaca7e9cde7b0db46a798eca1ad1ae2e3a235c25fa4186d",
+      "cache_key": "f17eb2bf060e09d317c53b13c891830e31ad5dc3624172fef99485edb3ffe79d",
+      "execution_attempt": 1,
+      "payload": {
+        "reason": "transport:ConnectError"
+      },
+      "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+      "record_version": 2,
+      "recorded_at": "2026-09-05T11:38:19.774097+00:00",
+      "runtime_checkpoints": {},
+      "status": "infra_failed",
+      "trial_id": "g03-readiness-v3-c1c649bff4df88be9ebec501fbcb216cb40fb8df52e5d880aba6e9fc41758995"
+    }
+  ],
+  "payload": {
+    "baseline": "naive_react",
+    "case_id": "SEED-G02-0030",
+    "cost_cny": 0.014866,
+    "input_tokens": 6041,
+    "output_tokens": 348,
+    "repetition": 3,
+    "result": {
+      "baseline": "naive_react",
+      "case_id": "SEED-G02-0030",
+      "claims": [
+        {
+          "claim_type": "root_cause",
+          "evidence_refs": [
+            "ev3-b9fbc489191b97435a88e9eb",
+            "ev3-4726a6ff4461207591a6b1da"
+          ],
+          "value": "productCatalogFailure"
+        }
+      ],
+      "evidence": [
+        "ev3-b9fbc489191b97435a88e9eb",
+        "ev3-4726a6ff4461207591a6b1da"
+      ],
+      "fallback_count": 0,
+      "input_tokens": 6041,
+      "latency_ms": 12328.785,
+      "metric_version": 3,
+      "model_id": "qwen3.7-plus-2026-05-26",
+      "output_tokens": 348,
+      "root_cause": "productCatalogFailure",
+      "root_cause_candidates": [
+        "productCatalogFailure"
+      ],
+      "schema_version": "2.0.0",
+      "status": "ok"
+    },
+    "trial_telemetry": {
+      "draft_digests": [
+        "33772395edd8d60552e13417648f39ab307c145c29c88ac3195fac07c6b2c0eb",
+        "33772395edd8d60552e13417648f39ab307c145c29c88ac3195fac07c6b2c0eb"
+      ],
+      "drafts": [
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-b9fbc489191b97435a88e9eb",
+                "ev3-4726a6ff4461207591a6b1da"
+              ],
+              "value": "productCatalogFailure"
+            }
+          ],
+          "evidence": [
+            "ev3-b9fbc489191b97435a88e9eb",
+            "ev3-4726a6ff4461207591a6b1da"
+          ],
+          "root_cause": "productCatalogFailure",
+          "root_cause_candidates": [
+            "productCatalogFailure"
+          ]
+        },
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-b9fbc489191b97435a88e9eb",
+                "ev3-4726a6ff4461207591a6b1da"
+              ],
+              "value": "productCatalogFailure"
+            }
+          ],
+          "evidence": [
+            "ev3-b9fbc489191b97435a88e9eb",
+            "ev3-4726a6ff4461207591a6b1da"
+          ],
+          "root_cause": "productCatalogFailure",
+          "root_cause_candidates": [
+            "productCatalogFailure"
+          ]
+        }
+      ],
+      "terminal_reason": "stable_diagnosis",
+      "turn_count": 2,
+      "turn_usage": [
+        {
+          "finish_reason": "stop",
+          "input_tokens": 2935,
+          "latency_ms": 7344.122,
+          "output_tokens": 205,
+          "turn": 1
+        },
+        {
+          "finish_reason": "stop",
+          "input_tokens": 3106,
+          "latency_ms": 4490.453,
+          "output_tokens": 143,
+          "turn": 2
+        }
+      ]
+    }
+  },
+  "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+  "record_version": 4,
+  "recorded_at": "2026-09-08T12:33:50.017600+00:00",
+  "runtime_checkpoints": {},
+  "status": "pass",
+  "trial_id": "g03-readiness-v3-c1c649bff4df88be9ebec501fbcb216cb40fb8df52e5d880aba6e9fc41758995"
+}

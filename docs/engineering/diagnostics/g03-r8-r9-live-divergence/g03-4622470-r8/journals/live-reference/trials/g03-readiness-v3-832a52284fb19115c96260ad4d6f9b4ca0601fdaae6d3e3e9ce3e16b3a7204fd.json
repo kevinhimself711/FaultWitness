@@ -1,0 +1,84 @@
+{
+  "artifact_digest": "fbe956cbbdd11691d57539f7b688e6d04d264ad1fb0568554ac5808a4544c515",
+  "cache_key": "787153bb218a718101f04217285ca65c026c33fdda8c2072baf46ba1f7281509",
+  "execution_attempt": 1,
+  "history": [],
+  "payload": {
+    "baseline": "no_rag",
+    "case_id": "SEED-G02-0019",
+    "cost_cny": 0.0068920000000000006,
+    "input_tokens": 2830,
+    "output_tokens": 154,
+    "repetition": 3,
+    "result": {
+      "baseline": "no_rag",
+      "case_id": "SEED-G02-0019",
+      "claims": [
+        {
+          "claim_type": "root_cause",
+          "evidence_refs": [
+            "ev3-78a1509c429e49133cb7d892"
+          ],
+          "value": "emailMemoryLeak"
+        }
+      ],
+      "evidence": [
+        "ev3-78a1509c429e49133cb7d892"
+      ],
+      "fallback_count": 0,
+      "input_tokens": 2830,
+      "latency_ms": 3936.027,
+      "metric_version": 3,
+      "model_id": "qwen3.7-plus-2026-05-26",
+      "output_tokens": 154,
+      "root_cause": "emailMemoryLeak",
+      "root_cause_candidates": [
+        "emailMemoryLeak"
+      ],
+      "schema_version": "2.0.0",
+      "status": "ok"
+    },
+    "trial_telemetry": {
+      "draft_digests": [
+        "e4c4a5c3a8b4ec85a637e5cdc958fb39b63de4969fcc82e1d317e9c256213831"
+      ],
+      "drafts": [
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-78a1509c429e49133cb7d892"
+              ],
+              "value": "emailMemoryLeak"
+            }
+          ],
+          "evidence": [
+            "ev3-78a1509c429e49133cb7d892"
+          ],
+          "root_cause": "emailMemoryLeak",
+          "root_cause_candidates": [
+            "emailMemoryLeak"
+          ]
+        }
+      ],
+      "terminal_reason": "max_turns",
+      "turn_count": 1,
+      "turn_usage": [
+        {
+          "finish_reason": "stop",
+          "input_tokens": 2830,
+          "latency_ms": 3440.677,
+          "output_tokens": 154,
+          "turn": 1
+        }
+      ]
+    }
+  },
+  "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+  "record_version": 2,
+  "recorded_at": "2026-09-05T10:37:31.546238+00:00",
+  "runtime_checkpoints": {},
+  "status": "pass",
+  "trial_id": "g03-readiness-v3-832a52284fb19115c96260ad4d6f9b4ca0601fdaae6d3e3e9ce3e16b3a7204fd"
+}

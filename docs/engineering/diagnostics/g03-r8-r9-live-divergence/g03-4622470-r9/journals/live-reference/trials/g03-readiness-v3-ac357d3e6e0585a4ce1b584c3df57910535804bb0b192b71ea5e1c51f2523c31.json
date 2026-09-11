@@ -1,0 +1,122 @@
+{
+  "artifact_digest": "bc497bdc264bb1ac781b70ee7eb6c781ce2520d726abdfe5c8aaf2c85b663152",
+  "cache_key": "d5c02eabd3eeff7a60a6a66e3010440888d4eeb4f72fd00112909c4eb96e18f0",
+  "execution_attempt": 1,
+  "history": [],
+  "payload": {
+    "baseline": "naive_react",
+    "case_id": "SEED-G02-0028",
+    "cost_cny": 0.015666,
+    "input_tokens": 6033,
+    "output_tokens": 450,
+    "repetition": 3,
+    "result": {
+      "baseline": "naive_react",
+      "case_id": "SEED-G02-0028",
+      "claims": [
+        {
+          "claim_type": "root_cause",
+          "evidence_refs": [
+            "ev3-0b8ef1936199ce19f1123ab2",
+            "ev3-acbca79df7e3e57541d258ce",
+            "ev3-36f29bcb4c3c2cae8251ce30"
+          ],
+          "value": "kafkaQueueProblems"
+        }
+      ],
+      "evidence": [
+        "ev3-0b8ef1936199ce19f1123ab2",
+        "ev3-acbca79df7e3e57541d258ce",
+        "ev3-36f29bcb4c3c2cae8251ce30"
+      ],
+      "fallback_count": 0,
+      "input_tokens": 6033,
+      "latency_ms": 13602.719,
+      "metric_version": 3,
+      "model_id": "qwen3.7-plus-2026-05-26",
+      "output_tokens": 450,
+      "root_cause": "kafkaQueueProblems",
+      "root_cause_candidates": [
+        "kafkaQueueProblems"
+      ],
+      "schema_version": "2.0.0",
+      "status": "ok"
+    },
+    "trial_telemetry": {
+      "draft_digests": [
+        "15a672290809671b5857359d0c4649be39a280993bd7bd8b98d6856b8c8254fb",
+        "15a672290809671b5857359d0c4649be39a280993bd7bd8b98d6856b8c8254fb"
+      ],
+      "drafts": [
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-0b8ef1936199ce19f1123ab2",
+                "ev3-acbca79df7e3e57541d258ce",
+                "ev3-36f29bcb4c3c2cae8251ce30"
+              ],
+              "value": "kafkaQueueProblems"
+            }
+          ],
+          "evidence": [
+            "ev3-0b8ef1936199ce19f1123ab2",
+            "ev3-acbca79df7e3e57541d258ce",
+            "ev3-36f29bcb4c3c2cae8251ce30"
+          ],
+          "root_cause": "kafkaQueueProblems",
+          "root_cause_candidates": [
+            "kafkaQueueProblems"
+          ]
+        },
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-0b8ef1936199ce19f1123ab2",
+                "ev3-acbca79df7e3e57541d258ce",
+                "ev3-36f29bcb4c3c2cae8251ce30"
+              ],
+              "value": "kafkaQueueProblems"
+            }
+          ],
+          "evidence": [
+            "ev3-0b8ef1936199ce19f1123ab2",
+            "ev3-acbca79df7e3e57541d258ce",
+            "ev3-36f29bcb4c3c2cae8251ce30"
+          ],
+          "root_cause": "kafkaQueueProblems",
+          "root_cause_candidates": [
+            "kafkaQueueProblems"
+          ]
+        }
+      ],
+      "terminal_reason": "stable_diagnosis",
+      "turn_count": 2,
+      "turn_usage": [
+        {
+          "finish_reason": "stop",
+          "input_tokens": 2907,
+          "latency_ms": 7894.375,
+          "output_tokens": 259,
+          "turn": 1
+        },
+        {
+          "finish_reason": "stop",
+          "input_tokens": 3126,
+          "latency_ms": 4796.133,
+          "output_tokens": 191,
+          "turn": 2
+        }
+      ]
+    }
+  },
+  "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+  "record_version": 2,
+  "recorded_at": "2026-09-05T11:37:14.271441+00:00",
+  "runtime_checkpoints": {},
+  "status": "pass",
+  "trial_id": "g03-readiness-v3-ac357d3e6e0585a4ce1b584c3df57910535804bb0b192b71ea5e1c51f2523c31"
+}

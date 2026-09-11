@@ -1,0 +1,854 @@
+{
+  "N": {
+    "deterministic": 32,
+    "live": 0,
+    "scenarios": 32
+  },
+  "ambiguity_case_ids": [],
+  "ambiguity_count": 0,
+  "amd_digest": "de168c5c0590c1cef90a9415db6b56216bed26c88a7ef64dd2cf8e640b96acad",
+  "artifact_digests": {
+    "deterministic.json": "22c941b70cf4e819d6da354f0fda12d30d74dd3500caa44b1b350be75392a433",
+    "metric-definition.json": "0fa1f3af0f14df27691a09744738a8b6ca781ca1bc4921976339ec7614224a48",
+    "scenarios.json": "28e98c7db9956b21003874499afa22225297536667da1ac09b436f043b2f79c6"
+  },
+  "blocked_reason": null,
+  "checkpoint_identities": {
+    "model_id": "qwen3.7-plus-2026-05-26",
+    "sut_image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+    "sut_producer_sha": "86a459c0bec1bcf3e583fd1280fbca2667479d2e"
+  },
+  "config_digest": "ece5a36ffb181e58d4792405c72e3059f67c48048b68cfe402bdf7803adc43b0",
+  "cost_cny": 0.0,
+  "dataset_digest": "8f5a628ab1eb5e87fd5846194b8d679279e1b9a999ed3905e073eed606617b45",
+  "deterministic_core_e2e": {
+    "B": 2000,
+    "estimate": 0.8125,
+    "lower": 0.65625,
+    "upper": 0.9375
+  },
+  "diagnostic_only": false,
+  "dirty_worktree": true,
+  "environment": {
+    "hostname": "<redacted-runner-hostname-A>",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.7",
+    "recorded_at": "2026-09-05T11:20:04.639472+00:00"
+  },
+  "execution_status": "preflight_completed",
+  "fallback_count": 0,
+  "four_turn_token_preflight": {
+    "blocked_case_ids": [],
+    "case_count": 32,
+    "cases": [
+      {
+        "case_id": "SEED-G02-0001",
+        "four_turn_input_upper_bound": 53590,
+        "headroom": 11946,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9967,
+          12254,
+          14541,
+          16828
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0002",
+        "four_turn_input_upper_bound": 55034,
+        "headroom": 10502,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10328,
+          12615,
+          14902,
+          17189
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0003",
+        "four_turn_input_upper_bound": 53546,
+        "headroom": 11990,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9956,
+          12243,
+          14530,
+          16817
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0004",
+        "four_turn_input_upper_bound": 53906,
+        "headroom": 11630,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10046,
+          12333,
+          14620,
+          16907
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0005",
+        "four_turn_input_upper_bound": 56102,
+        "headroom": 9434,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10595,
+          12882,
+          15169,
+          17456
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0006",
+        "four_turn_input_upper_bound": 56486,
+        "headroom": 9050,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10691,
+          12978,
+          15265,
+          17552
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0007",
+        "four_turn_input_upper_bound": 56106,
+        "headroom": 9430,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10596,
+          12883,
+          15170,
+          17457
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0008",
+        "four_turn_input_upper_bound": 57778,
+        "headroom": 7758,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          11014,
+          13301,
+          15588,
+          17875
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0009",
+        "four_turn_input_upper_bound": 53946,
+        "headroom": 11590,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10056,
+          12343,
+          14630,
+          16917
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0010",
+        "four_turn_input_upper_bound": 53630,
+        "headroom": 11906,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9977,
+          12264,
+          14551,
+          16838
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0011",
+        "four_turn_input_upper_bound": 53542,
+        "headroom": 11994,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9955,
+          12242,
+          14529,
+          16816
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0012",
+        "four_turn_input_upper_bound": 53566,
+        "headroom": 11970,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9961,
+          12248,
+          14535,
+          16822
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0013",
+        "four_turn_input_upper_bound": 53586,
+        "headroom": 11950,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9966,
+          12253,
+          14540,
+          16827
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0014",
+        "four_turn_input_upper_bound": 53566,
+        "headroom": 11970,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9961,
+          12248,
+          14535,
+          16822
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0015",
+        "four_turn_input_upper_bound": 53534,
+        "headroom": 12002,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9953,
+          12240,
+          14527,
+          16814
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0016",
+        "four_turn_input_upper_bound": 54098,
+        "headroom": 11438,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10094,
+          12381,
+          14668,
+          16955
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0017",
+        "four_turn_input_upper_bound": 53614,
+        "headroom": 11922,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9973,
+          12260,
+          14547,
+          16834
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0018",
+        "four_turn_input_upper_bound": 53978,
+        "headroom": 11558,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10064,
+          12351,
+          14638,
+          16925
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0019",
+        "four_turn_input_upper_bound": 53594,
+        "headroom": 11942,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9968,
+          12255,
+          14542,
+          16829
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0020",
+        "four_turn_input_upper_bound": 53594,
+        "headroom": 11942,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9968,
+          12255,
+          14542,
+          16829
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0021",
+        "four_turn_input_upper_bound": 53530,
+        "headroom": 12006,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9952,
+          12239,
+          14526,
+          16813
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0022",
+        "four_turn_input_upper_bound": 53990,
+        "headroom": 11546,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10067,
+          12354,
+          14641,
+          16928
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0023",
+        "four_turn_input_upper_bound": 54786,
+        "headroom": 10750,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10266,
+          12553,
+          14840,
+          17127
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0024",
+        "four_turn_input_upper_bound": 54002,
+        "headroom": 11534,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10070,
+          12357,
+          14644,
+          16931
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0025",
+        "four_turn_input_upper_bound": 55734,
+        "headroom": 9802,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10503,
+          12790,
+          15077,
+          17364
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0026",
+        "four_turn_input_upper_bound": 56094,
+        "headroom": 9442,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10593,
+          12880,
+          15167,
+          17454
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0027",
+        "four_turn_input_upper_bound": 56494,
+        "headroom": 9042,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10693,
+          12980,
+          15267,
+          17554
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0028",
+        "four_turn_input_upper_bound": 53574,
+        "headroom": 11962,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9963,
+          12250,
+          14537,
+          16824
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0029",
+        "four_turn_input_upper_bound": 53586,
+        "headroom": 11950,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9966,
+          12253,
+          14540,
+          16827
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0030",
+        "four_turn_input_upper_bound": 54186,
+        "headroom": 11350,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10116,
+          12403,
+          14690,
+          16977
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0031",
+        "four_turn_input_upper_bound": 53586,
+        "headroom": 11950,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9966,
+          12253,
+          14540,
+          16827
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0032",
+        "four_turn_input_upper_bound": 56094,
+        "headroom": 9442,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10593,
+          12880,
+          15167,
+          17454
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      }
+    ],
+    "headroom_at_max": 7758,
+    "max": 57778,
+    "maximum_allowed": 58982,
+    "method": "utf8-byte-token-upper-bound-with-framing-and-max-drafts",
+    "p95": 56494,
+    "required_headroom": 6554,
+    "status": "pass"
+  },
+  "host_identity": {
+    "host_key_digest": "adcb731a7adf0c6756111198258c29340f043a3ff97b2530749bc8f0ab85db13",
+    "runner_kernel": "Windows-11"
+  },
+  "metric_definition": {
+    "bootstrap": {
+      "cluster_key": "case_id",
+      "method": "percentile",
+      "paired_key": [
+        "case_id",
+        "repetition"
+      ],
+      "resamples": 2000
+    },
+    "candidate_rule": "trace_activity and root_signal both reach threshold",
+    "collector": {
+      "absent_series": "reported as null and classified as infrastructure",
+      "absent_series_wait": "label-blind: a window is unscoreable until every series is present; only a series still absent at the observation deadline fails the case",
+      "ad_cpu_quiescence_deadline_seconds": 240,
+      "ad_cpu_quiescent_max_cores": 0.25,
+      "checkpoint": "g03-readiness-v3-label-blind-six-group-collector-v6",
+      "contract_digest": "53a051589385a8a5a105d6be68a5529d95f5fdf25cdaee1980ee58d83c106044",
+      "fault_activation_deadline_seconds": 90,
+      "fault_sample_interval_seconds": 65,
+      "metric_selectors": "exact pod equality; regex selectors forbidden",
+      "observer_source_sha256": "9a918f3aaaf2c30db40669a65f1f9b68ce5182ca0582a6998cd67bfac378e2ac",
+      "pod_selection": "exactly one non-terminating ad pod and email pod",
+      "poll_interval_seconds": 5,
+      "recovery_observation_deadline_seconds": 240,
+      "recovery_sample_interval_seconds": 65,
+      "restimulate_each_poll": true,
+      "source_sha256": "b831184cf2d95d04ee8528fb47aefa93fa64f691732a07878ccb97fec6bac93a",
+      "terminal_fault_sample": "retained before deadline return for metric v3 only",
+      "trace_services": [
+        "ad",
+        "checkout",
+        "email",
+        "fraud-detection",
+        "payment",
+        "product-catalog"
+      ]
+    },
+    "comparison": "greater_than_or_equal_to",
+    "distractor_rule": "all evidence kinds minus required kinds",
+    "evidence_id_formula": "sha256(case_id + NUL + metric_version + NUL + kind)[:24]",
+    "evidence_kinds": [
+      "journey_window",
+      "trace_activity",
+      "trace_errors",
+      "cpu_window",
+      "memory_window",
+      "queue_window"
+    ],
+    "fault_sample_interval_seconds": 65,
+    "group_definitions": {
+      "cpu_window": {
+        "group_fields": [
+          "id",
+          "kind",
+          "metric",
+          "samples",
+          "service",
+          "source",
+          "unit"
+        ],
+        "sample_fields": [
+          "cpu_cores",
+          "window_index"
+        ]
+      },
+      "journey_window": {
+        "group_fields": [
+          "id",
+          "kind",
+          "samples",
+          "source"
+        ],
+        "sample_fields": [
+          "ready",
+          "status_code",
+          "window_index"
+        ]
+      },
+      "memory_window": {
+        "group_fields": [
+          "id",
+          "kind",
+          "metric",
+          "samples",
+          "service",
+          "source",
+          "unit"
+        ],
+        "sample_fields": [
+          "window_index",
+          "working_set_bytes"
+        ]
+      },
+      "queue_window": {
+        "group_fields": [
+          "id",
+          "kind",
+          "metric",
+          "samples",
+          "service",
+          "source",
+          "unit"
+        ],
+        "sample_fields": [
+          "consumer_lag",
+          "consumer_poll_lag_seconds",
+          "consumer_record_lag",
+          "window_index"
+        ]
+      },
+      "trace_activity": {
+        "group_fields": [
+          "id",
+          "kind",
+          "samples",
+          "service_scope",
+          "source"
+        ],
+        "sample_fields": [
+          "services",
+          "window_index"
+        ]
+      },
+      "trace_errors": {
+        "group_fields": [
+          "id",
+          "kind",
+          "samples",
+          "service_scope",
+          "source"
+        ],
+        "sample_fields": [
+          "services",
+          "window_index"
+        ]
+      }
+    },
+    "healthy_drift_count_per_leave_one_out_case": 124,
+    "healthy_drift_formula": "max(0,right-left) for four consecutive healthy pairs",
+    "incident_excess_formula": "max(two_fault_windows)-median(five_healthy_windows)",
+    "live_budgets": {
+      "cumulative_input_tokens": 65536,
+      "cumulative_output_tokens": 8192,
+      "max_completion_tokens": 2048
+    },
+    "metric_definition_digest": "fc6d001b141172047c385cfbcfeb9feb04ecbb672e0e2796329158d9ff36ecd6",
+    "metric_version": 3,
+    "percentile": {
+      "method": "nearest-rank",
+      "value": 0.99
+    },
+    "presence": {
+      "group_completeness": "six non-empty groups, seven indexed real samples each",
+      "top1_count": 8,
+      "top3_maximum_count": 20
+    },
+    "quanta": {
+      "count": 1,
+      "cpu_cores": 1e-06,
+      "lag_seconds": 0.001,
+      "memory_bytes": 4096
+    },
+    "ranking": "descending minimum standardized excess; lexical label tie-break",
+    "reference_repetitions": {
+      "initial": 3,
+      "maximum": 5,
+      "upgrade_only_when": "all hard gates except deterministic-vs-live significance pass"
+    },
+    "relative_root_signal_floors": {
+      "emailMemoryLeak": 0.05
+    },
+    "required_kinds": {
+      "adHighCpu": [
+        "trace_activity",
+        "cpu_window"
+      ],
+      "emailMemoryLeak": [
+        "trace_activity",
+        "memory_window"
+      ],
+      "kafkaQueueProblems": [
+        "trace_activity",
+        "queue_window"
+      ],
+      "paymentFailure": [
+        "trace_activity",
+        "trace_errors"
+      ],
+      "paymentUnreachable": [
+        "trace_activity",
+        "trace_errors"
+      ],
+      "productCatalogFailure": [
+        "trace_activity",
+        "trace_errors"
+      ]
+    },
+    "result_schema_v3_digest": "160968c86a7b1df6c3299732bfe2d9396ef7e2ed97edf2d219324abf404307aa",
+    "root_signal_features": {
+      "adHighCpu": {
+        "field": "cpu_cores",
+        "kind": "cpu_window",
+        "quantum": 1e-06
+      },
+      "emailMemoryLeak": {
+        "field": "working_set_bytes",
+        "kind": "memory_window",
+        "quantum": 1.0
+      },
+      "kafkaQueueProblems": {
+        "field": "consumer_poll_lag_seconds",
+        "kind": "queue_window",
+        "quantum": 0.001
+      },
+      "paymentFailure": {
+        "field": "error_count",
+        "kind": "trace_errors",
+        "quantum": 1.0
+      },
+      "paymentUnreachable": {
+        "field": "connection_error_count",
+        "kind": "trace_errors",
+        "quantum": 1.0
+      },
+      "productCatalogFailure": {
+        "field": "error_count",
+        "kind": "trace_errors",
+        "quantum": 1.0
+      }
+    },
+    "target_services": {
+      "adHighCpu": "ad",
+      "emailMemoryLeak": "email",
+      "kafkaQueueProblems": "fraud-detection",
+      "paymentFailure": "payment",
+      "paymentUnreachable": "checkout",
+      "productCatalogFailure": "product-catalog"
+    },
+    "threshold_formula": "max(nearest_rank_p99(healthy_positive_drifts)+measurement_quantum,relative_floor_fraction*median(five_healthy_windows))",
+    "trace_activity_service_fields": [
+      "trace_count"
+    ],
+    "trace_error_service_fields": [
+      "connection_error_count",
+      "descriptions",
+      "error_count"
+    ],
+    "trace_service_scope": [
+      "ad",
+      "checkout",
+      "email",
+      "fraud-detection",
+      "payment",
+      "product-catalog"
+    ],
+    "window_counts": {
+      "fault": 2,
+      "healthy": 5
+    },
+    "wire_schema_version": "2.0.0"
+  },
+  "metric_definition_digest": "fc6d001b141172047c385cfbcfeb9feb04ecbb672e0e2796329158d9ff36ecd6",
+  "metric_version": 3,
+  "non_gate_evidence": true,
+  "preflight_status": "pass",
+  "presence_only_probe": {
+    "case_count": 32,
+    "classifier": "nonempty-group-signature-majority-prior",
+    "expected_top1_count": 8,
+    "group_completeness": {
+      "complete_case_count": 32,
+      "incomplete_case_ids": [],
+      "required_groups": [
+        "journey_window",
+        "trace_activity",
+        "trace_errors",
+        "cpu_window",
+        "memory_window",
+        "queue_window"
+      ],
+      "status": "pass"
+    },
+    "maximum_top3_count": 20,
+    "signature_count": 1,
+    "status": "pass",
+    "top1": 0.25,
+    "top1_count": 8,
+    "top3": 0.625,
+    "top3_count": 20
+  },
+  "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+  "protected_assets_end": {
+    "docs_audit": {
+      "count": 21,
+      "digest": "d8f3b276ec063d1d58fc47115de78fec947b4b58883e8b3000cda0c5849b9bb3"
+    },
+    "g02_frozen": {
+      "count": 327,
+      "digest": "d77f4f41830975a3f9fc41d988d13aa98b5739d8dacc608ed5224ddb01a2a9dc"
+    }
+  },
+  "protected_assets_start": {
+    "docs_audit": {
+      "count": 21,
+      "digest": "d8f3b276ec063d1d58fc47115de78fec947b4b58883e8b3000cda0c5849b9bb3"
+    },
+    "g02_frozen": {
+      "count": 327,
+      "digest": "d77f4f41830975a3f9fc41d988d13aa98b5739d8dacc608ed5224ddb01a2a9dc"
+    }
+  },
+  "purpose": "G03 readiness metric-v3 preflight; not G02 Gate evidence",
+  "readiness_blockers": [],
+  "readiness_status": "not_evaluated",
+  "relevant_source_digest": "8c6f7d0953568c2f359a934a7f83c096a15a7e74ca80e12214d5789cf92b6c74",
+  "wire_schema_version": "2.0.0"
+}

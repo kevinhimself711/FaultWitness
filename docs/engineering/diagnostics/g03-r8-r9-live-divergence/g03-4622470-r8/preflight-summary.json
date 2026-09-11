@@ -1,0 +1,850 @@
+{
+  "N": {
+    "deterministic": 32,
+    "live": 0,
+    "scenarios": 32
+  },
+  "ambiguity_case_ids": [],
+  "ambiguity_count": 0,
+  "amd_digest": "03da4df9d0fc6b2e03ddf06ddde9443f112a62c42e0b3f1052538774d482338a",
+  "artifact_digests": {
+    "deterministic.json": "22c941b70cf4e819d6da354f0fda12d30d74dd3500caa44b1b350be75392a433",
+    "metric-definition.json": "0fa1f3af0f14df27691a09744738a8b6ca781ca1bc4921976339ec7614224a48",
+    "scenarios.json": "28e98c7db9956b21003874499afa22225297536667da1ac09b436f043b2f79c6"
+  },
+  "blocked_reason": null,
+  "checkpoint_identities": {
+    "model_id": "qwen3.7-plus-2026-05-26",
+    "sut_image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+    "sut_producer_sha": "86a459c0bec1bcf3e583fd1280fbca2667479d2e"
+  },
+  "config_digest": "ece5a36ffb181e58d4792405c72e3059f67c48048b68cfe402bdf7803adc43b0",
+  "cost_cny": 0.0,
+  "dataset_digest": "8f5a628ab1eb5e87fd5846194b8d679279e1b9a999ed3905e073eed606617b45",
+  "deterministic_core_e2e": {
+    "B": 2000,
+    "estimate": 0.8125,
+    "lower": 0.65625,
+    "upper": 0.9375
+  },
+  "diagnostic_only": false,
+  "dirty_worktree": true,
+  "environment": {
+    "hostname": "<redacted-runner-hostname-A>",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.7",
+    "recorded_at": "2026-09-05T10:14:56.258988+00:00"
+  },
+  "execution_status": "preflight_completed",
+  "fallback_count": 0,
+  "four_turn_token_preflight": {
+    "blocked_case_ids": [],
+    "case_count": 32,
+    "cases": [
+      {
+        "case_id": "SEED-G02-0001",
+        "four_turn_input_upper_bound": 52206,
+        "headroom": 13330,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9621,
+          11908,
+          14195,
+          16482
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0002",
+        "four_turn_input_upper_bound": 53650,
+        "headroom": 11886,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9982,
+          12269,
+          14556,
+          16843
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0003",
+        "four_turn_input_upper_bound": 52162,
+        "headroom": 13374,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9610,
+          11897,
+          14184,
+          16471
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0004",
+        "four_turn_input_upper_bound": 52522,
+        "headroom": 13014,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9700,
+          11987,
+          14274,
+          16561
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0005",
+        "four_turn_input_upper_bound": 54718,
+        "headroom": 10818,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10249,
+          12536,
+          14823,
+          17110
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0006",
+        "four_turn_input_upper_bound": 55102,
+        "headroom": 10434,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10345,
+          12632,
+          14919,
+          17206
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0007",
+        "four_turn_input_upper_bound": 54722,
+        "headroom": 10814,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10250,
+          12537,
+          14824,
+          17111
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0008",
+        "four_turn_input_upper_bound": 56394,
+        "headroom": 9142,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10668,
+          12955,
+          15242,
+          17529
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0009",
+        "four_turn_input_upper_bound": 52562,
+        "headroom": 12974,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9710,
+          11997,
+          14284,
+          16571
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0010",
+        "four_turn_input_upper_bound": 52246,
+        "headroom": 13290,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9631,
+          11918,
+          14205,
+          16492
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0011",
+        "four_turn_input_upper_bound": 52158,
+        "headroom": 13378,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9609,
+          11896,
+          14183,
+          16470
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0012",
+        "four_turn_input_upper_bound": 52182,
+        "headroom": 13354,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9615,
+          11902,
+          14189,
+          16476
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0013",
+        "four_turn_input_upper_bound": 52202,
+        "headroom": 13334,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9620,
+          11907,
+          14194,
+          16481
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0014",
+        "four_turn_input_upper_bound": 52182,
+        "headroom": 13354,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9615,
+          11902,
+          14189,
+          16476
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0015",
+        "four_turn_input_upper_bound": 52150,
+        "headroom": 13386,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9607,
+          11894,
+          14181,
+          16468
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0016",
+        "four_turn_input_upper_bound": 52714,
+        "headroom": 12822,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9748,
+          12035,
+          14322,
+          16609
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0017",
+        "four_turn_input_upper_bound": 52230,
+        "headroom": 13306,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9627,
+          11914,
+          14201,
+          16488
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0018",
+        "four_turn_input_upper_bound": 52594,
+        "headroom": 12942,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9718,
+          12005,
+          14292,
+          16579
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0019",
+        "four_turn_input_upper_bound": 52210,
+        "headroom": 13326,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9622,
+          11909,
+          14196,
+          16483
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0020",
+        "four_turn_input_upper_bound": 52210,
+        "headroom": 13326,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9622,
+          11909,
+          14196,
+          16483
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0021",
+        "four_turn_input_upper_bound": 52146,
+        "headroom": 13390,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9606,
+          11893,
+          14180,
+          16467
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0022",
+        "four_turn_input_upper_bound": 52606,
+        "headroom": 12930,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9721,
+          12008,
+          14295,
+          16582
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0023",
+        "four_turn_input_upper_bound": 53402,
+        "headroom": 12134,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9920,
+          12207,
+          14494,
+          16781
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0024",
+        "four_turn_input_upper_bound": 52618,
+        "headroom": 12918,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9724,
+          12011,
+          14298,
+          16585
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0025",
+        "four_turn_input_upper_bound": 54350,
+        "headroom": 11186,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10157,
+          12444,
+          14731,
+          17018
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0026",
+        "four_turn_input_upper_bound": 54710,
+        "headroom": 10826,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10247,
+          12534,
+          14821,
+          17108
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0027",
+        "four_turn_input_upper_bound": 55110,
+        "headroom": 10426,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10347,
+          12634,
+          14921,
+          17208
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0028",
+        "four_turn_input_upper_bound": 52190,
+        "headroom": 13346,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9617,
+          11904,
+          14191,
+          16478
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0029",
+        "four_turn_input_upper_bound": 52202,
+        "headroom": 13334,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9620,
+          11907,
+          14194,
+          16481
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0030",
+        "four_turn_input_upper_bound": 52802,
+        "headroom": 12734,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9770,
+          12057,
+          14344,
+          16631
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0031",
+        "four_turn_input_upper_bound": 52202,
+        "headroom": 13334,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          9620,
+          11907,
+          14194,
+          16481
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      },
+      {
+        "case_id": "SEED-G02-0032",
+        "four_turn_input_upper_bound": 54710,
+        "headroom": 10826,
+        "limit": 65536,
+        "maximum_allowed": 58982,
+        "per_request": [
+          10247,
+          12534,
+          14821,
+          17108
+        ],
+        "required_headroom": 6554,
+        "status": "pass"
+      }
+    ],
+    "headroom_at_max": 9142,
+    "max": 56394,
+    "maximum_allowed": 58982,
+    "method": "utf8-byte-token-upper-bound-with-framing-and-max-drafts",
+    "p95": 55110,
+    "required_headroom": 6554,
+    "status": "pass"
+  },
+  "metric_definition": {
+    "bootstrap": {
+      "cluster_key": "case_id",
+      "method": "percentile",
+      "paired_key": [
+        "case_id",
+        "repetition"
+      ],
+      "resamples": 2000
+    },
+    "candidate_rule": "trace_activity and root_signal both reach threshold",
+    "collector": {
+      "absent_series": "reported as null and classified as infrastructure",
+      "absent_series_wait": "label-blind: a window is unscoreable until every series is present; only a series still absent at the observation deadline fails the case",
+      "ad_cpu_quiescence_deadline_seconds": 240,
+      "ad_cpu_quiescent_max_cores": 0.25,
+      "checkpoint": "g03-readiness-v3-label-blind-six-group-collector-v6",
+      "contract_digest": "53a051589385a8a5a105d6be68a5529d95f5fdf25cdaee1980ee58d83c106044",
+      "fault_activation_deadline_seconds": 90,
+      "fault_sample_interval_seconds": 65,
+      "metric_selectors": "exact pod equality; regex selectors forbidden",
+      "observer_source_sha256": "9a918f3aaaf2c30db40669a65f1f9b68ce5182ca0582a6998cd67bfac378e2ac",
+      "pod_selection": "exactly one non-terminating ad pod and email pod",
+      "poll_interval_seconds": 5,
+      "recovery_observation_deadline_seconds": 240,
+      "recovery_sample_interval_seconds": 65,
+      "restimulate_each_poll": true,
+      "source_sha256": "b831184cf2d95d04ee8528fb47aefa93fa64f691732a07878ccb97fec6bac93a",
+      "terminal_fault_sample": "retained before deadline return for metric v3 only",
+      "trace_services": [
+        "ad",
+        "checkout",
+        "email",
+        "fraud-detection",
+        "payment",
+        "product-catalog"
+      ]
+    },
+    "comparison": "greater_than_or_equal_to",
+    "distractor_rule": "all evidence kinds minus required kinds",
+    "evidence_id_formula": "sha256(case_id + NUL + metric_version + NUL + kind)[:24]",
+    "evidence_kinds": [
+      "journey_window",
+      "trace_activity",
+      "trace_errors",
+      "cpu_window",
+      "memory_window",
+      "queue_window"
+    ],
+    "fault_sample_interval_seconds": 65,
+    "group_definitions": {
+      "cpu_window": {
+        "group_fields": [
+          "id",
+          "kind",
+          "metric",
+          "samples",
+          "service",
+          "source",
+          "unit"
+        ],
+        "sample_fields": [
+          "cpu_cores",
+          "window_index"
+        ]
+      },
+      "journey_window": {
+        "group_fields": [
+          "id",
+          "kind",
+          "samples",
+          "source"
+        ],
+        "sample_fields": [
+          "ready",
+          "status_code",
+          "window_index"
+        ]
+      },
+      "memory_window": {
+        "group_fields": [
+          "id",
+          "kind",
+          "metric",
+          "samples",
+          "service",
+          "source",
+          "unit"
+        ],
+        "sample_fields": [
+          "window_index",
+          "working_set_bytes"
+        ]
+      },
+      "queue_window": {
+        "group_fields": [
+          "id",
+          "kind",
+          "metric",
+          "samples",
+          "service",
+          "source",
+          "unit"
+        ],
+        "sample_fields": [
+          "consumer_lag",
+          "consumer_poll_lag_seconds",
+          "consumer_record_lag",
+          "window_index"
+        ]
+      },
+      "trace_activity": {
+        "group_fields": [
+          "id",
+          "kind",
+          "samples",
+          "service_scope",
+          "source"
+        ],
+        "sample_fields": [
+          "services",
+          "window_index"
+        ]
+      },
+      "trace_errors": {
+        "group_fields": [
+          "id",
+          "kind",
+          "samples",
+          "service_scope",
+          "source"
+        ],
+        "sample_fields": [
+          "services",
+          "window_index"
+        ]
+      }
+    },
+    "healthy_drift_count_per_leave_one_out_case": 124,
+    "healthy_drift_formula": "max(0,right-left) for four consecutive healthy pairs",
+    "incident_excess_formula": "max(two_fault_windows)-median(five_healthy_windows)",
+    "live_budgets": {
+      "cumulative_input_tokens": 65536,
+      "cumulative_output_tokens": 8192,
+      "max_completion_tokens": 2048
+    },
+    "metric_definition_digest": "fc6d001b141172047c385cfbcfeb9feb04ecbb672e0e2796329158d9ff36ecd6",
+    "metric_version": 3,
+    "percentile": {
+      "method": "nearest-rank",
+      "value": 0.99
+    },
+    "presence": {
+      "group_completeness": "six non-empty groups, seven indexed real samples each",
+      "top1_count": 8,
+      "top3_maximum_count": 20
+    },
+    "quanta": {
+      "count": 1,
+      "cpu_cores": 1e-06,
+      "lag_seconds": 0.001,
+      "memory_bytes": 4096
+    },
+    "ranking": "descending minimum standardized excess; lexical label tie-break",
+    "reference_repetitions": {
+      "initial": 3,
+      "maximum": 5,
+      "upgrade_only_when": "all hard gates except deterministic-vs-live significance pass"
+    },
+    "relative_root_signal_floors": {
+      "emailMemoryLeak": 0.05
+    },
+    "required_kinds": {
+      "adHighCpu": [
+        "trace_activity",
+        "cpu_window"
+      ],
+      "emailMemoryLeak": [
+        "trace_activity",
+        "memory_window"
+      ],
+      "kafkaQueueProblems": [
+        "trace_activity",
+        "queue_window"
+      ],
+      "paymentFailure": [
+        "trace_activity",
+        "trace_errors"
+      ],
+      "paymentUnreachable": [
+        "trace_activity",
+        "trace_errors"
+      ],
+      "productCatalogFailure": [
+        "trace_activity",
+        "trace_errors"
+      ]
+    },
+    "result_schema_v3_digest": "160968c86a7b1df6c3299732bfe2d9396ef7e2ed97edf2d219324abf404307aa",
+    "root_signal_features": {
+      "adHighCpu": {
+        "field": "cpu_cores",
+        "kind": "cpu_window",
+        "quantum": 1e-06
+      },
+      "emailMemoryLeak": {
+        "field": "working_set_bytes",
+        "kind": "memory_window",
+        "quantum": 1.0
+      },
+      "kafkaQueueProblems": {
+        "field": "consumer_poll_lag_seconds",
+        "kind": "queue_window",
+        "quantum": 0.001
+      },
+      "paymentFailure": {
+        "field": "error_count",
+        "kind": "trace_errors",
+        "quantum": 1.0
+      },
+      "paymentUnreachable": {
+        "field": "connection_error_count",
+        "kind": "trace_errors",
+        "quantum": 1.0
+      },
+      "productCatalogFailure": {
+        "field": "error_count",
+        "kind": "trace_errors",
+        "quantum": 1.0
+      }
+    },
+    "target_services": {
+      "adHighCpu": "ad",
+      "emailMemoryLeak": "email",
+      "kafkaQueueProblems": "fraud-detection",
+      "paymentFailure": "payment",
+      "paymentUnreachable": "checkout",
+      "productCatalogFailure": "product-catalog"
+    },
+    "threshold_formula": "max(nearest_rank_p99(healthy_positive_drifts)+measurement_quantum,relative_floor_fraction*median(five_healthy_windows))",
+    "trace_activity_service_fields": [
+      "trace_count"
+    ],
+    "trace_error_service_fields": [
+      "connection_error_count",
+      "descriptions",
+      "error_count"
+    ],
+    "trace_service_scope": [
+      "ad",
+      "checkout",
+      "email",
+      "fraud-detection",
+      "payment",
+      "product-catalog"
+    ],
+    "window_counts": {
+      "fault": 2,
+      "healthy": 5
+    },
+    "wire_schema_version": "2.0.0"
+  },
+  "metric_definition_digest": "fc6d001b141172047c385cfbcfeb9feb04ecbb672e0e2796329158d9ff36ecd6",
+  "metric_version": 3,
+  "non_gate_evidence": true,
+  "preflight_status": "pass",
+  "presence_only_probe": {
+    "case_count": 32,
+    "classifier": "nonempty-group-signature-majority-prior",
+    "expected_top1_count": 8,
+    "group_completeness": {
+      "complete_case_count": 32,
+      "incomplete_case_ids": [],
+      "required_groups": [
+        "journey_window",
+        "trace_activity",
+        "trace_errors",
+        "cpu_window",
+        "memory_window",
+        "queue_window"
+      ],
+      "status": "pass"
+    },
+    "maximum_top3_count": 20,
+    "signature_count": 1,
+    "status": "pass",
+    "top1": 0.25,
+    "top1_count": 8,
+    "top3": 0.625,
+    "top3_count": 20
+  },
+  "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+  "protected_assets_end": {
+    "docs_audit": {
+      "count": 21,
+      "digest": "652a2173980586d1d637cf8842a17327fa158a17f27f9e0886f122c719bdfa87"
+    },
+    "g02_frozen": {
+      "count": 327,
+      "digest": "d77f4f41830975a3f9fc41d988d13aa98b5739d8dacc608ed5224ddb01a2a9dc"
+    }
+  },
+  "protected_assets_start": {
+    "docs_audit": {
+      "count": 21,
+      "digest": "652a2173980586d1d637cf8842a17327fa158a17f27f9e0886f122c719bdfa87"
+    },
+    "g02_frozen": {
+      "count": 327,
+      "digest": "d77f4f41830975a3f9fc41d988d13aa98b5739d8dacc608ed5224ddb01a2a9dc"
+    }
+  },
+  "purpose": "G03 readiness metric-v3 preflight; not G02 Gate evidence",
+  "readiness_blockers": [],
+  "readiness_status": "not_evaluated",
+  "relevant_source_digest": "702f0ebb24752ab1f778de257934846df64b14c7003d5083a767ad90dc1bbc8f",
+  "wire_schema_version": "2.0.0"
+}

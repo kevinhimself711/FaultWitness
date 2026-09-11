@@ -1,0 +1,88 @@
+{
+  "artifact_digest": "7a83c758bbaab8810d342ee3076665d04344be79378bef8a72ad08483976d0ee",
+  "cache_key": "3f85a5b430d0352ae3b0933feba29b79dbd0b80a69b67fe919fadd5ccb3365fc",
+  "execution_attempt": 1,
+  "history": [],
+  "payload": {
+    "baseline": "no_rag",
+    "case_id": "SEED-G02-0020",
+    "cost_cny": 0.007406,
+    "input_tokens": 2899,
+    "output_tokens": 201,
+    "repetition": 1,
+    "result": {
+      "baseline": "no_rag",
+      "case_id": "SEED-G02-0020",
+      "claims": [
+        {
+          "claim_type": "root_cause",
+          "evidence_refs": [
+            "ev3-b1dadaff2e0d5545bf86bdb1",
+            "ev3-1dcb71770ec75a1729de7f9f"
+          ],
+          "value": "kafkaQueueProblems"
+        }
+      ],
+      "evidence": [
+        "ev3-b1dadaff2e0d5545bf86bdb1",
+        "ev3-1dcb71770ec75a1729de7f9f"
+      ],
+      "fallback_count": 0,
+      "input_tokens": 2899,
+      "latency_ms": 7096.006,
+      "metric_version": 3,
+      "model_id": "qwen3.7-plus-2026-05-26",
+      "output_tokens": 201,
+      "root_cause": "kafkaQueueProblems",
+      "root_cause_candidates": [
+        "kafkaQueueProblems"
+      ],
+      "schema_version": "2.0.0",
+      "status": "ok"
+    },
+    "trial_telemetry": {
+      "draft_digests": [
+        "1292ebfb46d71de777d39d8473d5bf709468577a0f063a3b2acffb1ab8538aa9"
+      ],
+      "drafts": [
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-b1dadaff2e0d5545bf86bdb1",
+                "ev3-1dcb71770ec75a1729de7f9f"
+              ],
+              "value": "kafkaQueueProblems"
+            }
+          ],
+          "evidence": [
+            "ev3-b1dadaff2e0d5545bf86bdb1",
+            "ev3-1dcb71770ec75a1729de7f9f"
+          ],
+          "root_cause": "kafkaQueueProblems",
+          "root_cause_candidates": [
+            "kafkaQueueProblems"
+          ]
+        }
+      ],
+      "terminal_reason": "max_turns",
+      "turn_count": 1,
+      "turn_usage": [
+        {
+          "finish_reason": "stop",
+          "input_tokens": 2899,
+          "latency_ms": 6214.993,
+          "output_tokens": 201,
+          "turn": 1
+        }
+      ]
+    }
+  },
+  "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+  "record_version": 2,
+  "recorded_at": "2026-09-05T11:58:47.622149+00:00",
+  "runtime_checkpoints": {},
+  "status": "pass",
+  "trial_id": "g03-readiness-v3-434409a5d984d18a925cff4ddaf24bb134e89de6947277d22d9f07630386f070"
+}

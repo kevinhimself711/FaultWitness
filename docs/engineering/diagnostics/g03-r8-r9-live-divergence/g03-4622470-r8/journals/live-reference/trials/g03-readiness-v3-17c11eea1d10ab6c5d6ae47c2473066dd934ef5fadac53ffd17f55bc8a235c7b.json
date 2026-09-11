@@ -1,0 +1,144 @@
+{
+  "artifact_digest": "de46bc4d5e1bc3c286a0d3c21ff285d5694ccd78f5124fef24a4ca3fefbce023",
+  "cache_key": "73bfeaef7075f3fe5508c98ac4d4f4ddbc26f634ba94d80fe626c28a498d3431",
+  "execution_attempt": 1,
+  "history": [],
+  "payload": {
+    "baseline": "naive_react",
+    "case_id": "SEED-G02-0012",
+    "cost_cny": 0.022137999999999998,
+    "input_tokens": 9037,
+    "output_tokens": 508,
+    "repetition": 1,
+    "result": {
+      "baseline": "naive_react",
+      "case_id": "SEED-G02-0012",
+      "claims": [
+        {
+          "claim_type": "root_cause",
+          "evidence_refs": [
+            "ev3-58b12d945141db887b880b2e",
+            "ev3-1ca847e1f9a95875fbc7728e"
+          ],
+          "value": "emailMemoryLeak"
+        }
+      ],
+      "evidence": [
+        "ev3-58b12d945141db887b880b2e",
+        "ev3-1ca847e1f9a95875fbc7728e"
+      ],
+      "fallback_count": 0,
+      "input_tokens": 9037,
+      "latency_ms": 11517.138,
+      "metric_version": 3,
+      "model_id": "qwen3.7-plus-2026-05-26",
+      "output_tokens": 508,
+      "root_cause": "emailMemoryLeak",
+      "root_cause_candidates": [
+        "emailMemoryLeak"
+      ],
+      "schema_version": "2.0.0",
+      "status": "ok"
+    },
+    "trial_telemetry": {
+      "draft_digests": [
+        "7ac0e7513bbcd777ef35fe394b506fdae9258ec563734d3bb5dd272cd6d63716",
+        "23e619d635e6e81f05abb209da63c75db27b9e033ae6198f8703095f6da1b8f9",
+        "23e619d635e6e81f05abb209da63c75db27b9e033ae6198f8703095f6da1b8f9"
+      ],
+      "drafts": [
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-58b12d945141db887b880b2e",
+                "ev3-39da40b1078d45e9de5fafe4"
+              ],
+              "value": "adHighCpu"
+            }
+          ],
+          "evidence": [
+            "ev3-58b12d945141db887b880b2e",
+            "ev3-39da40b1078d45e9de5fafe4"
+          ],
+          "root_cause": "adHighCpu",
+          "root_cause_candidates": [
+            "adHighCpu"
+          ]
+        },
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-58b12d945141db887b880b2e",
+                "ev3-1ca847e1f9a95875fbc7728e"
+              ],
+              "value": "emailMemoryLeak"
+            }
+          ],
+          "evidence": [
+            "ev3-58b12d945141db887b880b2e",
+            "ev3-1ca847e1f9a95875fbc7728e"
+          ],
+          "root_cause": "emailMemoryLeak",
+          "root_cause_candidates": [
+            "emailMemoryLeak"
+          ]
+        },
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-58b12d945141db887b880b2e",
+                "ev3-1ca847e1f9a95875fbc7728e"
+              ],
+              "value": "emailMemoryLeak"
+            }
+          ],
+          "evidence": [
+            "ev3-58b12d945141db887b880b2e",
+            "ev3-1ca847e1f9a95875fbc7728e"
+          ],
+          "root_cause": "emailMemoryLeak",
+          "root_cause_candidates": [
+            "emailMemoryLeak"
+          ]
+        }
+      ],
+      "terminal_reason": "stable_diagnosis",
+      "turn_count": 3,
+      "turn_usage": [
+        {
+          "finish_reason": "stop",
+          "input_tokens": 2837,
+          "latency_ms": 4264.91,
+          "output_tokens": 208,
+          "turn": 1
+        },
+        {
+          "finish_reason": "stop",
+          "input_tokens": 3011,
+          "latency_ms": 3487.958,
+          "output_tokens": 150,
+          "turn": 2
+        },
+        {
+          "finish_reason": "stop",
+          "input_tokens": 3189,
+          "latency_ms": 3233.696,
+          "output_tokens": 150,
+          "turn": 3
+        }
+      ]
+    }
+  },
+  "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+  "record_version": 2,
+  "recorded_at": "2026-09-05T10:19:41.729822+00:00",
+  "runtime_checkpoints": {},
+  "status": "pass",
+  "trial_id": "g03-readiness-v3-17c11eea1d10ab6c5d6ae47c2473066dd934ef5fadac53ffd17f55bc8a235c7b"
+}

@@ -1,0 +1,84 @@
+{
+  "artifact_digest": "cc763d2242241e475fd78daa7766f0439d2780c5a5853948f2d61c3be7518ca4",
+  "cache_key": "df473b1d73f14ce2fde97e36d43225317a1890397f7fbaca4f71192661f6895b",
+  "execution_attempt": 1,
+  "history": [],
+  "payload": {
+    "baseline": "no_rag",
+    "case_id": "SEED-G02-0016",
+    "cost_cny": 0.006864,
+    "input_tokens": 2836,
+    "output_tokens": 149,
+    "repetition": 3,
+    "result": {
+      "baseline": "no_rag",
+      "case_id": "SEED-G02-0016",
+      "claims": [
+        {
+          "claim_type": "root_cause",
+          "evidence_refs": [
+            "ev3-f209098810d35c18e9ef7902"
+          ],
+          "value": "productCatalogFailure"
+        }
+      ],
+      "evidence": [
+        "ev3-f209098810d35c18e9ef7902"
+      ],
+      "fallback_count": 0,
+      "input_tokens": 2836,
+      "latency_ms": 3866.151,
+      "metric_version": 3,
+      "model_id": "qwen3.7-plus-2026-05-26",
+      "output_tokens": 149,
+      "root_cause": "productCatalogFailure",
+      "root_cause_candidates": [
+        "productCatalogFailure"
+      ],
+      "schema_version": "2.0.0",
+      "status": "ok"
+    },
+    "trial_telemetry": {
+      "draft_digests": [
+        "56f22bf54b71c6854d1a224edc500716d4df9a95c62b1b6390d25302c8cedd8a"
+      ],
+      "drafts": [
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-f209098810d35c18e9ef7902"
+              ],
+              "value": "productCatalogFailure"
+            }
+          ],
+          "evidence": [
+            "ev3-f209098810d35c18e9ef7902"
+          ],
+          "root_cause": "productCatalogFailure",
+          "root_cause_candidates": [
+            "productCatalogFailure"
+          ]
+        }
+      ],
+      "terminal_reason": "max_turns",
+      "turn_count": 1,
+      "turn_usage": [
+        {
+          "finish_reason": "stop",
+          "input_tokens": 2836,
+          "latency_ms": 3362.29,
+          "output_tokens": 149,
+          "turn": 1
+        }
+      ]
+    }
+  },
+  "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+  "record_version": 2,
+  "recorded_at": "2026-09-05T10:36:54.885763+00:00",
+  "runtime_checkpoints": {},
+  "status": "pass",
+  "trial_id": "g03-readiness-v3-7303e18c4074d5003738297469e23d63533f3dd5ffde97b347d9f60646a0b3d4"
+}

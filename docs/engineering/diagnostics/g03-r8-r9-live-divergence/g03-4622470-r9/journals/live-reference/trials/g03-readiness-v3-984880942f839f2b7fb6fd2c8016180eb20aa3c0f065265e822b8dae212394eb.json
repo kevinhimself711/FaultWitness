@@ -1,0 +1,116 @@
+{
+  "artifact_digest": "be0ec55fa7db8c1ec623dfa731ce99c39b2cf09946dd785f66f2985fa15af7cb",
+  "cache_key": "4023a53c1eaa3ae1d9455475f2797de94614e23a83a54dacb6eeeb6dba5604a6",
+  "execution_attempt": 1,
+  "history": [],
+  "payload": {
+    "baseline": "naive_react",
+    "case_id": "SEED-G02-0002",
+    "cost_cny": 0.015018,
+    "input_tokens": 6133,
+    "output_tokens": 344,
+    "repetition": 2,
+    "result": {
+      "baseline": "naive_react",
+      "case_id": "SEED-G02-0002",
+      "claims": [
+        {
+          "claim_type": "root_cause",
+          "evidence_refs": [
+            "ev3-d91757e904db4370f943ba48",
+            "ev3-8f3273b425fff49e85f256db"
+          ],
+          "value": "paymentUnreachable"
+        }
+      ],
+      "evidence": [
+        "ev3-d91757e904db4370f943ba48",
+        "ev3-8f3273b425fff49e85f256db"
+      ],
+      "fallback_count": 0,
+      "input_tokens": 6133,
+      "latency_ms": 11524.045,
+      "metric_version": 3,
+      "model_id": "qwen3.7-plus-2026-05-26",
+      "output_tokens": 344,
+      "root_cause": "paymentUnreachable",
+      "root_cause_candidates": [
+        "paymentUnreachable"
+      ],
+      "schema_version": "2.0.0",
+      "status": "ok"
+    },
+    "trial_telemetry": {
+      "draft_digests": [
+        "1dac4278be955399e544df2a725ad2bb8bfdff94414aa7f4d656848e23c52eb2",
+        "1dac4278be955399e544df2a725ad2bb8bfdff94414aa7f4d656848e23c52eb2"
+      ],
+      "drafts": [
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-d91757e904db4370f943ba48",
+                "ev3-8f3273b425fff49e85f256db"
+              ],
+              "value": "paymentUnreachable"
+            }
+          ],
+          "evidence": [
+            "ev3-d91757e904db4370f943ba48",
+            "ev3-8f3273b425fff49e85f256db"
+          ],
+          "root_cause": "paymentUnreachable",
+          "root_cause_candidates": [
+            "paymentUnreachable"
+          ]
+        },
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-d91757e904db4370f943ba48",
+                "ev3-8f3273b425fff49e85f256db"
+              ],
+              "value": "paymentUnreachable"
+            }
+          ],
+          "evidence": [
+            "ev3-d91757e904db4370f943ba48",
+            "ev3-8f3273b425fff49e85f256db"
+          ],
+          "root_cause": "paymentUnreachable",
+          "root_cause_candidates": [
+            "paymentUnreachable"
+          ]
+        }
+      ],
+      "terminal_reason": "stable_diagnosis",
+      "turn_count": 2,
+      "turn_usage": [
+        {
+          "finish_reason": "stop",
+          "input_tokens": 2982,
+          "latency_ms": 6982.924,
+          "output_tokens": 203,
+          "turn": 1
+        },
+        {
+          "finish_reason": "stop",
+          "input_tokens": 3151,
+          "latency_ms": 3645.446,
+          "output_tokens": 141,
+          "turn": 2
+        }
+      ]
+    }
+  },
+  "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+  "record_version": 2,
+  "recorded_at": "2026-09-05T11:21:57.528559+00:00",
+  "runtime_checkpoints": {},
+  "status": "pass",
+  "trial_id": "g03-readiness-v3-984880942f839f2b7fb6fd2c8016180eb20aa3c0f065265e822b8dae212394eb"
+}

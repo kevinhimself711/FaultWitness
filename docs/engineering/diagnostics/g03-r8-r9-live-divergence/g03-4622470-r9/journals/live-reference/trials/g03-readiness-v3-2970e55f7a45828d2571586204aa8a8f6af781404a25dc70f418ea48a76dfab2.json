@@ -1,0 +1,116 @@
+{
+  "artifact_digest": "01af5d5115f86952308f10f52f04912e09829afc1eaf002d0529a8591302f82a",
+  "cache_key": "50bb34e0c347d2df07a9f03495d57264fb352334aa7b6bff6a5c1589672bc4e9",
+  "execution_attempt": 1,
+  "history": [],
+  "payload": {
+    "baseline": "naive_react",
+    "case_id": "SEED-G02-0018",
+    "cost_cny": 0.014778,
+    "input_tokens": 6013,
+    "output_tokens": 344,
+    "repetition": 2,
+    "result": {
+      "baseline": "naive_react",
+      "case_id": "SEED-G02-0018",
+      "claims": [
+        {
+          "claim_type": "root_cause",
+          "evidence_refs": [
+            "ev3-007d9bf2e36faa6bd4cde351",
+            "ev3-a19b68b9d074ae7221b29085"
+          ],
+          "value": "productCatalogFailure"
+        }
+      ],
+      "evidence": [
+        "ev3-007d9bf2e36faa6bd4cde351",
+        "ev3-a19b68b9d074ae7221b29085"
+      ],
+      "fallback_count": 0,
+      "input_tokens": 6013,
+      "latency_ms": 12314.513,
+      "metric_version": 3,
+      "model_id": "qwen3.7-plus-2026-05-26",
+      "output_tokens": 344,
+      "root_cause": "productCatalogFailure",
+      "root_cause_candidates": [
+        "productCatalogFailure"
+      ],
+      "schema_version": "2.0.0",
+      "status": "ok"
+    },
+    "trial_telemetry": {
+      "draft_digests": [
+        "c495613a979ee560987a388ae71814bf1fd8c13d07ce7f9c2c143519b9bf50b0",
+        "c495613a979ee560987a388ae71814bf1fd8c13d07ce7f9c2c143519b9bf50b0"
+      ],
+      "drafts": [
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-007d9bf2e36faa6bd4cde351",
+                "ev3-a19b68b9d074ae7221b29085"
+              ],
+              "value": "productCatalogFailure"
+            }
+          ],
+          "evidence": [
+            "ev3-007d9bf2e36faa6bd4cde351",
+            "ev3-a19b68b9d074ae7221b29085"
+          ],
+          "root_cause": "productCatalogFailure",
+          "root_cause_candidates": [
+            "productCatalogFailure"
+          ]
+        },
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-007d9bf2e36faa6bd4cde351",
+                "ev3-a19b68b9d074ae7221b29085"
+              ],
+              "value": "productCatalogFailure"
+            }
+          ],
+          "evidence": [
+            "ev3-007d9bf2e36faa6bd4cde351",
+            "ev3-a19b68b9d074ae7221b29085"
+          ],
+          "root_cause": "productCatalogFailure",
+          "root_cause_candidates": [
+            "productCatalogFailure"
+          ]
+        }
+      ],
+      "terminal_reason": "stable_diagnosis",
+      "turn_count": 2,
+      "turn_usage": [
+        {
+          "finish_reason": "stop",
+          "input_tokens": 2922,
+          "latency_ms": 7351.172,
+          "output_tokens": 203,
+          "turn": 1
+        },
+        {
+          "finish_reason": "stop",
+          "input_tokens": 3091,
+          "latency_ms": 4053.294,
+          "output_tokens": 141,
+          "turn": 2
+        }
+      ]
+    }
+  },
+  "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+  "record_version": 2,
+  "recorded_at": "2026-09-05T11:31:17.718117+00:00",
+  "runtime_checkpoints": {},
+  "status": "pass",
+  "trial_id": "g03-readiness-v3-2970e55f7a45828d2571586204aa8a8f6af781404a25dc70f418ea48a76dfab2"
+}

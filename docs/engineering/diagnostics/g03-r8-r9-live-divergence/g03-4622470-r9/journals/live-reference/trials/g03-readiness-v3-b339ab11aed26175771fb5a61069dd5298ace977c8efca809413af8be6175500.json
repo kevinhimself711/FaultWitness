@@ -1,0 +1,92 @@
+{
+  "artifact_digest": "620ad1511d794865617dcda41100bcb0836ae8bf4049c54e7fb9fcbf6718d907",
+  "cache_key": "1800aea440a703220456472e60eddfff5d5a1727cd03aeeaf55dc3f3eb8dc0a0",
+  "execution_attempt": 1,
+  "history": [],
+  "payload": {
+    "baseline": "no_rag",
+    "case_id": "SEED-G02-0029",
+    "cost_cny": 0.007904,
+    "input_tokens": 2892,
+    "output_tokens": 265,
+    "repetition": 3,
+    "result": {
+      "baseline": "no_rag",
+      "case_id": "SEED-G02-0029",
+      "claims": [
+        {
+          "claim_type": "root_cause",
+          "evidence_refs": [
+            "ev3-76735d427bee6b13963e64fb",
+            "ev3-9013b6f8d9d063a73ebffcd3",
+            "ev3-4785bd5cc34d09cc9667d989"
+          ],
+          "value": "kafkaQueueProblems"
+        }
+      ],
+      "evidence": [
+        "ev3-76735d427bee6b13963e64fb",
+        "ev3-9013b6f8d9d063a73ebffcd3",
+        "ev3-4785bd5cc34d09cc9667d989"
+      ],
+      "fallback_count": 0,
+      "input_tokens": 2892,
+      "latency_ms": 8489.429,
+      "metric_version": 3,
+      "model_id": "qwen3.7-plus-2026-05-26",
+      "output_tokens": 265,
+      "root_cause": "kafkaQueueProblems",
+      "root_cause_candidates": [
+        "kafkaQueueProblems"
+      ],
+      "schema_version": "2.0.0",
+      "status": "ok"
+    },
+    "trial_telemetry": {
+      "draft_digests": [
+        "94728c3aed1decb8cd1139bf96d0fdc686712e3f112dbb5fecc246dfb1f40f34"
+      ],
+      "drafts": [
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-76735d427bee6b13963e64fb",
+                "ev3-9013b6f8d9d063a73ebffcd3",
+                "ev3-4785bd5cc34d09cc9667d989"
+              ],
+              "value": "kafkaQueueProblems"
+            }
+          ],
+          "evidence": [
+            "ev3-76735d427bee6b13963e64fb",
+            "ev3-9013b6f8d9d063a73ebffcd3",
+            "ev3-4785bd5cc34d09cc9667d989"
+          ],
+          "root_cause": "kafkaQueueProblems",
+          "root_cause_candidates": [
+            "kafkaQueueProblems"
+          ]
+        }
+      ],
+      "terminal_reason": "max_turns",
+      "turn_count": 1,
+      "turn_usage": [
+        {
+          "finish_reason": "stop",
+          "input_tokens": 2892,
+          "latency_ms": 7638.264,
+          "output_tokens": 265,
+          "turn": 1
+        }
+      ]
+    }
+  },
+  "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+  "record_version": 2,
+  "recorded_at": "2026-09-05T12:02:32.976734+00:00",
+  "runtime_checkpoints": {},
+  "status": "pass",
+  "trial_id": "g03-readiness-v3-b339ab11aed26175771fb5a61069dd5298ace977c8efca809413af8be6175500"
+}

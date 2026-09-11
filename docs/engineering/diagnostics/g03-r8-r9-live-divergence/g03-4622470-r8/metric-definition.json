@@ -1,0 +1,262 @@
+{
+  "bootstrap": {
+    "cluster_key": "case_id",
+    "method": "percentile",
+    "paired_key": [
+      "case_id",
+      "repetition"
+    ],
+    "resamples": 2000
+  },
+  "candidate_rule": "trace_activity and root_signal both reach threshold",
+  "collector": {
+    "absent_series": "reported as null and classified as infrastructure",
+    "absent_series_wait": "label-blind: a window is unscoreable until every series is present; only a series still absent at the observation deadline fails the case",
+    "ad_cpu_quiescence_deadline_seconds": 240,
+    "ad_cpu_quiescent_max_cores": 0.25,
+    "checkpoint": "g03-readiness-v3-label-blind-six-group-collector-v6",
+    "contract_digest": "53a051589385a8a5a105d6be68a5529d95f5fdf25cdaee1980ee58d83c106044",
+    "fault_activation_deadline_seconds": 90,
+    "fault_sample_interval_seconds": 65,
+    "metric_selectors": "exact pod equality; regex selectors forbidden",
+    "observer_source_sha256": "9a918f3aaaf2c30db40669a65f1f9b68ce5182ca0582a6998cd67bfac378e2ac",
+    "pod_selection": "exactly one non-terminating ad pod and email pod",
+    "poll_interval_seconds": 5,
+    "recovery_observation_deadline_seconds": 240,
+    "recovery_sample_interval_seconds": 65,
+    "restimulate_each_poll": true,
+    "source_sha256": "b831184cf2d95d04ee8528fb47aefa93fa64f691732a07878ccb97fec6bac93a",
+    "terminal_fault_sample": "retained before deadline return for metric v3 only",
+    "trace_services": [
+      "ad",
+      "checkout",
+      "email",
+      "fraud-detection",
+      "payment",
+      "product-catalog"
+    ]
+  },
+  "comparison": "greater_than_or_equal_to",
+  "distractor_rule": "all evidence kinds minus required kinds",
+  "evidence_id_formula": "sha256(case_id + NUL + metric_version + NUL + kind)[:24]",
+  "evidence_kinds": [
+    "journey_window",
+    "trace_activity",
+    "trace_errors",
+    "cpu_window",
+    "memory_window",
+    "queue_window"
+  ],
+  "fault_sample_interval_seconds": 65,
+  "group_definitions": {
+    "cpu_window": {
+      "group_fields": [
+        "id",
+        "kind",
+        "metric",
+        "samples",
+        "service",
+        "source",
+        "unit"
+      ],
+      "sample_fields": [
+        "cpu_cores",
+        "window_index"
+      ]
+    },
+    "journey_window": {
+      "group_fields": [
+        "id",
+        "kind",
+        "samples",
+        "source"
+      ],
+      "sample_fields": [
+        "ready",
+        "status_code",
+        "window_index"
+      ]
+    },
+    "memory_window": {
+      "group_fields": [
+        "id",
+        "kind",
+        "metric",
+        "samples",
+        "service",
+        "source",
+        "unit"
+      ],
+      "sample_fields": [
+        "window_index",
+        "working_set_bytes"
+      ]
+    },
+    "queue_window": {
+      "group_fields": [
+        "id",
+        "kind",
+        "metric",
+        "samples",
+        "service",
+        "source",
+        "unit"
+      ],
+      "sample_fields": [
+        "consumer_lag",
+        "consumer_poll_lag_seconds",
+        "consumer_record_lag",
+        "window_index"
+      ]
+    },
+    "trace_activity": {
+      "group_fields": [
+        "id",
+        "kind",
+        "samples",
+        "service_scope",
+        "source"
+      ],
+      "sample_fields": [
+        "services",
+        "window_index"
+      ]
+    },
+    "trace_errors": {
+      "group_fields": [
+        "id",
+        "kind",
+        "samples",
+        "service_scope",
+        "source"
+      ],
+      "sample_fields": [
+        "services",
+        "window_index"
+      ]
+    }
+  },
+  "healthy_drift_count_per_leave_one_out_case": 124,
+  "healthy_drift_formula": "max(0,right-left) for four consecutive healthy pairs",
+  "incident_excess_formula": "max(two_fault_windows)-median(five_healthy_windows)",
+  "live_budgets": {
+    "cumulative_input_tokens": 65536,
+    "cumulative_output_tokens": 8192,
+    "max_completion_tokens": 2048
+  },
+  "metric_definition_digest": "fc6d001b141172047c385cfbcfeb9feb04ecbb672e0e2796329158d9ff36ecd6",
+  "metric_version": 3,
+  "percentile": {
+    "method": "nearest-rank",
+    "value": 0.99
+  },
+  "presence": {
+    "group_completeness": "six non-empty groups, seven indexed real samples each",
+    "top1_count": 8,
+    "top3_maximum_count": 20
+  },
+  "quanta": {
+    "count": 1,
+    "cpu_cores": 1e-06,
+    "lag_seconds": 0.001,
+    "memory_bytes": 4096
+  },
+  "ranking": "descending minimum standardized excess; lexical label tie-break",
+  "reference_repetitions": {
+    "initial": 3,
+    "maximum": 5,
+    "upgrade_only_when": "all hard gates except deterministic-vs-live significance pass"
+  },
+  "relative_root_signal_floors": {
+    "emailMemoryLeak": 0.05
+  },
+  "required_kinds": {
+    "adHighCpu": [
+      "trace_activity",
+      "cpu_window"
+    ],
+    "emailMemoryLeak": [
+      "trace_activity",
+      "memory_window"
+    ],
+    "kafkaQueueProblems": [
+      "trace_activity",
+      "queue_window"
+    ],
+    "paymentFailure": [
+      "trace_activity",
+      "trace_errors"
+    ],
+    "paymentUnreachable": [
+      "trace_activity",
+      "trace_errors"
+    ],
+    "productCatalogFailure": [
+      "trace_activity",
+      "trace_errors"
+    ]
+  },
+  "result_schema_v3_digest": "160968c86a7b1df6c3299732bfe2d9396ef7e2ed97edf2d219324abf404307aa",
+  "root_signal_features": {
+    "adHighCpu": {
+      "field": "cpu_cores",
+      "kind": "cpu_window",
+      "quantum": 1e-06
+    },
+    "emailMemoryLeak": {
+      "field": "working_set_bytes",
+      "kind": "memory_window",
+      "quantum": 1.0
+    },
+    "kafkaQueueProblems": {
+      "field": "consumer_poll_lag_seconds",
+      "kind": "queue_window",
+      "quantum": 0.001
+    },
+    "paymentFailure": {
+      "field": "error_count",
+      "kind": "trace_errors",
+      "quantum": 1.0
+    },
+    "paymentUnreachable": {
+      "field": "connection_error_count",
+      "kind": "trace_errors",
+      "quantum": 1.0
+    },
+    "productCatalogFailure": {
+      "field": "error_count",
+      "kind": "trace_errors",
+      "quantum": 1.0
+    }
+  },
+  "target_services": {
+    "adHighCpu": "ad",
+    "emailMemoryLeak": "email",
+    "kafkaQueueProblems": "fraud-detection",
+    "paymentFailure": "payment",
+    "paymentUnreachable": "checkout",
+    "productCatalogFailure": "product-catalog"
+  },
+  "threshold_formula": "max(nearest_rank_p99(healthy_positive_drifts)+measurement_quantum,relative_floor_fraction*median(five_healthy_windows))",
+  "trace_activity_service_fields": [
+    "trace_count"
+  ],
+  "trace_error_service_fields": [
+    "connection_error_count",
+    "descriptions",
+    "error_count"
+  ],
+  "trace_service_scope": [
+    "ad",
+    "checkout",
+    "email",
+    "fraud-detection",
+    "payment",
+    "product-catalog"
+  ],
+  "window_counts": {
+    "fault": 2,
+    "healthy": 5
+  },
+  "wire_schema_version": "2.0.0"
+}

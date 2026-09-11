@@ -1,0 +1,1845 @@
+{
+  "artifact_digest": "5858c7963b456d4cf3279e679710755128ba907e33d7c78957007cd59894c00a",
+  "cache_key": "010fe6ead7243e645d7655998adfcddf34c062bd0edbe9a872ce26cd29fe68b3",
+  "execution_attempt": 1,
+  "history": [],
+  "payload": {
+    "family": "change_config",
+    "fault_class": "productCatalogFailure",
+    "observation_packet": {
+      "case_id": "SEED-G02-0016",
+      "evidence_catalog_version": "g03-readiness-v3",
+      "metric_version": 3,
+      "observations": [
+        {
+          "id": "ev3-a32a008d56a41cbe940fbd30",
+          "kind": "journey_window",
+          "samples": [
+            {
+              "ready": true,
+              "status_code": 200,
+              "window_index": 0
+            },
+            {
+              "ready": true,
+              "status_code": 200,
+              "window_index": 1
+            },
+            {
+              "ready": true,
+              "status_code": 200,
+              "window_index": 2
+            },
+            {
+              "ready": true,
+              "status_code": 200,
+              "window_index": 3
+            },
+            {
+              "ready": true,
+              "status_code": 200,
+              "window_index": 4
+            },
+            {
+              "ready": true,
+              "status_code": 200,
+              "window_index": 5
+            },
+            {
+              "ready": true,
+              "status_code": 200,
+              "window_index": 6
+            }
+          ],
+          "source": "frontend-proxy"
+        },
+        {
+          "id": "ev3-e371fb4dc6140be7cb71e716",
+          "kind": "trace_activity",
+          "samples": [
+            {
+              "services": {
+                "ad": {
+                  "trace_count": 2
+                },
+                "checkout": {
+                  "trace_count": 0
+                },
+                "email": {
+                  "trace_count": 0
+                },
+                "fraud-detection": {
+                  "trace_count": 0
+                },
+                "payment": {
+                  "trace_count": 0
+                },
+                "product-catalog": {
+                  "trace_count": 0
+                }
+              },
+              "window_index": 0
+            },
+            {
+              "services": {
+                "ad": {
+                  "trace_count": 2
+                },
+                "checkout": {
+                  "trace_count": 0
+                },
+                "email": {
+                  "trace_count": 0
+                },
+                "fraud-detection": {
+                  "trace_count": 0
+                },
+                "payment": {
+                  "trace_count": 0
+                },
+                "product-catalog": {
+                  "trace_count": 0
+                }
+              },
+              "window_index": 1
+            },
+            {
+              "services": {
+                "ad": {
+                  "trace_count": 2
+                },
+                "checkout": {
+                  "trace_count": 0
+                },
+                "email": {
+                  "trace_count": 0
+                },
+                "fraud-detection": {
+                  "trace_count": 0
+                },
+                "payment": {
+                  "trace_count": 0
+                },
+                "product-catalog": {
+                  "trace_count": 0
+                }
+              },
+              "window_index": 2
+            },
+            {
+              "services": {
+                "ad": {
+                  "trace_count": 2
+                },
+                "checkout": {
+                  "trace_count": 0
+                },
+                "email": {
+                  "trace_count": 0
+                },
+                "fraud-detection": {
+                  "trace_count": 0
+                },
+                "payment": {
+                  "trace_count": 0
+                },
+                "product-catalog": {
+                  "trace_count": 0
+                }
+              },
+              "window_index": 3
+            },
+            {
+              "services": {
+                "ad": {
+                  "trace_count": 2
+                },
+                "checkout": {
+                  "trace_count": 0
+                },
+                "email": {
+                  "trace_count": 0
+                },
+                "fraud-detection": {
+                  "trace_count": 0
+                },
+                "payment": {
+                  "trace_count": 0
+                },
+                "product-catalog": {
+                  "trace_count": 0
+                }
+              },
+              "window_index": 4
+            },
+            {
+              "services": {
+                "ad": {
+                  "trace_count": 0
+                },
+                "checkout": {
+                  "trace_count": 0
+                },
+                "email": {
+                  "trace_count": 0
+                },
+                "fraud-detection": {
+                  "trace_count": 0
+                },
+                "payment": {
+                  "trace_count": 0
+                },
+                "product-catalog": {
+                  "trace_count": 1
+                }
+              },
+              "window_index": 5
+            },
+            {
+              "services": {
+                "ad": {
+                  "trace_count": 0
+                },
+                "checkout": {
+                  "trace_count": 0
+                },
+                "email": {
+                  "trace_count": 0
+                },
+                "fraud-detection": {
+                  "trace_count": 0
+                },
+                "payment": {
+                  "trace_count": 0
+                },
+                "product-catalog": {
+                  "trace_count": 2
+                }
+              },
+              "window_index": 6
+            }
+          ],
+          "service_scope": [
+            "ad",
+            "checkout",
+            "email",
+            "fraud-detection",
+            "payment",
+            "product-catalog"
+          ],
+          "source": "jaeger"
+        },
+        {
+          "id": "ev3-f209098810d35c18e9ef7902",
+          "kind": "trace_errors",
+          "samples": [
+            {
+              "services": {
+                "ad": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "checkout": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "email": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "fraud-detection": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "payment": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "product-catalog": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                }
+              },
+              "window_index": 0
+            },
+            {
+              "services": {
+                "ad": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "checkout": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "email": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "fraud-detection": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "payment": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "product-catalog": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                }
+              },
+              "window_index": 1
+            },
+            {
+              "services": {
+                "ad": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "checkout": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "email": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "fraud-detection": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "payment": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "product-catalog": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                }
+              },
+              "window_index": 2
+            },
+            {
+              "services": {
+                "ad": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "checkout": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "email": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "fraud-detection": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "payment": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "product-catalog": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                }
+              },
+              "window_index": 3
+            },
+            {
+              "services": {
+                "ad": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "checkout": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "email": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "fraud-detection": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "payment": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "product-catalog": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                }
+              },
+              "window_index": 4
+            },
+            {
+              "services": {
+                "ad": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "checkout": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "email": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "fraud-detection": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "payment": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "product-catalog": {
+                  "connection_error_count": 0,
+                  "descriptions": [
+                    "Error: Product Catalog Fail Feature Flag Enabled"
+                  ],
+                  "error_count": 1
+                }
+              },
+              "window_index": 5
+            },
+            {
+              "services": {
+                "ad": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "checkout": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "email": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "fraud-detection": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "payment": {
+                  "connection_error_count": 0,
+                  "descriptions": [],
+                  "error_count": 0
+                },
+                "product-catalog": {
+                  "connection_error_count": 0,
+                  "descriptions": [
+                    "Error: Product Catalog Fail Feature Flag Enabled",
+                    "Error: Product Catalog Fail Feature Flag Enabled"
+                  ],
+                  "error_count": 2
+                }
+              },
+              "window_index": 6
+            }
+          ],
+          "service_scope": [
+            "ad",
+            "checkout",
+            "email",
+            "fraud-detection",
+            "payment",
+            "product-catalog"
+          ],
+          "source": "jaeger"
+        },
+        {
+          "id": "ev3-be9e825ba183ea4754b880c4",
+          "kind": "cpu_window",
+          "metric": "container_cpu_usage_rate",
+          "samples": [
+            {
+              "cpu_cores": 1.6303156320715297,
+              "window_index": 0
+            },
+            {
+              "cpu_cores": 1.6303156320715297,
+              "window_index": 1
+            },
+            {
+              "cpu_cores": 1.6303156320715297,
+              "window_index": 2
+            },
+            {
+              "cpu_cores": 1.6303156320715297,
+              "window_index": 3
+            },
+            {
+              "cpu_cores": 1.6303156320715297,
+              "window_index": 4
+            },
+            {
+              "cpu_cores": 1.6303156320715297,
+              "window_index": 5
+            },
+            {
+              "cpu_cores": 0.0007945806245983161,
+              "window_index": 6
+            }
+          ],
+          "service": "ad",
+          "source": "prometheus",
+          "unit": "cpu_cores"
+        },
+        {
+          "id": "ev3-85f0f750a6926e28c394f6fb",
+          "kind": "memory_window",
+          "metric": "container_memory_working_set",
+          "samples": [
+            {
+              "window_index": 0,
+              "working_set_bytes": 49274880.0
+            },
+            {
+              "window_index": 1,
+              "working_set_bytes": 49274880.0
+            },
+            {
+              "window_index": 2,
+              "working_set_bytes": 49274880.0
+            },
+            {
+              "window_index": 3,
+              "working_set_bytes": 49274880.0
+            },
+            {
+              "window_index": 4,
+              "working_set_bytes": 49274880.0
+            },
+            {
+              "window_index": 5,
+              "working_set_bytes": 49274880.0
+            },
+            {
+              "window_index": 6,
+              "working_set_bytes": 49262592.0
+            }
+          ],
+          "service": "email",
+          "source": "prometheus",
+          "unit": "bytes"
+        },
+        {
+          "id": "ev3-547a07a9b3d0977376e720b5",
+          "kind": "queue_window",
+          "metric": "consumer_poll_lag",
+          "samples": [
+            {
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "window_index": 0
+            },
+            {
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "window_index": 1
+            },
+            {
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "window_index": 2
+            },
+            {
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "window_index": 3
+            },
+            {
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "window_index": 4
+            },
+            {
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "window_index": 5
+            },
+            {
+              "consumer_lag": 0.0,
+              "consumer_poll_lag_seconds": 0.0,
+              "consumer_record_lag": 0.0,
+              "window_index": 6
+            }
+          ],
+          "service": "fraud-detection",
+          "source": "prometheus",
+          "unit": "seconds"
+        }
+      ],
+      "packet_digest": "c0af8ffa5a5735345cafbb541ea6eb7c7734ec1f1e7f25d41d1198fbf7b6b8f0",
+      "problem_brief": "Investigate the ood service incident using only the provided canonical observation packet.",
+      "schema_version": "2.0.0",
+      "windows": [
+        {
+          "index": 0,
+          "phase": "healthy",
+          "recorded_at": "2026-09-03T14:36:41.494516+00:00"
+        },
+        {
+          "index": 1,
+          "phase": "healthy",
+          "recorded_at": "2026-09-03T14:36:42.828221+00:00"
+        },
+        {
+          "index": 2,
+          "phase": "healthy",
+          "recorded_at": "2026-09-03T14:36:44.156667+00:00"
+        },
+        {
+          "index": 3,
+          "phase": "healthy",
+          "recorded_at": "2026-09-03T14:36:45.479355+00:00"
+        },
+        {
+          "index": 4,
+          "phase": "healthy",
+          "recorded_at": "2026-09-03T14:36:46.786191+00:00"
+        },
+        {
+          "index": 5,
+          "phase": "fault",
+          "recorded_at": "2026-09-03T14:36:58.331583+00:00"
+        },
+        {
+          "index": 6,
+          "phase": "fault",
+          "recorded_at": "2026-09-03T14:38:04.870452+00:00"
+        }
+      ]
+    },
+    "result": {
+      "family": "change_config",
+      "fault_class": "productCatalogFailure",
+      "fault_windows": [
+        {
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "cpu_cores": 1.6303156320715297,
+          "journey_status": 200,
+          "phase": "fault",
+          "ready": true,
+          "recorded_at": "2026-09-03T14:36:58.331583+00:00",
+          "trace_activity": {
+            "ad": 0,
+            "checkout": 0,
+            "email": 0,
+            "fraud-detection": 0,
+            "payment": 0,
+            "product-catalog": 1
+          },
+          "trace_errors": {
+            "ad": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "checkout": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "email": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "fraud-detection": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "payment": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "product-catalog": {
+              "connection_error_count": 0,
+              "descriptions": [
+                "Error: Product Catalog Fail Feature Flag Enabled"
+              ],
+              "error_count": 1
+            }
+          },
+          "working_set_bytes": 49274880.0
+        },
+        {
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "cpu_cores": 0.0007945806245983161,
+          "journey_status": 200,
+          "phase": "fault",
+          "ready": true,
+          "recorded_at": "2026-09-03T14:38:04.870452+00:00",
+          "trace_activity": {
+            "ad": 0,
+            "checkout": 0,
+            "email": 0,
+            "fraud-detection": 0,
+            "payment": 0,
+            "product-catalog": 2
+          },
+          "trace_errors": {
+            "ad": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "checkout": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "email": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "fraud-detection": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "payment": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "product-catalog": {
+              "connection_error_count": 0,
+              "descriptions": [
+                "Error: Product Catalog Fail Feature Flag Enabled",
+                "Error: Product Catalog Fail Feature Flag Enabled"
+              ],
+              "error_count": 2
+            }
+          },
+          "working_set_bytes": 49262592.0
+        }
+      ],
+      "healthy_windows": [
+        {
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "cpu_cores": 1.6303156320715297,
+          "journey_status": 200,
+          "phase": "healthy",
+          "ready": true,
+          "recorded_at": "2026-09-03T14:36:41.494516+00:00",
+          "trace_activity": {
+            "ad": 2,
+            "checkout": 0,
+            "email": 0,
+            "fraud-detection": 0,
+            "payment": 0,
+            "product-catalog": 0
+          },
+          "trace_errors": {
+            "ad": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "checkout": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "email": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "fraud-detection": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "payment": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "product-catalog": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            }
+          },
+          "working_set_bytes": 49274880.0
+        },
+        {
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "cpu_cores": 1.6303156320715297,
+          "journey_status": 200,
+          "phase": "healthy",
+          "ready": true,
+          "recorded_at": "2026-09-03T14:36:42.828221+00:00",
+          "trace_activity": {
+            "ad": 2,
+            "checkout": 0,
+            "email": 0,
+            "fraud-detection": 0,
+            "payment": 0,
+            "product-catalog": 0
+          },
+          "trace_errors": {
+            "ad": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "checkout": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "email": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "fraud-detection": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "payment": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "product-catalog": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            }
+          },
+          "working_set_bytes": 49274880.0
+        },
+        {
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "cpu_cores": 1.6303156320715297,
+          "journey_status": 200,
+          "phase": "healthy",
+          "ready": true,
+          "recorded_at": "2026-09-03T14:36:44.156667+00:00",
+          "trace_activity": {
+            "ad": 2,
+            "checkout": 0,
+            "email": 0,
+            "fraud-detection": 0,
+            "payment": 0,
+            "product-catalog": 0
+          },
+          "trace_errors": {
+            "ad": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "checkout": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "email": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "fraud-detection": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "payment": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "product-catalog": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            }
+          },
+          "working_set_bytes": 49274880.0
+        },
+        {
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "cpu_cores": 1.6303156320715297,
+          "journey_status": 200,
+          "phase": "healthy",
+          "ready": true,
+          "recorded_at": "2026-09-03T14:36:45.479355+00:00",
+          "trace_activity": {
+            "ad": 2,
+            "checkout": 0,
+            "email": 0,
+            "fraud-detection": 0,
+            "payment": 0,
+            "product-catalog": 0
+          },
+          "trace_errors": {
+            "ad": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "checkout": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "email": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "fraud-detection": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "payment": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "product-catalog": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            }
+          },
+          "working_set_bytes": 49274880.0
+        },
+        {
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "cpu_cores": 1.6303156320715297,
+          "journey_status": 200,
+          "phase": "healthy",
+          "ready": true,
+          "recorded_at": "2026-09-03T14:36:46.786191+00:00",
+          "trace_activity": {
+            "ad": 2,
+            "checkout": 0,
+            "email": 0,
+            "fraud-detection": 0,
+            "payment": 0,
+            "product-catalog": 0
+          },
+          "trace_errors": {
+            "ad": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "checkout": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "email": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "fraud-detection": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "payment": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "product-catalog": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            }
+          },
+          "working_set_bytes": 49274880.0
+        }
+      ],
+      "observation_packet": {
+        "case_id": "SEED-G02-0016",
+        "evidence_catalog_version": "g03-readiness-v3",
+        "metric_version": 3,
+        "observations": [
+          {
+            "id": "ev3-a32a008d56a41cbe940fbd30",
+            "kind": "journey_window",
+            "samples": [
+              {
+                "ready": true,
+                "status_code": 200,
+                "window_index": 0
+              },
+              {
+                "ready": true,
+                "status_code": 200,
+                "window_index": 1
+              },
+              {
+                "ready": true,
+                "status_code": 200,
+                "window_index": 2
+              },
+              {
+                "ready": true,
+                "status_code": 200,
+                "window_index": 3
+              },
+              {
+                "ready": true,
+                "status_code": 200,
+                "window_index": 4
+              },
+              {
+                "ready": true,
+                "status_code": 200,
+                "window_index": 5
+              },
+              {
+                "ready": true,
+                "status_code": 200,
+                "window_index": 6
+              }
+            ],
+            "source": "frontend-proxy"
+          },
+          {
+            "id": "ev3-e371fb4dc6140be7cb71e716",
+            "kind": "trace_activity",
+            "samples": [
+              {
+                "services": {
+                  "ad": {
+                    "trace_count": 2
+                  },
+                  "checkout": {
+                    "trace_count": 0
+                  },
+                  "email": {
+                    "trace_count": 0
+                  },
+                  "fraud-detection": {
+                    "trace_count": 0
+                  },
+                  "payment": {
+                    "trace_count": 0
+                  },
+                  "product-catalog": {
+                    "trace_count": 0
+                  }
+                },
+                "window_index": 0
+              },
+              {
+                "services": {
+                  "ad": {
+                    "trace_count": 2
+                  },
+                  "checkout": {
+                    "trace_count": 0
+                  },
+                  "email": {
+                    "trace_count": 0
+                  },
+                  "fraud-detection": {
+                    "trace_count": 0
+                  },
+                  "payment": {
+                    "trace_count": 0
+                  },
+                  "product-catalog": {
+                    "trace_count": 0
+                  }
+                },
+                "window_index": 1
+              },
+              {
+                "services": {
+                  "ad": {
+                    "trace_count": 2
+                  },
+                  "checkout": {
+                    "trace_count": 0
+                  },
+                  "email": {
+                    "trace_count": 0
+                  },
+                  "fraud-detection": {
+                    "trace_count": 0
+                  },
+                  "payment": {
+                    "trace_count": 0
+                  },
+                  "product-catalog": {
+                    "trace_count": 0
+                  }
+                },
+                "window_index": 2
+              },
+              {
+                "services": {
+                  "ad": {
+                    "trace_count": 2
+                  },
+                  "checkout": {
+                    "trace_count": 0
+                  },
+                  "email": {
+                    "trace_count": 0
+                  },
+                  "fraud-detection": {
+                    "trace_count": 0
+                  },
+                  "payment": {
+                    "trace_count": 0
+                  },
+                  "product-catalog": {
+                    "trace_count": 0
+                  }
+                },
+                "window_index": 3
+              },
+              {
+                "services": {
+                  "ad": {
+                    "trace_count": 2
+                  },
+                  "checkout": {
+                    "trace_count": 0
+                  },
+                  "email": {
+                    "trace_count": 0
+                  },
+                  "fraud-detection": {
+                    "trace_count": 0
+                  },
+                  "payment": {
+                    "trace_count": 0
+                  },
+                  "product-catalog": {
+                    "trace_count": 0
+                  }
+                },
+                "window_index": 4
+              },
+              {
+                "services": {
+                  "ad": {
+                    "trace_count": 0
+                  },
+                  "checkout": {
+                    "trace_count": 0
+                  },
+                  "email": {
+                    "trace_count": 0
+                  },
+                  "fraud-detection": {
+                    "trace_count": 0
+                  },
+                  "payment": {
+                    "trace_count": 0
+                  },
+                  "product-catalog": {
+                    "trace_count": 1
+                  }
+                },
+                "window_index": 5
+              },
+              {
+                "services": {
+                  "ad": {
+                    "trace_count": 0
+                  },
+                  "checkout": {
+                    "trace_count": 0
+                  },
+                  "email": {
+                    "trace_count": 0
+                  },
+                  "fraud-detection": {
+                    "trace_count": 0
+                  },
+                  "payment": {
+                    "trace_count": 0
+                  },
+                  "product-catalog": {
+                    "trace_count": 2
+                  }
+                },
+                "window_index": 6
+              }
+            ],
+            "service_scope": [
+              "ad",
+              "checkout",
+              "email",
+              "fraud-detection",
+              "payment",
+              "product-catalog"
+            ],
+            "source": "jaeger"
+          },
+          {
+            "id": "ev3-f209098810d35c18e9ef7902",
+            "kind": "trace_errors",
+            "samples": [
+              {
+                "services": {
+                  "ad": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "checkout": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "email": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "fraud-detection": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "payment": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "product-catalog": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  }
+                },
+                "window_index": 0
+              },
+              {
+                "services": {
+                  "ad": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "checkout": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "email": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "fraud-detection": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "payment": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "product-catalog": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  }
+                },
+                "window_index": 1
+              },
+              {
+                "services": {
+                  "ad": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "checkout": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "email": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "fraud-detection": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "payment": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "product-catalog": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  }
+                },
+                "window_index": 2
+              },
+              {
+                "services": {
+                  "ad": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "checkout": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "email": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "fraud-detection": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "payment": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "product-catalog": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  }
+                },
+                "window_index": 3
+              },
+              {
+                "services": {
+                  "ad": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "checkout": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "email": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "fraud-detection": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "payment": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "product-catalog": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  }
+                },
+                "window_index": 4
+              },
+              {
+                "services": {
+                  "ad": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "checkout": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "email": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "fraud-detection": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "payment": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "product-catalog": {
+                    "connection_error_count": 0,
+                    "descriptions": [
+                      "Error: Product Catalog Fail Feature Flag Enabled"
+                    ],
+                    "error_count": 1
+                  }
+                },
+                "window_index": 5
+              },
+              {
+                "services": {
+                  "ad": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "checkout": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "email": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "fraud-detection": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "payment": {
+                    "connection_error_count": 0,
+                    "descriptions": [],
+                    "error_count": 0
+                  },
+                  "product-catalog": {
+                    "connection_error_count": 0,
+                    "descriptions": [
+                      "Error: Product Catalog Fail Feature Flag Enabled",
+                      "Error: Product Catalog Fail Feature Flag Enabled"
+                    ],
+                    "error_count": 2
+                  }
+                },
+                "window_index": 6
+              }
+            ],
+            "service_scope": [
+              "ad",
+              "checkout",
+              "email",
+              "fraud-detection",
+              "payment",
+              "product-catalog"
+            ],
+            "source": "jaeger"
+          },
+          {
+            "id": "ev3-be9e825ba183ea4754b880c4",
+            "kind": "cpu_window",
+            "metric": "container_cpu_usage_rate",
+            "samples": [
+              {
+                "cpu_cores": 1.6303156320715297,
+                "window_index": 0
+              },
+              {
+                "cpu_cores": 1.6303156320715297,
+                "window_index": 1
+              },
+              {
+                "cpu_cores": 1.6303156320715297,
+                "window_index": 2
+              },
+              {
+                "cpu_cores": 1.6303156320715297,
+                "window_index": 3
+              },
+              {
+                "cpu_cores": 1.6303156320715297,
+                "window_index": 4
+              },
+              {
+                "cpu_cores": 1.6303156320715297,
+                "window_index": 5
+              },
+              {
+                "cpu_cores": 0.0007945806245983161,
+                "window_index": 6
+              }
+            ],
+            "service": "ad",
+            "source": "prometheus",
+            "unit": "cpu_cores"
+          },
+          {
+            "id": "ev3-85f0f750a6926e28c394f6fb",
+            "kind": "memory_window",
+            "metric": "container_memory_working_set",
+            "samples": [
+              {
+                "window_index": 0,
+                "working_set_bytes": 49274880.0
+              },
+              {
+                "window_index": 1,
+                "working_set_bytes": 49274880.0
+              },
+              {
+                "window_index": 2,
+                "working_set_bytes": 49274880.0
+              },
+              {
+                "window_index": 3,
+                "working_set_bytes": 49274880.0
+              },
+              {
+                "window_index": 4,
+                "working_set_bytes": 49274880.0
+              },
+              {
+                "window_index": 5,
+                "working_set_bytes": 49274880.0
+              },
+              {
+                "window_index": 6,
+                "working_set_bytes": 49262592.0
+              }
+            ],
+            "service": "email",
+            "source": "prometheus",
+            "unit": "bytes"
+          },
+          {
+            "id": "ev3-547a07a9b3d0977376e720b5",
+            "kind": "queue_window",
+            "metric": "consumer_poll_lag",
+            "samples": [
+              {
+                "consumer_lag": 0.0,
+                "consumer_poll_lag_seconds": 0.0,
+                "consumer_record_lag": 0.0,
+                "window_index": 0
+              },
+              {
+                "consumer_lag": 0.0,
+                "consumer_poll_lag_seconds": 0.0,
+                "consumer_record_lag": 0.0,
+                "window_index": 1
+              },
+              {
+                "consumer_lag": 0.0,
+                "consumer_poll_lag_seconds": 0.0,
+                "consumer_record_lag": 0.0,
+                "window_index": 2
+              },
+              {
+                "consumer_lag": 0.0,
+                "consumer_poll_lag_seconds": 0.0,
+                "consumer_record_lag": 0.0,
+                "window_index": 3
+              },
+              {
+                "consumer_lag": 0.0,
+                "consumer_poll_lag_seconds": 0.0,
+                "consumer_record_lag": 0.0,
+                "window_index": 4
+              },
+              {
+                "consumer_lag": 0.0,
+                "consumer_poll_lag_seconds": 0.0,
+                "consumer_record_lag": 0.0,
+                "window_index": 5
+              },
+              {
+                "consumer_lag": 0.0,
+                "consumer_poll_lag_seconds": 0.0,
+                "consumer_record_lag": 0.0,
+                "window_index": 6
+              }
+            ],
+            "service": "fraud-detection",
+            "source": "prometheus",
+            "unit": "seconds"
+          }
+        ],
+        "packet_digest": "c0af8ffa5a5735345cafbb541ea6eb7c7734ec1f1e7f25d41d1198fbf7b6b8f0",
+        "problem_brief": "Investigate the ood service incident using only the provided canonical observation packet.",
+        "schema_version": "2.0.0",
+        "windows": [
+          {
+            "index": 0,
+            "phase": "healthy",
+            "recorded_at": "2026-09-03T14:36:41.494516+00:00"
+          },
+          {
+            "index": 1,
+            "phase": "healthy",
+            "recorded_at": "2026-09-03T14:36:42.828221+00:00"
+          },
+          {
+            "index": 2,
+            "phase": "healthy",
+            "recorded_at": "2026-09-03T14:36:44.156667+00:00"
+          },
+          {
+            "index": 3,
+            "phase": "healthy",
+            "recorded_at": "2026-09-03T14:36:45.479355+00:00"
+          },
+          {
+            "index": 4,
+            "phase": "healthy",
+            "recorded_at": "2026-09-03T14:36:46.786191+00:00"
+          },
+          {
+            "index": 5,
+            "phase": "fault",
+            "recorded_at": "2026-09-03T14:36:58.331583+00:00"
+          },
+          {
+            "index": 6,
+            "phase": "fault",
+            "recorded_at": "2026-09-03T14:38:04.870452+00:00"
+          }
+        ]
+      },
+      "original_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+      "poll_stimuli": {
+        "fault": 1,
+        "recovery": 0
+      },
+      "recovery_observations": [
+        {
+          "absent_series": [],
+          "checkout_error_spans": 0,
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "cpu_rate": 0.0007945806245983161,
+          "descriptions": [],
+          "error_spans": 0,
+          "journey_healthy": true,
+          "journey_status": 200,
+          "kafka_fault_log": false,
+          "kafka_log_error": false,
+          "metric_pods": {
+            "ad": "ad-68d778b69-zsths",
+            "email": "email-846bdcbfb9-c9m2q"
+          },
+          "payment_connection_errors": 0,
+          "ready": true,
+          "recorded_at": "2026-09-03T14:38:08.067529+00:00",
+          "signal_not_worsening": true,
+          "trace_activity": {
+            "ad": 0,
+            "checkout": 0,
+            "email": 0,
+            "fraud-detection": 0,
+            "payment": 0,
+            "product-catalog": 0
+          },
+          "trace_count": 0,
+          "trace_errors": {
+            "ad": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "checkout": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "email": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "fraud-detection": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "payment": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "product-catalog": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            }
+          },
+          "working_set": 49262592.0
+        },
+        {
+          "absent_series": [],
+          "checkout_error_spans": 0,
+          "consumer_lag": 0.0,
+          "consumer_poll_lag_seconds": 0.0,
+          "consumer_record_lag": 0.0,
+          "cpu_rate": 0.0005075983202365586,
+          "descriptions": [],
+          "error_spans": 0,
+          "journey_healthy": true,
+          "journey_status": 200,
+          "kafka_fault_log": false,
+          "kafka_log_error": false,
+          "metric_pods": {
+            "ad": "ad-68d778b69-zsths",
+            "email": "email-846bdcbfb9-c9m2q"
+          },
+          "payment_connection_errors": 0,
+          "ready": true,
+          "recorded_at": "2026-09-03T14:39:14.672001+00:00",
+          "signal_not_worsening": true,
+          "trace_activity": {
+            "ad": 0,
+            "checkout": 0,
+            "email": 0,
+            "fraud-detection": 0,
+            "payment": 0,
+            "product-catalog": 0
+          },
+          "trace_count": 0,
+          "trace_errors": {
+            "ad": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "checkout": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "email": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "fraud-detection": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "payment": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            },
+            "product-catalog": {
+              "connection_error_count": 0,
+              "descriptions": [],
+              "error_count": 0
+            }
+          },
+          "working_set": 49262592.0
+        }
+      ],
+      "restored_digest": "9bb1682b9914aec1c99b3acdced6943892351c0057644be8c138dbcb5280a5bb",
+      "scenario_id": "SEED-G02-0016",
+      "state_sequence": [
+        "HEALTHY",
+        "FAULT_ACTIVE",
+        "HEALTHY"
+      ]
+    },
+    "scenario_id": "SEED-G02-0016"
+  },
+  "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+  "record_version": 2,
+  "recorded_at": "2026-09-03T14:39:06.936590+00:00",
+  "runtime_checkpoints": {},
+  "status": "pass",
+  "trial_id": "g03-readiness-v3-scenario-seed-g02-0016"
+}

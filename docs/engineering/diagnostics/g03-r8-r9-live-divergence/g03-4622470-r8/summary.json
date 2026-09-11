@@ -1,0 +1,469 @@
+{
+  "N": {
+    "ablation_live": 96,
+    "deterministic": 32,
+    "registered_live": 192,
+    "repetitions": 3,
+    "scenarios": 32
+  },
+  "amd_digest": "03da4df9d0fc6b2e03ddf06ddde9443f112a62c42e0b3f1052538774d482338a",
+  "artifact_digests": {
+    "aggregate-r3.json": "55fafc6b29f389cd01d406ab0a68bae87f6a07d4d3f24514cb9b8e8ff349e89a",
+    "live-r3.json": "0ea850a928165bc7e6e7adf1280c2f11209dd0375cb18a2407c3f74ca2e6e2af"
+  },
+  "baseline_order": {
+    "estimates": {
+      "deterministic": 0.8125,
+      "naive_react": 0.16666666666666666,
+      "no_rag": 0.14583333333333334
+    },
+    "exact_all_equal": false,
+    "observational_only": true
+  },
+  "baseline_token_stats": {
+    "deterministic": {
+      "input": {
+        "max": 0,
+        "p95": 0,
+        "total": 0
+      },
+      "output": {
+        "max": 0,
+        "p95": 0,
+        "total": 0
+      }
+    },
+    "naive_react": {
+      "input": {
+        "max": 9037,
+        "p95": 6100,
+        "total": 569731
+      },
+      "output": {
+        "max": 508,
+        "p95": 362,
+        "total": 25394
+      }
+    },
+    "no_rag": {
+      "input": {
+        "max": 3063,
+        "p95": 2981,
+        "total": 275847
+      },
+      "output": {
+        "max": 214,
+        "p95": 212,
+        "total": 15426
+      }
+    }
+  },
+  "best_baseline": {
+    "core_e2e": 0.8125,
+    "maximum_allowed": 0.9,
+    "name": "deterministic"
+  },
+  "blocked_reason": null,
+  "checkpoint_identities": {
+    "model_id": "qwen3.7-plus-2026-05-26",
+    "sut_image_set_digest": "3df502956e9c4ab2311501a9e867a40bdc1afae79ebcf3de284a95611e52610e",
+    "sut_producer_sha": "86a459c0bec1bcf3e583fd1280fbca2667479d2e"
+  },
+  "config_digest": "ece5a36ffb181e58d4792405c72e3059f67c48048b68cfe402bdf7803adc43b0",
+  "cost_cny": 2.693026,
+  "dataset_digest": "8f5a628ab1eb5e87fd5846194b8d679279e1b9a999ed3905e073eed606617b45",
+  "deterministic_artifact_digest": "22c941b70cf4e819d6da354f0fda12d30d74dd3500caa44b1b350be75392a433",
+  "dirty_worktree": true,
+  "environment": {
+    "hostname": "<redacted-runner-hostname-A>",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.7",
+    "recorded_at": "2026-09-05T10:40:14.325575+00:00"
+  },
+  "execution_status": "completed",
+  "fallback_count": 0,
+  "findings": {
+    "multi_turn_delta": {
+      "B": 2000,
+      "estimate": 0.041666666666666664,
+      "lower": 0.0,
+      "upper": 0.09375
+    },
+    "naive_react_minus_no_rag": {
+      "B": 2000,
+      "estimate": 0.020833333333333332,
+      "lower": -0.010416666666666666,
+      "upper": 0.0625
+    },
+    "naive_react_single": {
+      "arm_wide_budget_failure": false,
+      "case_clusters": 32,
+      "cluster_key": "case_id",
+      "confidence": 0.95,
+      "cost_cny": 0.67531,
+      "failure_counts": {
+        "distractor_evidence": 4,
+        "missing_required_evidence": 80
+      },
+      "fallback_count": 0,
+      "fault_family_success": {
+        "change_config": {
+          "B": 2000,
+          "estimate": 0.041666666666666664,
+          "lower": 0.0,
+          "upper": 0.125
+        },
+        "dependency_network": {
+          "B": 2000,
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0
+        },
+        "resource_capacity": {
+          "B": 2000,
+          "estimate": 0.4583333333333333,
+          "lower": 0.125,
+          "upper": 0.7916666666666666
+        },
+        "runtime_data": {
+          "B": 2000,
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0
+        }
+      },
+      "input_tokens": 276999,
+      "metric_version": 3,
+      "metrics": {
+        "core_e2e": {
+          "B": 2000,
+          "estimate": 0.125,
+          "lower": 0.03125,
+          "upper": 0.23958333333333334
+        },
+        "evidence_precision": {
+          "B": 2000,
+          "estimate": 0.9635416666666666,
+          "lower": 0.8958333333333334,
+          "upper": 1.0
+        },
+        "root_cause_top3": {
+          "B": 2000,
+          "estimate": 0.9583333333333334,
+          "lower": 0.8854166666666666,
+          "upper": 1.0
+        },
+        "unsupported_critical_claim": {
+          "B": 2000,
+          "estimate": 0.875,
+          "lower": 0.7604166666666666,
+          "upper": 0.96875
+        }
+      },
+      "not_applicable": {
+        "dead_no_progress_loop": {
+          "proof_obligation": {
+            "gate": "G03",
+            "required_artifact": "per-trial terminal reasons and progress digests",
+            "runner": "g03.termination_guard_matrix"
+          },
+          "reason": "reference correction turns are not the G03 Agent loop",
+          "status": "not_applicable"
+        },
+        "tool_schema_validity": {
+          "proof_obligation": {
+            "gate": "G03",
+            "required_artifact": "per-call schema verdicts",
+            "runner": "g03.tool_contract_matrix"
+          },
+          "reason": "metric-v3 reference baselines make no tool calls",
+          "status": "not_applicable"
+        }
+      },
+      "output_tokens": 15164,
+      "token_stats": {
+        "input": {
+          "max": 3075,
+          "p95": 2993,
+          "total": 276999
+        },
+        "output": {
+          "max": 214,
+          "p95": 212,
+          "total": 15164
+        }
+      },
+      "trial_count": 96
+    },
+    "observed_order": [
+      "no_rag",
+      "naive_react",
+      "deterministic"
+    ]
+  },
+  "g03_comparison": {
+    "feasible_on_unit_interval": true,
+    "margin": 0.05,
+    "minimum_core_e2e": 0.8625,
+    "operator": ">="
+  },
+  "global_core_e2e_floor": {
+    "definition": "max(0.70,best_baseline+0.10)",
+    "feasible_on_unit_interval": true,
+    "minimum_core_e2e": 0.9125
+  },
+  "inherited_trials": {
+    "inherited_count": 32,
+    "inherited_trials": [
+      {
+        "artifact_digest": "edf3a0803c6a0be6dc097b4507633ab8ea5dd02cbfda3a0a1a0a013bb260ff90",
+        "cache_key": "2e975b2c2a02d97b839eb62e6352a5e61df8bcee93e451251c2e554032e54d4f",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0001"
+      },
+      {
+        "artifact_digest": "b2454c142412c5943c363d8656168d5f19e9a9407bddd3c5d60daeff5f428e80",
+        "cache_key": "4c709b2cc571be94f04e737c9a3dee9a3461a5f869afc38b6f4d374a65109c70",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0002"
+      },
+      {
+        "artifact_digest": "4649d0bfd3d1e1c552b252f4b09c62b458bb3db3757747b5661c13ee1ee8fdbf",
+        "cache_key": "9ff96e16f4a2f0beb2b3e9e9fbda144684c25de211474e80916e935dc4fc56a4",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0003"
+      },
+      {
+        "artifact_digest": "69e1b14f47c6bf1d55b44a274a73145413552f202bf0db3125b36d0feecdf85e",
+        "cache_key": "1525b07e743a61b7c9aaec7ccfe86dc9425b5ea6d90632b02fa3951e92c2a8a9",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0004"
+      },
+      {
+        "artifact_digest": "6e3551b4ad7400c79fda1bfe3f1fff75b45171ad623baa1d395da72be442886b",
+        "cache_key": "f558476b2379e75d5ecc6a601b518a27b4bae1dfe9049fef1c27464b48fad0e4",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0005"
+      },
+      {
+        "artifact_digest": "ee882a2f924903c71ed5966756c95ba35655f70cca04849f626f23ca4203c3e5",
+        "cache_key": "5c22e595aa6c32cd0d0054e4621e407254573013b1d25f5f5cc35b6b3fad5738",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0006"
+      },
+      {
+        "artifact_digest": "e09f467732265f8755b545bfeab3d7d230c1016f14a2ab9707a0c25a0d5a9445",
+        "cache_key": "3e2735dda7c1b9a5498a4ff6202be9e948081bf9cdf88948c97474c5a5cda493",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0007"
+      },
+      {
+        "artifact_digest": "6bd52a488a2ef5ac36fc59f1c8d80d9eb14f5b7dcab0abf8799f46283cb7759f",
+        "cache_key": "a84b77c006bb902b7025fb0dce1760aa69934331aa81bedfe37d11d5a32ee686",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0008"
+      },
+      {
+        "artifact_digest": "b3f10c15b3f6cea16324aa7ca83d9be94689453f35e8554d148fbce1ee4a0a69",
+        "cache_key": "a4eb6f62c30705f4c0e9ec742878b8b0fc1a83666daa5200f39db082028ae4cd",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0009"
+      },
+      {
+        "artifact_digest": "9ee25943e0d55cb22a50904d09dd4429aac6cbc8b3a813bfe09414a0081fa887",
+        "cache_key": "92650448b95318c39bf49c7d84455651aeca107d6e5c34c976c1283e9033d84f",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0010"
+      },
+      {
+        "artifact_digest": "742cd8bc2af2ae67afba5d345886a6a3e630e9ff1ca1ca3616b8ec410179e267",
+        "cache_key": "73d14d78be0d47601614b024a90b644e1306e843b9afd45dad284d0c91eb8b78",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0011"
+      },
+      {
+        "artifact_digest": "023d08e03d81347abd6a37414512906ab7d90ff1e9038cca5270d913bcd24a06",
+        "cache_key": "400e3efeed3c406620cd57b3a0eea990f9a967b86cf22f8ac0c2ade6250e0a6e",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0012"
+      },
+      {
+        "artifact_digest": "b3080770f26a710870a3d2f32c38cc8e2efc9ec3e2bbea4d48a3f23857f8a09b",
+        "cache_key": "a1b47a1249a22cf04332e770eadaee6e114fd16f0741b059d8079221f61b6b76",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0013"
+      },
+      {
+        "artifact_digest": "7e7156867c17ae0cfd4898186511924de7455fa3c762d2bd6a3e35846b4dfcad",
+        "cache_key": "823fcc22c318e3d859a84f5e99d35be05c7b601334544b0c4f8b2fb6a5d823fa",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0014"
+      },
+      {
+        "artifact_digest": "6f6f3d01fbeec97981227b6ebda94651d6350b28cfa9321a26e2b3d9bafefc1b",
+        "cache_key": "a5b05f2df50099bccbe304f4c21a0ad519b3d86fb64401f50938b718dd6c50f3",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0015"
+      },
+      {
+        "artifact_digest": "5858c7963b456d4cf3279e679710755128ba907e33d7c78957007cd59894c00a",
+        "cache_key": "010fe6ead7243e645d7655998adfcddf34c062bd0edbe9a872ce26cd29fe68b3",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0016"
+      },
+      {
+        "artifact_digest": "abd3e4f45d2d6dc4364628025854edd305d78475477b39eb85de4b5cc921ef7e",
+        "cache_key": "d8524085c6333b01a7061e46d6d8c4f3633a794220fe9845df93b900c4beabde",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0017"
+      },
+      {
+        "artifact_digest": "5d7f718a4febb8d8f838f40e97fdfb3a1842975a2fbdc5b013460177d6cb97d3",
+        "cache_key": "29a44b186c4db83cd283ca95a9dba12d657003c02e8dc0fce42df2fb3313e639",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0018"
+      },
+      {
+        "artifact_digest": "f3972d5610239cb4a17a1030a7dcc0acac21c6500f55380fbd7caf9b3d8ec68b",
+        "cache_key": "4f8ab6ab4f68fb2aa93cdc9d6136fdcee99c6a233aa094c8bfd453e7415bc20d",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0019"
+      },
+      {
+        "artifact_digest": "1c9d6cbfe70d8839a4cc5fe13ad749bc0862304ba17e5db8b6e96819e190aa42",
+        "cache_key": "e0559c6e78c141beb8b700dbe083ac6d6c739fe5dc2c20617abfca9708176529",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0020"
+      },
+      {
+        "artifact_digest": "ab5f74865063e06afa822cbe0782690e39af71b65d7a11a35b1688a88f033f23",
+        "cache_key": "d549271594ea3bf1a6511b7cde715567412caaa7189d14ef02740d06c331b088",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0021"
+      },
+      {
+        "artifact_digest": "d8a2747b1901f24c10cf7b4451bd632ed0f7c82f7c1bce00d29b881bfaa71143",
+        "cache_key": "9b4d569a9d8137271126f7cc0ed5d8908fb29b268a72eb5c30a8defdff6a53d7",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0022"
+      },
+      {
+        "artifact_digest": "0dd5b5b2272d3912e97a9bd15acde1061911681d3a2324969416926c89ed211c",
+        "cache_key": "b5dfc42412d4eb4b93fb050337511675283414a7108281ea71de0c8cd29a8c36",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0023"
+      },
+      {
+        "artifact_digest": "d13338de5e73ecb0f5db3c1af049ee7e50a83c643c9f1e52d9b0ef3a3d5915d9",
+        "cache_key": "c663ecbc2d84a6a4c712db8764848a4b6ca89ae3abc6a9afd13be411a91c3ab8",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0024"
+      },
+      {
+        "artifact_digest": "e2f70fa5407b9bb6a7c4366c1ca0a0bce79a7fd46fd256cbf49cecc1b99dc86a",
+        "cache_key": "4c9cb79635498abd7fc178095b97d30c4777aea726870fe9272f3814d1c2173a",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0025"
+      },
+      {
+        "artifact_digest": "846bd5b1f4b78577d79f68abf1b5df73245321e34de316dd2014b32953f1fad1",
+        "cache_key": "ea488acf07db9bf554dab6d1a9b840f85e3db54fe0081f0290cef136416ba22e",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0026"
+      },
+      {
+        "artifact_digest": "18b498177126dbac9b0848f859a271da4e8b563597e9af81d886ad86db1be126",
+        "cache_key": "cdea29ace6f46b31b7ead2915792f02ee4468d8b5b7b21f3a70fc991d7e1b87e",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0027"
+      },
+      {
+        "artifact_digest": "6eab7e08a7afe901141a55e1356b891d2c360de4352c8990fb2b2776fabda66f",
+        "cache_key": "7d516300e32c4fe2e9d31e8332ce0ee8e163c0e76bb795dad924ab5dfb9043bf",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0028"
+      },
+      {
+        "artifact_digest": "dce7e356a6df7736ae74f6da8fbd458252ca8e8bf6dd8712d5271eb941ec090b",
+        "cache_key": "5de716a63e25dec676ef609bfb1c6c02ed51eb29d62b8e136cbff2c8231e1fdf",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0029"
+      },
+      {
+        "artifact_digest": "a433b5ce50b229f650c3670e6491dc6ee7cd2e55d373a19be947f76e2712058f",
+        "cache_key": "ae7789bcd59aa74a776337213b8ab4339d76d40f0eb4619c622c32ef635b266f",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0030"
+      },
+      {
+        "artifact_digest": "b088332f379aac5d3d8f2be5b56ae601c90d775896a2e006abd6d00f54e42e88",
+        "cache_key": "31e248adfd6be82dd2adaf33b867a83af8419cef7591502c720973a2724874d6",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0031"
+      },
+      {
+        "artifact_digest": "c11fadc9215d702faedb55d621c5e4090157785109d9c5f4ff3cb0e79c3c1178",
+        "cache_key": "940f44ffdcfcc73821c84aadd0d27df2b89f19769767fc61090179ea06eba913",
+        "trial_id": "g03-readiness-v3-scenario-seed-g02-0032"
+      }
+    ],
+    "not_inherited": [],
+    "revalidation": "each inherited record is reused only if its recomputed cache_key matches",
+    "source_run": ".audit/g03-readiness/g03-4622470-r5"
+  },
+  "metric_definition_artifact_digest": "0fa1f3af0f14df27691a09744738a8b6ca781ca1bc4921976339ec7614224a48",
+  "metric_definition_digest": "fc6d001b141172047c385cfbcfeb9feb04ecbb672e0e2796329158d9ff36ecd6",
+  "metric_version": 3,
+  "non_gate_evidence": true,
+  "output_dir": ".audit/g03-readiness/g03-4622470-r8",
+  "paired_differences": {
+    "naive_react_minus_deterministic": {
+      "B": 2000,
+      "estimate": -0.6458333333333334,
+      "lower": -0.8020833333333334,
+      "upper": -0.4791666666666667
+    },
+    "naive_react_minus_no_rag": {
+      "B": 2000,
+      "estimate": 0.020833333333333332,
+      "lower": -0.010416666666666666,
+      "upper": 0.0625
+    },
+    "naive_react_minus_single": {
+      "B": 2000,
+      "estimate": 0.041666666666666664,
+      "lower": 0.0,
+      "upper": 0.09375
+    },
+    "no_rag_minus_deterministic": {
+      "B": 2000,
+      "estimate": -0.6666666666666666,
+      "lower": -0.8125,
+      "upper": -0.5104166666666666
+    }
+  },
+  "phase": "preflight_completed",
+  "preflight_status": "pass",
+  "presence_only_probe": {
+    "case_count": 32,
+    "classifier": "nonempty-group-signature-majority-prior",
+    "expected_top1_count": 8,
+    "group_completeness": {
+      "complete_case_count": 32,
+      "incomplete_case_ids": [],
+      "required_groups": [
+        "journey_window",
+        "trace_activity",
+        "trace_errors",
+        "cpu_window",
+        "memory_window",
+        "queue_window"
+      ],
+      "status": "pass"
+    },
+    "maximum_top3_count": 20,
+    "signature_count": 1,
+    "status": "pass",
+    "top1": 0.25,
+    "top1_count": 8,
+    "top3": 0.625,
+    "top3_count": 20
+  },
+  "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+  "protected_assets_end": {
+    "docs_audit": {
+      "count": 21,
+      "digest": "652a2173980586d1d637cf8842a17327fa158a17f27f9e0886f122c719bdfa87"
+    },
+    "g02_frozen": {
+      "count": 327,
+      "digest": "d77f4f41830975a3f9fc41d988d13aa98b5739d8dacc608ed5224ddb01a2a9dc"
+    }
+  },
+  "protected_assets_start": {
+    "docs_audit": {
+      "count": 21,
+      "digest": "652a2173980586d1d637cf8842a17327fa158a17f27f9e0886f122c719bdfa87"
+    },
+    "g02_frozen": {
+      "count": 327,
+      "digest": "d77f4f41830975a3f9fc41d988d13aa98b5739d8dacc608ed5224ddb01a2a9dc"
+    }
+  },
+  "purpose": "G03 readiness metric-v3 live reference; not G02 Gate evidence",
+  "readiness_blockers": [],
+  "readiness_status": "ready",
+  "relevant_source_digest": "702f0ebb24752ab1f778de257934846df64b14c7003d5083a767ad90dc1bbc8f",
+  "scenario_artifact_digest": "28e98c7db9956b21003874499afa22225297536667da1ac09b436f043b2f79c6",
+  "schema_version": "1.0.0",
+  "wire_schema_version": "2.0.0"
+}

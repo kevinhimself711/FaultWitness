@@ -1,0 +1,131 @@
+{
+  "artifact_digest": "42a1c98df39b0582e8109187c30e96bd3e3caadccd38ebdce86ff38bcd35080d",
+  "cache_key": "0ccaa0a0fc487166f91541ef939318adab45ddb4c69f5425aec26085447b845c",
+  "execution_attempt": 2,
+  "history": [
+    {
+      "artifact_digest": "04f95d7c510fceb5ecaca7e9cde7b0db46a798eca1ad1ae2e3a235c25fa4186d",
+      "cache_key": "0ccaa0a0fc487166f91541ef939318adab45ddb4c69f5425aec26085447b845c",
+      "execution_attempt": 1,
+      "payload": {
+        "reason": "transport:ConnectError"
+      },
+      "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+      "record_version": 2,
+      "recorded_at": "2026-09-05T11:31:53.005313+00:00",
+      "runtime_checkpoints": {},
+      "status": "infra_failed",
+      "trial_id": "g03-readiness-v3-2f9011956e553b8d4cc1424f32cd01c96406a5720a44d3629fa4e4058121a93b"
+    }
+  ],
+  "payload": {
+    "baseline": "naive_react",
+    "case_id": "SEED-G02-0019",
+    "cost_cny": 0.014876,
+    "input_tokens": 5990,
+    "output_tokens": 362,
+    "repetition": 3,
+    "result": {
+      "baseline": "naive_react",
+      "case_id": "SEED-G02-0019",
+      "claims": [
+        {
+          "claim_type": "root_cause",
+          "evidence_refs": [
+            "ev3-730a350a6ca0f442a52e58ec",
+            "ev3-78a1509c429e49133cb7d892"
+          ],
+          "value": "emailMemoryLeak"
+        }
+      ],
+      "evidence": [
+        "ev3-730a350a6ca0f442a52e58ec",
+        "ev3-78a1509c429e49133cb7d892"
+      ],
+      "fallback_count": 0,
+      "input_tokens": 5990,
+      "latency_ms": 12413.49,
+      "metric_version": 3,
+      "model_id": "qwen3.7-plus-2026-05-26",
+      "output_tokens": 362,
+      "root_cause": "emailMemoryLeak",
+      "root_cause_candidates": [
+        "emailMemoryLeak"
+      ],
+      "schema_version": "2.0.0",
+      "status": "ok"
+    },
+    "trial_telemetry": {
+      "draft_digests": [
+        "72a341f52530a0071e715c6c43d3de95e610d7641572cc73cb9543752eefa639",
+        "72a341f52530a0071e715c6c43d3de95e610d7641572cc73cb9543752eefa639"
+      ],
+      "drafts": [
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-730a350a6ca0f442a52e58ec",
+                "ev3-78a1509c429e49133cb7d892"
+              ],
+              "value": "emailMemoryLeak"
+            }
+          ],
+          "evidence": [
+            "ev3-730a350a6ca0f442a52e58ec",
+            "ev3-78a1509c429e49133cb7d892"
+          ],
+          "root_cause": "emailMemoryLeak",
+          "root_cause_candidates": [
+            "emailMemoryLeak"
+          ]
+        },
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-730a350a6ca0f442a52e58ec",
+                "ev3-78a1509c429e49133cb7d892"
+              ],
+              "value": "emailMemoryLeak"
+            }
+          ],
+          "evidence": [
+            "ev3-730a350a6ca0f442a52e58ec",
+            "ev3-78a1509c429e49133cb7d892"
+          ],
+          "root_cause": "emailMemoryLeak",
+          "root_cause_candidates": [
+            "emailMemoryLeak"
+          ]
+        }
+      ],
+      "terminal_reason": "stable_diagnosis",
+      "turn_count": 2,
+      "turn_usage": [
+        {
+          "finish_reason": "stop",
+          "input_tokens": 2906,
+          "latency_ms": 8057.717,
+          "output_tokens": 212,
+          "turn": 1
+        },
+        {
+          "finish_reason": "stop",
+          "input_tokens": 3084,
+          "latency_ms": 3850.257,
+          "output_tokens": 150,
+          "turn": 2
+        }
+      ]
+    }
+  },
+  "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+  "record_version": 4,
+  "recorded_at": "2026-09-08T12:33:16.070015+00:00",
+  "runtime_checkpoints": {},
+  "status": "pass",
+  "trial_id": "g03-readiness-v3-2f9011956e553b8d4cc1424f32cd01c96406a5720a44d3629fa4e4058121a93b"
+}

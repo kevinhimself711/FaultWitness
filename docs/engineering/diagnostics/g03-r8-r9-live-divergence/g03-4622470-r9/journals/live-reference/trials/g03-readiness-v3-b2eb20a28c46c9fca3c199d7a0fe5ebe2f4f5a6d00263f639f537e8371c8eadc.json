@@ -1,0 +1,116 @@
+{
+  "artifact_digest": "8db8fb1538117c013dbe75325d59e0403f9d841bbd98401ab31884d95b98f670",
+  "cache_key": "c75982eac01f60818d9c3cb72a1c44974010d00cea36bc1916698ff8e425d21f",
+  "execution_attempt": 1,
+  "history": [],
+  "payload": {
+    "baseline": "naive_react",
+    "case_id": "SEED-G02-0031",
+    "cost_cny": 0.014806,
+    "input_tokens": 5995,
+    "output_tokens": 352,
+    "repetition": 2,
+    "result": {
+      "baseline": "naive_react",
+      "case_id": "SEED-G02-0031",
+      "claims": [
+        {
+          "claim_type": "root_cause",
+          "evidence_refs": [
+            "ev3-b3a6fe05a56368bdcc930f1c",
+            "ev3-ee10ad1cf0620d3440981396"
+          ],
+          "value": "kafkaQueueProblems"
+        }
+      ],
+      "evidence": [
+        "ev3-b3a6fe05a56368bdcc930f1c",
+        "ev3-ee10ad1cf0620d3440981396"
+      ],
+      "fallback_count": 0,
+      "input_tokens": 5995,
+      "latency_ms": 11796.686,
+      "metric_version": 3,
+      "model_id": "qwen3.7-plus-2026-05-26",
+      "output_tokens": 352,
+      "root_cause": "kafkaQueueProblems",
+      "root_cause_candidates": [
+        "kafkaQueueProblems"
+      ],
+      "schema_version": "2.0.0",
+      "status": "ok"
+    },
+    "trial_telemetry": {
+      "draft_digests": [
+        "fd168b615f3636d6e4fb5807e31ab03cab3aa647e4f707ecba8c9d57b73c76c4",
+        "fd168b615f3636d6e4fb5807e31ab03cab3aa647e4f707ecba8c9d57b73c76c4"
+      ],
+      "drafts": [
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-b3a6fe05a56368bdcc930f1c",
+                "ev3-ee10ad1cf0620d3440981396"
+              ],
+              "value": "kafkaQueueProblems"
+            }
+          ],
+          "evidence": [
+            "ev3-b3a6fe05a56368bdcc930f1c",
+            "ev3-ee10ad1cf0620d3440981396"
+          ],
+          "root_cause": "kafkaQueueProblems",
+          "root_cause_candidates": [
+            "kafkaQueueProblems"
+          ]
+        },
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-b3a6fe05a56368bdcc930f1c",
+                "ev3-ee10ad1cf0620d3440981396"
+              ],
+              "value": "kafkaQueueProblems"
+            }
+          ],
+          "evidence": [
+            "ev3-b3a6fe05a56368bdcc930f1c",
+            "ev3-ee10ad1cf0620d3440981396"
+          ],
+          "root_cause": "kafkaQueueProblems",
+          "root_cause_candidates": [
+            "kafkaQueueProblems"
+          ]
+        }
+      ],
+      "terminal_reason": "stable_diagnosis",
+      "turn_count": 2,
+      "turn_usage": [
+        {
+          "finish_reason": "stop",
+          "input_tokens": 2911,
+          "latency_ms": 7076.232,
+          "output_tokens": 207,
+          "turn": 1
+        },
+        {
+          "finish_reason": "stop",
+          "input_tokens": 3084,
+          "latency_ms": 3825.5,
+          "output_tokens": 145,
+          "turn": 2
+        }
+      ]
+    }
+  },
+  "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+  "record_version": 2,
+  "recorded_at": "2026-09-05T11:38:46.029189+00:00",
+  "runtime_checkpoints": {},
+  "status": "pass",
+  "trial_id": "g03-readiness-v3-b2eb20a28c46c9fca3c199d7a0fe5ebe2f4f5a6d00263f639f537e8371c8eadc"
+}

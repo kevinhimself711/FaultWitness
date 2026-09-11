@@ -1,0 +1,103 @@
+{
+  "artifact_digest": "fa781426ae7f67f563e2d8cc93374991a8aea2ae09a928f75db4a6d24c9f166b",
+  "cache_key": "75b43e9b16ddc9681fdb1b76a636beccf4745fba1abcbe579884be7b334c81b8",
+  "execution_attempt": 2,
+  "history": [
+    {
+      "artifact_digest": "04f95d7c510fceb5ecaca7e9cde7b0db46a798eca1ad1ae2e3a235c25fa4186d",
+      "cache_key": "75b43e9b16ddc9681fdb1b76a636beccf4745fba1abcbe579884be7b334c81b8",
+      "execution_attempt": 1,
+      "payload": {
+        "reason": "transport:ConnectError"
+      },
+      "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+      "record_version": 2,
+      "recorded_at": "2026-09-05T11:47:50.768012+00:00",
+      "runtime_checkpoints": {},
+      "status": "infra_failed",
+      "trial_id": "g03-readiness-v3-73e18e4353cb3d3d2e584dd5df541bf65308d4dd6ca3f4a95745fb728298587a"
+    }
+  ],
+  "payload": {
+    "baseline": "naive_react_single",
+    "case_id": "SEED-G02-0023",
+    "cost_cny": 0.007554,
+    "input_tokens": 2957,
+    "output_tokens": 205,
+    "repetition": 2,
+    "result": {
+      "baseline": "naive_react_single",
+      "case_id": "SEED-G02-0023",
+      "claims": [
+        {
+          "claim_type": "root_cause",
+          "evidence_refs": [
+            "ev3-d0330ad046b8efd186b29a90",
+            "ev3-d2763d8206f3b592456343f7"
+          ],
+          "value": "productCatalogFailure"
+        }
+      ],
+      "evidence": [
+        "ev3-d0330ad046b8efd186b29a90",
+        "ev3-d2763d8206f3b592456343f7"
+      ],
+      "fallback_count": 0,
+      "input_tokens": 2957,
+      "latency_ms": 7172.136,
+      "metric_version": 3,
+      "model_id": "qwen3.7-plus-2026-05-26",
+      "output_tokens": 205,
+      "root_cause": "productCatalogFailure",
+      "root_cause_candidates": [
+        "productCatalogFailure"
+      ],
+      "schema_version": "2.0.0",
+      "status": "ok"
+    },
+    "trial_telemetry": {
+      "draft_digests": [
+        "7722f83e1e98d54bf08db82a16564585a9c53086faf057e63eae03091d2a0ed8"
+      ],
+      "drafts": [
+        {
+          "claims": [
+            {
+              "claim_type": "root_cause",
+              "evidence_refs": [
+                "ev3-d0330ad046b8efd186b29a90",
+                "ev3-d2763d8206f3b592456343f7"
+              ],
+              "value": "productCatalogFailure"
+            }
+          ],
+          "evidence": [
+            "ev3-d0330ad046b8efd186b29a90",
+            "ev3-d2763d8206f3b592456343f7"
+          ],
+          "root_cause": "productCatalogFailure",
+          "root_cause_candidates": [
+            "productCatalogFailure"
+          ]
+        }
+      ],
+      "terminal_reason": "max_turns",
+      "turn_count": 1,
+      "turn_usage": [
+        {
+          "finish_reason": "stop",
+          "input_tokens": 2957,
+          "latency_ms": 6686.206,
+          "output_tokens": 205,
+          "turn": 1
+        }
+      ]
+    }
+  },
+  "producer_sha": "4622470a6afebc77e71519ee905d461fb0e86635",
+  "record_version": 4,
+  "recorded_at": "2026-09-08T12:34:20.023495+00:00",
+  "runtime_checkpoints": {},
+  "status": "pass",
+  "trial_id": "g03-readiness-v3-73e18e4353cb3d3d2e584dd5df541bf65308d4dd6ca3f4a95745fb728298587a"
+}
