@@ -19,6 +19,7 @@ They live under `docs/` rather than `.audit/` because `.audit/**` is gitignored,
 | --- | --- | --- |
 | `g03-metric-v3-descriptions-leakage-probe.json` | Can `trace_errors.descriptions` text alone name the metric-v3 fault family, without reading `error_count` / `connection_error_count`? | `localized_leakage_trace_errors_families` — yes, on 16/16 cases of the three families that share the `trace_errors` kind |
 | `g03-r8-r9-live-divergence/` | r8 and r9 share a byte-identical dataset, yet r9's live arms score 5–6× r8's. Which round is broken? | r8. Its root-cause accuracy is *higher* (0.9583 vs 0.9479); the whole gap is evidence-citation completeness (0.1458 vs 0.8924), caused by a prompt that never disclosed the completeness rule its scoring enforced |
+| `g03-metric-v3-root-signal-separability.json` (+ `-README.md`) | If `descriptions` is redacted, do the six declared numeric root signals alone still identify the family? | Yes — a six-way lookup. All six signals recover their own family at recall 1.000 alone, 24/32 cases have exactly one offset signal and it is always the true family, and a zero-model classifier over the frozen leave-one-case-out p99 reaches 0.9062 |
 
 ### Reading the r8/r9 divergence record
 
@@ -32,6 +33,25 @@ They live under `docs/` rather than `.audit/` because `.audit/**` is gitignored,
   incomparability case.
 - The runner hostname is redacted to `<redacted-runner-hostname-A>` in 4 files, using the same
   placeholder in both rounds so that "same hostname" remains checkable. Nothing else is redacted.
+
+### Reading the separability probe
+
+- It exists to split the two readings of the leakage probe's classifier **B**, which scored 32/32 on
+  its own threshold test using the bare per-family quantum. Those readings — genuinely orthogonal
+  signals versus false qualifications cancelling into a coincidence — point opposite ways on whether
+  redaction is sufficient. Measured answer: orthogonal. **Cleaning the threshold raised
+  discrimination** (0.9062 vs 0.5938), so the pre-registered contamination hypothesis is falsified.
+- `adHighCpu` is the one impure channel. Its whole p99 rests on a single nonzero drift out of 124
+  pooled samples, so holding out either contributing case collapses the threshold to the quantum.
+  All 3 of D1's errors and all 13 of D2's are cases this channel steals; the other five signals fire
+  zero times on foreign cases under either rule.
+- Every off-diagonal co-occurrence except `adHighCpu`'s is 0: faults do not propagate across
+  services in this dataset. Remove CPU's 8 false qualifications and the single-offset fraction is
+  32/32.
+- The single-offset fraction is 0.7500, sitting exactly on the registered floor rather than clearing
+  it. Read the `orthogonality` counts before treating that reading as settled.
+- `-README.md` carries the five human-readable tables (per-case offsets, false qualifications,
+  co-occurrence, per-family accuracy, D1−D2 delta). The JSON is the machine record.
 
 ### Reading the leakage probe
 
@@ -53,6 +73,10 @@ They live under `docs/` rather than `.audit/` because `.audit/**` is gitignored,
 uv run python -m faultwitness_dev g03-leakage-probe \
   --dataset .audit/g03-readiness/<run>/scenarios.json \
   --output docs/engineering/diagnostics/g03-metric-v3-descriptions-leakage-probe.json
+
+uv run python -m faultwitness_dev g03-separability \
+  --dataset .audit/g03-readiness/<run>/scenarios.json \
+  --output docs/engineering/diagnostics/g03-metric-v3-root-signal-separability.json
 ```
 
 Zero model calls. The source dataset is recorded in the artifact as `source_run`, with

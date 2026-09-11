@@ -52,6 +52,7 @@ from faultwitness_dev.g02_baselines import (
 from faultwitness_dev.g02_lab import deploy_g02_lab, replay_resource_scenarios
 from faultwitness_dev.g03_leakage_probe import run_leakage_probe_from_path
 from faultwitness_dev.g03_readiness import run_retest_baselines_v3
+from faultwitness_dev.g03_separability import run_separability_probe_from_path
 from faultwitness_dev.infra import (
     audit_runtime_coexistence,
     capture_preinstall_baseline,
@@ -157,6 +158,17 @@ def parser() -> argparse.ArgumentParser:
     )
     leakage_probe.add_argument("--dataset", type=Path, required=True)
     leakage_probe.add_argument("--output", type=Path, required=True)
+
+    separability = subparsers.add_parser(
+        "g03-separability",
+        help=(
+            "read-only diagnostic: measure how much fault-family discrimination the six declared "
+            "metric-v3 numeric root signals carry on their own, against the frozen "
+            "leave-one-case-out healthy p99. Products are diagnostic_only and never gate evidence."
+        ),
+    )
+    separability.add_argument("--dataset", type=Path, required=True)
+    separability.add_argument("--output", type=Path, required=True)
 
     bootstrap = subparsers.add_parser("bootstrap-secrets")
     bootstrap.add_argument("--handoff", type=Path, default=Path("envs.txt"))
@@ -404,6 +416,20 @@ def main() -> int:
                 f"{verdict['code']} (A={verdict['descriptions_accuracy']:.4f} "
                 f"B={verdict['root_signal_accuracy']:.4f} "
                 f"C={verdict['majority_class_accuracy']:.4f})"
+            )
+        elif args.command == "g03-separability":
+            dataset = args.dataset if args.dataset.is_absolute() else root / args.dataset
+            output = args.output if args.output.is_absolute() else root / args.output
+            report = run_separability_probe_from_path(dataset, output)
+            classifiers = report["classifiers"]
+            holding = report["assessment"]["holding"]
+            message = (
+                f"recorded diagnostic_only separability probe in {output} over "
+                f"{report['n_cases']} cases from {report['source_run']}; "
+                f"D1={classifiers['D1_root_signal_p99']['scores']['accuracy']:.4f} "
+                f"D2={classifiers['D2_root_signal_bare_quantum']['scores']['accuracy']:.4f} "
+                f"D3={classifiers['D3_majority_class']['scores']['accuracy']:.4f}; "
+                f"readings holding: {', '.join(holding) if holding else 'none'}"
             )
         elif args.command == "bootstrap-secrets":
             paths = (
