@@ -43,5 +43,6 @@ Thumbs.db
 *.stackdump
 
 # Operator-local execution conventions (internal host addresses, fallback endpoints).
-# The durable lessons live in the committed AGENTS.md and docs/governance/GOVERNANCE_V2.md.
+# AGENTS.md states where lessons must be written; it no longer carries them.
+# The durable lessons live in docs/governance/GOVERNANCE_V2.md and docs/engineering/.
 /CLAUDE.md
