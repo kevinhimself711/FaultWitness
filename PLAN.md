@@ -38,3 +38,10 @@ G03 重跑前必须先确认这四个数字的原始产物是否仍在 pci-2 上
   仅存在于 verify-docs 的外部工具组，缺 pnpm 时静默跳过。
   G10 生产前审计需要它时，必须显式在有 pnpm 的环境跑一次并把产物入库，
   不能假设 CI 已经覆盖。
+- ADR-0018 只解除了 +0.10 的文档层阻塞。代码层仍在执行：
+  g02_baselines.py:55/:286/:290（:286 做精确字符串比对，:290 是实际门槛解析）、
+  g03_readiness.py:2757、tests/g02/test_g02_baselines.py:394（registry 相等断言）。
+  真跑 readiness 时门槛仍解析为 1.0167，仍不可达。
+  解冻条件满足后需一次性改完这五处（代码与测试同一 commit）。
+  解冻条件：泄漏探针通过 + 分化度检查通过 + 第一次 naive_react baseline 入库。
+  注：诊断模式（diagnostic_only: true）不走 resolve_quality_floor，不受此阻塞。
