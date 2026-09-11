@@ -176,6 +176,8 @@ CI 宽度为 0,`1.000 + 5pp = 1.05` 不可达。原因是组存在性签名可�
 > `naive_react`、不得封顶目标。出路只能是改任务形态,详见
 > [gates/G03.md](gates/G03.md) 的 r9 一节。
 
+> 本条已由 [ADR-0018](../../adr/ADR-0018.md) 处置：margin 的数值因锚点失效回到待定，目标形式不变。
+
 **新增交付（第二轮）**：
 - [CROSS_GATE_INTERFACES.md](CROSS_GATE_INTERFACES.md) 的五条契约层字段规格,
   与 I-01 同批落地。

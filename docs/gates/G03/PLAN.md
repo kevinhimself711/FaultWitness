@@ -23,6 +23,8 @@ Its frozen exits are: validation E2E at least 5 percentage points above the best
 100% of critical conclusions traceable to EvidenceRef, and Worker/SSE recovery without lost or
 duplicated state. Planning may make these decisions complete but may not lower them.
 
+> 本条已由 [ADR-0018](../../adr/ADR-0018.md) 处置：margin 的数值因锚点失效回到待定，目标形式不变。
+
 ## Planning requirement
 
 Before implementation, a dedicated planning turn must freeze scope, non-goals, state changes,
