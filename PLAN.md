@@ -37,6 +37,11 @@ G03 重跑前必须先确认这四个数字的原始产物是否仍在 pci-2 上
 同目录 r8 的 live 三臂为 0.1458/0.1250/0.1667，只有 r9 是这四个数字的来源，引用时须写明 r9。
 
 - 2026-09-09：宿主默认 Codex runtime 的 pnpm/Node 版本为 11.19.0/v24.19.0，导致审计测试拒绝运行；用项目声明的 Node 22.14.0、pnpm 11.9.0 重跑后通过。
+- 2026-09-11：`checks.py:97` 的 `run(["pytest", "-q"])` 调裸 `pytest`，在这台机器上解析到
+  Anaconda 的 `pytest`（缺项目依赖），39 个测试文件 collection 报
+  `ModuleNotFoundError: No module named 'faultwitness'`，看起来像大面积回归，其实是环境问题。
+  必须按 Makefile 走 `uv run python -m faultwitness_dev verify-fast`（439 passed）。
+  与上面那条 pnpm/Node 是同一类坑。
 - 历史缺 artifact 的 EVAL 目录仍有 G00-001–006、G01-001–009、G02-021、G02-022；U7.4 只报告，不追溯补造。
 - GOVERNANCE_V2.md 实质承载「先量后冻」那一课（含代价数字与三条硬性程序），
   但它不在任何自动加载通道里：AGENTS.md（60 行）只规定教训该写到哪、本身不承载教训；
