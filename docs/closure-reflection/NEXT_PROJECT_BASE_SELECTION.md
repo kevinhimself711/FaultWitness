@@ -398,6 +398,44 @@ JSON tree traversal、output transformer、per-tool memory limit、大结果 spi
 
 ---
 
+## 6.5 适配性结论（已逐组走完两侧接口，此处只写结论）
+
+各组合的接口适配已按端点逐项核对完毕，核对过程不入库；下表只给结论。
+
+| 组合 | 适配形态 | 适配性结论 | 档位 | 阻塞项 |
+|---|---|---|---|---|
+| **2** HolmesGPT + 自带 274 case | 原生，无 adapter | **已证实**：case 契约、判分器、历史基线全在仓内 | B | 仅 V1 |
+| **1** HolmesGPT + SREGym | 一个 driver + `agents.yaml` 一行 | **接口已证实**；driver 规模与现有先例同级，adapter 不参与判分 | A | V1 + V4 |
+| **3** SREGym + 自写轻量 agent | 原生 | 已证实，但等于重走 L11（harness 大于产品） | A | V4 |
+| **4** HolmesGPT + AIOpsLab | 需自写 adapter，且无成品 agent 先例 | **未证实**：adapter 会成为新仪器（L8 复发） | C | 高 |
+| **5** HolmesGPT issue 驱动 + 274 case 回归 | 不涉及外部 bench | **已证实** | — | 仅 V1 |
+| — HolmesGPT + ITBench | 无文档化 adapter 契约 | 不成立 | — | — |
+
+**三条关键结论**：
+
+1. **组合 2 与组合 5 的适配性已完全证实**，只剩一个环境问题（V1）。
+   它们是唯一"接口与收益都已证实、只差装一次依赖"的选项——**路线必须从这里起步**。
+2. **组合 1 的接口适配已证实，运行前提未证实**（V4：SREGym 能否在 kind 上跑 Lite 21 题）。
+   接口这一侧不会破产；会破产的是集群前提，而那是成本问题不是方向问题。
+3. **组合 1 的 adapter 不参与判分**：分数由 SREGym 的 57 个 oracle 产出，driver 只搬运字符串。
+   这是"低噪声"的确切含义，也是与 `PROJECT_POSTMORTEM.md` L8 的分界——
+   上个项目的仪器同时观测与判分，所以能骗过自己；这里两者物理分离。
+   组合 4 之所以只有 C 档，正因为它的 adapter 必须自己承担信号转换。
+
+**破产风险清单（写 driver 之前逐项验证，任一不成立则组合 1 降级为组合 2）**：
+
+| # | 未证实项 | 若不成立 |
+|---|---|---|
+| V1 | HolmesGPT 在本机能否装上并跑绿非 llm 测试 | **硬阻塞**，全部方案破产，需换基座 |
+| V2 | eval 能否在 Windows 跑（上游 issue 报过 4 个 macOS 阻塞） | 需 WSL2 / Linux 宿主，不影响选型 |
+| V3 | `RUN_LIVE=false` 离线回放是否真可用 | 每次 eval 都需活集群，迭代变贵 |
+| V4 | SREGym 能否在 kind 上跑 Lite 21 题 | 组合 1 需自管 K8s，宿主 panic 风险回归（L10） |
+| V5 | HolmesGPT 容器内能否 POST 到宿主 conductor | driver 加网络配置，非阻塞 |
+
+V1 是唯一硬阻塞项；V2–V5 影响成本与档位，不影响方向。
+
+---
+
 ## 7. 建议路线与硬性约束
 
 **B → A → RL 三段，每段独立可交付。**
