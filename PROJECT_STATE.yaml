@@ -1,6 +1,9 @@
 governance_version: "2.0"
 active_gate: G03
 active_gate_status: not_started
+project_status: terminated
+terminated_on: "2026-09-13"
+termination_postmortem: docs/engineering/PROJECT_POSTMORTEM.md
 last_closed_gate: G02
 active_plan: docs/gates/G03/PLAN.md
 active_report: docs/gates/G03/REPORT.md
